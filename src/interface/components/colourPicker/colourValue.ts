@@ -23,7 +23,8 @@ const SIDE_ANGLES: Record<string, number> = {
   "to left top": 315,
 };
 
-export const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+export const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
 
 const round = (value: number, digits = 0) => {
   const factor = 10 ** digits;
@@ -44,7 +45,8 @@ function hexToRgba(hex: string): Rgba | null {
 
 function hslToRgba(h: number, s: number, l: number, a: number): Rgba {
   const k = (n: number) => (n + h / 30) % 12;
-  const f = (n: number) => l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
+  const f = (n: number) =>
+    l - s * Math.min(l, 1 - l) * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
   return { r: Math.round(f(0) * 255), g: Math.round(f(8) * 255), b: Math.round(f(4) * 255), a };
 }
 
@@ -63,12 +65,16 @@ export function parseColour(input: string): Rgba | null {
   if (fn[1].startsWith("rgb")) {
     const [r, g, b] = parts
       .slice(0, 3)
-      .map((part) => clamp(Math.round(part.endsWith("%") ? parseFloat(part) * 2.55 : parseFloat(part)), 0, 255));
+      .map((part) =>
+        clamp(Math.round(part.endsWith("%") ? parseFloat(part) * 2.55 : parseFloat(part)), 0, 255),
+      );
     return [r, g, b].some(Number.isNaN) ? null : { r, g, b, a };
   }
 
   const [h, s, l] = [parseFloat(parts[0]), parseFloat(parts[1]) / 100, parseFloat(parts[2]) / 100];
-  return [h, s, l].some(Number.isNaN) ? null : hslToRgba(((h % 360) + 360) % 360, clamp(s, 0, 1), clamp(l, 0, 1), a);
+  return [h, s, l].some(Number.isNaN)
+    ? null
+    : hslToRgba(((h % 360) + 360) % 360, clamp(s, 0, 1), clamp(l, 0, 1), a);
 }
 
 export function formatColour({ r, g, b, a }: Rgba): string {
@@ -168,7 +174,8 @@ export function formatStops(stops: GradientStop[]): string {
 
 export function formatValue(value: ColourValue): string {
   if (value.kind === "solid") return formatColour(value.colour);
-  if (value.kind === "linear") return `linear-gradient(${round(value.angle)}deg, ${formatStops(value.stops)})`;
+  if (value.kind === "linear")
+    return `linear-gradient(${round(value.angle)}deg, ${formatStops(value.stops)})`;
   return `radial-gradient(circle, ${formatStops(value.stops)})`;
 }
 

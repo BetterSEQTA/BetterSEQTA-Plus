@@ -21,7 +21,10 @@ import {
 } from "@/seqta/utils/openers/openThemeToggleSurprise";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
-import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
+import {
+  ensureTitlebarFounderBadgeMounted,
+  refreshTitlebarFounderBadge,
+} from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 import { remoteChromeGateAllowed } from "@/seqta/utils/remoteConfig/routeGate";
@@ -126,10 +129,7 @@ async function handleUserInfoAndStudentData() {
     ensureTitlebarFounderBadgeMounted();
     await updateStudentInfo((await studentResponse.json()).payload, userInfo);
   } catch (error) {
-    console.error(
-      "[BetterSEQTA+] Failed to handle user info and student data:",
-      error,
-    );
+    console.error("[BetterSEQTA+] Failed to handle user info and student data:", error);
   }
 }
 
@@ -197,9 +197,9 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
       person.surname == info.userDesc.split(" ")[1],
   );
 
-  const houseelement = document.getElementsByClassName(
-    "userInfohouse",
-  )[0] as HTMLElement | undefined;
+  const houseelement = document.getElementsByClassName("userInfohouse")[0] as
+    | HTMLElement
+    | undefined;
 
   if (!houseelement) return;
 
@@ -213,8 +213,7 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
       houseelement.style.background = student.house_colour;
       try {
         const colorresult = GetThresholdOfColor(student.house_colour);
-        houseelement.style.color =
-          colorresult && colorresult > 300 ? "black" : "white";
+        houseelement.style.color = colorresult && colorresult > 300 ? "black" : "white";
       } catch {
         // Invalid color format, leave text color as default
       }
@@ -247,10 +246,7 @@ function setupEventListeners() {
   const newsbutton = document.getElementById("newsbutton");
 
   const activateMenuAction = (button: HTMLElement, action: () => void) => {
-    if (
-      button.classList.contains("draggable") ||
-      button.classList.contains("active")
-    ) {
+    if (button.classList.contains("draggable") || button.classList.contains("active")) {
       return;
     }
 
@@ -268,9 +264,7 @@ function setupEventListeners() {
   menuCover?.addEventListener("click", () => {
     location.href = "../#?page=/home";
     loadHomePage();
-    (
-      document.getElementById("menu")!.firstChild! as HTMLElement
-    ).classList.remove("noscroll");
+    (document.getElementById("menu")!.firstChild! as HTMLElement).classList.remove("noscroll");
   });
 }
 
@@ -306,10 +300,7 @@ async function injectEngageHomeButton() {
 
   document.getElementById("homebutton")?.addEventListener("click", () => {
     const btn = document.getElementById("homebutton") as HTMLElement;
-    if (
-      btn.classList.contains("draggable") ||
-      btn.classList.contains("active")
-    ) {
+    if (btn.classList.contains("draggable") || btn.classList.contains("active")) {
       return;
     }
     window.location.replace(`${location.origin}/#?page=/home`);
@@ -337,7 +328,7 @@ async function getEngageUserInfo() {
 }
 
 async function addEngageUserInfo() {
-  const content = await waitForElm("#content") as HTMLElement;
+  const content = (await waitForElm("#content")) as HTMLElement;
 
   let info: Awaited<ReturnType<typeof getEngageUserInfo>>;
   try {
@@ -439,11 +430,14 @@ async function setupEngageSettingsButton() {
   let engageRemountTimer: ReturnType<typeof setTimeout> | null = null;
   const debouncedTryMount = () => {
     if (engageRemountTimer) clearTimeout(engageRemountTimer);
-    engageRemountTimer = setTimeout(() => {
-      engageRemountTimer = null;
-      if (document.getElementById("AddedSettings")) return;
-      void tryMount();
-    }, isPerformanceMode() ? 300 : 80);
+    engageRemountTimer = setTimeout(
+      () => {
+        engageRemountTimer = null;
+        if (document.getElementById("AddedSettings")) return;
+        void tryMount();
+      },
+      isPerformanceMode() ? 300 : 80,
+    );
   };
 
   const observer = new MutationObserver(debouncedTryMount);
@@ -451,9 +445,7 @@ async function setupEngageSettingsButton() {
 }
 
 function GetLightDarkModeString() {
-  return settingsState.DarkMode
-    ? "Switch to light theme"
-    : "Switch to dark theme";
+  return settingsState.DarkMode ? "Switch to light theme" : "Switch to dark theme";
 }
 
 async function addDarkLightToggle(parent?: Element) {
@@ -468,9 +460,7 @@ async function addDarkLightToggle(parent?: Element) {
 
   updateAllColors();
 
-  const lightDarkModeButtonElement = document.getElementById(
-    "LightDarkModeButton",
-  )!;
+  const lightDarkModeButtonElement = document.getElementById("LightDarkModeButton")!;
 
   ensureThemeToggleSurprisePageScript();
 
@@ -483,10 +473,7 @@ async function addDarkLightToggle(parent?: Element) {
       return;
     }
 
-    if (
-      settingsState.originalDarkMode !== undefined &&
-      settingsState.selectedTheme
-    ) {
+    if (settingsState.originalDarkMode !== undefined && settingsState.selectedTheme) {
       return;
     }
 
@@ -494,9 +481,7 @@ async function addDarkLightToggle(parent?: Element) {
     updateAllColors();
 
     const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
-    svgElement.innerHTML = settingsState.DarkMode
-      ? LUCIDE_SUN_ICON_SVG
-      : LUCIDE_MOON_ICON_SVG;
+    svgElement.innerHTML = settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG;
     lightDarkModeButtonElement.setAttribute("aria-label", GetLightDarkModeString());
   });
 }
@@ -560,9 +545,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
 
-  const menuItem = target.closest("#menu li, #menu section") as
-    | HTMLElement
-    | null;
+  const menuItem = target.closest("#menu li, #menu section") as HTMLElement | null;
   if (!menuItem) return;
 
   if (event.key === "Tab") {
@@ -602,9 +585,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
 
   event.preventDefault();
 
-  const childSubmenu = menuItem.querySelector(":scope > .sub > ul") as
-    | HTMLElement
-    | null;
+  const childSubmenu = menuItem.querySelector(":scope > .sub > ul") as HTMLElement | null;
 
   menuItem.click();
   scheduleSidebarAccessibilityUpdate();
@@ -615,10 +596,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
 }
 
 /** Folder rows on the path to the currently open sidebar list. */
-function getDrillFolderChain(
-  menu: HTMLElement,
-  visibleList: HTMLElement | null,
-): Set<HTMLElement> {
+function getDrillFolderChain(menu: HTMLElement, visibleList: HTMLElement | null): Set<HTMLElement> {
   const chain = new Set<HTMLElement>();
   let list: HTMLElement | null = visibleList;
 
@@ -636,10 +614,7 @@ function getDrillFolderChain(
       break;
     }
     chain.add(parentFolder);
-    list =
-      parentFolder.parentElement instanceof HTMLElement
-        ? parentFolder.parentElement
-        : null;
+    list = parentFolder.parentElement instanceof HTMLElement ? parentFolder.parentElement : null;
   }
 
   return chain;
@@ -674,9 +649,7 @@ function updateSidebarAccessibility() {
   if (!menu) return;
 
   const visibleList = getVisibleSidebarList(menu);
-  const visibleEntries = new Set(
-    visibleList ? getDirectSidebarEntries(visibleList) : [],
-  );
+  const visibleEntries = new Set(visibleList ? getDirectSidebarEntries(visibleList) : []);
   if (document.body?.classList.contains("icon-only-sidebar")) {
     const rootList = menu.querySelector(":scope > ul") as HTMLElement | null;
     if (rootList) getDirectSidebarEntries(rootList).forEach((entry) => visibleEntries.add(entry));
@@ -690,8 +663,7 @@ function updateSidebarAccessibility() {
     const label = entry.querySelector(":scope > label") as HTMLLabelElement | null;
     if (!label) continue;
 
-    const interactive =
-      visibleEntries.has(entry) || drillFolders.has(entry);
+    const interactive = visibleEntries.has(entry) || drillFolders.has(entry);
 
     if (!interactive) {
       // Keep rows in normal layout — offscreen position/opacity snaps cause a
@@ -736,9 +708,7 @@ function getVisibleSidebarList(menu: HTMLElement) {
       return currentList;
     }
 
-    const nextList = activeSubmenuParent.querySelector(
-      ":scope > .sub > ul",
-    ) as HTMLElement | null;
+    const nextList = activeSubmenuParent.querySelector(":scope > .sub > ul") as HTMLElement | null;
 
     if (!nextList) {
       return currentList;
@@ -769,9 +739,7 @@ function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {
       }
 
       const firstEntry = getDirectSidebarEntries(visibleList).find(
-        (entry) =>
-          entry.offsetParent !== null &&
-          window.getComputedStyle(entry).display !== "none",
+        (entry) => entry.offsetParent !== null && window.getComputedStyle(entry).display !== "none",
       );
 
       firstEntry?.focus({ preventScroll: true });

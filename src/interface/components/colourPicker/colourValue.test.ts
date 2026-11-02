@@ -30,7 +30,9 @@ describe("parseColour", () => {
 
 describe("parseValue", () => {
   it("parses the default gradient", () => {
-    expect(parseValue("linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)")).toEqual({
+    expect(
+      parseValue("linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)"),
+    ).toEqual({
       kind: "linear",
       angle: 45,
       stops: [
@@ -41,7 +43,9 @@ describe("parseValue", () => {
   });
 
   it("parses radial gradients and skips the shape", () => {
-    const value = parseValue("radial-gradient(circle, rgba(20, 199, 178, 0.76) 32%, rgba(3, 120, 57, 0.66) 100%)");
+    const value = parseValue(
+      "radial-gradient(circle, rgba(20, 199, 178, 0.76) 32%, rgba(3, 120, 57, 0.66) 100%)",
+    );
     expect(value.kind).toBe("radial");
     expect(value.kind !== "solid" && value.stops.map((stop) => stop.position)).toEqual([32, 100]);
   });
@@ -49,11 +53,16 @@ describe("parseValue", () => {
   it("maps side keywords and fills missing stop positions", () => {
     const value = parseValue("linear-gradient(to right, #000, #888, #fff)");
     expect(value).toMatchObject({ kind: "linear", angle: 90 });
-    expect(value.kind !== "solid" && value.stops.map((stop) => stop.position)).toEqual([0, 50, 100]);
+    expect(value.kind !== "solid" && value.stops.map((stop) => stop.position)).toEqual([
+      0, 50, 100,
+    ]);
   });
 
   it("treats plain colours as solid and falls back on garbage", () => {
-    expect(parseValue("rgba(4, 4, 138, 0.77)")).toEqual({ kind: "solid", colour: { r: 4, g: 4, b: 138, a: 0.77 } });
+    expect(parseValue("rgba(4, 4, 138, 0.77)")).toEqual({
+      kind: "solid",
+      colour: { r: 4, g: 4, b: 138, a: 0.77 },
+    });
     expect(parseValue("not a colour").kind).toBe("solid");
   });
 });

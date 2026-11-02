@@ -53,15 +53,9 @@ it("removes cached custom rubric percentages when inference is disabled", async 
     gradeSource: "customBand",
   });
 
-  await saveGradeInferenceSettings(
-    origin,
-    12,
-    DEFAULT_ANALYTICS_GRADE_INFERENCE,
-  );
+  await saveGradeInferenceSettings(origin, 12, DEFAULT_ANALYTICS_GRADE_INFERENCE);
   const refreshed = await syncGradeAnalytics();
   expect(refreshed.assessments[0].finalGrade).toBeUndefined();
   expect(refreshed.assessments[0].gradeSource).toBeUndefined();
-  expect(
-    (await loadAnalyticsCache(origin, 12))?.assessments[0].finalGrade,
-  ).toBeUndefined();
+  expect((await loadAnalyticsCache(origin, 12))?.assessments[0].finalGrade).toBeUndefined();
 });

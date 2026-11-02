@@ -33,11 +33,7 @@ export function isTopLevelSidebarItem(node: HTMLElement): boolean {
 
 function wrapMenuLabelText(label: HTMLElement) {
   const textNode = label.lastChild;
-  if (
-    textNode?.nodeType === 3 &&
-    textNode.parentNode &&
-    textNode.parentNode.nodeName !== "SPAN"
-  ) {
+  if (textNode?.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== "SPAN") {
     const span = document.createElement("span");
     span.textContent = textNode.nodeValue;
     label.replaceChild(span, textNode);

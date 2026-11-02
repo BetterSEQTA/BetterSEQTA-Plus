@@ -16,7 +16,6 @@ interface EventListener {
   unregister: () => void;
 }
 
-
 class EventManager {
   private static instance: EventManager;
   private listeners: Map<string, EventListener[]> = new Map();
@@ -74,10 +73,7 @@ class EventManager {
     return selector.trim() || null;
   }
 
-  private getElementsToCheck(
-    element: Element,
-    options: EventListenerOptions,
-  ): Element[] {
+  private getElementsToCheck(element: Element, options: EventListenerOptions): Element[] {
     const selector = this.buildSelector(options);
     if (!selector) return [element];
 
@@ -108,9 +104,7 @@ class EventManager {
 
     for (let i = 0; i < elements.length; i += this.chunkSize) {
       const chunk = elements.slice(i, i + this.chunkSize);
-      const filteredChunk = chunk.filter((element) =>
-        this.matchesOptions(element, options),
-      );
+      const filteredChunk = chunk.filter((element) => this.matchesOptions(element, options));
       for (const element of filteredChunk) {
         callback(element);
       }
@@ -213,19 +207,11 @@ class EventManager {
     }
   }
 
-  private matchesOptions(
-    element: Element,
-    options: EventListenerOptions,
-  ): boolean {
-    if (
-      options.elementType &&
-      element.tagName.toLowerCase() !== options.elementType.toLowerCase()
-    )
+  private matchesOptions(element: Element, options: EventListenerOptions): boolean {
+    if (options.elementType && element.tagName.toLowerCase() !== options.elementType.toLowerCase())
       return false;
-    if (options.textContent && element.textContent !== options.textContent)
-      return false;
-    if (options.className && !element.classList.contains(options.className))
-      return false;
+    if (options.textContent && element.textContent !== options.textContent) return false;
+    if (options.className && !element.classList.contains(options.className)) return false;
     if (options.id && element.id !== options.id) return false;
     if (options.customCheck && !options.customCheck(element)) return false;
     return true;
@@ -233,5 +219,4 @@ class EventManager {
 }
 
 export const eventManager = EventManager.getInstance();
-export const initializeEventManager = async () =>
-  await EventManager.initialize();
+export const initializeEventManager = async () => await EventManager.initialize();

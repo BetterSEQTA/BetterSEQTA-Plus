@@ -29,12 +29,10 @@ describe("shouldShowCoursesAssessmentsFixPopup", () => {
 
   it("does not show again after the user has seen it", () => {
     expect(
-      shouldShowCoursesAssessmentsFixPopup(
-        {
-          onoff: false,
-          coursesAssessmentsFixPopupShown: true,
-        },
-      ),
+      shouldShowCoursesAssessmentsFixPopup({
+        onoff: false,
+        coursesAssessmentsFixPopupShown: true,
+      }),
     ).toBe(false);
   });
 });
@@ -77,8 +75,6 @@ describe("reEnableBetterSeqtaFeatures", () => {
       coursesAssessmentsFixPopupShown: true,
     });
     expect(reload).toHaveBeenCalledTimes(1);
-    expect(persist.mock.invocationCallOrder[0]).toBeLessThan(
-      reload.mock.invocationCallOrder[0],
-    );
+    expect(persist.mock.invocationCallOrder[0]).toBeLessThan(reload.mock.invocationCallOrder[0]);
   });
 });

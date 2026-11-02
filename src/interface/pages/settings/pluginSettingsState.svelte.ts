@@ -59,8 +59,7 @@ class PluginSettingsStore {
   private async load(): Promise<void> {
     const { getAllPluginSettings } = await import("@/plugins");
     this.plugins = getAllPluginSettings().filter(
-      (plugin) =>
-        !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
+      (plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
     ) as PluginSettingsEntry[];
 
     for (const plugin of this.plugins) {

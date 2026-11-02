@@ -3,21 +3,20 @@ import { getFontPreset } from "@/seqta/ui/fonts/presets";
 
 describe("themeBuilderDraft", () => {
   it("paints the tint above an opaque photo when blur is disabled", () => {
-    const css = buildThemeBuilderCss(
-      getFontPreset("inter"),
-      ["theme-bg-0"],
-      { accentColor: "#00f", overlayOpacity: 0.5, backgroundBlurPx: 0 },
-    );
+    const css = buildThemeBuilderCss(getFontPreset("inter"), ["theme-bg-0"], {
+      accentColor: "#00f",
+      overlayOpacity: 0.5,
+      backgroundBlurPx: 0,
+    });
     const backgroundLayers = css.match(/background-image: (.*) !important;/)?.[1];
     expect(backgroundLayers).toMatch(/^linear-gradient\(.*\), var\(--theme-bg-0\)$/);
   });
 
   it("builds CSS with font import and image variables", () => {
-    const css = buildThemeBuilderCss(
-      getFontPreset("inter"),
-      ["theme-bg-0"],
-      { accentColor: "#00f", gradientEnd: "#f0f" },
-    );
+    const css = buildThemeBuilderCss(getFontPreset("inter"), ["theme-bg-0"], {
+      accentColor: "#00f",
+      gradientEnd: "#f0f",
+    });
     expect(css).toContain("Inter");
     expect(css).toContain("var(--theme-bg-0)");
     expect(css).toContain("#title");
@@ -39,8 +38,8 @@ describe("themeBuilderDraft", () => {
   });
 
   it("requires a name", () => {
-    expect(() =>
-      buildThemeFromDraft({ name: "  ", accentColor: "#000", photoBlobs: [] }),
-    ).toThrow("Theme name is required");
+    expect(() => buildThemeFromDraft({ name: "  ", accentColor: "#000", photoBlobs: [] })).toThrow(
+      "Theme name is required",
+    );
   });
 });

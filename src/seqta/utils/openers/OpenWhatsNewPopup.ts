@@ -28,11 +28,7 @@ export function OpenWhatsNewPopup(onDismissed?: () => void) {
 
   openPopup({
     header,
-    content: [
-      createPopupHeroVideo(UPDATE_VIDEO_URL, "BetterSEQTA+ update preview"),
-      text,
-      footer,
-    ],
+    content: [createPopupHeroVideo(UPDATE_VIDEO_URL, "BetterSEQTA+ update preview"), text, footer],
     afterClose: onDismissed,
     clearJustUpdated: true,
   });

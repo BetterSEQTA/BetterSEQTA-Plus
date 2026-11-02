@@ -21,10 +21,7 @@ const bootScript = execFileSync(
   { encoding: "utf8" },
 );
 
-test.each([
-  { onoff: false },
-  { "plugin.error-page-kitten.settings": { enabled: false } },
-])(
+test.each([{ onoff: false }, { "plugin.error-page-kitten.settings": { enabled: false } }])(
   "disabled 404 customization preserves the native error message: %j",
   async (stored) => {
     document.head.innerHTML = "";
@@ -47,8 +44,6 @@ test.each([
     for (let i = 0; i < 10; i++) await Promise.resolve();
 
     expect(mount).not.toHaveBeenCalled();
-    expect(
-      window.getComputedStyle(document.querySelector(".message")!).display,
-    ).not.toBe("none");
+    expect(window.getComputedStyle(document.querySelector(".message")!).display).not.toBe("none");
   },
 );

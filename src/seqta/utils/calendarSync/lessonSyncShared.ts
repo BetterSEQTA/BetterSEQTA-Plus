@@ -218,10 +218,7 @@ export function formatLessonSyncResultMessage(
   return `${calendarLabel} updated (${parts.join(", ")}).`;
 }
 
-export function buildDeleteSyncResult(
-  deleted: number,
-  failed: number,
-): GoogleCalendarDeleteResult {
+export function buildDeleteSyncResult(deleted: number, failed: number): GoogleCalendarDeleteResult {
   return {
     success: failed === 0,
     configured: true,

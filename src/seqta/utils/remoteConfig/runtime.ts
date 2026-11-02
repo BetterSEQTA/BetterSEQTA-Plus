@@ -25,10 +25,7 @@ import {
 } from "./apply";
 import { scheduleReconcileRemoteTheme } from "./remoteTheme";
 
-export {
-  dismissOptionalRemoteTheme,
-  resolveEffectiveRemoteTheme,
-} from "./remoteTheme";
+export { dismissOptionalRemoteTheme, resolveEffectiveRemoteTheme } from "./remoteTheme";
 
 let snapshot: RemoteConfigSnapshot = normalizeRemoteConfigSnapshot(null);
 let localOverride = false;
@@ -190,8 +187,7 @@ export function checkRemoteFeature(key: string) {
 }
 
 export function isRemoteSettingsSectionVisible(sectionId: string): boolean {
-  const key =
-    sectionId === "account" ? "settings.nav.cloud" : `settings.section.${sectionId}`;
+  const key = sectionId === "account" ? "settings.nav.cloud" : `settings.section.${sectionId}`;
   return !checkRemoteFeature(key).hide;
 }
 
@@ -249,9 +245,7 @@ export async function ensureKilledModeSettingsAccess(): Promise<void> {
   }
 
   const fallback =
-    document.getElementById("content") ??
-    document.getElementById("container") ??
-    document.body;
+    document.getElementById("content") ?? document.getElementById("container") ?? document.body;
 
   const mountParent = async (): Promise<Element> => {
     if (isSeqtaEngageExperience()) {

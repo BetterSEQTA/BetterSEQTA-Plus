@@ -45,9 +45,7 @@ function generateMockUserCode(): string {
 function getRandomDate(): Date {
   const start = new Date();
   const end = new Date(start.getTime() + 60 * 24 * 60 * 60 * 1000); // 60 days from now
-  return new Date(
-    start.getTime() + Math.random() * (end.getTime() - start.getTime()),
-  );
+  return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 }
 
 const contentConfig: ContentConfig = {
@@ -155,8 +153,7 @@ const contentConfig: ContentConfig = {
   },
 
   messageRecipients: {
-    selector:
-      '[class*="MessageList__recipients___"] [class*="MessageList__value___"]',
+    selector: '[class*="MessageList__recipients___"] [class*="MessageList__value___"]',
     action: (element) => {
       element.textContent = getRandomElement(mockData.messages.recipients);
     },
@@ -177,9 +174,7 @@ const contentConfig: ContentConfig = {
     action: (element) => {
       if (element instanceof HTMLElement) {
         element.style.removeProperty("background-image");
-        element.firstChild!.firstChild!.textContent = getRandomElement(
-          mockData.names,
-        )[0];
+        element.firstChild!.firstChild!.textContent = getRandomElement(mockData.names)[0];
       }
     },
   },
@@ -508,7 +503,7 @@ const mockData = {
   noticesData: [
     {
       id: 1,
-      title: "Academic Lunch Support", 
+      title: "Academic Lunch Support",
       contents: `The following table shows the names of the students who are required to attend at the beginning of lunchtime on the respective days.<br>
 &nbsp;
 <table>
@@ -554,7 +549,7 @@ const mockData = {
       staff: "Mrs Jones",
       colour: "#9c27b0",
       label: 1,
-      label_title: "Middle & Senior School (5-12)"
+      label_title: "Middle & Senior School (5-12)",
     },
     {
       id: 2,
@@ -570,7 +565,7 @@ Students are expected to bring all necessary materials and maintain academic foc
       staff: "Mr. David Chen",
       colour: "#2196f3",
       label: 2,
-      label_title: "Year 12 Students"
+      label_title: "Year 12 Students",
     },
     {
       id: 3,
@@ -606,7 +601,7 @@ Students are expected to bring all necessary materials and maintain academic foc
       staff: "Dr. Sarah Mitchell",
       colour: "#4caf50",
       label: 3,
-      label_title: "Science Students"
+      label_title: "Science Students",
     },
     {
       id: 4,
@@ -626,7 +621,7 @@ For assistance with any digital resources, please contact the library staff duri
       staff: "Ms. Rebecca Torres",
       colour: "#ff9800",
       label: 4,
-      label_title: "All Students"
+      label_title: "All Students",
     },
     {
       id: 5,
@@ -665,26 +660,85 @@ Register through the PE department or see your house captains for more informati
       staff: "Coach Michael Park",
       colour: "#e91e63",
       label: 5,
-      label_title: "All Houses"
-    }
-  ]
+      label_title: "All Houses",
+    },
+  ],
 };
 
 /** Mock day schedule for home timetable: care 8:30–8:55, then 7 lessons 8:55–3:15 (45m each), 20m recess, lunch. */
 function getMockDaySchedule(): string {
   const blocks: { title: string; teacher: string; room: string; from: string; until: string }[] = [
-    { title: "Care Group", teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "8:30am", until: "8:55am" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "8:55am", until: "9:40am" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "9:40am", until: "10:25am" },
+    {
+      title: "Care Group",
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "8:30am",
+      until: "8:55am",
+    },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "8:55am",
+      until: "9:40am",
+    },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "9:40am",
+      until: "10:25am",
+    },
     { title: "Recess", teacher: "—", room: "—", from: "10:25am", until: "10:45am" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "10:45am", until: "11:30am" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "11:30am", until: "12:15pm" },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "10:45am",
+      until: "11:30am",
+    },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "11:30am",
+      until: "12:15pm",
+    },
     { title: "Lunch", teacher: "—", room: "—", from: "12:15pm", until: "1:00pm" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "1:00pm", until: "1:45pm" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "1:45pm", until: "2:30pm" },
-    { title: getRandomElement(mockData.subjects), teacher: getRandomElement(mockData.teachers), room: getRandomElement(mockData.classrooms), from: "2:30pm", until: "3:15pm" },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "1:00pm",
+      until: "1:45pm",
+    },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "1:45pm",
+      until: "2:30pm",
+    },
+    {
+      title: getRandomElement(mockData.subjects),
+      teacher: getRandomElement(mockData.teachers),
+      room: getRandomElement(mockData.classrooms),
+      from: "2:30pm",
+      until: "3:15pm",
+    },
   ];
-  const colours = ["#8e8e8e", "#4FBBFE", "#59F675", "#fa915d", "#9c27b0", "#2196f3", "#4caf50", "#ff9800", "#e91e63", "#673ab7"];
+  const colours = [
+    "#8e8e8e",
+    "#4FBBFE",
+    "#59F675",
+    "#fa915d",
+    "#9c27b0",
+    "#2196f3",
+    "#4caf50",
+    "#ff9800",
+    "#e91e63",
+    "#673ab7",
+  ];
   return blocks
     .map(
       (b, i) =>
@@ -701,7 +755,7 @@ function getMockDaySchedule(): string {
 
 export function getMockNotices() {
   return {
-    payload: mockData.noticesData
+    payload: mockData.noticesData,
   };
 }
 
@@ -713,18 +767,16 @@ export function getMockGradeAnalyticsData() {
       return pct != null;
     })
     .map(
-      (
-        a: {
-          id: number;
-          title: string;
-          code: string;
-          due: string;
-          percentage?: number;
-          results?: { percentage?: number };
-          programmeID: number;
-          metaclassID: number;
-        },
-      ) => {
+      (a: {
+        id: number;
+        title: string;
+        code: string;
+        due: string;
+        percentage?: number;
+        results?: { percentage?: number };
+        programmeID: number;
+        metaclassID: number;
+      }) => {
         const finalGrade = a.percentage ?? a.results?.percentage ?? 0;
         return {
           id: a.id,
@@ -744,8 +796,7 @@ export function getMockGradeAnalyticsData() {
           reflectionsCompleted: false,
           availability: "",
           finalGrade,
-          letterGrade:
-            finalGrade >= 85 ? "A" : finalGrade >= 70 ? "B" : "C",
+          letterGrade: finalGrade >= 85 ? "A" : finalGrade >= 70 ? "B" : "C",
         };
       },
     );
@@ -766,25 +817,37 @@ export function getMockAssessmentsData() {
 
   const statusTemplates = [
     // Marked with scores (70-90%) - goes to MARKS_RELEASED
-    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -30) - 7 }, // Past due, marked with score
-    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -14) - 1 }, // Recently marked with score
-    { submitted: true, score: () => Math.floor(Math.random() * 21) + 70, dayOffset: () => Math.floor(Math.random() * -7) }, // Very recently marked with score
-    
+    {
+      submitted: true,
+      score: () => Math.floor(Math.random() * 21) + 70,
+      dayOffset: () => Math.floor(Math.random() * -30) - 7,
+    }, // Past due, marked with score
+    {
+      submitted: true,
+      score: () => Math.floor(Math.random() * 21) + 70,
+      dayOffset: () => Math.floor(Math.random() * -14) - 1,
+    }, // Recently marked with score
+    {
+      submitted: true,
+      score: () => Math.floor(Math.random() * 21) + 70,
+      dayOffset: () => Math.floor(Math.random() * -7),
+    }, // Very recently marked with score
+
     // Submitted but unmarked - goes to SUBMITTED
     { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -5) - 1 }, // Recently submitted, awaiting marking
     { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -3) }, // Very recently submitted, awaiting marking
     { submitted: true, score: null, dayOffset: () => Math.floor(Math.random() * -2) }, // Just submitted, awaiting marking
-    
+
     // Due soon (not submitted) - only a couple
     { submitted: false, score: null, dayOffset: () => 0 }, // Due today
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 3) + 2 }, // Due in next few days
-    
+
     // Due later (not submitted) - most assessments
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 7) + 8 }, // Due in 1-2 weeks
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 14) + 14 }, // Due in 2-4 weeks
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 21) + 21 }, // Due in 3-6 weeks
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * 14) + 35 }, // Due in 5-7 weeks
-    
+
     // Few overdue (not submitted) - less common
     { submitted: false, score: null, dayOffset: () => Math.floor(Math.random() * -3) - 1 }, // Recently overdue
   ];
@@ -796,7 +859,7 @@ export function getMockAssessmentsData() {
     const due = new Date();
     due.setDate(due.getDate() + template.dayOffset());
     if (i >= 10) due.setFullYear(currentYear - 1);
-    
+
     const types = ["Assignment", "Test", "Exam", "Project", "Presentation", "Report"];
     const assessment: any = {
       id: i + 1,
@@ -809,10 +872,10 @@ export function getMockAssessmentsData() {
       type: types[i % types.length],
     };
 
-    if (template.score && typeof template.score === 'function') {
+    if (template.score && typeof template.score === "function") {
       assessment.percentage = template.score(); // This triggers MARKS_RELEASED
       assessment.results = {
-        percentage: template.score() // This displays the thermometer
+        percentage: template.score(), // This displays the thermometer
       };
     }
 
@@ -852,17 +915,20 @@ export default function hideSensitiveContent() {
       if (suppressMockMutations) return;
 
       let shouldProcess = false;
-      
+
       mutations.forEach((mutation) => {
         // Check for both childList and subtree changes
-        if (mutation.type === 'childList') {
+        if (mutation.type === "childList") {
           if (mutation.addedNodes.length > 0) {
             mutation.addedNodes.forEach((node) => {
               if (node.nodeType === Node.ELEMENT_NODE) {
                 const element = node as Element;
                 // Check if the added element or its children match any of our selectors
                 for (const config of Object.values(contentConfig)) {
-                  if (element.matches?.(config.selector) || element.querySelector?.(config.selector)) {
+                  if (
+                    element.matches?.(config.selector) ||
+                    element.querySelector?.(config.selector)
+                  ) {
                     shouldProcess = true;
                     break;
                   }
@@ -870,7 +936,7 @@ export default function hideSensitiveContent() {
               }
             });
           }
-          
+
           // Large DOM replacements (e.g. page navigation). Skip only when #day-container gains many *mock* rows (our inject).
           if (mutation.addedNodes.length > 5 || mutation.removedNodes.length > 5) {
             const target = mutation.target as Element;
@@ -878,10 +944,7 @@ export default function hideSensitiveContent() {
               for (const node of mutation.addedNodes) {
                 if (node.nodeType === Node.ELEMENT_NODE) {
                   const el = node as Element;
-                  if (
-                    el.classList?.contains("day") &&
-                    !el.hasAttribute(MOCK_DAY_ATTR)
-                  ) {
+                  if (el.classList?.contains("day") && !el.hasAttribute(MOCK_DAY_ATTR)) {
                     shouldProcess = true;
                     break;
                   }
@@ -892,9 +955,9 @@ export default function hideSensitiveContent() {
             }
           }
         }
-        
+
         // Check for attribute changes that might affect our selectors
-        if (mutation.type === 'attributes') {
+        if (mutation.type === "attributes") {
           const target = mutation.target as Element;
           for (const config of Object.values(contentConfig)) {
             if (target.matches?.(config.selector)) {
@@ -915,7 +978,7 @@ export default function hideSensitiveContent() {
       childList: true,
       subtree: true,
       attributes: true,
-      attributeFilter: ['class', 'id'] // Watch for class/id changes that might affect our selectors
+      attributeFilter: ["class", "id"], // Watch for class/id changes that might affect our selectors
     });
   }
 }

@@ -6,18 +6,14 @@ import type { Action } from "svelte/action";
  * is rendered inside a shadow DOM. Falls back to document.body otherwise.
  * Pass `document.body` to escape transformed/contained settings popups entirely.
  */
-export const portal: Action<HTMLElement, HTMLElement | ShadowRoot | undefined> = (
-  node,
-  target,
-) => {
+export const portal: Action<HTMLElement, HTMLElement | ShadowRoot | undefined> = (node, target) => {
   const root = node.getRootNode();
   const dest = target ?? (root instanceof ShadowRoot ? root : document.body);
   dest.appendChild(node);
 
   return {
     update(newTarget) {
-      const nextDest =
-        newTarget ?? (root instanceof ShadowRoot ? root : document.body);
+      const nextDest = newTarget ?? (root instanceof ShadowRoot ? root : document.body);
       nextDest.appendChild(node);
     },
     destroy() {

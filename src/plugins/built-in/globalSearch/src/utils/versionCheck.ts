@@ -62,7 +62,9 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
 
   try {
     await resetSearchIndexes();
-    verboseLog("[Version Check] Search index reset; next indexing pass will repopulate from scratch.");
+    verboseLog(
+      "[Version Check] Search index reset; next indexing pass will repopulate from scratch.",
+    );
   } catch (e) {
     console.warn("[Version Check] resetSearchIndexes failed:", e);
   }
@@ -89,7 +91,8 @@ export async function clearAllCaches(): Promise<void> {
         const { clearEmbeddingCache } = await import("../search/vector/vectorSearch");
         clearEmbeddingCache();
       } catch (e) {
-        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear embedding cache:", e);
+        if (!isAssetLoadError(e))
+          verboseDebug("[Version Check] Could not clear embedding cache:", e);
       }
     }, 50);
 

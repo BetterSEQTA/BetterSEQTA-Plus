@@ -160,10 +160,7 @@ function openMediaOverlayViewer(source: HTMLImageElement | HTMLVideoElement) {
   });
 }
 
-export function attachPopupMediaFullscreenIfPresent(
-  root: ParentNode,
-  selector: string,
-) {
+export function attachPopupMediaFullscreenIfPresent(root: ParentNode, selector: string) {
   const el = root.querySelector(selector);
   if (el && isImageOrVideo(el)) {
     attachPopupMediaFullscreen(el);

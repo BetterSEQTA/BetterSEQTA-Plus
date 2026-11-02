@@ -1,6 +1,6 @@
 import type { IndexItem, Job } from "../types";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 const fetchSubjects = async () => {
   const res = await fetch(`${location.origin}/seqta/student/load/subjects`, {
     method: "POST",
@@ -32,14 +32,12 @@ export const subjectsJob: Job = {
     } else {
       score -= 50; // Penalty for inactive subjects
     }
-    
+
     return score;
   },
 
   run: async (ctx) => {
-    const existingIds = new Set(
-      (await ctx.getStoredItems("subjects")).map((i) => i.id),
-    );
+    const existingIds = new Set((await ctx.getStoredItems("subjects")).map((i) => i.id));
 
     let list;
     try {
@@ -96,12 +94,12 @@ export const subjectsJob: Job = {
             semesterCode: semester.code,
             semesterDescription: semester.description,
             type: "assessments",
-            isActive
+            isActive,
           },
           actionId: "subjectassessment",
           renderComponentId: "subject",
         };
-        
+
         const courseItem = {
           id: `${id}-course`,
           text: `${subject.title}`,
@@ -116,16 +114,13 @@ export const subjectsJob: Job = {
             semesterCode: semester.code,
             semesterDescription: semester.description,
             type: "course",
-            isActive
+            isActive,
           },
           actionId: "subjectcourse",
           renderComponentId: "subject",
         };
 
-        items.push(
-          assessmentsItem,
-          courseItem
-        );
+        items.push(assessmentsItem, courseItem);
       }
     }
 

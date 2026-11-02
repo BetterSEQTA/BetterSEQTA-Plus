@@ -87,17 +87,12 @@ export function assessmentBelongsToActiveSubjects(
 ): boolean {
   if (!activeSubjects.length) return false;
 
-  const programme = Number(
-    assessment.programmeID ?? assessment.programme,
-  );
-  const metaclass = Number(
-    assessment.metaclassID ?? assessment.metaclass,
-  );
+  const programme = Number(assessment.programmeID ?? assessment.programme);
+  const metaclass = Number(assessment.metaclassID ?? assessment.metaclass);
 
   if (programme && metaclass && !Number.isNaN(programme) && !Number.isNaN(metaclass)) {
     return activeSubjects.some(
-      (subject) =>
-        subject.programme === programme && subject.metaclass === metaclass,
+      (subject) => subject.programme === programme && subject.metaclass === metaclass,
     );
   }
 
@@ -110,19 +105,10 @@ export function activeSubjectForAssessment(
   assessment: Record<string, unknown>,
   activeSubjects: OverviewSubject[],
 ): OverviewSubject | undefined {
-  const programme = Number(
-    assessment.programmeID ?? assessment.programme,
-  );
-  const metaclass = Number(
-    assessment.metaclassID ?? assessment.metaclass,
-  );
+  const programme = Number(assessment.programmeID ?? assessment.programme);
+  const metaclass = Number(assessment.metaclassID ?? assessment.metaclass);
 
-  if (
-    programme &&
-    metaclass &&
-    !Number.isNaN(programme) &&
-    !Number.isNaN(metaclass)
-  ) {
+  if (programme && metaclass && !Number.isNaN(programme) && !Number.isNaN(metaclass)) {
     const subject = activeSubjects.find(
       (s) => s.programme === programme && s.metaclass === metaclass,
     );
@@ -236,10 +222,7 @@ export function determineStatus(item: any, completed: readonly unknown[]): strin
 }
 
 export function getGradeValue(assessment: any): number | null {
-  if (
-    assessment.results?.percentage !== undefined &&
-    assessment.results.percentage !== null
-  ) {
+  if (assessment.results?.percentage !== undefined && assessment.results.percentage !== null) {
     return assessment.results.percentage;
   }
 

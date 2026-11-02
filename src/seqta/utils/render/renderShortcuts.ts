@@ -19,8 +19,11 @@ export function renderShortcuts() {
     try {
       CreateCustomShortcutDiv(element);
     } catch (err: any) {
-      console.error("[BetterSEQTA+] Error adding custom shortcut:", element?.name, err?.message || err);
+      console.error(
+        "[BetterSEQTA+] Error adding custom shortcut:",
+        element?.name,
+        err?.message || err,
+      );
     }
   }
 }
-

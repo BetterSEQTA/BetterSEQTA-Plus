@@ -152,9 +152,7 @@ function parseRubricTable(rubric: Element): RubricTableData | null {
   lines.forEach((line) => {
     const meta = line.querySelector("[class*='Rubric__meta___']");
     const label = cellText(meta?.querySelector("[class*='Rubric__label___']"));
-    const criterion = cellText(
-      meta?.querySelector("[class*='Rubric__description___']"),
-    );
+    const criterion = cellText(meta?.querySelector("[class*='Rubric__description___']"));
 
     const row: RubricCell[] = [
       { text: label, selected: false },
@@ -162,9 +160,7 @@ function parseRubricTable(rubric: Element): RubricTableData | null {
     ];
 
     line.querySelectorAll("[class*='Rubric__descriptor___']").forEach((descriptor) => {
-      const text = cellText(
-        descriptor.querySelector("[class*='Rubric__description___']"),
-      );
+      const text = cellText(descriptor.querySelector("[class*='Rubric__description___']"));
       const selected = Array.from(descriptor.classList).some((cls) =>
         cls.startsWith("Rubric__selected___"),
       );
@@ -198,10 +194,9 @@ function rubricToPlainText(table: RubricTableData): string {
   const formatCell = (cell: RubricCell) =>
     cell.selected && cell.text ? `${cell.text} (selected)` : cell.text;
 
-  return [
-    table.header.join("\t"),
-    ...table.rows.map((row) => row.map(formatCell).join("\t")),
-  ].join("\n");
+  return [table.header.join("\t"), ...table.rows.map((row) => row.map(formatCell).join("\t"))].join(
+    "\n",
+  );
 }
 
 const RUBRIC_PASTE_FONT_PT = 7;
@@ -222,16 +217,12 @@ function rubricPasteCellContent(text: string): string {
 
 function rubricToHtmlTable(table: RubricTableData): string {
   const baseFont = rubricPasteFontStyle();
-  const cellStyle =
-    `border:1px solid #000000;border-collapse:collapse;padding:4px;vertical-align:top;${baseFont}`;
+  const cellStyle = `border:1px solid #000000;border-collapse:collapse;padding:4px;vertical-align:top;${baseFont}`;
   const headerStyle = `${cellStyle}background:#f3f4f6;font-weight:700;`;
   const selectedStyle = `${cellStyle}background:#dbeafe;font-weight:600;`;
 
   const headerRow = table.header
-    .map(
-      (heading) =>
-        `<th style="${headerStyle}">${rubricPasteCellContent(heading)}</th>`,
-    )
+    .map((heading) => `<th style="${headerStyle}">${rubricPasteCellContent(heading)}</th>`)
     .join("");
 
   const bodyRows = table.rows
@@ -258,7 +249,7 @@ function rubricToHtmlDocument(table: RubricTableData): string {
   return [
     "<!DOCTYPE html>",
     "<html>",
-    "<head><meta charset=\"utf-8\"></head>",
+    '<head><meta charset="utf-8"></head>',
     `<body style="${rubricPasteFontStyle()}">`,
     rubricToHtmlTable(table),
     "</body>",
@@ -348,8 +339,7 @@ function watchRubrics(root: ParentNode) {
 }
 
 export function injectRubricCopyButtons() {
-  const root =
-    document.querySelector("[class*='SelectedAssessment__']") ?? document;
+  const root = document.querySelector("[class*='SelectedAssessment__']") ?? document;
   watchRubrics(root);
 }
 

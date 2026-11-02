@@ -177,7 +177,7 @@ export const unitFullNames: Record<string, string> = {
 
   // --- Currency ---
   USD: "US Dollars",
-  EUR: "Euros", 
+  EUR: "Euros",
   GBP: "British Pounds",
   AUD: "Australian Dollars",
   CAD: "Canadian Dollars",
@@ -193,7 +193,7 @@ export const unitFullNames: Record<string, string> = {
   KRW: "South Korean Won",
   MXN: "Mexican Peso",
   BRL: "Brazilian Real",
-  RUB: "Russian Ruble", 
+  RUB: "Russian Ruble",
   TRY: "Turkish Lira",
   ZAR: "South African Rand",
   PLN: "Polish Zloty",
@@ -205,7 +205,7 @@ export const unitFullNames: Record<string, string> = {
   PHP: "Philippine Peso",
   TWD: "Taiwan Dollar",
   MYR: "Malaysian Ringgit",
-  
+
   // --- Cryptocurrencies ---
   BTC: "Bitcoin",
   ETH: "Ethereum",

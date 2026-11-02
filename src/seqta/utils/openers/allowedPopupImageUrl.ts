@@ -10,14 +10,9 @@ export function allowedPopupImageUrl(url: string | null | undefined): string | n
     const parsed = new URL(trimmed);
     if (parsed.protocol === "https:") return parsed.href;
 
-    if (
-      parsed.protocol === "chrome-extension:" ||
-      parsed.protocol === "moz-extension:"
-    ) {
+    if (parsed.protocol === "chrome-extension:" || parsed.protocol === "moz-extension:") {
       const extId =
-        typeof chrome !== "undefined" && chrome.runtime?.id
-          ? chrome.runtime.id
-          : undefined;
+        typeof chrome !== "undefined" && chrome.runtime?.id ? chrome.runtime.id : undefined;
       if (extId && parsed.hostname === extId) return parsed.href;
     }
 

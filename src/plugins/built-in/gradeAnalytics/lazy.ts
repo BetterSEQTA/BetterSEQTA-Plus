@@ -21,8 +21,7 @@ const settings = defineSettings({
 const gradeAnalyticsPlugin: Plugin<typeof settings> = {
   id: "grade-analytics",
   name: "Grade Analytics",
-  description:
-    "Grade trends, distribution charts, and assessment history synced from SEQTA",
+  description: "Grade trends, distribution charts, and assessment history synced from SEQTA",
   version: "1.0.0",
   settings,
   disableToggle: true,

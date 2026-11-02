@@ -68,12 +68,12 @@ Cloud settings sync is a **whole-snapshot backup** of extension local storage:
 
 ### When upload runs
 
-| Trigger | Behaviour |
-|---------|-----------|
-| Any **included** `chrome.storage.local` key changes | Debounced upload after **2000 ms** (`UPLOAD_DEBOUNCE_MS`) |
-| Manual upload (settings UI) | Immediate `PUT` |
-| First poll with no cloud backup and no local watermark | Baseline upload |
-| `requestCloudSettingsDebouncedUpload()` | Same debounced path (e.g. after theme install) |
+| Trigger                                                | Behaviour                                                 |
+| ------------------------------------------------------ | --------------------------------------------------------- |
+| Any **included** `chrome.storage.local` key changes    | Debounced upload after **2000 ms** (`UPLOAD_DEBOUNCE_MS`) |
+| Manual upload (settings UI)                            | Immediate `PUT`                                           |
+| First poll with no cloud backup and no local watermark | Baseline upload                                           |
+| `requestCloudSettingsDebouncedUpload()`                | Same debounced path (e.g. after theme install)            |
 
 Upload is skipped when:
 
@@ -83,11 +83,11 @@ Upload is skipped when:
 
 ### When download runs
 
-| Trigger | Behaviour |
-|---------|-----------|
-| Manual restore (settings UI) | `GET` → `applyDownloadedEnvelope` → theme prefetch → reload SEQTA tabs |
-| Auto poll | If `bsplus.updated_at` from `GET /api/user/cloud-summary` is newer than local watermark |
-| First poll with cloud backup but no watermark | Full download |
+| Trigger                                       | Behaviour                                                                               |
+| --------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Manual restore (settings UI)                  | `GET` → `applyDownloadedEnvelope` → theme prefetch → reload SEQTA tabs                  |
+| Auto poll                                     | If `bsplus.updated_at` from `GET /api/user/cloud-summary` is newer than local watermark |
+| First poll with cloud backup but no watermark | Full download                                                                           |
 
 Download is skipped when server `schemaVersion` > client `CLOUD_SETTINGS_SYNC_SCHEMA_VERSION` (currently `1`).
 
@@ -112,13 +112,13 @@ After download, if `themeId` / `selectedTheme` is non-empty, the service worker 
 
 `ensureSyncableStorageDefaults()` (`src/seqta/utils/ensureSyncableStorageDefaults.ts`) ensures every **cloud-syncable** key exists in `chrome.storage.local` with its default value if it was previously absent. This runs **locally only** so diffs against the last-uploaded snapshot (or schema defaults) are consistent. The PUT body is a **sparse patch** of changed keys only — defaults are not bulk-uploaded.
 
-| When it runs | Context |
-|--------------|---------|
-| `browser.runtime.onInstalled` | Service worker (install + update) |
-| `browser.runtime.onStartup` | Service worker |
-| Service worker load | `background.ts` (once at startup) |
-| `initializeSettingsState()` | SEQTA content script + extension settings page (first init) |
-| Before each cloud upload | `putSettingsOnce()` in `cloudSettingsAutoSync.ts` |
+| When it runs                  | Context                                                     |
+| ----------------------------- | ----------------------------------------------------------- |
+| `browser.runtime.onInstalled` | Service worker (install + update)                           |
+| `browser.runtime.onStartup`   | Service worker                                              |
+| Service worker load           | `background.ts` (once at startup)                           |
+| `initializeSettingsState()`   | SEQTA content script + extension settings page (first init) |
+| Before each cloud upload      | `putSettingsOnce()` in `cloudSettingsAutoSync.ts`           |
 
 Rules:
 
@@ -155,11 +155,11 @@ Content-Type: application/json
 
 Only keys that changed since the last successful upload appear in `data`. The server merges this patch into stored JSON; omitted keys are not deleted. Dev JSON export (`getSnapshotForUpload`) still returns the full normalized map for debugging.
 
-| Top-level field | JSON type | Rules |
-|-----------------|-----------|-------|
-| `schemaVersion` | `number` | Always `1` today (`CLOUD_SETTINGS_SYNC_SCHEMA_VERSION`) |
-| `themeId` | `string` | `normalizeThemeIdForSync(selectedTheme)` — trimmed; `""` if unset/invalid |
-| `data` | `object` | Flat map: storage key → value. Same types as `chrome.storage.local`. No nesting convention beyond whatever each key stores. |
+| Top-level field | JSON type | Rules                                                                                                                       |
+| --------------- | --------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `schemaVersion` | `number`  | Always `1` today (`CLOUD_SETTINGS_SYNC_SCHEMA_VERSION`)                                                                     |
+| `themeId`       | `string`  | `normalizeThemeIdForSync(selectedTheme)` — trimmed; `""` if unset/invalid                                                   |
+| `data`          | `object`  | Flat map: storage key → value. Same types as `chrome.storage.local`. No nesting convention beyond whatever each key stores. |
 
 ### `GET /api/bsplus/settings/sync` response
 
@@ -169,7 +169,7 @@ Same shape as the PUT body, plus optional:
 {
   "schemaVersion": 1,
   "themeId": "…",
-  "data": { },
+  "data": {},
   "updated_at": "2026-04-07T12:00:00.000Z"
 }
 ```
@@ -191,12 +191,12 @@ Same shape as the PUT body, plus optional:
 
 Every persisted setting is a **top-level key** in `chrome.storage.local`:
 
-| Pattern | Example | Value shape |
-|---------|---------|---------------|
-| Core setting | `DarkMode` | scalar or structured JSON |
-| Plugin settings | `plugin.global-search.settings` | single JSON **object** with all plugin prefs |
-| Plugin storage | `plugin.messageFolders.storage.folders` | one JSON value per property |
-| Analytics cache | `bsplus.analytics.v2.https://school.seqta.com.au.12345` | structured cache (excluded) |
+| Pattern         | Example                                                 | Value shape                                  |
+| --------------- | ------------------------------------------------------- | -------------------------------------------- |
+| Core setting    | `DarkMode`                                              | scalar or structured JSON                    |
+| Plugin settings | `plugin.global-search.settings`                         | single JSON **object** with all plugin prefs |
+| Plugin storage  | `plugin.messageFolders.storage.folders`                 | one JSON value per property                  |
+| Analytics cache | `bsplus.analytics.v2.https://school.seqta.com.au.12345` | structured cache (excluded)                  |
 
 Plugin settings use `plugin.{pluginId}.settings` where `pluginId` matches the plugin registration id (e.g. `messageFolders`, not `message-folders`).
 
@@ -204,11 +204,11 @@ Plugin runtime storage uses `plugin.{pluginId}.storage.{propertyName}` — each 
 
 ### Settings vs storage
 
-| Mechanism | API | Persisted keys | Synced? |
-|-----------|-----|----------------|---------|
-| `settingsState` / `SettingsState` | Proxy over in-memory + `storage.local` | Top-level keys (`onoff`, `menuitems`, …) | Yes (unless excluded) |
-| Plugin `api.settings` | Proxy; one object per plugin | `plugin.{id}.settings` | Yes |
-| Plugin `api.storage` | Proxy; one key per property | `plugin.{id}.storage.{prop}` | Yes, except excluded prefixes |
+| Mechanism                         | API                                    | Persisted keys                           | Synced?                       |
+| --------------------------------- | -------------------------------------- | ---------------------------------------- | ----------------------------- |
+| `settingsState` / `SettingsState` | Proxy over in-memory + `storage.local` | Top-level keys (`onoff`, `menuitems`, …) | Yes (unless excluded)         |
+| Plugin `api.settings`             | Proxy; one object per plugin           | `plugin.{id}.settings`                   | Yes                           |
+| Plugin `api.storage`              | Proxy; one key per property            | `plugin.{id}.storage.{prop}`             | Yes, except excluded prefixes |
 
 Component/button plugin settings (`type: "component"` | `"button"`) are **not** written by the settings proxy loop; only scalar settings defined in `plugin.settings` are persisted automatically. The settings UI may still write `enabled` and other keys via `browser.storage.local.set` directly.
 
@@ -220,20 +220,20 @@ Implemented in `shouldOmitKeyFromCloudPayload(key)`:
 
 ### Exact key exclusions
 
-| Key | Format if present locally | On restore |
-|-----|---------------------------|------------|
-| `bsplus_token` | `string` JWT | Keep device value |
-| `bsplus_refresh_token` | `string` | Keep device value |
-| `bsplus_client_id` | `string` UUID | Keep device value |
-| `bsplus_user` | `CloudUser` object (see below) | Keep device value |
-| `cloudAccessToken` | `string` (legacy) | Keep device value |
-| `cloudUsername` | `string` (legacy) | Keep device value |
-| `plugin.assessments-average.storage.assessments` | object | Keep device value |
-| `plugin.assessments-average.storage.weightings` | object | Keep device value |
-| `bsplus_cloud_settings_known_remote_updated_at` | ISO `string` | Keep device value |
-| `bsplus_cloud_settings_last_uploaded_snapshot` | `object` (normalized syncable map) | Keep device value |
-| `bsplus_lastCloudPoll` | `number` (ms) | Keep device value |
-| `bsplus_pending_theme_ensure_after_cloud` | `string` (theme id) | Keep device value |
+| Key                                              | Format if present locally          | On restore        |
+| ------------------------------------------------ | ---------------------------------- | ----------------- |
+| `bsplus_token`                                   | `string` JWT                       | Keep device value |
+| `bsplus_refresh_token`                           | `string`                           | Keep device value |
+| `bsplus_client_id`                               | `string` UUID                      | Keep device value |
+| `bsplus_user`                                    | `CloudUser` object (see below)     | Keep device value |
+| `cloudAccessToken`                               | `string` (legacy)                  | Keep device value |
+| `cloudUsername`                                  | `string` (legacy)                  | Keep device value |
+| `plugin.assessments-average.storage.assessments` | object                             | Keep device value |
+| `plugin.assessments-average.storage.weightings`  | object                             | Keep device value |
+| `bsplus_cloud_settings_known_remote_updated_at`  | ISO `string`                       | Keep device value |
+| `bsplus_cloud_settings_last_uploaded_snapshot`   | `object` (normalized syncable map) | Keep device value |
+| `bsplus_lastCloudPoll`                           | `number` (ms)                      | Keep device value |
+| `bsplus_pending_theme_ensure_after_cloud`        | `string` (theme id)                | Keep device value |
 
 #### `bsplus_user` shape (local only, never uploaded)
 
@@ -244,7 +244,7 @@ Implemented in `shouldOmitKeyFromCloudPayload(key)`:
   "username": "optional",
   "displayName": "optional",
   "pfpUrl": "https://…",
-  "pfpHash": "abc123" ,
+  "pfpHash": "abc123",
   "admin_level": 0
 }
 ```
@@ -253,10 +253,10 @@ All fields except `id` are optional.
 
 ### Prefix exclusions
 
-| Prefix | Matches |
-|--------|---------|
-| `plugin.global-search.storage.` | Any Global Search device cache key |
-| `bsplus.analytics.` | Grade Analytics caches and chart mode prefs |
+| Prefix                          | Matches                                     |
+| ------------------------------- | ------------------------------------------- |
+| `plugin.global-search.storage.` | Any Global Search device cache key          |
+| `bsplus.analytics.`             | Grade Analytics caches and chart mode prefs |
 
 Prefix check: `key.startsWith(prefix)`.
 
@@ -266,13 +266,13 @@ Prefix check: `key.startsWith(prefix)`.
 
 Runs in `migrateLegacyToPluginSettings()` on **both** upload and download. Legacy keys are **removed** from `data` after migration. Migration only fills plugin settings fields that are still `undefined`.
 
-| Legacy key | Legacy format | Target key | Target field | Conversion |
-|------------|---------------|------------|--------------|------------|
-| `animatedbk` | `boolean` | `plugin.animated-background.settings` | `enabled` | `!!animatedbk` |
-| `bksliderinput` | `string` `"0"`–`"100"` | `plugin.animated-background.settings` | `speed` | `speed = round((0.1 + (parseFloat(s) / 100) * 1.9) * 100) / 100` → range **0.1–2.0** |
-| `assessmentsAverage` | `boolean` | `plugin.assessments-average.settings` | `enabled` | `!!assessmentsAverage` |
-| `lettergrade` | `boolean` | `plugin.assessments-average.settings` | `lettergrade` | `!!lettergrade` |
-| `notificationCollector` | `boolean` only | `plugin.notificationCollector.settings` | `enabled` | copy boolean |
+| Legacy key              | Legacy format          | Target key                              | Target field  | Conversion                                                                           |
+| ----------------------- | ---------------------- | --------------------------------------- | ------------- | ------------------------------------------------------------------------------------ |
+| `animatedbk`            | `boolean`              | `plugin.animated-background.settings`   | `enabled`     | `!!animatedbk`                                                                       |
+| `bksliderinput`         | `string` `"0"`–`"100"` | `plugin.animated-background.settings`   | `speed`       | `speed = round((0.1 + (parseFloat(s) / 100) * 1.9) * 100) / 100` → range **0.1–2.0** |
+| `assessmentsAverage`    | `boolean`              | `plugin.assessments-average.settings`   | `enabled`     | `!!assessmentsAverage`                                                               |
+| `lettergrade`           | `boolean`              | `plugin.assessments-average.settings`   | `lettergrade` | `!!lettergrade`                                                                      |
+| `notificationCollector` | `boolean` only         | `plugin.notificationCollector.settings` | `enabled`     | copy boolean                                                                         |
 
 **Example:** legacy `bksliderinput: "50"` → `speed: 1.05` because `0.1 + 0.5 * 1.9 = 1.05`.
 
@@ -288,98 +288,98 @@ Top-level `chrome.storage.local` keys from `SettingsState` (`src/types/storage.t
 
 #### `onoff`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `true` |
-| **UI** | Settings → “BetterSEQTA+” master switch |
-| **Example** | `true` |
+|             |                                         |
+| ----------- | --------------------------------------- |
+| **Type**    | `boolean`                               |
+| **Default** | `true`                                  |
+| **UI**      | Settings → “BetterSEQTA+” master switch |
+| **Example** | `true`                                  |
 
 #### `DarkMode`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `true` |
-| **UI** | SEQTA UI / theme system |
-| **Example** | `true` |
+|             |                         |
+| ----------- | ----------------------- |
+| **Type**    | `boolean`               |
+| **Default** | `true`                  |
+| **UI**      | SEQTA UI / theme system |
+| **Example** | `true`                  |
 
 #### `selectedTheme`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | `""` |
-| **UI** | Theme selector / store install |
-| **Format** | BetterSEQTA store theme UUID, **flavour (slave) variant** id, or empty string for no store theme |
-| **Wire** | Duplicated as top-level `themeId` on upload (trimmed) |
-| **Example** | `"f47ac10b-58cc-4372-a567-0e02b2c3d479"` or `""` |
+|             |                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------ |
+| **Type**    | `string`                                                                                         |
+| **Default** | `""`                                                                                             |
+| **UI**      | Theme selector / store install                                                                   |
+| **Format**  | BetterSEQTA store theme UUID, **flavour (slave) variant** id, or empty string for no store theme |
+| **Wire**    | Duplicated as top-level `themeId` on upload (trimmed)                                            |
+| **Example** | `"f47ac10b-58cc-4372-a567-0e02b2c3d479"` or `""`                                                 |
 
 Theme **asset blobs** (CSS, images) live in **localforage/IndexedDB**, not in this key. After restore, only the id is synced; assets are re-fetched if missing.
 
 #### `selectedColor`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | `"linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)"` |
-| **UI** | Colour picker |
-| **Format** | Any valid CSS `background` value: hex (`#c93d00`), `rgb()`, `rgba()`, `linear-gradient(...)`, etc. |
-| **Example** | `"#c93d00"` or `"linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)"` |
+|             |                                                                                                    |
+| ----------- | -------------------------------------------------------------------------------------------------- |
+| **Type**    | `string`                                                                                           |
+| **Default** | `"linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)"`                          |
+| **UI**      | Colour picker                                                                                      |
+| **Format**  | Any valid CSS `background` value: hex (`#c93d00`), `rgb()`, `rgba()`, `linear-gradient(...)`, etc. |
+| **Example** | `"#c93d00"` or `"linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)"`           |
 
 #### `originalSelectedColor`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | `""` |
+|             |                                                           |
+| ----------- | --------------------------------------------------------- |
+| **Type**    | `string`                                                  |
+| **Default** | `""`                                                      |
 | **Purpose** | Colour before theme preview; restored when clearing theme |
-| **Example** | `"#c93d00"` |
+| **Example** | `"#c93d00"`                                               |
 
 #### `originalDarkMode`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | undefined until theme preview |
+|             |                                |
+| ----------- | ------------------------------ |
+| **Type**    | `boolean`                      |
+| **Default** | undefined until theme preview  |
 | **Purpose** | Dark mode before theme preview |
-| **Example** | `true` |
+| **Example** | `true`                         |
 
 #### `transparencyEffects`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `false` |
-| **UI** | Settings → Transparency Effects |
-| **Example** | `false` |
+|             |                                 |
+| ----------- | ------------------------------- |
+| **Type**    | `boolean`                       |
+| **Default** | `false`                         |
+| **UI**      | Settings → Transparency Effects |
+| **Example** | `false`                         |
 
 #### `animations`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
+|             |                                                                                                 |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| **Type**    | `boolean`                                                                                       |
 | **Default** | `true` on normal devices; `false` if low-end (`hardwareConcurrency < 4` or `deviceMemory <= 2`) |
-| **UI** | Settings → Animations |
-| **Example** | `true` |
+| **UI**      | Settings → Animations                                                                           |
+| **Example** | `true`                                                                                          |
 
 #### `iconOnlySidebar`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `false` |
-| **UI** | Settings → Icon Only Sidebar |
-| **Example** | `false` |
+|             |                              |
+| ----------- | ---------------------------- |
+| **Type**    | `boolean`                    |
+| **Default** | `false`                      |
+| **UI**      | Settings → Icon Only Sidebar |
+| **Example** | `false`                      |
 
 #### `selectedFont`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | undefined → runtime treats as `"rubik"` |
-| **UI** | Settings → Interface Font |
-| **Format** | Font preset id from `src/seqta/ui/fonts/presets.ts` |
+|             |                                                     |
+| ----------- | --------------------------------------------------- |
+| **Type**    | `string`                                            |
+| **Default** | undefined → runtime treats as `"rubik"`             |
+| **UI**      | Settings → Interface Font                           |
+| **Format**  | Font preset id from `src/seqta/ui/fonts/presets.ts` |
 
 Allowed ids:
 
@@ -389,67 +389,67 @@ Allowed ids:
 
 #### `adaptiveThemeColour`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `false` |
-| **Example** | `false` |
+|             |           |
+| ----------- | --------- |
+| **Type**    | `boolean` |
+| **Default** | `false`   |
+| **Example** | `false`   |
 
 #### `adaptiveThemeGradient`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `false` |
-| **Example** | `false` |
+|             |           |
+| ----------- | --------- |
+| **Type**    | `boolean` |
+| **Default** | `false`   |
+| **Example** | `false`   |
 
 #### `adaptiveThemeColourTransition`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `true` |
-| **Example** | `true` |
+|             |           |
+| ----------- | --------- |
+| **Type**    | `boolean` |
+| **Default** | `true`    |
+| **Example** | `true`    |
 
 ### Navigation & layout
 
 #### `defaultPage`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | `"home"` |
-| **UI** | Settings → Default Page |
+|             |                                                                                               |
+| ----------- | --------------------------------------------------------------------------------------------- |
+| **Type**    | `string`                                                                                      |
+| **Default** | `"home"`                                                                                      |
+| **UI**      | Settings → Default Page                                                                       |
 | **Allowed** | `"home"`, `"dashboard"`, `"timetable"`, `"welcome"`, `"messages"`, `"documents"`, `"reports"` |
-| **Example** | `"home"` |
+| **Example** | `"home"`                                                                                      |
 
 #### `timeFormat`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | undefined (24-hour behaviour) |
-| **UI** | Settings → “12 Hour Time” switch |
-| **Values** | `"12"` when enabled; `"24"` when disabled |
-| **Example** | `"12"` |
+|             |                                           |
+| ----------- | ----------------------------------------- |
+| **Type**    | `string`                                  |
+| **Default** | undefined (24-hour behaviour)             |
+| **UI**      | Settings → “12 Hour Time” switch          |
+| **Values**  | `"12"` when enabled; `"24"` when disabled |
+| **Example** | `"12"`                                    |
 
 #### `lessonalert`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `true` |
+|             |                           |
+| ----------- | ------------------------- |
+| **Type**    | `boolean`                 |
+| **Default** | `true`                    |
 | **Purpose** | Lesson alert on home page |
-| **Example** | `true` |
+| **Example** | `true`                    |
 
 #### `menuitems`
 
-| | |
-|-|-|
-| **Type** | `object` |
+|             |                                      |
+| ----------- | ------------------------------------ |
+| **Type**    | `object`                             |
 | **Default** | All sidebar items `{ toggle: true }` |
-| **UI** | Menu editor overlay |
-| **Shape** | `{ [menuKey]: { toggle: boolean } }` |
+| **UI**      | Menu editor overlay                  |
+| **Shape**   | `{ [menuKey]: { toggle: boolean } }` |
 
 Keys (from `SettingsState`):
 
@@ -467,34 +467,34 @@ Keys (from `SettingsState`):
 
 #### `menuorder`
 
-| | |
-|-|-|
-| **Type** | `array` |
-| **Default** | `[]` |
-| **UI** | Menu editor (drag order) |
+|               |                                                                                                                 |
+| ------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Type**      | `array`                                                                                                         |
+| **Default**   | `[]`                                                                                                            |
+| **UI**        | Menu editor (drag order)                                                                                        |
 | **Item type** | `string` — SEQTA menu `data-key` values (e.g. `"home"`, `"timetable"`, `"analytics"` for plugin-injected items) |
-| **Example** | `["home", "timetable", "assessments", "messages"]` |
+| **Example**   | `["home", "timetable", "assessments", "messages"]`                                                              |
 
 #### `defaultmenuorder`
 
-| | |
-|-|-|
-| **Type** | `array` |
-| **Default** | `[]` (populated from DOM on first menu edit) |
+|               |                                                        |
+| ------------- | ------------------------------------------------------ |
+| **Type**      | `array`                                                |
+| **Default**   | `[]` (populated from DOM on first menu edit)           |
 | **Item type** | Same as `menuorder` — snapshot of school default order |
-| **Example** | `["home", "dashboard", "timetable"]` |
+| **Example**   | `["home", "dashboard", "timetable"]`                   |
 
 ### Shortcuts
 
 #### `shortcuts`
 
-| | |
-|-|-|
-| **Type** | `array` |
-| **Default** | Outlook, Office, Google — each `enabled: true` |
-| **UI** | Settings → Shortcuts |
-| **Item shape** | `{ "name": string, "enabled": boolean }` |
-| **Notes** | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"YouTube"`) |
+|                |                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------- |
+| **Type**       | `array`                                                                               |
+| **Default**    | Outlook, Office, Google — each `enabled: true`                                        |
+| **UI**         | Settings → Shortcuts                                                                  |
+| **Item shape** | `{ "name": string, "enabled": boolean }`                                              |
+| **Notes**      | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"YouTube"`) |
 
 **Example:**
 
@@ -508,14 +508,14 @@ Keys (from `SettingsState`):
 
 #### `customshortcuts`
 
-| | |
-|-|-|
-| **Type** | `array` |
-| **Default** | `[]` |
-| **UI** | Settings → Shortcuts → add custom |
-| **Item shape** | `{ "name": string, "url": string, "icon": string }` |
-| **`url`** | Full URL with protocol, e.g. `"https://example.com"` |
-| **`icon`** | Inline **SVG markup string** OR single fallback character (first letter of title) |
+|                |                                                                                   |
+| -------------- | --------------------------------------------------------------------------------- |
+| **Type**       | `array`                                                                           |
+| **Default**    | `[]`                                                                              |
+| **UI**         | Settings → Shortcuts → add custom                                                 |
+| **Item shape** | `{ "name": string, "url": string, "icon": string }`                               |
+| **`url`**      | Full URL with protocol, e.g. `"https://example.com"`                              |
+| **`icon`**     | Inline **SVG markup string** OR single fallback character (first letter of title) |
 
 **Example:**
 
@@ -533,155 +533,155 @@ Keys (from `SettingsState`):
 
 #### `subjectfilters`
 
-| | |
-|-|-|
-| **Type** | `object` |
-| **Default** | `{}` |
-| **UI** | Home / assessments subject filters |
-| **Shape** | `{ [subjectCode: string]: boolean }` — `false` hides subject; missing key = visible |
-| **Example** | `{ "10MAT": false, "10ENG": true }` |
+|             |                                                                                     |
+| ----------- | ----------------------------------------------------------------------------------- |
+| **Type**    | `object`                                                                            |
+| **Default** | `{}`                                                                                |
+| **UI**      | Home / assessments subject filters                                                  |
+| **Shape**   | `{ [subjectCode: string]: boolean }` — `false` hides subject; missing key = visible |
+| **Example** | `{ "10MAT": false, "10ENG": true }`                                                 |
 
 #### `newsSource`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Default** | `"australia"` |
-| **UI** | Settings → News Feed Source |
+|             |                                                                                                          |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| **Type**    | `string`                                                                                                 |
+| **Default** | `"australia"`                                                                                            |
+| **UI**      | Settings → News Feed Source                                                                              |
 | **Allowed** | `australia`, `usa`, `uk`, `taiwan`, `hong_kong`, `panama`, `canada`, `singapore`, `japan`, `netherlands` |
-| **Example** | `"australia"` |
+| **Example** | `"australia"`                                                                                            |
 
 ### Cloud sync preference
 
 #### `autoCloudSettingsSync`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `true` |
-| **UI** | Settings → Cloud Settings Sync |
+|               |                                                      |
+| ------------- | ---------------------------------------------------- |
+| **Type**      | `boolean`                                            |
+| **Default**   | `true`                                               |
+| **UI**        | Settings → Cloud Settings Sync                       |
 | **Semantics** | Sync runs when **not** strictly `false` (default-on) |
-| **Example** | `true` |
+| **Example**   | `true`                                               |
 
 ### Theme of the Month
 
 #### `themeOfTheMonthDisabled`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | `false` |
-| **UI** | Global Search plugin section → Theme of the Month switch (inverted in UI) |
-| **Example** | `false` |
+|             |                                                                           |
+| ----------- | ------------------------------------------------------------------------- |
+| **Type**    | `boolean`                                                                 |
+| **Default** | `false`                                                                   |
+| **UI**      | Global Search plugin section → Theme of the Month switch (inverted in UI) |
+| **Example** | `false`                                                                   |
 
 #### `themeOfTheMonthDismissedMonth`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Format** | `"YYYY-MM"` calendar month |
-| **Example** | `"2026-06"` |
+|             |                            |
+| ----------- | -------------------------- |
+| **Type**    | `string`                   |
+| **Format**  | `"YYYY-MM"` calendar month |
+| **Example** | `"2026-06"`                |
 
 #### `themeOfTheMonthLastSeenId`
 
-| | |
-|-|-|
-| **Type** | `string` |
+|            |                                             |
+| ---------- | ------------------------------------------- |
+| **Type**   | `string`                                    |
 | **Status** | Deprecated; may still exist in old profiles |
-| **Synced** | Yes if present |
+| **Synced** | Yes if present                              |
 
 ### One-time announcements & privacy
 
 #### `privacyStatementShown`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Example** | `true` |
+|             |           |
+| ----------- | --------- |
+| **Type**    | `boolean` |
+| **Example** | `true`    |
 
 #### `privacyStatementLastUpdated`
 
-| | |
-|-|-|
-| **Type** | `string` |
+|            |                               |
+| ---------- | ----------------------------- |
+| **Type**   | `string`                      |
 | **Format** | ISO date, e.g. `"2025-12-20"` |
 
 #### `engageParentsAnnouncementShown`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
+|             |                                             |
+| ----------- | ------------------------------------------- |
+| **Type**    | `boolean`                                   |
 | **Purpose** | SEQTA Engage parents announcement dismissed |
 
 #### `bsCloudAutoSyncAnnouncementShown`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
+|             |                                        |
+| ----------- | -------------------------------------- |
+| **Type**    | `boolean`                              |
 | **Purpose** | Cloud auto-sync announcement dismissed |
 
 ### Update & developer flags
 
 #### `justupdated`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
+|             |                                                               |
+| ----------- | ------------------------------------------------------------- |
+| **Type**    | `boolean`                                                     |
 | **Purpose** | Set `true` after extension update; drives startup popup queue |
-| **Example** | `true` |
+| **Example** | `true`                                                        |
 
 #### `devMode`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **Default** | undefined / false |
-| **UI** | Hidden unlock in settings |
-| **Example** | `true` |
+|             |                           |
+| ----------- | ------------------------- |
+| **Type**    | `boolean`                 |
+| **Default** | undefined / false         |
+| **UI**      | Hidden unlock in settings |
+| **Example** | `true`                    |
 
 #### `hideSensitiveContent`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **UI** | Dev mode → Sensitive Hider |
-| **Example** | `false` |
+|             |                            |
+| ----------- | -------------------------- |
+| **Type**    | `boolean`                  |
+| **UI**      | Dev mode → Sensitive Hider |
+| **Example** | `false`                    |
 
 #### `mockNotices`
 
-| | |
-|-|-|
-| **Type** | `boolean` |
-| **UI** | Dev mode → Mock Notices |
-| **Example** | `false` |
+|             |                         |
+| ----------- | ----------------------- |
+| **Type**    | `boolean`               |
+| **UI**      | Dev mode → Mock Notices |
+| **Example** | `false`                 |
 
 #### `devGhReleaseVersionOverride`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **UI** | Dev mode → version override field |
-| **Format** | Semver string, e.g. `"3.7.0"` |
-| **Example** | `"99.0.0"` |
+|             |                                   |
+| ----------- | --------------------------------- |
+| **Type**    | `string`                          |
+| **UI**      | Dev mode → version override field |
+| **Format**  | Semver string, e.g. `"3.7.0"`     |
+| **Example** | `"99.0.0"`                        |
 
 #### `lastSeenNightlyPublishedAt`
 
-| | |
-|-|-|
-| **Type** | `string` |
-| **Format** | ISO 8601 timestamp from GitHub release `published_at` |
-| **Example** | `"2026-06-01T04:30:00Z"` |
+|             |                                                       |
+| ----------- | ----------------------------------------------------- |
+| **Type**    | `string`                                              |
+| **Format**  | ISO 8601 timestamp from GitHub release `published_at` |
+| **Example** | `"2026-06-01T04:30:00Z"`                              |
 
 ### Profile picture helper
 
 #### `profile_picture_revision`
 
-| | |
-|-|-|
-| **Type** | `number` |
+|             |                                                                           |
+| ----------- | ------------------------------------------------------------------------- |
+| **Type**    | `number`                                                                  |
 | **Purpose** | Incremented when cloud/local profile picture changes; triggers UI refresh |
-| **Not** | The image itself (stored in localforage `profile-picture-store`) |
-| **Example** | `3` |
+| **Not**     | The image itself (stored in localforage `profile-picture-store`)          |
+| **Example** | `3`                                                                       |
 
 ---
 
@@ -693,10 +693,10 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.animated-background.settings`
 
-| Field | Type | Default | Range / notes |
-|-------|------|---------|---------------|
-| `enabled` | `boolean` | `true` | From `disableToggle` UI |
-| `speed` | `number` | `1` | **0.1–2.0**, step 0.05 in UI |
+| Field     | Type      | Default | Range / notes                |
+| --------- | --------- | ------- | ---------------------------- |
+| `enabled` | `boolean` | `true`  | From `disableToggle` UI      |
+| `speed`   | `number`  | `1`     | **0.1–2.0**, step 0.05 in UI |
 
 ```json
 { "enabled": true, "speed": 1.05 }
@@ -704,9 +704,9 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.assessments-average.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `false` |
+| Field         | Type      | Default |
+| ------------- | --------- | ------- |
+| `enabled`     | `boolean` | `false` |
 | `lettergrade` | `boolean` | `false` |
 
 ```json
@@ -715,9 +715,9 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.notificationCollector.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `true` |
+| Field     | Type      | Default |
+| --------- | --------- | ------- |
+| `enabled` | `boolean` | `true`  |
 
 ```json
 { "enabled": true }
@@ -725,9 +725,9 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.timetable.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `true` |
+| Field     | Type      | Default |
+| --------- | --------- | ------- |
+| `enabled` | `boolean` | `true`  |
 
 ```json
 { "enabled": true }
@@ -735,9 +735,9 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.timetableEdit.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `true` |
+| Field     | Type      | Default |
+| --------- | --------- | ------- |
+| `enabled` | `boolean` | `true`  |
 
 ```json
 { "enabled": true }
@@ -745,14 +745,14 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.global-search.settings`
 
-| Field | Type | Default | Notes |
-|-------|------|---------|-------|
-| `enabled` | `boolean` | `false` | Plugin default off |
-| `searchHotkey` | `string` | `"ctrl+k"` or `"cmd+k"` | See hotkey format below |
-| `showRecentFirst` | `boolean` | `true` | |
-| `transparencyEffects` | `boolean` | `true` | Search bar blur |
-| `runIndexingOnLoad` | `boolean` | `true` | |
-| `passiveIndexing` | `boolean` | `true` | Index visited pages |
+| Field                 | Type      | Default                 | Notes                   |
+| --------------------- | --------- | ----------------------- | ----------------------- |
+| `enabled`             | `boolean` | `false`                 | Plugin default off      |
+| `searchHotkey`        | `string`  | `"ctrl+k"` or `"cmd+k"` | See hotkey format below |
+| `showRecentFirst`     | `boolean` | `true`                  |                         |
+| `transparencyEffects` | `boolean` | `true`                  | Search bar blur         |
+| `runIndexingOnLoad`   | `boolean` | `true`                  |                         |
+| `passiveIndexing`     | `boolean` | `true`                  | Index visited pages     |
 
 ```json
 {
@@ -775,9 +775,9 @@ Settings of type `component` or `button` are **not** auto-persisted by the plugi
 
 ### `plugin.profile-picture.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `false` |
+| Field         | Type      | Default |
+| ------------- | --------- | ------- |
+| `enabled`     | `boolean` | `false` |
 | `useCloudPfp` | `boolean` | `false` |
 
 ```json
@@ -788,11 +788,11 @@ When `useCloudPfp` is true, avatar URL comes from `bsplus_user.pfpUrl` (local au
 
 ### `plugin.messageFolders.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `true` |
-| `showTagsInAllMessages` | `boolean` | `true` |
-| `hideFolderedMessagesInAll` | `boolean` | `true` |
+| Field                       | Type      | Default |
+| --------------------------- | --------- | ------- |
+| `enabled`                   | `boolean` | `true`  |
+| `showTagsInAllMessages`     | `boolean` | `true`  |
+| `hideFolderedMessagesInAll` | `boolean` | `true`  |
 
 ```json
 {
@@ -804,9 +804,9 @@ When `useCloudPfp` is true, avatar URL comes from `bsplus_user.pfpUrl` (local au
 
 ### `plugin.enhanced-navigation.settings`
 
-| Field | Type | Default |
-|-------|------|---------|
-| `enabled` | `boolean` | `true` |
+| Field               | Type      | Default |
+| ------------------- | --------- | ------- |
+| `enabled`           | `boolean` | `true`  |
 | `autoScrollOnClick` | `boolean` | `false` |
 
 ```json
@@ -815,11 +815,11 @@ When `useCloudPfp` is true, avatar URL comes from `bsplus_user.pfpUrl` (local au
 
 ### `plugin.background-music.settings`
 
-| Field | Type | Default | Range |
-|-------|------|---------|-------|
-| `enabled` | `boolean` | `false` | |
-| `volume` | `number` | `0.5` | 0–1 |
-| `pauseOnHidden` | `boolean` | `true` | |
+| Field           | Type      | Default | Range |
+| --------------- | --------- | ------- | ----- |
+| `enabled`       | `boolean` | `false` |       |
+| `volume`        | `number`  | `0.5`   | 0–1   |
+| `pauseOnHidden` | `boolean` | `true`  |       |
 
 ```json
 { "enabled": true, "volume": 0.75, "pauseOnHidden": true }
@@ -829,9 +829,9 @@ Audio blob: localforage `background-music-store` / `music` / key `audio-blob` �
 
 ### `plugin.grade-analytics.settings`
 
-| Field | Type | Default | Range |
-|-------|------|---------|-------|
-| `cacheTtlHours` | `number` | `24` | 1–168 |
+| Field           | Type     | Default | Range |
+| --------------- | -------- | ------- | ----- |
+| `cacheTtlHours` | `number` | `24`    | 1–168 |
 
 ```json
 { "cacheTtlHours": 48 }
@@ -865,11 +865,11 @@ Separate top-level keys per property: `plugin.{pluginId}.storage.{propertyName}`
 ]
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | `string` | `Date.now().toString(36) + random` |
-| `name` | `string` | Display name |
-| `color` | `string` | Hex colour from preset palette |
+| Field   | Type     | Notes                                      |
+| ------- | -------- | ------------------------------------------ |
+| `id`    | `string` | `Date.now().toString(36) + random`         |
+| `name`  | `string` | Display name                               |
+| `color` | `string` | Hex colour from preset palette             |
 | `emoji` | `string` | Inline SVG icon markup (not unicode emoji) |
 
 #### `plugin.messageFolders.storage.messageAssignments`
@@ -946,20 +946,20 @@ Title → assessment id map (school data):
 }
 ```
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `weight` | `string` | e.g. `"25"`, `"processing"`, `"N/A"` |
-| `fingerprint` | `string` | JSON-stringified assessment state fingerprint |
-| `pluginVersion` | `number` | `WEIGHTING_SCHEMA_VERSION` (= 1) |
-| `refreshing` | `boolean` | optional; background refetch in progress |
+| Field           | Type      | Notes                                         |
+| --------------- | --------- | --------------------------------------------- |
+| `weight`        | `string`  | e.g. `"25"`, `"processing"`, `"N/A"`          |
+| `fingerprint`   | `string`  | JSON-stringified assessment state fingerprint |
+| `pluginVersion` | `number`  | `WEIGHTING_SCHEMA_VERSION` (= 1)              |
+| `refreshing`    | `boolean` | optional; background refetch in progress      |
 
 ### Notification Collector (`plugin.notificationCollector`)
 
-| Key | Type | Example |
-|-----|------|---------|
-| `plugin.notificationCollector.storage.lastNotificationCount` | `number` | `3` |
-| `plugin.notificationCollector.storage.consecutiveErrors` | `number` | `0` |
-| `plugin.notificationCollector.storage.lastCheckedTime` | `string` | `"2026-06-09T14:30:00.000Z"` |
+| Key                                                          | Type     | Example                      |
+| ------------------------------------------------------------ | -------- | ---------------------------- |
+| `plugin.notificationCollector.storage.lastNotificationCount` | `number` | `3`                          |
+| `plugin.notificationCollector.storage.consecutiveErrors`     | `number` | `0`                          |
+| `plugin.notificationCollector.storage.lastCheckedTime`       | `string` | `"2026-06-09T14:30:00.000Z"` |
 
 All **synced** (not under an excluded prefix).
 
@@ -1018,17 +1018,17 @@ Reserved for future device-local caches. No keys in use today; any key matching 
 
 These affect UX but **never** appear in the cloud `data` blob:
 
-| Store | Location | Contents |
-|-------|----------|----------|
-| Global Search structured index | IndexedDB `betterseqta-index` | Searchable page text |
-| Global Search vectors | IndexedDB `embeddiaDB` | Embedding index |
-| Global Search schema version | `localStorage` key `betterseqta-index-version` | Index migration |
-| Installed themes | localforage (default instance) | `CustomTheme` objects keyed by theme id; index `customThemes` |
-| Profile picture upload | localforage `profile-picture-store` / `profilePicture` | Image blob |
-| Cloud PFP cache | localforage `cloud-pfp-store` / `cloudPfp` | Cached avatar blobs |
-| Background music | localforage `background-music-store` / `music` / `audio-blob` | Audio blob |
-| Dev API override | `sessionStorage` `bsplus_dev_api_base` | Staging server URL |
-| Engage student context | `localStorage` `bsplus.engageTimetable.student.{origin}` | Current student id |
+| Store                          | Location                                                      | Contents                                                      |
+| ------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------- |
+| Global Search structured index | IndexedDB `betterseqta-index`                                 | Searchable page text                                          |
+| Global Search vectors          | IndexedDB `embeddiaDB`                                        | Embedding index                                               |
+| Global Search schema version   | `localStorage` key `betterseqta-index-version`                | Index migration                                               |
+| Installed themes               | localforage (default instance)                                | `CustomTheme` objects keyed by theme id; index `customThemes` |
+| Profile picture upload         | localforage `profile-picture-store` / `profilePicture`        | Image blob                                                    |
+| Cloud PFP cache                | localforage `cloud-pfp-store` / `cloudPfp`                    | Cached avatar blobs                                           |
+| Background music               | localforage `background-music-store` / `music` / `audio-blob` | Audio blob                                                    |
+| Dev API override               | `sessionStorage` `bsplus_dev_api_base`                        | Staging server URL                                            |
+| Engage student context         | `localStorage` `bsplus.engageTimetable.student.{origin}`      | Current student id                                            |
 
 After cloud restore, devices may need to **rebuild** indexes, **re-upload** media, or **re-download** themes even when synced settings reference them.
 
@@ -1039,7 +1039,7 @@ After cloud restore, devices may need to **rebuild** indexes, **re-upload** medi
 ### Inclusion test
 
 ```ts
-isKeyIncludedInCloudUploadPayload(key) === !shouldOmitKeyFromCloudPayload(key)
+isKeyIncludedInCloudUploadPayload(key) === !shouldOmitKeyFromCloudPayload(key);
 ```
 
 Any new `chrome.storage.local` key syncs automatically unless added to:
@@ -1076,41 +1076,41 @@ Which synced keys can be changed directly by the user in the extension **setting
 
 ### Extension popup — Settings tab (`general.svelte`)
 
-| Storage key / path | UI label | Control |
-|--------------------|----------|---------|
-| `iconOnlySidebar` | Icon Only Sidebar | Switch |
-| `animations` | Animations | Switch |
-| `timeFormat` | 12 Hour Time | Switch (`"12"` / `"24"`) |
-| `transparencyEffects` | Transparency Effects | Switch |
-| `defaultPage` | Default Page | Select |
-| `newsSource` | News Feed Source | Select |
-| `selectedColor` | Custom Theme Colour | Button → colour picker modal |
-| `selectedFont` | Interface Font | Button → font picker modal |
-| `adaptiveThemeColour` | Adaptive Theme Colour | Switch |
-| `adaptiveThemeGradient` | Soft Gradient | Switch (when adaptive colour on) |
-| `adaptiveThemeColourTransition` | Smooth colour transition | Switch (when adaptive colour on) |
-| `menuorder`, `menuitems`, `defaultmenuorder` | Edit Sidebar Layout | Button → opens editor **on the SEQTA tab** (not inside the popup) |
-| `themeOfTheMonthDisabled` | Theme of the Month | Switch (under Global Search plugin block) |
-| `autoCloudSettingsSync` | Automatic sync | Switch (BetterSEQTA Cloud card, signed in only) |
-| `onoff` | BetterSEQTA+ | Switch (bottom of tab) |
+| Storage key / path                           | UI label                 | Control                                                           |
+| -------------------------------------------- | ------------------------ | ----------------------------------------------------------------- |
+| `iconOnlySidebar`                            | Icon Only Sidebar        | Switch                                                            |
+| `animations`                                 | Animations               | Switch                                                            |
+| `timeFormat`                                 | 12 Hour Time             | Switch (`"12"` / `"24"`)                                          |
+| `transparencyEffects`                        | Transparency Effects     | Switch                                                            |
+| `defaultPage`                                | Default Page             | Select                                                            |
+| `newsSource`                                 | News Feed Source         | Select                                                            |
+| `selectedColor`                              | Custom Theme Colour      | Button → colour picker modal                                      |
+| `selectedFont`                               | Interface Font           | Button → font picker modal                                        |
+| `adaptiveThemeColour`                        | Adaptive Theme Colour    | Switch                                                            |
+| `adaptiveThemeGradient`                      | Soft Gradient            | Switch (when adaptive colour on)                                  |
+| `adaptiveThemeColourTransition`              | Smooth colour transition | Switch (when adaptive colour on)                                  |
+| `menuorder`, `menuitems`, `defaultmenuorder` | Edit Sidebar Layout      | Button → opens editor **on the SEQTA tab** (not inside the popup) |
+| `themeOfTheMonthDisabled`                    | Theme of the Month       | Switch (under Global Search plugin block)                         |
+| `autoCloudSettingsSync`                      | Automatic sync           | Switch (BetterSEQTA Cloud card, signed in only)                   |
+| `onoff`                                      | BetterSEQTA+             | Switch (bottom of tab)                                            |
 
 #### Plugin blocks on Settings tab
 
 Each row is `plugin.{id}.settings.{field}` unless noted. Component settings (upload UIs) change synced **preference** keys but not blob data in IndexedDB.
 
-| Plugin | UI | Synced fields from UI |
-|--------|-----|------------------------|
-| **Animated Background** | Enable + Animation Speed slider | `enabled`, `speed` |
-| **Assessment Averages** | Enable (+ disclaimer) + Letter Grades | `enabled`, `lettergrade` |
-| **Notification Collector** | Enable only | `enabled` |
-| **Timetable Enhancer** | Enable only | `enabled` |
-| **Edit Rooms & Teachers** | Enable only | `enabled` |
-| **Global Search** | Enable + hotkey + 4 toggles + Reset Index button | `enabled`, `searchHotkey`, `showRecentFirst`, `transparencyEffects`, `runIndexingOnLoad`, `passiveIndexing` — Reset Index does **not** sync index data |
-| **Custom Profile Picture** | Enable + Use cloud PFP (if signed in) + upload/remove | `enabled`, `useCloudPfp`; upload updates `profile_picture_revision` (image blob **not** synced) |
-| **Message Folders** | Enable + 2 toggles | `enabled`, `showTagsInAllMessages`, `hideFolderedMessagesInAll` |
-| **Enhanced Navigation** | Enable + Auto-scroll | `enabled`, `autoScrollOnClick` |
-| **Background Music** | Enable + volume + pause on hidden + upload | `enabled`, `volume`, `pauseOnHidden`; audio blob **not** synced |
-| **Grade Analytics** | Cache duration (hours) slider only | `cacheTtlHours` |
+| Plugin                     | UI                                                    | Synced fields from UI                                                                                                                                  |
+| -------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Animated Background**    | Enable + Animation Speed slider                       | `enabled`, `speed`                                                                                                                                     |
+| **Assessment Averages**    | Enable (+ disclaimer) + Letter Grades                 | `enabled`, `lettergrade`                                                                                                                               |
+| **Notification Collector** | Enable only                                           | `enabled`                                                                                                                                              |
+| **Timetable Enhancer**     | Enable only                                           | `enabled`                                                                                                                                              |
+| **Edit Rooms & Teachers**  | Enable only                                           | `enabled`                                                                                                                                              |
+| **Global Search**          | Enable + hotkey + 4 toggles + Reset Index button      | `enabled`, `searchHotkey`, `showRecentFirst`, `transparencyEffects`, `runIndexingOnLoad`, `passiveIndexing` — Reset Index does **not** sync index data |
+| **Custom Profile Picture** | Enable + Use cloud PFP (if signed in) + upload/remove | `enabled`, `useCloudPfp`; upload updates `profile_picture_revision` (image blob **not** synced)                                                        |
+| **Message Folders**        | Enable + 2 toggles                                    | `enabled`, `showTagsInAllMessages`, `hideFolderedMessagesInAll`                                                                                        |
+| **Enhanced Navigation**    | Enable + Auto-scroll                                  | `enabled`, `autoScrollOnClick`                                                                                                                         |
+| **Background Music**       | Enable + volume + pause on hidden + upload            | `enabled`, `volume`, `pauseOnHidden`; audio blob **not** synced                                                                                        |
+| **Grade Analytics**        | Cache duration (hours) slider only                    | `cacheTtlHours`                                                                                                                                        |
 
 **Not shown on Settings tab** (empty `settings` + no enable toggle → card hidden):
 
@@ -1119,75 +1119,75 @@ Each row is `plugin.{id}.settings.{field}` unless noted. Component settings (upl
 
 #### Dev mode only (Settings tab, after typing “dev” on logo)
 
-| Storage key | UI label |
-|-------------|----------|
-| `devMode` | Developer Mode |
-| `hideSensitiveContent` | Sensitive Hider |
-| `mockNotices` | Mock Notices |
+| Storage key                                            | UI label                                         |
+| ------------------------------------------------------ | ------------------------------------------------ |
+| `devMode`                                              | Developer Mode                                   |
+| `hideSensitiveContent`                                 | Sensitive Hider                                  |
+| `mockNotices`                                          | Mock Notices                                     |
 | `privacyStatementShown`, `privacyStatementLastUpdated` | Show Privacy Notification (resets to show popup) |
-| `devGhReleaseVersionOverride` | GitHub latest version override (text field) |
+| `devGhReleaseVersionOverride`                          | GitHub latest version override (text field)      |
 
 Dev **Export cloud settings JSON** downloads the upload payload; it does not change storage.
 
 ### Extension popup — Shortcuts tab (`shortcuts.svelte`)
 
-| Storage key | UI |
-|-------------|-----|
-| `shortcuts` | Toggle built-in shortcuts (Outlook, Office, Google, … from `links.json`) |
-| `customshortcuts` | Add / delete custom shortcuts (name, URL, optional SVG icon) |
+| Storage key       | UI                                                                       |
+| ----------------- | ------------------------------------------------------------------------ |
+| `shortcuts`       | Toggle built-in shortcuts (Outlook, Office, Google, … from `links.json`) |
+| `customshortcuts` | Add / delete custom shortcuts (name, URL, optional SVG icon)             |
 
 Changes use `settingsState.setKey()` so the SEQTA home page updates immediately via `StorageChangeHandler` → `renderShortcuts()` (embedded settings run in the content script, where `storage.onChanged` does not fire for local writes). Empty arrays are persisted explicitly (`customshortcuts: []`) so cloud restore and other devices clear removed shortcuts.
 
 ### Extension popup — Themes tab (`theme.svelte`)
 
-| Storage key | UI |
-|-------------|-----|
-| `selectedTheme` | Install / select / clear store themes (`ThemeSelector`) |
-| `selectedColor` | May change when applying a theme with a default colour |
+| Storage key                                 | UI                                                                                |
+| ------------------------------------------- | --------------------------------------------------------------------------------- |
+| `selectedTheme`                             | Install / select / clear store themes (`ThemeSelector`)                           |
+| `selectedColor`                             | May change when applying a theme with a default colour                            |
 | `originalSelectedColor`, `originalDarkMode` | Set internally during theme **preview** in theme manager (not dedicated controls) |
 
 Animated background selection uses `BackgroundSelector` (local/custom backgrounds); store theme id still goes to `selectedTheme`.
 
 ### SEQTA page UI (outside settings popup)
 
-| Storage key / path | Where | Control |
-|--------------------|-------|---------|
-| `DarkMode` | SEQTA top bar | Sun/moon **Light/Dark** button |
-| `menuorder`, `menuitems` | SEQTA sidebar | **Edit Sidebar Layout** overlay (drag order + per-item toggles) |
-| `subjectfilters` | Home → upcoming assessments | Per-subject checkboxes (`#upcoming-filters`) |
-| `subjectfilters` | Assessments → Overview | Subject filter UI in overview grid |
-| `plugin.messageFolders.storage.folders` | Messages page | Create/edit/delete folders |
-| `plugin.messageFolders.storage.messageAssignments` | Messages page | Assign messages to folders |
-| `plugin.timetableEdit.storage.timetableOverrides` | Timetable | Edit room/teacher on a class |
-| `plugin.timetableEdit.storage.timetableOverridesBySubject` | Timetable | Subject-level overrides |
-| `plugin.assessments-average.storage.weightingOverrides` | Assessments page | Per-assessment “Override %” inputs |
-| Global Search | SEQTA | Hotkey opens search bar (hotkey set in Settings) |
+| Storage key / path                                         | Where                       | Control                                                         |
+| ---------------------------------------------------------- | --------------------------- | --------------------------------------------------------------- |
+| `DarkMode`                                                 | SEQTA top bar               | Sun/moon **Light/Dark** button                                  |
+| `menuorder`, `menuitems`                                   | SEQTA sidebar               | **Edit Sidebar Layout** overlay (drag order + per-item toggles) |
+| `subjectfilters`                                           | Home → upcoming assessments | Per-subject checkboxes (`#upcoming-filters`)                    |
+| `subjectfilters`                                           | Assessments → Overview      | Subject filter UI in overview grid                              |
+| `plugin.messageFolders.storage.folders`                    | Messages page               | Create/edit/delete folders                                      |
+| `plugin.messageFolders.storage.messageAssignments`         | Messages page               | Assign messages to folders                                      |
+| `plugin.timetableEdit.storage.timetableOverrides`          | Timetable                   | Edit room/teacher on a class                                    |
+| `plugin.timetableEdit.storage.timetableOverridesBySubject` | Timetable                   | Subject-level overrides                                         |
+| `plugin.assessments-average.storage.weightingOverrides`    | Assessments page            | Per-assessment “Override %” inputs                              |
+| Global Search                                              | SEQTA                       | Hotkey opens search bar (hotkey set in Settings)                |
 
 ### Automatic / popup-only (synced, no dedicated settings control)
 
-| Storage key / path | How it changes |
-|--------------------|----------------|
-| `lessonalert` | Default only — **no UI** (read by home loader) |
-| `privacyStatementShown`, `privacyStatementLastUpdated` | Privacy popup on first run (dev can reset) |
-| `engageParentsAnnouncementShown` | Dismiss Engage parents announcement |
-| `bsCloudAutoSyncAnnouncementShown` | Dismiss cloud sync announcement |
-| `themeOfTheMonthDismissedMonth` | Dismiss Theme of the Month popup |
-| `justupdated` | Set `true` after extension update |
-| `lastSeenNightlyPublishedAt` | Dismiss / acknowledge GitHub nightly update badge |
-| `profile_picture_revision` | Incremented when profile picture changes |
-| `plugin.notificationCollector.storage.*` | Written by notification poll loop |
-| Legacy `animatedbk`, `bksliderinput`, etc. | Migrated to plugin settings; no longer shown in UI |
+| Storage key / path                                     | How it changes                                     |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| `lessonalert`                                          | Default only — **no UI** (read by home loader)     |
+| `privacyStatementShown`, `privacyStatementLastUpdated` | Privacy popup on first run (dev can reset)         |
+| `engageParentsAnnouncementShown`                       | Dismiss Engage parents announcement                |
+| `bsCloudAutoSyncAnnouncementShown`                     | Dismiss cloud sync announcement                    |
+| `themeOfTheMonthDismissedMonth`                        | Dismiss Theme of the Month popup                   |
+| `justupdated`                                          | Set `true` after extension update                  |
+| `lastSeenNightlyPublishedAt`                           | Dismiss / acknowledge GitHub nightly update badge  |
+| `profile_picture_revision`                             | Incremented when profile picture changes           |
+| `plugin.notificationCollector.storage.*`               | Written by notification poll loop                  |
+| Legacy `animatedbk`, `bksliderinput`, etc.             | Migrated to plugin settings; no longer shown in UI |
 
 ### Synced plugin prefs with UI vs storage-only side effects
 
-| User action in UI | Synced | Not synced |
-|-------------------|--------|------------|
-| Upload profile picture | `useCloudPfp`, `profile_picture_revision` | Image blob (localforage) |
-| Upload background music | `enabled`, `volume`, `pauseOnHidden` | Audio blob (localforage) |
-| Install store theme | `selectedTheme`, often `selectedColor` / `DarkMode` | Theme assets (localforage) |
-| Global Search indexing | Plugin settings toggles | IndexedDB `betterseqta-index`, `embeddiaDB` |
-| Assessment averages | `lettergrade`, overrides | `storage.assessments`, `storage.weightings` caches |
-| Grade Analytics TTL slider | `cacheTtlHours` | `bsplus.analytics.*` caches |
+| User action in UI          | Synced                                              | Not synced                                         |
+| -------------------------- | --------------------------------------------------- | -------------------------------------------------- |
+| Upload profile picture     | `useCloudPfp`, `profile_picture_revision`           | Image blob (localforage)                           |
+| Upload background music    | `enabled`, `volume`, `pauseOnHidden`                | Audio blob (localforage)                           |
+| Install store theme        | `selectedTheme`, often `selectedColor` / `DarkMode` | Theme assets (localforage)                         |
+| Global Search indexing     | Plugin settings toggles                             | IndexedDB `betterseqta-index`, `embeddiaDB`        |
+| Assessment averages        | `lettergrade`, overrides                            | `storage.assessments`, `storage.weightings` caches |
+| Grade Analytics TTL slider | `cacheTtlHours`                                     | `bsplus.analytics.*` caches                        |
 
 ### Never in settings UI (excluded from sync entirely)
 
@@ -1207,14 +1207,14 @@ Implementation: `ensureSyncableStorageDefaults()` + `getSyncableStorageDefaults(
 
 ### What is not auto-initialized
 
-| Category | Reason |
-|----------|--------|
-| OAuth / session keys | Excluded from cloud; device-local |
-| `plugin.*.storage.*` runtime data | Created when plugins run (folders, timetable overrides, etc.) |
-| `bsplus.analytics.*` | Excluded device/school caches |
-| `plugin.assessments-average.storage.assessments` / `.weightings` | Excluded school caches |
-| `plugin.global-search.storage.*` | Excluded prefix |
-| Client-only watermarks | Never uploaded |
+| Category                                                         | Reason                                                        |
+| ---------------------------------------------------------------- | ------------------------------------------------------------- |
+| OAuth / session keys                                             | Excluded from cloud; device-local                             |
+| `plugin.*.storage.*` runtime data                                | Created when plugins run (folders, timetable overrides, etc.) |
+| `bsplus.analytics.*`                                             | Excluded device/school caches                                 |
+| `plugin.assessments-average.storage.assessments` / `.weightings` | Excluded school caches                                        |
+| `plugin.global-search.storage.*`                                 | Excluded prefix                                               |
+| Client-only watermarks                                           | Never uploaded                                                |
 
 ### Settings persistence and live UI
 

@@ -48,8 +48,7 @@ async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   const sameOrder =
     liveItems.length === merged.length &&
     liveItems.every(
-      (item, index) =>
-        Number(item.notificationID) === Number(merged[index]?.notificationID),
+      (item, index) => Number(item.notificationID) === Number(merged[index]?.notificationID),
     );
   if (sameOrder) return true;
 

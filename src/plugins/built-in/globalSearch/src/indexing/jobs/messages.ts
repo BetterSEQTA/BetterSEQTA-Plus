@@ -5,7 +5,7 @@ import { VectorWorkerManager } from "../worker/vectorWorkerManager";
 import { loadAllStoredItems } from "../indexer";
 import { publishDynamicItemsUpdate } from "../renderComponents";
 
-import { verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseInfo, verboseLog } from "@/utils/verboseLog";
 const RATE_LIMIT_CONFIG = {
   minDelay: 30,
   maxDelay: 3000,
@@ -89,8 +89,7 @@ export const fetchMessageContent = async (
 
     if (retryCount < RATE_LIMIT_CONFIG.maxRetries) {
       const retryDelay =
-        RATE_LIMIT_CONFIG.baseDelay *
-        Math.pow(RATE_LIMIT_CONFIG.backoffMultiplier, retryCount);
+        RATE_LIMIT_CONFIG.baseDelay * Math.pow(RATE_LIMIT_CONFIG.backoffMultiplier, retryCount);
       await delay(Math.min(retryDelay, RATE_LIMIT_CONFIG.maxDelay));
       return fetchMessageContent(id, retryCount + 1);
     }
@@ -99,17 +98,9 @@ export const fetchMessageContent = async (
   }
 };
 
-function calculateAdaptiveDelay(
-  progress: MessagesProgress,
-  responseTime: number,
-): number {
-  const {
-    currentDelay,
-    failedRequests,
-    lastSuccessTime,
-    circuitBreakerOpen,
-    consecutiveFailures,
-  } = progress;
+function calculateAdaptiveDelay(progress: MessagesProgress, responseTime: number): number {
+  const { currentDelay, failedRequests, lastSuccessTime, circuitBreakerOpen, consecutiveFailures } =
+    progress;
   const timeSinceLastSuccess = Date.now() - lastSuccessTime;
 
   if (circuitBreakerOpen) {
@@ -118,17 +109,12 @@ function calculateAdaptiveDelay(
 
   if (consecutiveFailures > 2 || failedRequests > 3 || responseTime > 3000) {
     return Math.min(
-      currentDelay *
-        (RATE_LIMIT_CONFIG.backoffMultiplier + consecutiveFailures * 0.2),
+      currentDelay * (RATE_LIMIT_CONFIG.backoffMultiplier + consecutiveFailures * 0.2),
       RATE_LIMIT_CONFIG.maxDelay,
     );
   }
 
-  if (
-    responseTime < 300 &&
-    timeSinceLastSuccess > 5000 &&
-    consecutiveFailures === 0
-  ) {
+  if (responseTime < 300 && timeSinceLastSuccess > 5000 && consecutiveFailures === 0) {
     return Math.max(currentDelay * 0.7, RATE_LIMIT_CONFIG.minDelay);
   }
 
@@ -149,37 +135,23 @@ async function estimateMessageCount(): Promise<number> {
   }
 }
 
-function calculateAdaptiveBatchSize(
-  progress: MessagesProgress,
-  responseTime: number,
-): number {
+function calculateAdaptiveBatchSize(progress: MessagesProgress, responseTime: number): number {
   if (!RATE_LIMIT_CONFIG.adaptiveBatchSize) {
     return progress.currentBatchSize;
   }
 
-  const {
-    currentBatchSize,
-    failedRequests,
-    circuitBreakerOpen,
-    consecutiveFailures,
-  } = progress;
+  const { currentBatchSize, failedRequests, circuitBreakerOpen, consecutiveFailures } = progress;
 
   if (circuitBreakerOpen) {
     return RATE_LIMIT_CONFIG.minBatchSize;
   }
 
   if (consecutiveFailures > 1 || failedRequests > 2 || responseTime > 2500) {
-    return Math.max(
-      Math.floor(currentBatchSize * 0.6),
-      RATE_LIMIT_CONFIG.minBatchSize,
-    );
+    return Math.max(Math.floor(currentBatchSize * 0.6), RATE_LIMIT_CONFIG.minBatchSize);
   }
 
   if (failedRequests === 0 && responseTime < 800 && consecutiveFailures === 0) {
-    return Math.min(
-      Math.floor(currentBatchSize * 1.4),
-      RATE_LIMIT_CONFIG.maxBatchSize,
-    );
+    return Math.min(Math.floor(currentBatchSize * 1.4), RATE_LIMIT_CONFIG.maxBatchSize);
   }
 
   return currentBatchSize;
@@ -202,8 +174,7 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
 
   if (
     progress.circuitBreakerOpen &&
-    now - progress.circuitBreakerOpenTime >
-      RATE_LIMIT_CONFIG.circuitBreakerResetTime
+    now - progress.circuitBreakerOpenTime > RATE_LIMIT_CONFIG.circuitBreakerResetTime
   ) {
     progress.circuitBreakerOpen = false;
     progress.consecutiveFailures = 0;
@@ -257,20 +228,11 @@ async function processMessagesInParallel(
     return { processedItems, consecutiveExisting, updatedProgress, shouldStop };
   }
 
-  for (
-    let i = 0;
-    i < messagesToProcess.length;
-    i += RATE_LIMIT_CONFIG.parallelRequests
-  ) {
-    const batch = messagesToProcess.slice(
-      i,
-      i + RATE_LIMIT_CONFIG.parallelRequests,
-    );
+  for (let i = 0; i < messagesToProcess.length; i += RATE_LIMIT_CONFIG.parallelRequests) {
+    const batch = messagesToProcess.slice(i, i + RATE_LIMIT_CONFIG.parallelRequests);
 
     if (i > 0) {
-      await delay(
-        Math.max(updatedProgress.currentDelay, RATE_LIMIT_CONFIG.parallelDelay),
-      );
+      await delay(Math.max(updatedProgress.currentDelay, RATE_LIMIT_CONFIG.parallelDelay));
     }
 
     const batchStartTime = Date.now();
@@ -336,20 +298,14 @@ async function processMessagesInParallel(
 
     if (batchSuccesses > 0) {
       updatedProgress.lastSuccessTime = Date.now();
-      updatedProgress.failedRequests = Math.max(
-        0,
-        updatedProgress.failedRequests - batchSuccesses,
-      );
+      updatedProgress.failedRequests = Math.max(0, updatedProgress.failedRequests - batchSuccesses);
     }
 
     if (batchFailures > 0) {
       updatedProgress.failedRequests += batchFailures;
     }
 
-    updatedProgress.currentDelay = calculateAdaptiveDelay(
-      updatedProgress,
-      batchResponseTime,
-    );
+    updatedProgress.currentDelay = calculateAdaptiveDelay(updatedProgress, batchResponseTime);
 
     verboseLog(
       `[Messages job] Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
@@ -409,10 +365,7 @@ export const messagesJob: Job = {
           );
         }
       } catch (error) {
-        console.warn(
-          "[Messages job] Failed to start streaming session:",
-          error,
-        );
+        console.warn("[Messages job] Failed to start streaming session:", error);
       }
     }
 
@@ -427,14 +380,8 @@ export const messagesJob: Job = {
       const retryBatch = progress.retryQueue.slice(0, 10);
       const retryBatches = [];
 
-      for (
-        let i = 0;
-        i < retryBatch.length;
-        i += RATE_LIMIT_CONFIG.parallelRequests
-      ) {
-        retryBatches.push(
-          retryBatch.slice(i, i + RATE_LIMIT_CONFIG.parallelRequests),
-        );
+      for (let i = 0; i < retryBatch.length; i += RATE_LIMIT_CONFIG.parallelRequests) {
+        retryBatches.push(retryBatch.slice(i, i + RATE_LIMIT_CONFIG.parallelRequests));
       }
 
       for (const batch of retryBatches) {
@@ -458,10 +405,7 @@ export const messagesJob: Job = {
               return { success: false, messageId, responseTime };
             }
           } catch (error) {
-            console.error(
-              `[Messages job] Retry failed for message ${messageId}:`,
-              error,
-            );
+            console.error(`[Messages job] Retry failed for message ${messageId}:`, error);
             return { success: false, messageId, error };
           }
         });
@@ -478,9 +422,7 @@ export const messagesJob: Job = {
               processedIdsSet.add(result.messageId.toString());
               retrySuccesses++;
             }
-            progress.retryQueue = progress.retryQueue.filter(
-              (mid) => mid !== result.messageId,
-            );
+            progress.retryQueue = progress.retryQueue.filter((mid) => mid !== result.messageId);
           } else {
             retryFailures++;
           }
@@ -488,20 +430,14 @@ export const messagesJob: Job = {
 
         if (retrySuccesses > 0) {
           progress.lastSuccessTime = Date.now();
-          progress.failedRequests = Math.max(
-            0,
-            progress.failedRequests - retrySuccesses,
-          );
+          progress.failedRequests = Math.max(0, progress.failedRequests - retrySuccesses);
         }
 
         if (retryFailures > 0) {
           progress.failedRequests += retryFailures;
         }
 
-        progress.currentDelay = calculateAdaptiveDelay(
-          progress,
-          batchResponseTime,
-        );
+        progress.currentDelay = calculateAdaptiveDelay(progress, batchResponseTime);
 
         verboseLog(
           `[Messages job] Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
@@ -511,9 +447,7 @@ export const messagesJob: Job = {
 
     while (!progress.done) {
       if (checkCircuitBreaker(progress)) {
-        console.warn(
-          "[Messages job] Circuit breaker is open, skipping processing",
-        );
+        console.warn("[Messages job] Circuit breaker is open, skipping processing");
         await delay(RATE_LIMIT_CONFIG.maxDelay);
         continue;
       }
@@ -529,10 +463,7 @@ export const messagesJob: Job = {
         progress.consecutiveFailures = 0;
 
         progress.currentDelay = calculateAdaptiveDelay(progress, responseTime);
-        progress.currentBatchSize = calculateAdaptiveBatchSize(
-          progress,
-          responseTime,
-        );
+        progress.currentBatchSize = calculateAdaptiveBatchSize(progress, responseTime);
       } catch (e) {
         console.error("[Messages job] list fetch failed:", e);
         progress.failedRequests++;
@@ -591,25 +522,15 @@ export const messagesJob: Job = {
             `[Messages job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
         } catch (error) {
-          console.warn(
-            "[Messages job] Failed to stream items to vector worker:",
-            error,
-          );
+          console.warn("[Messages job] Failed to stream items to vector worker:", error);
         }
       }
 
       if (processedItems.length > 0) {
         try {
-          publishDynamicItemsUpdate(
-            await loadAllStoredItems(),
-            "messages",
-            processedItems.length,
-          );
+          publishDynamicItemsUpdate(await loadAllStoredItems(), "messages", processedItems.length);
         } catch (error) {
-          console.warn(
-            "[Messages job] Failed to dispatch incremental search update:",
-            error,
-          );
+          console.warn("[Messages job] Failed to dispatch incremental search update:", error);
         }
       }
 

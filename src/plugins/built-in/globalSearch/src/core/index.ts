@@ -8,10 +8,7 @@ import { isIndexingPaused } from "../indexing/indexingPause";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 import { checkAndHandleUpdate } from "../utils/versionCheck";
-import {
-  getStoredPassiveItems,
-  installPassiveObserver,
-} from "../indexing/passiveObserver";
+import { getStoredPassiveItems, installPassiveObserver } from "../indexing/passiveObserver";
 import { globalSearchIndexingEnabled } from "@/seqta/utils/performanceMode";
 
 function scheduleIdleIndexing(run: () => void): void {
@@ -69,10 +66,11 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
     // @ts-ignore
     window.globalSearchDebug = {
       resetWorker: async () =>
-        (await import("../indexing/worker/vectorWorkerManager")).VectorWorkerManager.getInstance().resetWorker(),
+        (
+          await import("../indexing/worker/vectorWorkerManager")
+        ).VectorWorkerManager.getInstance().resetWorker(),
       passiveItems: getStoredPassiveItems,
-      runSelfTests: async () =>
-        (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),
+      runSelfTests: async () => (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),
     };
 
     if (globalSearchIndexingEnabled(!!api.settings.passiveIndexing)) {
@@ -83,10 +81,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
       }
     }
 
-    if (
-      globalSearchIndexingEnabled(!!api.settings.runIndexingOnLoad) &&
-      !isIndexingPaused()
-    ) {
+    if (globalSearchIndexingEnabled(!!api.settings.runIndexingOnLoad) && !isIndexingPaused()) {
       scheduleIdleIndexing(() => {
         if (!isIndexingPaused()) void runIndexing();
       });

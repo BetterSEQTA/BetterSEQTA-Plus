@@ -25,17 +25,12 @@ export function loadDynamicItems(items: IndexItem[]) {
 /**
  * Merge changed items and remove deleted ids without reloading the full corpus.
  */
-export function mergeDynamicItems(
-  changedItems: IndexItem[],
-  removedIds: string[] = [],
-): void {
+export function mergeDynamicItems(changedItems: IndexItem[], removedIds: string[] = []): void {
   if (changedItems.length === 0 && removedIds.length === 0) return;
 
   const removeSet = new Set(removedIds);
   const changeMap = new Map(changedItems.map((item) => [item.id, item]));
-  const kept = dynamicItems.filter(
-    (item) => !removeSet.has(item.id) && !changeMap.has(item.id),
-  );
+  const kept = dynamicItems.filter((item) => !removeSet.has(item.id) && !changeMap.has(item.id));
   dynamicItems = [...kept, ...changedItems];
 }
 

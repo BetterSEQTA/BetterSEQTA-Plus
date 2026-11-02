@@ -99,11 +99,9 @@ export class MessageHandler {
 
       case "OpenThemeCreator": {
         const themeID = request?.body?.themeID;
-        void import("@/plugins/built-in/themes/ThemeCreator").then(
-          ({ OpenThemeCreator }) => {
-            void OpenThemeCreator(themeID ? themeID : "");
-          },
-        );
+        void import("@/plugins/built-in/themes/ThemeCreator").then(({ OpenThemeCreator }) => {
+          void OpenThemeCreator(themeID ? themeID : "");
+        });
         closeExtensionPopup();
         sendResponse({ status: "success" });
         break;
@@ -118,17 +116,15 @@ export class MessageHandler {
         return true;
 
       case "CloseThemeCreator":
-        void import("@/plugins/built-in/themes/ThemeCreator").then(
-          ({ CloseThemeCreator }) => {
-            try {
-              CloseThemeCreator();
-              sendResponse({ status: "success" });
-            } catch (error) {
-              console.error("Error closing theme creator:", error);
-              sendResponse({ status: "error" });
-            }
-          },
-        );
+        void import("@/plugins/built-in/themes/ThemeCreator").then(({ CloseThemeCreator }) => {
+          try {
+            CloseThemeCreator();
+            sendResponse({ status: "success" });
+          } catch (error) {
+            console.error("Error closing theme creator:", error);
+            sendResponse({ status: "error" });
+          }
+        });
         return true;
 
       case "HideSensitive":

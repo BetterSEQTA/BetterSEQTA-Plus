@@ -97,12 +97,8 @@ export function getLexicalMatchQuality(item: IndexItem, query: string): number {
   }
 
   const md = (item.metadata ?? {}) as Record<string, unknown>;
-  const subjectName = normalize(
-    typeof md.subjectName === "string" ? md.subjectName : "",
-  );
-  const subjectCode = normalize(
-    typeof md.subjectCode === "string" ? md.subjectCode : "",
-  );
+  const subjectName = normalize(typeof md.subjectName === "string" ? md.subjectName : "");
+  const subjectCode = normalize(typeof md.subjectCode === "string" ? md.subjectCode : "");
   if (subjectName && (subjectName === q || subjectName.startsWith(q))) return 5;
   if (subjectCode && (subjectCode === q || subjectCode.startsWith(q))) return 5;
 

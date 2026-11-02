@@ -94,7 +94,7 @@ async function bsplusPfpRequest(
     ...init,
     headers: {
       Authorization: `Bearer ${token}`,
-      ...(init?.headers ?? {}),
+      ...init?.headers,
     },
   });
   const data = await parseJson(res);
@@ -146,9 +146,7 @@ function mergeMeIntoUser(current: CloudUser, data: Record<string, unknown>): Clo
   const pfpUrlRaw = raw.pfpUrl as string | null | undefined;
   const pfpHash = (raw.pfpHash as string | null | undefined) ?? null;
   const pfpUrl =
-    pfpUrlRaw == null || pfpUrlRaw === ""
-      ? undefined
-      : pfpUrlWithHash(pfpUrlRaw, pfpHash);
+    pfpUrlRaw == null || pfpUrlRaw === "" ? undefined : pfpUrlWithHash(pfpUrlRaw, pfpHash);
 
   return {
     ...current,
@@ -180,7 +178,10 @@ export async function refreshCloudUserFromServer(): Promise<{ success: boolean; 
     });
     const data = await parseJson(res);
     if (!res.ok) {
-      return { success: false, error: (data.error as string) ?? `Could not refresh account (${res.status})` };
+      return {
+        success: false,
+        error: (data.error as string) ?? `Could not refresh account (${res.status})`,
+      };
     }
 
     let merged = mergeMeIntoUser(current, data);
@@ -197,7 +198,10 @@ export async function refreshCloudUserFromServer(): Promise<{ success: boolean; 
   }
 }
 
-export async function pullCloudProfilePictureFromServer(): Promise<{ success: boolean; error?: string }> {
+export async function pullCloudProfilePictureFromServer(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
   const current = cloudAuth.state.user;
   if (!cloudAuth.state.isLoggedIn || !current?.id) {
     return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
@@ -221,7 +225,9 @@ export async function onUseCloudPfpToggled(enabled: boolean): Promise<void> {
   else await pullCloudProfilePictureFromServer();
 }
 
-export async function uploadCloudProfilePicture(source: Blob): Promise<{ success: boolean; error?: string }> {
+export async function uploadCloudProfilePicture(
+  source: Blob,
+): Promise<{ success: boolean; error?: string }> {
   if (!cloudAuth.state.isLoggedIn) {
     return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
   }
@@ -241,7 +247,10 @@ export async function uploadCloudProfilePicture(source: Blob): Promise<{ success
   }
 }
 
-export async function syncLocalProfilePictureToCloud(): Promise<{ success: boolean; error?: string }> {
+export async function syncLocalProfilePictureToCloud(): Promise<{
+  success: boolean;
+  error?: string;
+}> {
   if (!(await isUseCloudPfpEnabled()) || !cloudAuth.state.isLoggedIn) return { success: true };
   const blob = await profileStore.getItem<Blob>("profile-picture");
   if (!(blob instanceof Blob)) return { success: true };
@@ -257,7 +266,9 @@ export async function clearCloudProfilePicture(): Promise<{ success: boolean; er
   return { success: true };
 }
 
-export async function revertCloudProfilePicture(historyId: string): Promise<{ success: boolean; error?: string }> {
+export async function revertCloudProfilePicture(
+  historyId: string,
+): Promise<{ success: boolean; error?: string }> {
   if (!cloudAuth.state.isLoggedIn) {
     return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
   }

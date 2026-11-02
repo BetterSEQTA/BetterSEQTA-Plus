@@ -103,8 +103,7 @@ function isServerTimestampNewer(serverIso: string, localIso: string | undefined)
 async function fetchCloudSummaryOnce(
   token: string,
 ): Promise<
-  | { ok: true; data: CloudSummaryResponse }
-  | { ok: false; unauthorized: boolean; error?: string }
+  { ok: true; data: CloudSummaryResponse } | { ok: false; unauthorized: boolean; error?: string }
 > {
   try {
     const r = await fetchWithTimeout(CLOUD_SUMMARY_URL, {
@@ -130,9 +129,7 @@ async function fetchCloudSummaryOnce(
   }
 }
 
-async function fetchCloudSummaryWithAuthRetry(
-  token: string,
-): Promise<CloudSummaryResponse | null> {
+async function fetchCloudSummaryWithAuthRetry(token: string): Promise<CloudSummaryResponse | null> {
   let t = token;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await fetchCloudSummaryOnce(t);
@@ -355,9 +352,7 @@ async function runCloudSettingsPollInner(): Promise<void> {
     typeof bsplus.schemaVersion === "number" &&
     bsplus.schemaVersion > CLOUD_SETTINGS_SYNC_SCHEMA_VERSION
   ) {
-    console.warn(
-      "[BS+ cloud sync] Server schemaVersion newer than client; skip auto-download",
-    );
+    console.warn("[BS+ cloud sync] Server schemaVersion newer than client; skip auto-download");
     return;
   }
 
@@ -484,4 +479,3 @@ export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }
   browser.storage.onChanged.addListener(onStorageChanged);
   void runCloudSettingsPoll();
 }
-

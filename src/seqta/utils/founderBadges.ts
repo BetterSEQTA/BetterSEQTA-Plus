@@ -88,8 +88,7 @@ export const ACHIEVEMENT_BADGES = [
     key: "theme_submitter",
     label: "Theme Submitter",
     rankLabel: "Community",
-    description:
-      "Submitted a custom theme that was accepted into the BetterSEQTA theme gallery.",
+    description: "Submitted a custom theme that was accepted into the BetterSEQTA theme gallery.",
     base: "#5b21b6",
     blobs: ["rgba(139,92,246,0.52)", "rgba(124,58,237,0.46)", "rgba(196,181,253,0.4)"],
     icon: "swatch",
@@ -128,10 +127,7 @@ const UNKNOWN_ACHIEVEMENT_VISUAL = {
   icon: "sparkles",
 } as const;
 
-function primaryFounderBadge(
-  badges: BadgeItem[],
-  signupNumber?: number | null,
-): BadgeItem | null {
+function primaryFounderBadge(badges: BadgeItem[], signupNumber?: number | null): BadgeItem | null {
   const fromApi = badges.find((b) => b.key.startsWith("founder_"));
   if (fromApi) return fromApi;
 
@@ -154,10 +150,7 @@ function primaryFounderBadge(
 }
 
 /** Founder pill (at most one) then achievement pills — matches Accounts display rules. */
-export function badgesForTitlebar(
-  badges: BadgeItem[],
-  signupNumber?: number | null,
-): BadgeItem[] {
+export function badgesForTitlebar(badges: BadgeItem[], signupNumber?: number | null): BadgeItem[] {
   const founder = primaryFounderBadge(badges, signupNumber);
   const achievements = badges.filter((b) => !b.key.startsWith("founder_"));
   return founder ? [founder, ...achievements] : achievements;
@@ -195,10 +188,7 @@ function badgeBlobStyle(visual: Pick<BadgeVisual, "base" | "blobs">): string {
   ].join(";");
 }
 
-export function founderBadgeChipHtml(
-  badge: BadgeItem,
-  options?: { hero?: boolean },
-): string {
+export function founderBadgeChipHtml(badge: BadgeItem, options?: { hero?: boolean }): string {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return "";
 

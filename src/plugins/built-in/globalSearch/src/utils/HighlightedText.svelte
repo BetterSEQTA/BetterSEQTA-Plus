@@ -20,7 +20,7 @@
       );
       if (!fieldMatches?.indices?.length) return [{ text, highlight: false }];
 
-      const highlightMap = new Array<boolean>(text.length).fill(false);
+      const highlightMap = Array.from({ length: text.length }, () => false);
       for (const [start, end] of fieldMatches.indices) {
         if (fieldMatches.key === 'allContent') {
           const textPos = fieldMatches.value?.indexOf(text) ?? -1;

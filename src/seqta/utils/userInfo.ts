@@ -48,9 +48,7 @@ export async function getUserInfo(options?: { validateSession?: boolean }) {
         cachedUserInfo.id != null &&
         payload.id !== cachedUserInfo.id
       ) {
-        console.warn(
-          "[BetterSEQTA+] Session user changed; invalidating cached user info",
-        );
+        console.warn("[BetterSEQTA+] Session user changed; invalidating cached user info");
         invalidateCachedUserInfo();
       }
 

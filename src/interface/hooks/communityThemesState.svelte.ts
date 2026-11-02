@@ -1,6 +1,9 @@
 import browser from "@/lib/browser";
 import type { Theme } from "@/interface/types/Theme";
-import { getCommunityInstalledThemeIds, getStoreInstalledThemeIds } from "@/interface/utils/themeListFilters";
+import {
+  getCommunityInstalledThemeIds,
+  getStoreInstalledThemeIds,
+} from "@/interface/utils/themeListFilters";
 import { normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
@@ -125,9 +128,7 @@ export class CommunityThemesState {
         limit: 50,
       })) as { success?: boolean; data?: { themes?: unknown[] }; error?: unknown };
       if (!res?.success || !Array.isArray(res.data?.themes)) {
-        throw new Error(
-          typeof res?.error === "string" ? res.error : "Could not load admin themes",
-        );
+        throw new Error(typeof res?.error === "string" ? res.error : "Could not load admin themes");
       }
       this.reviewThemes = res.data.themes
         .map((row) => {
@@ -161,7 +162,9 @@ export class CommunityThemesState {
       themeUpdates.triggerUpdate();
       await this.refreshInstalledThemes();
       this.selectedThemeId = installedId;
-      void browser.runtime.sendMessage({ type: "cloudSettingsRequestDebouncedUpload" }).catch(() => {});
+      void browser.runtime
+        .sendMessage({ type: "cloudSettingsRequestDebouncedUpload" })
+        .catch(() => {});
     } catch (err) {
       this.reviewPreviewError = err instanceof Error ? err.message : "Preview failed";
     }
@@ -242,7 +245,9 @@ export class CommunityThemesState {
     await this.themeManager.setTheme(installedId);
     themeUpdates.triggerUpdate();
     await this.refreshInstalledThemes();
-    void browser.runtime.sendMessage({ type: "cloudSettingsRequestDebouncedUpload" }).catch(() => {});
+    void browser.runtime
+      .sendMessage({ type: "cloudSettingsRequestDebouncedUpload" })
+      .catch(() => {});
   }
 
   async removeInstalledTheme(themeId: string) {
@@ -255,7 +260,9 @@ export class CommunityThemesState {
     await this.themeManager.setTheme(themeId);
     this.selectedThemeId = themeId;
     themeUpdates.triggerUpdate();
-    void browser.runtime.sendMessage({ type: "cloudSettingsRequestDebouncedUpload" }).catch(() => {});
+    void browser.runtime
+      .sendMessage({ type: "cloudSettingsRequestDebouncedUpload" })
+      .catch(() => {});
   }
 
   async saveMetadata() {
@@ -338,13 +345,13 @@ export class CommunityThemesState {
     });
 
     $effect(() => {
-      this.statusFilter;
+      void this.statusFilter;
       if (this.innerTab === "mine" && this.cloudLoggedIn) void this.loadMyThemes();
     });
 
     $effect(() => {
-      this.reviewStatusFilter;
-      this.reviewSourceFilter;
+      void this.reviewStatusFilter;
+      void this.reviewSourceFilter;
       this.getSearchTerm();
       if (this.innerTab === "review" && this.isAdmin) void this.loadReviewThemes();
     });

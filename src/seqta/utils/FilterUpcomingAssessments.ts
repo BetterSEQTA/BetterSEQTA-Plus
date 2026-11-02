@@ -28,14 +28,8 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
         element.parentNode!.querySelectorAll(".hidden").length
       ) {
         if (element.parentNode!.querySelectorAll(".hidden").length > 0) {
-          if (
-            !(element.parentNode!.parentNode! as HTMLElement).hasAttribute(
-              "data-day",
-            )
-          ) {
-            (element.parentNode!.parentNode! as HTMLElement).classList.add(
-              "hidden",
-            );
+          if (!(element.parentNode!.parentNode! as HTMLElement).hasAttribute("data-day")) {
+            (element.parentNode!.parentNode! as HTMLElement).classList.add("hidden");
           } else {
             AddPlaceHolderToParent(
               element.parentNode!.parentNode,
@@ -44,9 +38,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
           }
         }
       } else {
-        (element.parentNode!.parentNode! as HTMLElement).classList.remove(
-          "hidden",
-        );
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove("hidden");
       }
     }
   }

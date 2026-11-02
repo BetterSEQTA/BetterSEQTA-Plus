@@ -29,12 +29,8 @@
   }
 }
 
-#menu#menu
-  ul.bsplus-drill-rows:has(> .hasChildren:is(.active, .bsplus-active))
-  > :is(li, section) {
-  margin-left: calc(
-    var(--bsplus-row-margin-left) + var(--bsplus-slide-off, -320px)
-  ) !important;
+#menu#menu ul.bsplus-drill-rows:has(> .hasChildren:is(.active, .bsplus-active)) > :is(li, section) {
+  margin-left: calc(var(--bsplus-row-margin-left) + var(--bsplus-slide-off, -320px)) !important;
 }
 
 /* Incoming rows travel only with their native panel. */
@@ -62,9 +58,7 @@
   pointer-events: none !important;
 }
 
-#menu
-  > ul:has(li.hasChildren:is(.active, .bsplus-active))
-  > li:is(.active, .bsplus-active) {
+#menu > ul:has(li.hasChildren:is(.active, .bsplus-active)) > li:is(.active, .bsplus-active) {
   background: transparent !important;
 }
 

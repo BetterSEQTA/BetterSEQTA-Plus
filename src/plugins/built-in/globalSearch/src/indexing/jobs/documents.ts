@@ -1,7 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes file metadata from `/seqta/student/load/documents`.
  *
@@ -87,10 +87,7 @@ export const documentsJob: Job = {
         if (seen.has(id)) continue;
         seen.add(id);
 
-        const title =
-          doc.title?.trim() ||
-          doc.filename?.trim() ||
-          `Document ${doc.file ?? uuid}`;
+        const title = doc.title?.trim() || doc.filename?.trim() || `Document ${doc.file ?? uuid}`;
 
         const sizeText = prettySize(doc.size);
         const mimeLabel = describeMime(doc.mimetype);
@@ -117,8 +114,7 @@ export const documentsJob: Job = {
             fileId: doc.file,
             filename: doc.filename,
             mimetype: doc.mimetype,
-            sizeBytes:
-              typeof doc.size === "string" ? parseInt(doc.size, 10) : doc.size,
+            sizeBytes: typeof doc.size === "string" ? parseInt(doc.size, 10) : doc.size,
             categoryId: category.id,
             categoryName: category.category,
             createdDate: doc.created_date,

@@ -19,9 +19,7 @@ export async function getVectorizedItemIds(): Promise<Set<string>> {
   }
 
   try {
-    const store = db
-      .transaction([EMBEDDIA_STORE], "readonly")
-      .objectStore(EMBEDDIA_STORE);
+    const store = db.transaction([EMBEDDIA_STORE], "readonly").objectStore(EMBEDDIA_STORE);
     const keys = await new Promise<IDBValidKey[]>((resolve, reject) => {
       const req = store.getAllKeys();
       req.onsuccess = () => resolve(req.result);
@@ -70,16 +68,12 @@ export async function removeVectorEmbeddings(ids: string[]): Promise<void> {
   }
 }
 
-export async function pruneOrphanVectorEmbeddings(
-  liveItemIds: Set<string>,
-): Promise<number> {
+export async function pruneOrphanVectorEmbeddings(liveItemIds: Set<string>): Promise<number> {
   const vectorizedIds = await getVectorizedItemIds();
   const orphanIds = [...vectorizedIds].filter((id) => !liveItemIds.has(id));
 
   if (orphanIds.length > 0) {
-    console.debug(
-      `[Indexer] Pruning ${orphanIds.length} orphaned vector embedding(s)`,
-    );
+    console.debug(`[Indexer] Pruning ${orphanIds.length} orphaned vector embedding(s)`);
     await removeVectorEmbeddings(orphanIds);
   }
 
@@ -91,9 +85,7 @@ export function htmlToPlainText(rawHtml: string): string {
   const doc = parser.parseFromString(rawHtml, "text/html");
   const { body } = doc;
 
-  body
-    .querySelectorAll("script,style,template,noscript,meta,link")
-    .forEach((el) => el.remove());
+  body.querySelectorAll("script,style,template,noscript,meta,link").forEach((el) => el.remove());
 
   body.querySelectorAll(".forward").forEach((el) => {
     let n: ChildNode | null = el;

@@ -19,19 +19,14 @@ export function getSidebarDrillDepth(
     if (!activeFolder) break;
 
     depth += 1;
-    list = activeFolder.querySelector(
-      ":scope > .sub > ul",
-    ) as HTMLElement | null;
+    list = activeFolder.querySelector(":scope > .sub > ul") as HTMLElement | null;
   }
 
   return depth;
 }
 
 /** List that becomes visible after drilling back to `targetDepth`. */
-function getSidebarListAtDepth(
-  menu: HTMLElement,
-  targetDepth: number,
-): HTMLElement | null {
+function getSidebarListAtDepth(menu: HTMLElement, targetDepth: number): HTMLElement | null {
   if (targetDepth <= 0) {
     return menu.querySelector(":scope > ul") as HTMLElement | null;
   }
@@ -44,9 +39,7 @@ function getSidebarListAtDepth(
       ":scope > li.hasChildren.active, :scope > section.hasChildren.active",
     ) as HTMLElement | null;
     if (!activeFolder) return list;
-    list = activeFolder.querySelector(
-      ":scope > .sub > ul",
-    ) as HTMLElement | null;
+    list = activeFolder.querySelector(":scope > .sub > ul") as HTMLElement | null;
     depth += 1;
   }
 
@@ -54,17 +47,12 @@ function getSidebarListAtDepth(
 }
 
 function getReturnSlideNodes(list: HTMLElement): HTMLElement[] {
-  return [
-    ...list.querySelectorAll<HTMLElement>(":scope > li, :scope > section"),
-  ];
+  return [...list.querySelectorAll<HTMLElement>(":scope > li, :scope > section")];
 }
 
 function prepareRowSlide(list: HTMLElement) {
   // The icons-only root rail remains visible next to the open panel.
-  if (
-    document.body?.classList.contains("icon-only-sidebar") &&
-    list.parentElement?.id === "menu"
-  )
+  if (document.body?.classList.contains("icon-only-sidebar") && list.parentElement?.id === "menu")
     return;
   if (list.classList.contains(ROWS_CLASS)) return;
   const nodes = getReturnSlideNodes(list);
@@ -96,9 +84,7 @@ let lastRootFolder: Element | null = null;
 let swapFrame: number | null = null;
 
 function rootFolder(menu: HTMLElement) {
-  return menu.querySelector(
-    ":scope > ul > .hasChildren:is(.active, .bsplus-active)",
-  );
+  return menu.querySelector(":scope > ul > .hasChildren:is(.active, .bsplus-active)");
 }
 
 function swapRootPanel(menu: HTMLElement) {
@@ -151,8 +137,7 @@ export function runSidebarDrillReturn(
 
 function onDrillDepthChange(menu: HTMLElement) {
   const currentRoot = rootFolder(menu);
-  if (lastRootFolder && currentRoot && lastRootFolder !== currentRoot)
-    swapRootPanel(menu);
+  if (lastRootFolder && currentRoot && lastRootFolder !== currentRoot) swapRootPanel(menu);
   lastRootFolder = currentRoot;
   if (menu.classList.contains(MENU_RETURN_CLASS)) return;
 
@@ -176,11 +161,7 @@ function onMenuClickCapture(event: MouseEvent) {
   if (!(target instanceof Element)) return;
   if (!target.closest(".sub .back")) {
     const folder = target.closest("li.hasChildren, section.hasChildren");
-    if (
-      folder &&
-      !folder.classList.contains("active") &&
-      folder.parentElement
-    ) {
+    if (folder && !folder.classList.contains("active") && folder.parentElement) {
       if (
         folder.parentElement.parentElement === menu &&
         rootFolder(menu) &&
@@ -244,9 +225,7 @@ export function uninstallSidebarDrillReturn() {
     menu.classList.remove("bsplus-icon-rail-switching");
     clearReturnClasses(menu);
     clearRowSlide(
-      menu.querySelectorAll<HTMLElement>(
-        `ul.${ROWS_CLASS} > li, ul.${ROWS_CLASS} > section`,
-      ),
+      menu.querySelectorAll<HTMLElement>(`ul.${ROWS_CLASS} > li, ul.${ROWS_CLASS} > section`),
     );
     if (backCaptureAttached) {
       menu.removeEventListener("click", onMenuClickCapture, true);

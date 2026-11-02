@@ -33,10 +33,7 @@ export default function ColorLuminance(color: any, lum = 0) {
     // Adjust luminance for each unique color stop
     for (let colorStop of uniqueColorSet) {
       const adjustedColor = adjustLuminance(colorStop, lum);
-      gradient = gradient.replace(
-        new RegExp(colorStop as string, "gi"),
-        adjustedColor,
-      );
+      gradient = gradient.replace(new RegExp(colorStop as string, "gi"), adjustedColor);
     }
 
     return gradient;

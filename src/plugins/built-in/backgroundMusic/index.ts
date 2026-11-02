@@ -27,8 +27,7 @@ const settings = defineSettings({
   }),
   pauseOnHidden: booleanSetting({
     title: "Pause when tab hidden",
-    description:
-      "Pause music when switching to another tab or minimizing the browser",
+    description: "Pause music when switching to another tab or minimizing the browser",
     default: true,
   }),
 });
@@ -197,8 +196,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
 
     type BgSettings = { volume?: number; pauseOnHidden?: boolean };
     const vol = () => (api.settings as BgSettings).volume ?? 0.5;
-    const pauseOnHidden = () =>
-      (api.settings as BgSettings).pauseOnHidden ?? true;
+    const pauseOnHidden = () => (api.settings as BgSettings).pauseOnHidden ?? true;
 
     const runEnsurePlayback = async () => {
       if (!(await prepareAudio(vol()))) return;
@@ -246,11 +244,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     });
 
     api.settings.onChange("pauseOnHidden" as never, (value: unknown) => {
-      if (
-        value === false &&
-        audio?.paused &&
-        document.visibilityState === "visible"
-      ) {
+      if (value === false && audio?.paused && document.visibilityState === "visible") {
         void ensurePlayback();
       }
     });
@@ -297,10 +291,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       pageChange.unregister();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onUpdated);
-      window.removeEventListener(
-        "betterseqta-background-music-updated",
-        onUpdated,
-      );
+      window.removeEventListener("betterseqta-background-music-updated", onUpdated);
       window.removeEventListener("betterseqta-background-music-stop", onStop);
       if (resumeTimer) clearTimeout(resumeTimer);
       disarmGesture();

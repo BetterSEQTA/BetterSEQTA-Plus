@@ -6,8 +6,7 @@ export function formatTimetableDayLabel(date: Date): string {
 export function lessonsSubtitleForViewDate(viewDate: Date): string {
   const today = new Date();
   const isSameMonth =
-    today.getFullYear() === viewDate.getFullYear() &&
-    today.getMonth() === viewDate.getMonth();
+    today.getFullYear() === viewDate.getFullYear() && today.getMonth() === viewDate.getMonth();
 
   if (isSameMonth) {
     const dayDiff = today.getDate() - viewDate.getDate();

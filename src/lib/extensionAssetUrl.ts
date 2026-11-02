@@ -7,4 +7,3 @@ export function resolveExtensionAssetUrl(url: string): string {
   if (/^(?:chrome|moz)-extension:\/\/|https?:|data:/.test(url)) return url;
   return browser.runtime.getURL(url.replace(/^\/+/, ""));
 }
-

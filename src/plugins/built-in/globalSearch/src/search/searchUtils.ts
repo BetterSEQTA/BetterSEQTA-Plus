@@ -133,9 +133,7 @@ export interface DynamicItemsUpdatedDetail {
   newItemCount?: number;
 }
 
-export function createDynamicContentFuse(
-  items: IndexItem[],
-): Fuse<IndexItem> {
+export function createDynamicContentFuse(items: IndexItem[]): Fuse<IndexItem> {
   return new Fuse(dedupeIndexItemsForSearch(items), DYNAMIC_FUSE_OPTIONS);
 }
 
@@ -275,14 +273,14 @@ export function searchDynamicItems(
   const now = Date.now();
   const queryLower = query.toLowerCase();
   const queryTrimmed = query.trim();
-  
+
   // For short queries (3 chars or less), use a more permissive approach
   const isShortQuery = queryTrimmed.length <= 3;
   const searchLimit = Math.min(limit * 3, 50);
-  
+
   // First, try Fuse.js search
   const searchResults = dynamicContentFuse.search(query, { limit: searchLimit });
-  
+
   // For short queries, always do a simple substring match to supplement Fuse.js results
   // This ensures we catch partial word matches like "SAT" in "SAT 1: Differential Calculus"
   let additionalMatches: IndexItem[] = [];
@@ -290,17 +288,19 @@ export function searchDynamicItems(
     // Always do substring search for short queries to catch partial word matches
     for (const item of dynamicIdToItemMap.values()) {
       const textLower = item.text.toLowerCase();
-      const contentLower = (item.content || '').toLowerCase();
-      const subjectNameLower = (item.metadata?.subjectName || '').toLowerCase();
-      const subjectCodeLower = (item.metadata?.subjectCode || '').toLowerCase();
-      
+      const contentLower = (item.content || "").toLowerCase();
+      const subjectNameLower = (item.metadata?.subjectName || "").toLowerCase();
+      const subjectCodeLower = (item.metadata?.subjectCode || "").toLowerCase();
+
       // Check if query appears anywhere in the text, content, or metadata
-      if (textLower.includes(queryLower) || 
-          contentLower.includes(queryLower) ||
-          subjectNameLower.includes(queryLower) ||
-          subjectCodeLower.includes(queryLower)) {
+      if (
+        textLower.includes(queryLower) ||
+        contentLower.includes(queryLower) ||
+        subjectNameLower.includes(queryLower) ||
+        subjectCodeLower.includes(queryLower)
+      ) {
         // Only add if not already in Fuse.js results
-        if (!searchResults.find(r => r.item.id === item.id)) {
+        if (!searchResults.find((r) => r.item.id === item.id)) {
           additionalMatches.push(item);
         }
       }
@@ -350,7 +350,7 @@ export function searchDynamicItems(
 
   // Add additional matches from simple substring search
   additionalMatches.forEach((item) => {
-    if (!results.find(r => r.id === item.id)) {
+    if (!results.find((r) => r.id === item.id)) {
       let score = 5; // Base score for substring matches
 
       const lexicalQuality = getLexicalMatchQuality(item, queryLower);
@@ -374,7 +374,6 @@ export function searchDynamicItems(
   return results.sort((a, b) => b.score - a.score).slice(0, limit);
 }
 
-
 export async function performSearch(
   query: string,
   commandsFuse: Fuse<StaticCommandItem>,
@@ -384,7 +383,7 @@ export async function performSearch(
   sortByRecent: boolean = true,
 ): Promise<CombinedResult[]> {
   const trimmedQuery = query.trim().toLowerCase();
-  
+
   if (trimmedQuery.length > 2) {
     const cached = getCachedResults(trimmedQuery);
     if (cached) {
@@ -393,11 +392,7 @@ export async function performSearch(
   }
 
   // Step 1: Get command results (these don't need hybrid search)
-  const commandResults = searchCommands(
-    commandsFuse,
-    trimmedQuery,
-    commandIdToItemMap,
-  );
+  const commandResults = searchCommands(commandsFuse, trimmedQuery, commandIdToItemMap);
 
   // Step 2: Get BM25 results for dynamic items
   let dynamicResults: CombinedResult[] = [];
@@ -443,19 +438,14 @@ export async function performSearch(
     if (trimmedQuery.length > 2 && bm25Results.length > 0) {
       try {
         // Apply hybrid search with expansion
-        dynamicResults = await hybridSearchWithExpansion(
-          bm25Results,
-          trimmedQuery,
-          allItems,
-          {
-            bm25TopK: 50,
-            finalLimit: 20, // Return top 20 after reranking
-            recencyBoost: sortByRecent,
-            bm25Weight: 0.4, // 40% BM25, 60% vector
-            vectorWeight: 0.6,
-            recencyWeight: 0.1,
-          },
-        );
+        dynamicResults = await hybridSearchWithExpansion(bm25Results, trimmedQuery, allItems, {
+          bm25TopK: 50,
+          finalLimit: 20, // Return top 20 after reranking
+          recencyBoost: sortByRecent,
+          bm25Weight: 0.4, // 40% BM25, 60% vector
+          vectorWeight: 0.6,
+          recencyWeight: 0.1,
+        });
       } catch (e) {
         console.warn("[Search] Hybrid search failed, using BM25 only:", e);
         dynamicResults = bm25Results.slice(0, 20);
@@ -469,14 +459,10 @@ export async function performSearch(
   // Step 4: Combine command and dynamic results
   const allResults = [...commandResults, ...dynamicResults];
 
-  allResults.sort((a, b) =>
-    compareCombinedSearchResults(a, b, trimmedQuery),
-  );
+  allResults.sort((a, b) => compareCombinedSearchResults(a, b, trimmedQuery));
 
   const dedupedResults = dedupeCombinedResultsByCourseNav(allResults);
-  dedupedResults.sort((a, b) =>
-    compareCombinedSearchResults(a, b, trimmedQuery),
-  );
+  dedupedResults.sort((a, b) => compareCombinedSearchResults(a, b, trimmedQuery));
 
   // Cache results for queries longer than 2 chars
   if (trimmedQuery.length > 2) {

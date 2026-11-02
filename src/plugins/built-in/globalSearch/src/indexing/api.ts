@@ -302,10 +302,7 @@ export async function seqtaFetchPayload<T = any>(
     const res = await seqtaFetchJson<T>(path, body, options);
     return res.payload ?? null;
   } catch (e) {
-    console.warn(
-      `[Global Search API] Request to ${normalizeSeqtaPath(path)} failed:`,
-      e,
-    );
+    console.warn(`[Global Search API] Request to ${normalizeSeqtaPath(path)} failed:`, e);
     return null;
   }
 }

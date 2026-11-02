@@ -74,7 +74,7 @@ Returns the caller’s latest settings backup.
 {
   "schemaVersion": 1,
   "themeId": "uuid-string-or-empty",
-  "data": { },
+  "data": {},
   "updated_at": "2026-04-07T12:00:00.000Z"
 }
 ```
@@ -96,11 +96,11 @@ The extension resolves **`themeId`** (if non-empty), else **`data.selectedTheme`
 
 Example relational layout:
 
-| Column        | Type        | Notes |
-|---------------|-------------|--------|
-| `user_id`     | FK → users  | Unique per backup row (one row per user). |
-| `payload`     | JSON / JSONB| Store `{ "schemaVersion", "data" }` or only `data` + separate `schema_version` column. |
-| `updated_at`  | timestamptz | Set on each successful `PUT`. |
+| Column       | Type         | Notes                                                                                  |
+| ------------ | ------------ | -------------------------------------------------------------------------------------- |
+| `user_id`    | FK → users   | Unique per backup row (one row per user).                                              |
+| `payload`    | JSON / JSONB | Store `{ "schemaVersion", "data" }` or only `data` + separate `schema_version` column. |
+| `updated_at` | timestamptz  | Set on each successful `PUT`.                                                          |
 
 Unique constraint on `user_id`.
 

@@ -60,9 +60,7 @@ export function getSyncableStorageDefaults(): Record<string, unknown> {
     delete flat[key];
   }
 
-  for (const [pluginId, settings] of Object.entries(
-    SYNCABLE_PLUGIN_SETTING_DEFAULTS,
-  )) {
+  for (const [pluginId, settings] of Object.entries(SYNCABLE_PLUGIN_SETTING_DEFAULTS)) {
     flat[`plugin.${pluginId}.settings`] = settings;
   }
 

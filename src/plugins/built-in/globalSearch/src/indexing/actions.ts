@@ -3,7 +3,7 @@ import type { IndexItem } from "./types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseLog } from '@/utils/verboseLog';
+import { verboseLog } from "@/utils/verboseLog";
 interface MessageMetadata {
   messageId: number;
   author: string;
@@ -73,14 +73,14 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
       selected: new Set([item.metadata.messageId]),
     });
-    
+
     // send a network request to mark as read
-    fetch('/seqta/student/save/message', {
+    fetch("/seqta/student/save/message", {
       method: "POST",
       credentials: "include",
       body: JSON.stringify({
         items: [item.metadata.messageId],
-        mode: 'x-read',
+        mode: "x-read",
         read: true,
       }),
     });
@@ -98,13 +98,16 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     // Firefox XrayWrapper prevents direct access to nested properties
     let itemClone: IndexItem & { metadata: AssessmentMetadata };
     let metadata: AssessmentMetadata;
-    
+
     try {
       // First try to clone the entire item
       itemClone = JSON.parse(JSON.stringify(item));
       metadata = itemClone.metadata || {};
     } catch (e) {
-      console.warn("[Assessment Action] Failed to clone item, trying to clone metadata separately:", e);
+      console.warn(
+        "[Assessment Action] Failed to clone item, trying to clone metadata separately:",
+        e,
+      );
       try {
         // If full clone fails, try cloning just metadata
         metadata = JSON.parse(JSON.stringify(item.metadata || {}));
@@ -112,10 +115,10 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       } catch (e2) {
         console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
         itemClone = item;
-        metadata = item.metadata || {} as AssessmentMetadata;
+        metadata = item.metadata || ({} as AssessmentMetadata);
       }
     }
-    
+
     // Try to extract metadata values using multiple methods to handle XrayWrapper.
     // The metadata bag is intentionally typed loosely here because Firefox's
     // XrayWrapper occasionally surfaces extra/casing-variant keys we still
@@ -152,51 +155,65 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         return undefined;
       }
     };
-    
-    if (getMetadataValue('isMessageBased')) {
+
+    if (getMetadataValue("isMessageBased")) {
       window.location.hash = `#?page=/messages`;
 
       await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
 
       // Select the specific direct message
       ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
-        selected: new Set([getMetadataValue('messageId')]),
+        selected: new Set([getMetadataValue("messageId")]),
       });
     } else {
       // Extract values - check both camelCase and PascalCase, and try multiple access methods
-      let programmeId = getMetadataValue('programmeId', 'programmeID');
-      let metaclassId = getMetadataValue('metaclassId', 'metaclassID');
-      let assessmentId = getMetadataValue('assessmentId', 'assessmentID');
-      
+      let programmeId = getMetadataValue("programmeId", "programmeID");
+      let metaclassId = getMetadataValue("metaclassId", "metaclassID");
+      let assessmentId = getMetadataValue("assessmentId", "assessmentID");
+
       // Fallback: try to extract assessmentId from item ID if metadata is missing
-      if ((assessmentId === undefined || assessmentId === null) && itemClone.id && itemClone.id.startsWith('assignment-')) {
-        const extractedId = itemClone.id.replace('assignment-', '');
+      if (
+        (assessmentId === undefined || assessmentId === null) &&
+        itemClone.id &&
+        itemClone.id.startsWith("assignment-")
+      ) {
+        const extractedId = itemClone.id.replace("assignment-", "");
         assessmentId = Number(extractedId) || extractedId;
         verboseLog("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
       }
-      
+
       // Convert to numbers, but preserve 0 as valid
-      if (programmeId !== undefined && programmeId !== null && programmeId !== '') {
+      if (programmeId !== undefined && programmeId !== null && programmeId !== "") {
         const num = Number(programmeId);
         programmeId = isNaN(num) ? programmeId : num;
       }
-      if (metaclassId !== undefined && metaclassId !== null && metaclassId !== '') {
+      if (metaclassId !== undefined && metaclassId !== null && metaclassId !== "") {
         const num = Number(metaclassId);
         metaclassId = isNaN(num) ? metaclassId : num;
       }
-      if (assessmentId !== undefined && assessmentId !== null && assessmentId !== '') {
+      if (assessmentId !== undefined && assessmentId !== null && assessmentId !== "") {
         const num = Number(assessmentId);
         assessmentId = isNaN(num) ? assessmentId : num;
       }
-      
+
       // Check if values exist (including 0, which is a valid ID)
       // Use typeof check to properly handle 0
-      const hasProgrammeId = programmeId !== undefined && programmeId !== null && programmeId !== '' && typeof programmeId === 'number';
-      const hasMetaclassId = metaclassId !== undefined && metaclassId !== null && metaclassId !== '' && typeof metaclassId === 'number';
-      const hasAssessmentId = assessmentId !== undefined && assessmentId !== null && assessmentId !== '' && typeof assessmentId === 'number';
-      
-     
-      
+      const hasProgrammeId =
+        programmeId !== undefined &&
+        programmeId !== null &&
+        programmeId !== "" &&
+        typeof programmeId === "number";
+      const hasMetaclassId =
+        metaclassId !== undefined &&
+        metaclassId !== null &&
+        metaclassId !== "" &&
+        typeof metaclassId === "number";
+      const hasAssessmentId =
+        assessmentId !== undefined &&
+        assessmentId !== null &&
+        assessmentId !== "" &&
+        typeof assessmentId === "number";
+
       if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
         const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
         verboseLog("[Assessment Action] ✅ Navigating to:", url);
@@ -226,15 +243,11 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   }) as ActionHandler<any>,
 
   subjectassessment: ((item: IndexItem) => {
-    navigateToHashRoute(
-      `/assessments/${item.metadata.programme}:${item.metadata.subjectId}`,
-    );
+    navigateToHashRoute(`/assessments/${item.metadata.programme}:${item.metadata.subjectId}`);
   }) as ActionHandler<any>,
 
   subjectcourse: ((item: IndexItem) => {
-    navigateToHashRoute(
-      `/courses/${item.metadata.programme}:${item.metadata.subjectId}`,
-    );
+    navigateToHashRoute(`/courses/${item.metadata.programme}:${item.metadata.subjectId}`);
   }) as ActionHandler<any>,
 
   forum: ((item: IndexItem) => {
@@ -322,8 +335,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
   passive: ((item: IndexItem) => {
     const md = (item.metadata ?? {}) as Record<string, unknown>;
     const route = typeof md.route === "string" ? (md.route as string) : "";
-    const sourcePage =
-      typeof md.sourcePage === "string" ? (md.sourcePage as string) : "";
+    const sourcePage = typeof md.sourcePage === "string" ? (md.sourcePage as string) : "";
     const routeParts = route
       .replace(/^\/seqta\/student\/?/, "")
       .replace(/^load\//, "")
@@ -347,24 +359,16 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     };
 
     const programme = num("programme") ?? num("programmeId") ?? num("programmeID");
-    const metaclass =
-      num("metaclass") ?? num("metaclassId") ?? num("metaclassID");
+    const metaclass = num("metaclass") ?? num("metaclassId") ?? num("metaclassID");
     const portalUuid = str("portalUuid") ?? str("uuid");
     const forumId = num("forumId") ?? num("forum");
     const year = num("year");
-    const assessmentId =
-      num("assessmentId") ??
-      num("assessmentID") ??
-      num("entityId") ??
-      num("id");
+    const assessmentId = num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id");
 
     const navigateToAssessment = (): void => {
       if (programme !== undefined && metaclass !== undefined) {
-        const itemSuffix =
-          assessmentId !== undefined ? `&item=${assessmentId}` : "";
-        navigateToHashRoute(
-          `/assessments/${programme}:${metaclass}${itemSuffix}`,
-        );
+        const itemSuffix = assessmentId !== undefined ? `&item=${assessmentId}` : "";
+        navigateToHashRoute(`/assessments/${programme}:${metaclass}${itemSuffix}`);
         return;
       }
       if (assessmentId !== undefined) {

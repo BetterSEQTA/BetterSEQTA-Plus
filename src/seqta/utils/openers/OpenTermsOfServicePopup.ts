@@ -47,11 +47,7 @@ export async function fetchTermsOfService(): Promise<LegalDocumentPayload> {
   }
 }
 
-
-function termsVersionIsNewer(
-  remoteLastUpdated: string,
-  acceptedLastUpdated?: string,
-): boolean {
+function termsVersionIsNewer(remoteLastUpdated: string, acceptedLastUpdated?: string): boolean {
   if (!acceptedLastUpdated) return true;
   const remote = Date.parse(remoteLastUpdated);
   const accepted = Date.parse(acceptedLastUpdated);
@@ -64,9 +60,7 @@ function termsVersionIsNewer(
 function resolvedTermsAcceptance(
   state: Pick<
     SettingsState,
-    | "termsOfServiceLastAccepted"
-    | "privacyStatementShown"
-    | "privacyStatementLastUpdated"
+    "termsOfServiceLastAccepted" | "privacyStatementShown" | "privacyStatementLastUpdated"
   >,
 ): string | undefined {
   if (state.termsOfServiceLastAccepted) return state.termsOfServiceLastAccepted;
@@ -79,9 +73,7 @@ function resolvedTermsAcceptance(
 export function shouldShowTermsOfServicePopup(
   state: Pick<
     SettingsState,
-    | "termsOfServiceLastAccepted"
-    | "privacyStatementShown"
-    | "privacyStatementLastUpdated"
+    "termsOfServiceLastAccepted" | "privacyStatementShown" | "privacyStatementLastUpdated"
   >,
   terms: LegalDocumentPayload,
 ): boolean {

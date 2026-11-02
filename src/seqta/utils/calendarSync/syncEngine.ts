@@ -189,7 +189,7 @@ export async function syncLessonsToCalendar(
     message: mode === "incremental" ? "Preparing weekly sync…" : "Preparing sync…",
   });
 
-  const eventMap = { ...(state.eventMap ?? {}) };
+  const eventMap = { ...state.eventMap };
   let accessToken = await getAccessToken();
   const refreshAccessToken = async () => {
     accessToken = await getAccessToken();
@@ -214,11 +214,7 @@ export async function syncLessonsToCalendar(
     const remoteIds = new Set(remoteEvents.map((event) => event.id));
     for (const key of currentMapKeys) {
       const entry = normalizeEventMapEntry(eventMap[key]);
-      if (
-        entry?.date &&
-        isDateInRange(entry.date, reconcileRange) &&
-        !remoteIds.has(entry.id)
-      ) {
+      if (entry?.date && isDateInRange(entry.date, reconcileRange) && !remoteIds.has(entry.id)) {
         delete eventMap[key];
       }
     }
@@ -335,7 +331,12 @@ export async function deleteSyncedEventsFromCalendar(
 
   const state = await provider.readState();
   if (!state.refreshToken && !state.accessToken) {
-    return { success: false, configured: true, connected: false, error: provider.notConnectedError };
+    return {
+      success: false,
+      configured: true,
+      connected: false,
+      error: provider.notConnectedError,
+    };
   }
 
   reportSyncProgress(options.onProgress, {
@@ -345,7 +346,7 @@ export async function deleteSyncedEventsFromCalendar(
     message: "Preparing removal…",
   });
 
-  const eventMap = { ...(state.eventMap ?? {}) };
+  const eventMap = { ...state.eventMap };
   let accessToken = await getAccessToken();
   const refreshAccessToken = async () => {
     accessToken = await getAccessToken();

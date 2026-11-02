@@ -1,11 +1,4 @@
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  jest,
-} from "@jest/globals";
+import { afterEach, beforeEach, describe, expect, it, jest } from "@jest/globals";
 import {
   appointmentToLesson,
   fetchAppointments,
@@ -65,17 +58,14 @@ describe("calendar source fetches", () => {
       const path = String(url);
       const body = JSON.parse(String(init?.body));
       if (path.endsWith("/seqta/parent/load/timetable")) {
-        if (body.list)
-          return Response.json({ payload: [{ id: "42", name: "Child" }] });
+        if (body.list) return Response.json({ payload: [{ id: "42", name: "Child" }] });
         timetableStudents.push(body.student);
         return Response.json({ payload: { items: [] } });
       }
       if (path.endsWith("/seqta/parent/assessment/list/upcoming?")) {
         assessmentStudents.push(body.student);
         return Response.json({
-          payload: [
-            { id: 1, title: "Essay", subject: "English", due: "2026-07-20" },
-          ],
+          payload: [{ id: 1, title: "Essay", subject: "English", due: "2026-07-20" }],
         });
       }
       if (path.includes("/seqta/student/"))
@@ -83,9 +73,9 @@ describe("calendar source fetches", () => {
       return Response.json({ payload: [] });
     });
     await expect(fetchTimetableLessons(range)).resolves.toEqual([]);
-    await expect(fetchAssessmentsForCalendarSync(range)).resolves.toMatchObject(
-      [{ id: 1, title: "Essay" }],
-    );
+    await expect(fetchAssessmentsForCalendarSync(range)).resolves.toMatchObject([
+      { id: 1, title: "Essay" },
+    ]);
     expect(timetableStudents).toEqual([42]);
     expect(assessmentStudents).toEqual([42]);
   });
@@ -94,8 +84,7 @@ describe("calendar source fetches", () => {
     "rejects failed $name fetches instead of reporting an empty source",
     async ({ path, load }) => {
       jest.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-        if (String(url).endsWith(path))
-          return new Response("unavailable", { status: 503 });
+        if (String(url).endsWith(path)) return new Response("unavailable", { status: 503 });
         return Response.json({
           payload: String(url).endsWith("/login") ? { id: 12 } : [],
         });
@@ -108,8 +97,7 @@ describe("calendar source fetches", () => {
     "rejects missing $name payloads that cannot authorize reconciliation",
     async ({ path, load }) => {
       jest.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-        if (String(url).endsWith(path))
-          return Response.json({ error: "Session expired" });
+        if (String(url).endsWith(path)) return Response.json({ error: "Session expired" });
         return Response.json({
           payload: String(url).endsWith("/login") ? { id: 12 } : [],
         });

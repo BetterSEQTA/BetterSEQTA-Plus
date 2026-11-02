@@ -60,9 +60,7 @@ export async function loadHomePage() {
   if (!main) return;
 
   main.innerHTML = "";
-  main.appendChild(
-    stringToHTML(`<div id="home-root" class="home-root"></div>`).firstChild!,
-  );
+  main.appendChild(stringToHTML(`<div id="home-root" class="home-root"></div>`).firstChild!);
 
   const homeContainer = document.getElementById("home-root");
   if (!homeContainer) return;
@@ -146,10 +144,9 @@ export async function loadHomePage() {
   callHomeTimetable(TodayFormatted, true);
 
   const activeSubjects = activeSubjectsFromLearnPayload(classes);
-  const currentAssessments = filterAssessmentsForActiveSubjects(
-    assessments,
-    activeSubjects,
-  ).sort(comparedate);
+  const currentAssessments = filterAssessmentsForActiveSubjects(assessments, activeSubjects).sort(
+    comparedate,
+  );
 
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
@@ -197,16 +194,12 @@ async function renderHomeUpcomingAssessments() {
   const filterContainer = document.getElementById("upcoming-filters");
   if (filterContainer) filterContainer.innerHTML = "";
 
-  const [assessments, classes] = await Promise.all([
-    GetUpcomingAssessments(),
-    GetActiveClasses(),
-  ]);
+  const [assessments, classes] = await Promise.all([GetUpcomingAssessments(), GetActiveClasses()]);
 
   const activeSubjects = activeSubjectsFromLearnPayload(classes);
-  const currentAssessments = filterAssessmentsForActiveSubjects(
-    assessments,
-    activeSubjects,
-  ).sort(comparedate);
+  const currentAssessments = filterAssessmentsForActiveSubjects(assessments, activeSubjects).sort(
+    comparedate,
+  );
 
   await CreateUpcomingSection(currentAssessments, activeSubjects);
   upcomingItems.classList.remove("loading");
@@ -286,14 +279,11 @@ function formatDate(date: Date): string {
 
 async function GetActiveClasses() {
   try {
-    const response = await fetch(
-      `${location.origin}/seqta/student/load/subjects?`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({}),
-      },
-    );
+    const response = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({}),
+    });
     return (await response.json()).payload;
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to get active classes:", error);
@@ -329,8 +319,8 @@ async function callHomeTimetable(date: string, change?: any) {
 
   if (serverResponse.payload.items.length > 0) {
     if (DayContainer.innerText || change) {
-      const lessonArray: Array<any> = [...serverResponse.payload.items].sort(
-        (a, b) => a.from.localeCompare(b.from),
+      const lessonArray: Array<any> = [...serverResponse.payload.items].sort((a, b) =>
+        a.from.localeCompare(b.from),
       );
 
       GetLessonColours().then((colours) => {
@@ -339,9 +329,7 @@ async function callHomeTimetable(date: string, change?: any) {
             lessonArray[i].type == "tutorial"
               ? `timetable.tutor.${lessonArray[i].tutorID}`
               : `timetable.subject.colour.${lessonArray[i].code}`;
-          let subject = colours.find(
-            (element: any) => element.name === subjectname,
-          );
+          let subject = colours.find((element: any) => element.name === subjectname);
 
           if (!subject) {
             lessonArray[i].colour = "--item-colour: #8e8e8e;";
@@ -357,14 +345,10 @@ async function callHomeTimetable(date: string, change?: any) {
 
           if (settingsState.timeFormat === "12") {
             lessonArray[i].from = convertTo12HourFormat(lessonArray[i].from);
-            lessonArray[i].until = convertTo12HourFormat(
-              lessonArray[i].until,
-            );
+            lessonArray[i].until = convertTo12HourFormat(lessonArray[i].until);
           }
 
-          lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
-            lessonArray[i].attendance,
-          );
+          lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(lessonArray[i].attendance);
         }
 
         DayContainer.innerText = "";
@@ -411,14 +395,7 @@ function CheckCurrentLessonAll(lessons: any) {
 }
 
 async function CheckCurrentLesson(lesson: any, num: number) {
-  const {
-    from: startTime,
-    until: endTime,
-    code,
-    description,
-    room,
-    staff,
-  } = lesson;
+  const { from: startTime, until: endTime, code, description, room, staff } = lesson;
   const currentDate = new Date();
 
   const [startHour, startMinute] = startTime.split(":").map(Number);
@@ -441,8 +418,7 @@ async function CheckCurrentLesson(lesson: any, num: number) {
   }
 
   const isCurrentDate =
-    currentSelectedDate.toLocaleDateString("en-au") ===
-    currentDate.toLocaleDateString("en-au");
+    currentSelectedDate.toLocaleDateString("en-au") === currentDate.toLocaleDateString("en-au");
 
   if (isCurrentDate) {
     if (isValidTime) {
@@ -452,19 +428,11 @@ async function CheckCurrentLesson(lesson: any, num: number) {
     }
   }
 
-  const minutesUntilStart = Math.floor(
-    (startDate.getTime() - currentDate.getTime()) / 60000,
-  );
+  const minutesUntilStart = Math.floor((startDate.getTime() - currentDate.getTime()) / 60000);
 
-  if (
-    minutesUntilStart !== 5 ||
-    settingsState.lessonalert ||
-    !window.Notification
-  )
-    return;
+  if (minutesUntilStart !== 5 || settingsState.lessonalert || !window.Notification) return;
 
-  if (Notification.permission !== "granted")
-    await Notification.requestPermission();
+  if (Notification.permission !== "granted") await Notification.requestPermission();
 
   try {
     new Notification("Next Lesson in 5 Minutes:", {
@@ -571,19 +539,15 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
   }
 
   for (const items of bySubject.values()) {
-    items.sort(
-      (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
-    );
+    items.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
   }
 
   subjectOrder.sort(
     (a, b) =>
-      new Date(bySubject.get(a)![0].due).getTime() -
-      new Date(bySubject.get(b)![0].due).getTime(),
+      new Date(bySubject.get(a)![0].due).getTime() - new Date(bySubject.get(b)![0].due).getTime(),
   );
 
-  const subjectLimit =
-    maxSubjects > 0 ? maxSubjects : subjectOrder.length;
+  const subjectLimit = maxSubjects > 0 ? maxSubjects : subjectOrder.length;
   const allowedSubjects = subjectOrder.slice(0, subjectLimit);
 
   const limited: any[] = [];
@@ -593,9 +557,7 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
     limited.push(...items.slice(0, perSubjectLimit));
   }
 
-  limited.sort(
-    (a, b) => new Date(a.due).getTime() - new Date(b.due).getTime(),
-  );
+  limited.sort((a, b) => new Date(a.due).getTime() - new Date(b.due).getTime());
 
   assessments.splice(0, assessments.length, ...limited);
 }
@@ -622,8 +584,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (let i = 0; i < assessments.length; i++) {
     const subject = colours.find(
-      (element: any) =>
-        element.name === `timetable.subject.colour.${assessments[i].code}`,
+      (element: any) => element.name === `timetable.subject.colour.${assessments[i].code}`,
     );
     if (!subject) {
       assessments[i].colour = "--item-colour: #8e8e8e;";
@@ -650,11 +611,9 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
         div: CreateElement("div", "upcoming-date-container"),
         assessments: [],
       };
-      (upcomingDates[element.due as keyof typeof upcomingDates] as any) =
-        dateObj;
+      (upcomingDates[element.due as keyof typeof upcomingDates] as any) = dateObj;
     }
-    const assessmentDateDiv =
-      upcomingDates[element.due as keyof typeof upcomingDates];
+    const assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
     if (assessmentDateDiv) {
       (assessmentDateDiv as any).assessments.push(element);
     }
@@ -662,8 +621,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (const date in upcomingDates) {
     const assessmentdue = new Date(
-      (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0]
-        .due,
+      (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due,
     );
     const specialcase = CheckSpecialDay(Today, assessmentdue);
     const assessmentDate = createAssessmentDateDiv(
@@ -674,10 +632,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     );
 
     if (specialcase === "Yesterday") {
-      upcomingitemcontainer!.insertBefore(
-        assessmentDate,
-        upcomingitemcontainer!.firstChild,
-      );
+      upcomingitemcontainer!.insertBefore(assessmentDate, upcomingitemcontainer!.firstChild);
     } else {
       upcomingitemcontainer!.append(assessmentDate);
     }
@@ -694,10 +649,10 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 }
 
 function createAssessmentDateDiv(date: string, value: any, student: number, datecase?: any) {
-  const options = {
-    weekday: "long" as "long",
-    month: "long" as "long",
-    day: "numeric" as "numeric",
+  const options: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
   };
   const FormattedDate = new Date(date);
   const assessments = value.assessments;
@@ -837,22 +792,14 @@ function CreateFilters(subjects: { code: string; colour: string }[]) {
       filteroptions[element.code] = true;
     }
     filterdiv!.append(
-      CreateSubjectFilter(
-        element.code,
-        element.colour,
-        filteroptions[element.code],
-      ),
+      CreateSubjectFilter(element.code, element.colour, filteroptions[element.code]),
     );
   }
 
   settingsState.subjectfilters = filteroptions;
 }
 
-function CreateSubjectFilter(
-  subjectcode: any,
-  itemcolour: string,
-  checked: any,
-) {
+function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any) {
   const label = CreateElement("label", "upcoming-checkbox-container");
   label.innerText = subjectcode;
   const input = CreateElement("input") as HTMLInputElement;

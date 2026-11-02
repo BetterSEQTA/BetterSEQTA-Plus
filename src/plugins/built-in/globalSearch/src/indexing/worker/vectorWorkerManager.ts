@@ -4,7 +4,7 @@ import { isVectorSearchSupported } from "../../utils/browserDetection";
 import { getOrtWasmBaseUrl } from "@/lib/transformersExtension";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 
-import { verboseDebug, verboseLog } from '@/utils/verboseLog';
+import { verboseDebug, verboseLog } from "@/utils/verboseLog";
 import { delay } from "@/seqta/utils/delay";
 export type ProgressCallback = (data: {
   status: "started" | "processing" | "complete" | "error" | "cancelled";
@@ -46,10 +46,7 @@ export class VectorWorkerManager {
       VectorWorkerManager.instance = new VectorWorkerManager();
     }
 
-    if (
-      !VectorWorkerManager.resetListenerInstalled &&
-      typeof window !== "undefined"
-    ) {
+    if (!VectorWorkerManager.resetListenerInstalled && typeof window !== "undefined") {
       VectorWorkerManager.resetListenerInstalled = true;
       window.addEventListener("betterseqta-reset-search-index", () => {
         VectorWorkerManager.getInstance().terminate();
@@ -62,7 +59,9 @@ export class VectorWorkerManager {
   private async initWorker(): Promise<void> {
     // Skip initialization if vector search is not supported (e.g., Firefox)
     if (!isVectorSearchSupported()) {
-      verboseDebug("[VectorWorkerManager] Vector search not supported - skipping worker initialization");
+      verboseDebug(
+        "[VectorWorkerManager] Vector search not supported - skipping worker initialization",
+      );
       this.isInitialized = false;
       return Promise.resolve();
     }
@@ -109,10 +108,7 @@ export class VectorWorkerManager {
             break;
 
           case "progress":
-            if (
-              data.status === "processing" ||
-              data.status === "started"
-            ) {
+            if (data.status === "processing" || data.status === "started") {
               this.bumpActivityDuringVectorization();
             }
             if (this.progressCallback) {
@@ -136,7 +132,11 @@ export class VectorWorkerManager {
                 );
               }
 
-              if (data.status === "complete" || data.status === "cancelled" || data.status === "error") {
+              if (
+                data.status === "complete" ||
+                data.status === "cancelled" ||
+                data.status === "error"
+              ) {
                 this.scheduleUnload();
               }
             }
@@ -279,9 +279,7 @@ export class VectorWorkerManager {
     }
 
     if (!this.isInitialized || !this.worker) {
-      throw new Error(
-        "Vector Worker is not available after initialization attempt.",
-      );
+      throw new Error("Vector Worker is not available after initialization attempt.");
     }
   }
 
@@ -291,7 +289,7 @@ export class VectorWorkerManager {
       if (onProgress) {
         onProgress({
           status: "complete",
-          message: "Vector search not available - using text search only"
+          message: "Vector search not available - using text search only",
         });
       }
       return;
@@ -302,7 +300,7 @@ export class VectorWorkerManager {
       if (onProgress) {
         onProgress({
           status: "complete",
-          message: "No items to process"
+          message: "No items to process",
         });
       }
       return;
@@ -323,7 +321,7 @@ export class VectorWorkerManager {
       if (onProgress) {
         onProgress({
           status: "complete",
-          message: "No unique items to process after deduplication"
+          message: "No unique items to process after deduplication",
         });
       }
       return;
@@ -356,9 +354,7 @@ export class VectorWorkerManager {
           onProgress?.(data);
           if (
             !settled &&
-            (data.status === "complete" ||
-              data.status === "error" ||
-              data.status === "cancelled")
+            (data.status === "complete" || data.status === "error" || data.status === "cancelled")
           ) {
             settled = true;
             resolve();
@@ -366,9 +362,7 @@ export class VectorWorkerManager {
         };
         this.progressCallback = wrap;
 
-        verboseDebug(
-          `Sending ${uniqueItems.length} unique items to worker for processing.`,
-        );
+        verboseDebug(`Sending ${uniqueItems.length} unique items to worker for processing.`);
 
         this.worker!.postMessage({
           type: "process",
@@ -377,10 +371,7 @@ export class VectorWorkerManager {
       });
     } finally {
       this.vectorizationLockCount = Math.max(0, this.vectorizationLockCount - 1);
-      if (
-        this.vectorizationLockCount === 0 &&
-        !this.streamingSession?.isActive
-      ) {
+      if (this.vectorizationLockCount === 0 && !this.streamingSession?.isActive) {
         this.startIdleTimer();
       }
     }
@@ -468,9 +459,7 @@ export class VectorWorkerManager {
     }
 
     if (!this.streamingSession?.isActive) {
-      verboseDebug(
-        "[VectorWorker] streamItems skipped — no active streaming session",
-      );
+      verboseDebug("[VectorWorker] streamItems skipped — no active streaming session");
       return;
     }
 
@@ -495,18 +484,13 @@ export class VectorWorkerManager {
 
       this.streamingSession.inactivityTimer = setTimeout(() => {
         if (this.streamingSession?.isActive) {
-          verboseDebug(
-            "[VectorWorker] Auto-ending streaming session due to inactivity",
-          );
+          verboseDebug("[VectorWorker] Auto-ending streaming session due to inactivity");
           this.endStreamingSession();
         }
       }, 30000);
     }
 
-    if (
-      this.streamingSession.batchBuffer.length >=
-      this.streamingSession.batchSize
-    ) {
+    if (this.streamingSession.batchBuffer.length >= this.streamingSession.batchSize) {
       await this.flushBatch();
     } else {
       if (this.streamingSession.flushTimer) {
@@ -520,10 +504,7 @@ export class VectorWorkerManager {
   }
 
   private async flushBatch(): Promise<void> {
-    if (
-      !this.streamingSession?.isActive ||
-      this.streamingSession.batchBuffer.length === 0
-    ) {
+    if (!this.streamingSession?.isActive || this.streamingSession.batchBuffer.length === 0) {
       return;
     }
 
@@ -544,9 +525,7 @@ export class VectorWorkerManager {
       type: "streamBatch",
       data: {
         items: batch,
-        isLast:
-          this.streamingSession.totalSent >=
-          this.streamingSession.totalExpected,
+        isLast: this.streamingSession.totalSent >= this.streamingSession.totalExpected,
       },
     });
   }
@@ -590,7 +569,6 @@ export class VectorWorkerManager {
   async streamItem(item: IndexItem): Promise<void> {
     return this.streamItems([item]);
   }
-
 
   isStreamingActive(): boolean {
     return this.streamingSession?.isActive ?? false;

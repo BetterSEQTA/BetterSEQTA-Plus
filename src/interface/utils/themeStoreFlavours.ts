@@ -7,24 +7,22 @@ export function isHiddenStoreTheme(theme: Theme): boolean {
 /** Coerce API / fallback rows into the store `Theme` shape (camelCase images, safe strings). */
 export function normalizeStoreTheme(raw: Record<string, unknown>): Theme {
   const flavours = Array.isArray(raw.flavours)
-    ? (raw.flavours as Record<string, unknown>[]).map(
-        (f): ThemeFlavour => ({
-          id: String(f.id ?? ""),
-          name: String(f.name ?? ""),
-          accent_color: String(f.accent_color ?? f.accentColor ?? ""),
-          cover_image: String(f.cover_image ?? f.coverImage ?? ""),
-          marquee_image:
-            typeof (f.marquee_image ?? f.marqueeImage) === "string"
-              ? String(f.marquee_image ?? f.marqueeImage)
+    ? (raw.flavours as Record<string, unknown>[]).map((f): ThemeFlavour => ({
+        id: String(f.id ?? ""),
+        name: String(f.name ?? ""),
+        accent_color: String(f.accent_color ?? f.accentColor ?? ""),
+        cover_image: String(f.cover_image ?? f.coverImage ?? ""),
+        marquee_image:
+          typeof (f.marquee_image ?? f.marqueeImage) === "string"
+            ? String(f.marquee_image ?? f.marqueeImage)
+            : undefined,
+        download_count:
+          typeof f.download_count === "number"
+            ? f.download_count
+            : typeof f.downloadCount === "number"
+              ? f.downloadCount
               : undefined,
-          download_count:
-            typeof f.download_count === "number"
-              ? f.download_count
-              : typeof f.downloadCount === "number"
-                ? f.downloadCount
-                : undefined,
-        }),
-      )
+      }))
     : undefined;
 
   return {

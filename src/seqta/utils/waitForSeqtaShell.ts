@@ -30,20 +30,14 @@ function sharedWait(
 }
 
 /** Resolves once `#title` exists (shared across titlebar + global search). */
-export function waitForSeqtaTitle(
-  interval = 50,
-  maxIterations = 200,
-): Promise<Element> {
+export function waitForSeqtaTitle(interval = 50, maxIterations = 200): Promise<Element> {
   const immediate = document.querySelector("#title");
   if (immediate) return Promise.resolve(immediate);
   return sharedWait("title", "#title", interval, maxIterations);
 }
 
 /** Resolves once `#menu` exists (shared across sidebar + background layers). */
-export function waitForSeqtaMenu(
-  interval = 50,
-  maxIterations = 200,
-): Promise<Element> {
+export function waitForSeqtaMenu(interval = 50, maxIterations = 200): Promise<Element> {
   const immediate = document.querySelector("#menu");
   if (immediate) return Promise.resolve(immediate);
   return sharedWait("menu", "#menu", interval, maxIterations);

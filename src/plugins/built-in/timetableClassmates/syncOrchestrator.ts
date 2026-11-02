@@ -9,11 +9,7 @@ import {
   putOptIn,
   rememberPeerCloudIds,
 } from "./accountsClient";
-import {
-  archiveMember,
-  mergePayloadIntoRoster,
-  removeMemberFromRoster,
-} from "./rosterMerge";
+import { archiveMember, mergePayloadIntoRoster, removeMemberFromRoster } from "./rosterMerge";
 import {
   loadArchivedMembers,
   loadRosterIndex,
@@ -39,7 +35,11 @@ import {
   fingerprintEnrollment,
   type EnrollmentSnapshot,
 } from "./timetableYearSnapshot";
-import { buildEncryptedBundlesForClasses, decodeBundleKey, decryptClassBundle } from "./relayCrypto";
+import {
+  buildEncryptedBundlesForClasses,
+  decodeBundleKey,
+  decryptClassBundle,
+} from "./relayCrypto";
 import { buildSharePayload } from "./relayPayload";
 import { runRelayRoundTrip, sendRelayRevoke, type RelaySnapshotShare } from "./relayClient";
 import type { ClassRef } from "./classKeys";
@@ -59,9 +59,7 @@ export function bindClassmatesOptInActivated(fn: (() => void) | null): void {
 }
 
 export function scheduleClassmatesSyncIfNeeded(force = false): void {
-  syncChain = syncChain
-    .then(() => runClassmatesSyncIfNeeded(force))
-    .catch(() => {});
+  syncChain = syncChain.then(() => runClassmatesSyncIfNeeded(force)).catch(() => {});
 }
 
 async function runClassmatesSyncIfNeeded(force = false): Promise<void> {

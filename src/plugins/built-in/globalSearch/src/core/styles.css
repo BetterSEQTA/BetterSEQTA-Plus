@@ -212,15 +212,10 @@
 }
 
 .search-progress-bar::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.28),
-    transparent
-  );
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
   animation: shimmer 2s infinite;
 }
 /*
@@ -236,7 +231,10 @@
   font-weight: 500;
   opacity: 0;
   transform: translateX(-4px);
-  transition: opacity 0.2s ease, transform 0.2s ease, color 0.25s ease;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    color 0.25s ease;
   pointer-events: none;
   max-width: 240px;
   overflow: hidden;

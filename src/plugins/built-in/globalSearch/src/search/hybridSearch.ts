@@ -23,15 +23,13 @@ function isIndexItem(item: CombinedResult["item"]): item is IndexItem {
  */
 function isWeakSemanticQuery(trimmedQuery: string): boolean {
   if (trimmedQuery.length < 8) return true;
-  const meaningfulTokens = trimmedQuery
-    .split(/\s+/)
-    .filter((t) => t.length >= 3);
+  const meaningfulTokens = trimmedQuery.split(/\s+/).filter((t) => t.length >= 3);
   return meaningfulTokens.length < 2;
 }
 
 /**
  * Hybrid Search Implementation
- * 
+ *
  * Flow:
  * 1. BM25 (Fuse.js) gets top N results fast
  * 2. Vector search reranks by semantic similarity
@@ -136,34 +134,33 @@ export async function hybridSearch(
 ): Promise<CombinedResult[]> {
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const trimmedQuery = query.trim().toLowerCase();
-  
+
   if (bm25Results.length === 0) {
     return [];
   }
-  
+
   const topBm25Results = bm25Results.slice(0, opts.bm25TopK);
 
   if (trimmedQuery.length > 2) {
     try {
       const vectorTopK = opts.bm25TopK * 2;
       const vectorSearchResults =
-        precomputedVectorResults ??
-        (await searchVectors(trimmedQuery, vectorTopK));
-      
+        precomputedVectorResults ?? (await searchVectors(trimmedQuery, vectorTopK));
+
       // Create a map of item ID to vector similarity
       const vectorMap = new Map<string, number>();
-      vectorSearchResults.forEach(v => {
+      vectorSearchResults.forEach((v) => {
         // Use the highest similarity if item appears multiple times
         const existing = vectorMap.get(v.object.id);
         if (!existing || v.similarity > existing) {
           vectorMap.set(v.object.id, v.similarity);
         }
       });
-      
+
       // Now rerank BM25 results with vector scores
       const now = Date.now();
-      
-      const rerankedResults: CombinedResult[] = topBm25Results.map(result => {
+
+      const rerankedResults: CombinedResult[] = topBm25Results.map((result) => {
         const item = result.item;
 
         // Static command items don't have dateAdded/metadata/category to score
@@ -190,7 +187,7 @@ export async function hybridSearch(
 
         const job = jobs[item.category];
         let jobBoost = 0;
-        if (job && typeof job.boostCriteria === 'function') {
+        if (job && typeof job.boostCriteria === "function") {
           const boost = job.boostCriteria(item, trimmedQuery);
           if (boost) {
             jobBoost = boost / 100;
@@ -206,8 +203,8 @@ export async function hybridSearch(
         else if (lexicalQuality >= 8) lexicalBonus += 0.14;
 
         const hybridScore =
-          (normalizedBm25Score * opts.bm25Weight) +
-          (vectorSimilarity * opts.vectorWeight) +
+          normalizedBm25Score * opts.bm25Weight +
+          vectorSimilarity * opts.vectorWeight +
           recencyBoost +
           popularityBoost +
           jobBoost +
@@ -218,17 +215,16 @@ export async function hybridSearch(
           score: hybridScore * 100,
         };
       });
-      
+
       rerankedResults.sort((a, b) => b.score - a.score);
-      
+
       return rerankedResults.slice(0, opts.finalLimit);
-      
     } catch (e) {
       console.warn("[Hybrid Search] Vector reranking failed, using BM25 only:", e);
       return topBm25Results.slice(0, opts.finalLimit);
     }
   }
-  
+
   // If query is too short for vector search, just return BM25 results
   return topBm25Results.slice(0, opts.finalLimit);
 }
@@ -259,12 +255,7 @@ export async function hybridSearchWithExpansion(
   }
 
   // Rerank BM25 results using the single vector pass above
-  const rerankedBm25 = await hybridSearch(
-    bm25Results,
-    query,
-    options,
-    vectorResults,
-  );
+  const rerankedBm25 = await hybridSearch(bm25Results, query, options, vectorResults);
 
   // For short / single-token queries vector expansion brings in too much
   // noise (and is the main reason results "flicker" between adjacent
@@ -274,7 +265,7 @@ export async function hybridSearchWithExpansion(
   }
 
   // Find vector results that weren't in BM25 results
-  const bm25Ids = new Set(bm25Results.map(r => r.item.id));
+  const bm25Ids = new Set(bm25Results.map((r) => r.item.id));
   const vectorOnlyResults: CombinedResult[] = [];
 
   const now = Date.now();
@@ -292,11 +283,9 @@ export async function hybridSearchWithExpansion(
     }
   }
   // Vector-only results may sit at most at this score:
-  const vectorOnlyCeiling = strongLexicalFloor === -Infinity
-    ? Infinity
-    : strongLexicalFloor - 1;
+  const vectorOnlyCeiling = strongLexicalFloor === -Infinity ? Infinity : strongLexicalFloor - 1;
 
-  vectorResults.forEach(v => {
+  vectorResults.forEach((v) => {
     if (bm25Ids.has(v.object.id)) return;
 
     // Drop stale vector hits for items no longer in the live structured index.
@@ -332,7 +321,7 @@ export async function hybridSearchWithExpansion(
     // Apply job-specific boost if available
     const job = jobs[item.category];
     let jobBoost = 0;
-    if (job && typeof job.boostCriteria === 'function') {
+    if (job && typeof job.boostCriteria === "function") {
       const boost = job.boostCriteria(item, trimmedQuery);
       if (boost) {
         jobBoost = boost / 100; // Normalize boost
@@ -358,4 +347,3 @@ export async function hybridSearchWithExpansion(
 
   return allResults.slice(0, opts.finalLimit);
 }
-

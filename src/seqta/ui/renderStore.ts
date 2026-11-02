@@ -1,11 +1,8 @@
-async function openThemesDestination(
-  view: "store" | "community",
-): Promise<void> {
-  const [{ requestSettingsDestination }, { openSettingsPopup }] =
-    await Promise.all([
-      import("@/seqta/utils/settingsNavigation"),
-      import("@/seqta/utils/setupSettingsButton"),
-    ]);
+async function openThemesDestination(view: "store" | "community"): Promise<void> {
+  const [{ requestSettingsDestination }, { openSettingsPopup }] = await Promise.all([
+    import("@/seqta/utils/settingsNavigation"),
+    import("@/seqta/utils/setupSettingsButton"),
+  ]);
   requestSettingsDestination({ page: "themes", view });
   await openSettingsPopup();
 }

@@ -90,18 +90,12 @@ export type SettingsAPI<T extends PluginSettings> = {
     key: K,
     callback: (value: SettingValue<T[K]>) => void,
   ) => { unregister: () => void };
-  offChange: <K extends keyof T>(
-    key: K,
-    callback: (value: SettingValue<T[K]>) => void,
-  ) => void;
+  offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
   loaded: Promise<void>;
 };
 
 export interface SEQTAAPI {
-  onMount: (
-    selector: string,
-    callback: (element: Element) => void,
-  ) => { unregister: () => void };
+  onMount: (selector: string, callback: (element: Element) => void) => { unregister: () => void };
   getFiber: (selector: string) => ReactFiber;
   getCurrentPage: () => string;
   onPageChange: (callback: (page: string) => void) => {
@@ -129,10 +123,7 @@ export type TypedStorageAPI<T> = StorageAPI<T> & {
 };
 
 export interface EventsAPI {
-  on: (
-    event: string,
-    callback: (...args: any[]) => void,
-  ) => { unregister: () => void };
+  on: (event: string, callback: (...args: any[]) => void) => { unregister: () => void };
   emit: (event: string, ...args: any[]) => void;
 }
 

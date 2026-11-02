@@ -8,8 +8,7 @@ export function addShortcuts(shortcuts: any) {
     if (currentShortcut?.enabled) {
       const Itemname = (currentShortcut?.name ?? "").replace(/\s/g, "");
 
-      const linkDetails =
-        ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks];
+      const linkDetails = ShortcutLinks?.[Itemname as keyof typeof ShortcutLinks];
       if (linkDetails) {
         createNewShortcut(
           linkDetails.link,

@@ -35,9 +35,7 @@ export async function reEnableBetterSeqtaFeatures(options?: {
   reload?: () => void;
 }): Promise<void> {
   const state = options?.state ?? settingsState;
-  const persist =
-    options?.persist ??
-    ((patch) => browser.storage.local.set(patch));
+  const persist = options?.persist ?? ((patch) => browser.storage.local.set(patch));
   const reload = options?.reload ?? (() => location.reload());
 
   markCoursesAssessmentsFixPopupSeen(state);
@@ -223,20 +221,14 @@ function setPopupButtonsDisabled(disabled: boolean) {
   const reenable = document.getElementById(
     "bsplus-courses-fix-reenable",
   ) as HTMLButtonElement | null;
-  const later = document.getElementById(
-    "bsplus-courses-fix-later",
-  ) as HTMLButtonElement | null;
-  const dismiss = document.getElementById(
-    "bsplus-courses-fix-dismiss",
-  ) as HTMLButtonElement | null;
+  const later = document.getElementById("bsplus-courses-fix-later") as HTMLButtonElement | null;
+  const dismiss = document.getElementById("bsplus-courses-fix-dismiss") as HTMLButtonElement | null;
   if (reenable) reenable.disabled = disabled;
   if (later) later.disabled = disabled;
   if (dismiss) dismiss.disabled = disabled;
 }
 
-export function OpenCoursesAssessmentsFixPopup(
-  onDismissed?: () => void,
-) {
+export function OpenCoursesAssessmentsFixPopup(onDismissed?: () => void) {
   if (document.getElementById("whatsnewbk")) {
     onDismissed?.();
     return;
@@ -250,8 +242,7 @@ export function OpenCoursesAssessmentsFixPopup(
 
   const offerReEnable = shouldOfferCoursesAssessmentsReEnable();
   const isDark =
-    settingsState.DarkMode === true ||
-    document.documentElement.classList.contains("dark");
+    settingsState.DarkMode === true || document.documentElement.classList.contains("dark");
 
   const header = stringToHTML(/* html */ `
     <div class="whatsnewHeader bsplus-courses-fix-header">

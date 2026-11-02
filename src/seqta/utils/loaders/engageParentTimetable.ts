@@ -39,19 +39,11 @@ export function weekRangeContaining(date: Date): { from: string; until: string }
   return { from: toISODate(monday), until: toISODate(sunday) };
 }
 
-function isInWeekRange(
-  isoDay: string,
-  weekFrom: string,
-  weekUntil: string,
-): boolean {
+function isInWeekRange(isoDay: string, weekFrom: string, weekUntil: string): boolean {
   return isoDay >= weekFrom && isoDay <= weekUntil;
 }
 
-export function isDateInCachedWeek(
-  date: Date,
-  weekFrom: string,
-  weekUntil: string,
-): boolean {
+export function isDateInCachedWeek(date: Date, weekFrom: string, weekUntil: string): boolean {
   return isInWeekRange(toISODate(date), weekFrom, weekUntil);
 }
 

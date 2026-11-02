@@ -41,7 +41,10 @@ export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = 
           );
           return;
         }
-        console.error(`[BetterSEQTA+] Failed to dynamically load plugin "${lazyPlugin.id}":`, error);
+        console.error(
+          `[BetterSEQTA+] Failed to dynamically load plugin "${lazyPlugin.id}":`,
+          error,
+        );
         throw error;
       }
     },

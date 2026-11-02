@@ -42,9 +42,7 @@ describe("fetchThemeOfTheMonth", () => {
 
   it("falls back to cache when fetch fails or times out", async () => {
     await browser.storage.local.set({ [CACHE_KEY]: sampleEntry });
-    globalThis.fetch = jest
-      .fn()
-      .mockRejectedValue(new DOMException("Aborted", "AbortError"));
+    globalThis.fetch = jest.fn().mockRejectedValue(new DOMException("Aborted", "AbortError"));
 
     const entry = await fetchThemeOfTheMonth();
     expect(entry?.id).toBe("totm-1");

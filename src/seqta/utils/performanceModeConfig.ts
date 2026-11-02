@@ -53,6 +53,4 @@ export const PERFORMANCE_HEAVY_PLUGINS: readonly PerformanceHeavyPlugin[] = [
   },
 ] as const;
 
-export const PERFORMANCE_HEAVY_PLUGIN_IDS = new Set(
-  PERFORMANCE_HEAVY_PLUGINS.map((p) => p.id),
-);
+export const PERFORMANCE_HEAVY_PLUGIN_IDS = new Set(PERFORMANCE_HEAVY_PLUGINS.map((p) => p.id));

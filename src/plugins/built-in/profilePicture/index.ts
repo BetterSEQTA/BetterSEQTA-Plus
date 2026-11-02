@@ -1,9 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import {
-  booleanSetting,
-  componentSetting,
-  defineSettings,
-} from "@/plugins/core/settingsHelpers";
+import { booleanSetting, componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "@/lib/browser";
@@ -66,8 +62,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       const useCloud = api.settings.useCloudPfp;
       const userId = cloudAuth.state.user?.id;
       const pfpUrl =
-        cloudAuth.state.user?.pfpUrl ??
-        (userId ? defaultAccountsPfpUrl(userId) : undefined);
+        cloudAuth.state.user?.pfpUrl ?? (userId ? defaultAccountsPfpUrl(userId) : undefined);
 
       if (useCloud && pfpUrl && userId) {
         const resolved = await resolveCloudPfp(userId, pfpUrl);

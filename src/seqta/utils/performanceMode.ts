@@ -16,10 +16,7 @@ export function isPerformanceMode(): boolean {
 }
 
 export function isSimpleAnalyticsUi(): boolean {
-  return (
-    isPerformanceMode() &&
-    !isPluginForceEnabledInPerformanceMode("grade-analytics")
-  );
+  return isPerformanceMode() && !isPluginForceEnabledInPerformanceMode("grade-analytics");
 }
 
 export function isPluginForceEnabledInPerformanceMode(pluginId: string): boolean {
@@ -36,11 +33,8 @@ export function isPluginAllowedInPerformanceMode(pluginId: string): boolean {
   return !isPluginBlockedByPerformanceMode(pluginId);
 }
 
-export function setPerformanceModePluginOverride(
-  pluginId: string,
-  forceEnable: boolean,
-): void {
-  const current = { ...(settingsState.performanceModePluginOverrides ?? {}) };
+export function setPerformanceModePluginOverride(pluginId: string, forceEnable: boolean): void {
+  const current = { ...settingsState.performanceModePluginOverrides };
   if (forceEnable) {
     current[pluginId] = true;
   } else {
@@ -63,10 +57,7 @@ export function transparencyEnabled(): boolean {
 }
 
 export function adaptiveThemeTransitionEnabled(): boolean {
-  return (
-    !isPerformanceMode() &&
-    (settingsState.adaptiveThemeColourTransition ?? true)
-  );
+  return !isPerformanceMode() && (settingsState.adaptiveThemeColourTransition ?? true);
 }
 
 export function globalSearchIndexingEnabled(settingEnabled: boolean): boolean {
@@ -111,16 +102,13 @@ async function syncPerformanceModePlugins(): Promise<void> {
       removeAnimatedBackgroundLayers();
       window.dispatchEvent(new CustomEvent("betterseqta-background-music-stop"));
     } else {
-      const searchSettings = await browser.storage.local.get(
-        "plugin.global-search.settings",
-      );
+      const searchSettings = await browser.storage.local.get("plugin.global-search.settings");
       const gs = searchSettings["plugin.global-search.settings"] as
         | { runIndexingOnLoad?: boolean }
         | undefined;
       if (gs?.runIndexingOnLoad && isPluginAllowedInPerformanceMode("global-search")) {
-        const { runIndexing } = await import(
-          "@/plugins/built-in/globalSearch/src/indexing/indexer"
-        );
+        const { runIndexing } =
+          await import("@/plugins/built-in/globalSearch/src/indexing/indexer");
         if (typeof requestIdleCallback === "function") {
           requestIdleCallback(() => void runIndexing(), { timeout: 5000 });
         } else {

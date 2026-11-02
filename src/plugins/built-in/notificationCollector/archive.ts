@@ -17,8 +17,7 @@ export async function resolveNotificationUserKey(): Promise<string | null> {
     const info = await getUserInfo();
     const id = info?.id ?? info?.personUUID ?? info?.username;
     if (id == null || id === "") return null;
-    const label =
-      info?.displayName ?? info?.name ?? info?.username ?? String(id);
+    const label = info?.displayName ?? info?.name ?? info?.username ?? String(id);
     return `${location.hostname}:${id}:${String(label).slice(0, 64)}`;
   } catch {
     return null;
@@ -45,12 +44,8 @@ export async function fetchAllNotifications(): Promise<RawNotification[]> {
   return Array.isArray(list) ? list : [];
 }
 
-function archiveTimestamp(
-  item: ArchivedNotification & { timestamp?: string },
-): number {
-  const ms = new Date(
-    String(item.raw?.timestamp ?? item.timestamp ?? 0),
-  ).getTime();
+function archiveTimestamp(item: ArchivedNotification & { timestamp?: string }): number {
+  const ms = new Date(String(item.raw?.timestamp ?? item.timestamp ?? 0)).getTime();
   return Number.isNaN(ms) ? 0 : ms;
 }
 
@@ -77,16 +72,10 @@ export function mergeNotificationsIntoArchive(
   return { archive, changed };
 }
 
-export function listArchivedNotifications(
-  archive: ArchiveMap,
-): ArchivedNotification[] {
-  return Object.values(archive).sort(
-    (a, b) => archiveTimestamp(b) - archiveTimestamp(a),
-  );
+export function listArchivedNotifications(archive: ArchiveMap): ArchivedNotification[] {
+  return Object.values(archive).sort((a, b) => archiveTimestamp(b) - archiveTimestamp(a));
 }
 
-export function archivedToApiNotification(
-  item: ArchivedNotification,
-): RawNotification {
+export function archivedToApiNotification(item: ArchivedNotification): RawNotification {
   return { ...item.raw, notificationID: item.notificationID };
 }

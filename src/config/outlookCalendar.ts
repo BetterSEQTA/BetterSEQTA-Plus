@@ -16,8 +16,7 @@ export const OUTLOOK_CALENDAR_REFRESH_URL = `${ACCOUNTS_BASE}/api/bsplus/microso
 
 export const OUTLOOK_CALENDAR_SCOPE = "offline_access Calendars.ReadWrite User.Read";
 
-export const OUTLOOK_AUTH_URL =
-  "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
+export const OUTLOOK_AUTH_URL = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
 
 export const OUTLOOK_GRAPH_API = "https://graph.microsoft.com/v1.0";
 

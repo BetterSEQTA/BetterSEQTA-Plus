@@ -33,15 +33,10 @@ describe("timeRange", () => {
       assessment("2026-04-01"),
     ];
     const filtered = filterAssessmentsByTimeRange(items, "custom", custom);
-    expect(filtered.map((a) => a.due)).toEqual([
-      "2026-03-01",
-      "2026-03-31T23:59:00",
-    ]);
+    expect(filtered.map((a) => a.due)).toEqual(["2026-03-01", "2026-03-31T23:59:00"]);
   });
 
   it("labels custom ranges", () => {
-    expect(
-      getTimeRangeLabel("custom", defaultCustomTimeRange(ref)),
-    ).toMatch(/2026/);
+    expect(getTimeRangeLabel("custom", defaultCustomTimeRange(ref))).toMatch(/2026/);
   });
 });

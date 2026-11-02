@@ -43,9 +43,9 @@
   const scheduleIndicator = rafThrottle(updateIndicator);
 
   $effect(() => {
-    selectedId;
-    groups;
-    trackEl;
+    void selectedId;
+    void groups;
+    void trackEl;
     scheduleIndicator();
   });
 </script>

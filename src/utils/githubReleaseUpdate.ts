@@ -15,8 +15,9 @@ export interface GhReleaseUpdateInfo {
 }
 
 function isUpdateCheckEnabled(): boolean {
-  return typeof __ENABLE_GH_RELEASE_UPDATE_CHECK__ !== "undefined"
-    && __ENABLE_GH_RELEASE_UPDATE_CHECK__;
+  return (
+    typeof __ENABLE_GH_RELEASE_UPDATE_CHECK__ !== "undefined" && __ENABLE_GH_RELEASE_UPDATE_CHECK__
+  );
 }
 
 function getRepoSlug(): string {
@@ -26,9 +27,7 @@ function getRepoSlug(): string {
 }
 
 function getUpdateChannel(): "stable" | "nightly" {
-  return typeof __UPDATE_CHANNEL__ !== "undefined"
-    ? __UPDATE_CHANNEL__
-    : "stable";
+  return typeof __UPDATE_CHANNEL__ !== "undefined" ? __UPDATE_CHANNEL__ : "stable";
 }
 
 function getBuildLabel(): string {

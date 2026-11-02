@@ -25,11 +25,7 @@ export interface JobContext {
   getProgress: <T = any>() => Promise<T | undefined>;
   setProgress: <T = any>(progress: T) => Promise<void>;
   /** Optional live status/progress while a long-running job is in flight. */
-  reportJobProgress?: (detail: {
-    processed: number;
-    total: number;
-    status?: string;
-  }) => void;
+  reportJobProgress?: (detail: { processed: number; total: number; status?: string }) => void;
 }
 
 export interface Job {

@@ -27,4 +27,3 @@ export function isFirefox(): boolean {
 export function isVectorSearchSupported(): boolean {
   return !isFirefox();
 }
-

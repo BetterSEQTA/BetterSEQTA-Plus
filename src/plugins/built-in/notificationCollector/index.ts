@@ -77,12 +77,9 @@ const notificationCollectorPlugin: Plugin<
         if (!userKey) return;
 
         const notifications = await fetchAllNotifications();
-        const archivesByUser = { ...(api.storage.archivesByUser ?? {}) };
+        const archivesByUser = { ...api.storage.archivesByUser };
         const existing = archivesByUser[userKey] ?? {};
-        const { archive: merged, changed } = mergeNotificationsIntoArchive(
-          existing,
-          notifications,
-        );
+        const { archive: merged, changed } = mergeNotificationsIntoArchive(existing, notifications);
 
         if (changed) {
           archivesByUser[userKey] = merged;
@@ -125,16 +122,12 @@ const notificationCollectorPlugin: Plugin<
         }
       } catch (error) {
         console.error("[BetterSEQTA+] Error fetching notifications:", error);
-        api.storage.consecutiveErrors =
-          (api.storage.consecutiveErrors || 0) + 1;
+        api.storage.consecutiveErrors = (api.storage.consecutiveErrors || 0) + 1;
       }
     };
 
     const getNextInterval = () => {
-      const errorMultiplier = Math.min(
-        Math.pow(2, api.storage.consecutiveErrors || 0),
-        10,
-      );
+      const errorMultiplier = Math.min(Math.pow(2, api.storage.consecutiveErrors || 0), 10);
       return Math.min(baseInterval * errorMultiplier, maxInterval);
     };
 
@@ -184,10 +177,7 @@ const notificationCollectorPlugin: Plugin<
       }
     });
 
-    const teardownInjection = mountArchivedNotificationInjection(
-      api,
-      resolveNotificationUserKey,
-    );
+    const teardownInjection = mountArchivedNotificationInjection(api, resolveNotificationUserKey);
 
     const onBubbleMount = () => {
       startPolling();

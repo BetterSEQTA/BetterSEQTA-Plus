@@ -2,10 +2,7 @@ import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
 import { ensureAnalyticsMenuOrder } from "@/seqta/utils/openers/analyticsMenuOrder";
-import {
-  isMenuOptionsOpen,
-  setMenuOptionsOpen,
-} from "@/seqta/utils/openers/menuOptionsState";
+import { isMenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
@@ -42,9 +39,7 @@ function syncDefaultMenuOrder(menu: HTMLElement) {
   ensureAnalyticsMenuOrder();
 }
 
-function mergeMenuItemsFromDom(
-  menu: HTMLElement,
-): Record<string, { toggle: boolean }> {
+function mergeMenuItemsFromDom(menu: HTMLElement): Record<string, { toggle: boolean }> {
   const merged = {
     ...(settingsState.menuitems as Record<string, { toggle: boolean }>),
   };
@@ -113,22 +108,15 @@ function prepareMenuItemsForEdit(menu: HTMLElement) {
 }
 
 function syncMenuItemSettings(menu: HTMLElement) {
-  settingsState.menuitems = mergeMenuItemsFromDom(
-    menu,
-  ) as SettingsState["menuitems"];
+  settingsState.menuitems = mergeMenuItemsFromDom(menu) as SettingsState["menuitems"];
 }
 
 function applySavedMenuToggleStates() {
-  const menuItems = settingsState.menuitems as Record<
-    string,
-    { toggle: boolean }
-  >;
+  const menuItems = settingsState.menuitems as Record<string, { toggle: boolean }>;
   const buttons = document.getElementsByClassName("menuitem");
   for (let i = 0; i < buttons.length; i++) {
     const id = buttons[i].id;
-    (buttons[i] as HTMLInputElement).checked = id
-      ? (menuItems[id]?.toggle ?? true)
-      : true;
+    (buttons[i] as HTMLInputElement).checked = id ? (menuItems[id]?.toggle ?? true) : true;
   }
 }
 
@@ -173,10 +161,7 @@ function storeMenuSettings() {
   settingsState.menuitems = menuItems as SettingsState["menuitems"];
 }
 
-function restoreMenuItemsFromEditMode(
-  menu: HTMLElement,
-  listItems: NodeListOf<ChildNode>,
-) {
+function restoreMenuItemsFromEditMode(menu: HTMLElement, listItems: NodeListOf<ChildNode>) {
   for (let i = 0; i < listItems.length; i++) {
     const element = listItems[i] as HTMLElement;
     element.classList.remove("draggable");
@@ -205,8 +190,10 @@ export function OpenMenuOptions() {
   setMenuOptionsOpen(true);
   menu.classList.add("bsplus-sidebar-edit-mode");
 
-  const { cover, menusettings, defaultbutton, savebutton } =
-    createMenuEditControls(menu, container);
+  const { cover, menusettings, defaultbutton, savebutton } = createMenuEditControls(
+    menu,
+    container,
+  );
   const listItems = prepareMenuItemsForEdit(menu);
   syncMenuItemSettings(menu);
   applySavedMenuToggleStates();

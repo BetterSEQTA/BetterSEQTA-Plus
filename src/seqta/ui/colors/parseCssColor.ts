@@ -17,17 +17,11 @@ export function normalizeCssColorString(value: string): string {
 export function extractSolidColor(value: string): string | null {
   const trimmed = normalizeCssColorString(value);
   if (!trimmed || trimmed === "initial") return null;
-  if (
-    trimmed.startsWith("#") ||
-    /^rgba?\(/i.test(trimmed) ||
-    /^hsla?\(/i.test(trimmed)
-  ) {
+  if (trimmed.startsWith("#") || /^rgba?\(/i.test(trimmed) || /^hsla?\(/i.test(trimmed)) {
     return trimmed;
   }
   if (trimmed.includes("gradient")) {
-    const match = trimmed.match(
-      /#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/gi,
-    );
+    const match = trimmed.match(/#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/gi);
     return match?.[0] ? normalizeCssColorString(match[0]) : null;
   }
   return null;
@@ -35,10 +29,9 @@ export function extractSolidColor(value: string): string | null {
 
 /** Parse a CSS colour for the `color` library; never throws. */
 export function parseCssColor(value: string, fallback = "#007bff"): ColorInstance {
-  const candidates = [
-    extractSolidColor(value),
-    normalizeCssColorString(value),
-  ].filter((candidate): candidate is string => Boolean(candidate));
+  const candidates = [extractSolidColor(value), normalizeCssColorString(value)].filter(
+    (candidate): candidate is string => Boolean(candidate),
+  );
 
   for (const candidate of candidates) {
     try {

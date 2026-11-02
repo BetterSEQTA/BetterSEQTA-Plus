@@ -70,7 +70,7 @@
   );
 
   function initSubjectFilters(): Record<string, boolean> {
-    const filters = { ...(settingsState.subjectfilters || {}) };
+    const filters = { ...settingsState.subjectfilters };
     const missing = (data?.subjects ?? []).filter((s: any) => !Object.hasOwn(filters, s.code));
     if (missing.length) {
       for (const s of missing) filters[s.code] = true;

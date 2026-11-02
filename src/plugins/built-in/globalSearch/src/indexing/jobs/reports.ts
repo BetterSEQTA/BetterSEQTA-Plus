@@ -1,7 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes report metadata from `/seqta/student/load/reports`.
  *

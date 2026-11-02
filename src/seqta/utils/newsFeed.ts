@@ -32,7 +32,10 @@ function htmlToText(html: string): string {
 }
 
 function firstImageInHtml(html: string): string | null {
-  return new DOMParser().parseFromString(html, "text/html").querySelector("img")?.getAttribute("src") ?? null;
+  return (
+    new DOMParser().parseFromString(html, "text/html").querySelector("img")?.getAttribute("src") ??
+    null
+  );
 }
 
 function children(el: Element, name: string): Element[] {
@@ -50,16 +53,29 @@ function childText(el: Element, ...names: string[]): string {
 function itemLink(item: Element): string {
   const links = children(item, "link");
   const alternate = links.find((link) => (link.getAttribute("rel") ?? "alternate") === "alternate");
-  return alternate?.getAttribute("href") || alternate?.textContent?.trim() || childText(item, "guid", "id");
+  return (
+    alternate?.getAttribute("href") ||
+    alternate?.textContent?.trim() ||
+    childText(item, "guid", "id")
+  );
 }
 
 function itemImage(item: Element, descriptionHtml: string): string | null {
-  const media = [...item.getElementsByTagNameNS("*", "thumbnail"), ...item.getElementsByTagNameNS("*", "content")]
+  const media = [
+    ...item.getElementsByTagNameNS("*", "thumbnail"),
+    ...item.getElementsByTagNameNS("*", "content"),
+  ]
     .filter((el) => el.namespaceURI?.includes("mrss"))
-    .find((el) => el.getAttribute("url") && (!el.getAttribute("medium") || el.getAttribute("medium") === "image"));
+    .find(
+      (el) =>
+        el.getAttribute("url") &&
+        (!el.getAttribute("medium") || el.getAttribute("medium") === "image"),
+    );
   if (media) return media.getAttribute("url");
 
-  const enclosure = children(item, "enclosure").find((el) => el.getAttribute("type")?.startsWith("image/"));
+  const enclosure = children(item, "enclosure").find((el) =>
+    el.getAttribute("type")?.startsWith("image/"),
+  );
   if (enclosure) return enclosure.getAttribute("url");
 
   return descriptionHtml ? firstImageInHtml(descriptionHtml) : null;

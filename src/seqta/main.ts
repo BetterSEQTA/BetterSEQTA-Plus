@@ -6,26 +6,17 @@ import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 import injectedCSS from "@/css/injected.scss?inline";
 
 export async function main() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (settingsState.onoff) {
-        injectPageState();
+  if (!settingsState.onoff) return;
+  injectPageState();
 
-        // CRXJS can't hot-reload ?inline CSS, so dev imports the stylesheet directly.
-        if (import.meta.env.MODE === "development") {
-          import("@/css/injected.scss");
-        } else {
-          const injectedStyle = document.createElement("style");
-          injectedStyle.textContent = injectedCSS;
-          document.head.appendChild(injectedStyle);
-        }
-      }
-      resolve(true);
-    } catch (error: any) {
-      console.error(error);
-      reject(error);
-    }
-  });
+  // CRXJS can't hot-reload ?inline CSS, so dev imports the stylesheet directly.
+  if (import.meta.env.MODE === "development") {
+    void import("@/css/injected.scss");
+  } else {
+    const injectedStyle = document.createElement("style");
+    injectedStyle.textContent = injectedCSS;
+    document.head.appendChild(injectedStyle);
+  }
 }
 
 function injectPageState() {

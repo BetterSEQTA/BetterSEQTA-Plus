@@ -6,11 +6,7 @@ import {
   extractLetterGradeStringFromPayload,
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
-import {
-  loadAnalyticsCache,
-  loadGradeInferenceSettings,
-  saveAnalyticsCache,
-} from "./storage";
+import { loadAnalyticsCache, loadGradeInferenceSettings, saveAnalyticsCache } from "./storage";
 import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
@@ -51,10 +47,7 @@ export function parseAssessment(data: unknown): Assessment | null {
     let finalGrade = resolveNumericGradeFromAssessmentPayload(
       raw as Parameters<typeof resolveNumericGradeFromAssessmentPayload>[0],
     );
-    if (
-      finalGrade !== undefined &&
-      (typeof finalGrade !== "number" || isNaN(finalGrade))
-    ) {
+    if (finalGrade !== undefined && (typeof finalGrade !== "number" || isNaN(finalGrade))) {
       finalGrade = undefined;
     }
 
@@ -101,7 +94,6 @@ export function parseAssessment(data: unknown): Assessment | null {
   }
 }
 
-
 function applyResolvedGrade(
   raw: Record<string, unknown>,
   inference: AnalyticsGradeInferenceSettings,
@@ -111,7 +103,6 @@ function applyResolvedGrade(
   if (resolved.letterGrade !== undefined) raw.letterGrade = resolved.letterGrade;
   if (resolved.source) raw.gradeSource = resolved.source;
 }
-
 
 function classKey(programme: number, metaclass: number): string {
   return `${programme}-${metaclass}`;
@@ -279,10 +270,7 @@ async function loadAllPast(
       if (result.status === "fulfilled") {
         results.push(result.value);
       } else {
-        console.error(
-          "[BetterSEQTA+] Past assessments fetch failed:",
-          result.reason,
-        );
+        console.error("[BetterSEQTA+] Past assessments fetch failed:", result.reason);
       }
     }
   }
@@ -304,8 +292,7 @@ function mergeRawAssessments(
     if (!id) continue;
 
     applyResolvedGrade(raw, inference);
-    const finalGrade =
-      raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
+    const finalGrade = raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
 
     const existingItem = existingMap.get(id);
     if (

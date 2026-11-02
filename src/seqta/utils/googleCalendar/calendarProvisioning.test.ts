@@ -25,7 +25,9 @@ describe("ensureGoogleAppCalendar", () => {
   });
 
   it("reuses a stored calendar id when it still exists", async () => {
-    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "stored-id", summary: "BetterSEQTA+ Timetable" }));
+    fetchMock.mockResolvedValueOnce(
+      jsonResponse({ id: "stored-id", summary: "BetterSEQTA+ Timetable" }),
+    );
 
     await expect(ensureGoogleAppCalendar("token", "stored-id")).resolves.toBe("stored-id");
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -41,7 +43,9 @@ describe("ensureGoogleAppCalendar", () => {
     await expect(ensureGoogleAppCalendar("token")).resolves.toBe("found-id");
     expect(fetchMock).toHaveBeenCalledWith(
       "https://www.googleapis.com/calendar/v3/users/me/calendarList",
-      expect.objectContaining({ headers: expect.objectContaining({ Authorization: "Bearer token" }) }),
+      expect.objectContaining({
+        headers: expect.objectContaining({ Authorization: "Bearer token" }),
+      }),
     );
   });
 

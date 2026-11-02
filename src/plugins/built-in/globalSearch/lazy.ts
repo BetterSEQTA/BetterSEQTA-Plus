@@ -7,10 +7,7 @@ import {
 } from "../../core/settingsHelpers";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
-import {
-  resetSearchIndexes,
-  notifyOpenTabsResetSearchIndex,
-} from "./src/indexing/resetIndexes";
+import { resetSearchIndexes, notifyOpenTabsResetSearchIndex } from "./src/indexing/resetIndexes";
 import {
   formatHotkeyForDisplay,
   getDefaultSearchHotkey,
@@ -58,9 +55,7 @@ const settings = defineSettings({
       try {
         await notifyOpenTabsResetSearchIndex();
         await resetSearchIndexes();
-        alert(
-          "Search index and storage were reset.\n\nReload this tab to regenerate the index.",
-        );
+        alert("Search index and storage were reset.\n\nReload this tab to regenerate the index.");
       } catch (e) {
         alert(
           "Failed to reset index: " +

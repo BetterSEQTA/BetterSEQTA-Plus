@@ -144,8 +144,7 @@ async function loadEngageSubmissions(studentId: number, assessments: any[]) {
           metaclass: assessment.metaclassID,
           student: studentId,
         });
-        submissionMap[assessment.id] =
-          Array.isArray(res.payload) && res.payload.length > 0;
+        submissionMap[assessment.id] = Array.isArray(res.payload) && res.payload.length > 0;
       } catch (error) {
         console.warn(
           `[BetterSEQTA+] Failed to fetch Engage submission for assessment ${assessment.id}:`,
@@ -159,9 +158,7 @@ async function loadEngageSubmissions(studentId: number, assessments: any[]) {
   return submissionMap;
 }
 
-async function loadEngageAssessmentsForStudent(
-  child: EngageChildPayload,
-): Promise<any[]> {
+async function loadEngageAssessmentsForStudent(child: EngageChildPayload): Promise<any[]> {
   const studentId = Number(child.id);
   const studentName = child.name ?? "Student";
   const subjects = subjectsFromChild(child);
@@ -182,14 +179,13 @@ async function loadEngageAssessmentsForStudent(
     else map[task.id] = task;
   });
 
-  const assessments = filterAssessmentsForActiveSubjects(
-    Object.values(map),
-    subjects,
-  ).map((assessment) => ({
-    ...assessment,
-    studentId,
-    studentName,
-  }));
+  const assessments = filterAssessmentsForActiveSubjects(Object.values(map), subjects).map(
+    (assessment) => ({
+      ...assessment,
+      studentId,
+      studentName,
+    }),
+  );
 
   const submissions = await loadEngageSubmissions(studentId, assessments);
   assessments.forEach((assessment) => {

@@ -9,25 +9,20 @@ export async function requestEngageAssessmentPdf(params: {
 }): Promise<string> {
   const fileName = randomPdfFileName();
 
-  const response = await fetch(
-    `${location.origin}/seqta/parent/print/assessment?${Date.now()}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      credentials: "include",
-      body: JSON.stringify({
-        id: params.assessmentID,
-        metaclass: params.metaclassID,
-        student: Number(params.studentID),
-        fileName,
-      }),
-    },
-  );
+  const response = await fetch(`${location.origin}/seqta/parent/print/assessment?${Date.now()}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    credentials: "include",
+    body: JSON.stringify({
+      id: params.assessmentID,
+      metaclass: params.metaclassID,
+      student: Number(params.studentID),
+      fileName,
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to generate PDF: ${response.status} ${response.statusText}`,
-    );
+    throw new Error(`Failed to generate PDF: ${response.status} ${response.statusText}`);
   }
 
   const data = (await response.json()) as {

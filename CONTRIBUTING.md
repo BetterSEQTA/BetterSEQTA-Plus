@@ -23,15 +23,15 @@ For Firefox, run `npm run dev:firefox` and load `dist/firefox` from `about:debug
 
 ## Project layout
 
-| Path | What's in it |
-|------|--------------|
-| `src/SEQTA.ts` | Content script entry point |
-| `src/background.ts`, `src/background/` | Service worker |
-| `src/seqta/` | Everything injected into SEQTA pages |
-| `src/interface/` | Settings popup and theme store (Svelte) |
-| `src/plugins/` | Plugin system and built-in plugins |
-| `src/css/` | Injected styles and the shared Tailwind setup |
-| `lib/`, `scripts/` | Vite plugins and build scripts |
+| Path                                   | What's in it                                  |
+| -------------------------------------- | --------------------------------------------- |
+| `src/SEQTA.ts`                         | Content script entry point                    |
+| `src/background.ts`, `src/background/` | Service worker                                |
+| `src/seqta/`                           | Everything injected into SEQTA pages          |
+| `src/interface/`                       | Settings popup and theme store (Svelte)       |
+| `src/plugins/`                         | Plugin system and built-in plugins            |
+| `src/css/`                             | Injected styles and the shared Tailwind setup |
+| `lib/`, `scripts/`                     | Vite plugins and build scripts                |
 
 The [architecture guide](https://docs.betterseqta.org/architecture/) goes into more detail.
 
@@ -43,6 +43,7 @@ The [architecture guide](https://docs.betterseqta.org/architecture/) goes into m
 4. Before opening the PR, check everything passes:
 
    ```bash
+   npm run format
    npm run lint
    npm run typecheck
    npm test

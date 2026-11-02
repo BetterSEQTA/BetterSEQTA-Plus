@@ -1,4 +1,3 @@
-
 @use "sass:meta";
 @import url("https://fonts.googleapis.com/css?family=Rubik:300,400,500,600,700");
 
@@ -81,13 +80,20 @@ select {
 
 select:hover {
   background: var(--theme-secondary, var(--background-secondary)) !important;
-  border-color: var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) !important;
+  border-color: var(
+    --theme-offset-bg,
+    var(--theme-secondary, var(--background-secondary))
+  ) !important;
 }
 
 select:focus {
   outline: none !important;
   background: var(--theme-secondary, var(--background-secondary)) !important;
-  border-color: color-mix(in srgb, var(--text-primary) 18%, var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) 82%) !important;
+  border-color: color-mix(
+    in srgb,
+    var(--text-primary) 18%,
+    var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) 82%
+  ) !important;
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
 }
 
@@ -506,7 +512,9 @@ ul.magicDelete > li.deleting {
   pointer-events: auto;
 }
 
-#menu li.hasChildren:is(.active, .bsplus-active) > .sub:has(.hasChildren:is(.active, .bsplus-active)) {
+#menu
+  li.hasChildren:is(.active, .bsplus-active)
+  > .sub:has(.hasChildren:is(.active, .bsplus-active)) {
   pointer-events: none !important;
 }
 
@@ -743,8 +751,7 @@ body.icon-only-sidebar {
     width: 92.5% !important;
     margin-left: 7.5% !important;
     margin-right: 0 !important;
-    border-radius: var(--bsplus-sidebar-radius, 12px) 0 0
-      var(--bsplus-sidebar-radius, 12px) !important;
+    border-radius: var(--bsplus-sidebar-radius, 12px) 0 0 var(--bsplus-sidebar-radius, 12px) !important;
     background: var(--background-primary) !important;
     transition: none !important;
     color: var(--text-primary) !important;
@@ -778,9 +785,8 @@ body.icon-only-sidebar {
           var(--background-primary) var(--bsplus-sidebar-radius, 12px)
         )
         bottom / 100% var(--bsplus-sidebar-radius, 12px) no-repeat,
-      linear-gradient(var(--background-primary), var(--background-primary))
-        center / 100% calc(100% - 2 * var(--bsplus-sidebar-radius, 12px))
-        no-repeat;
+      linear-gradient(var(--background-primary), var(--background-primary)) center / 100%
+        calc(100% - 2 * var(--bsplus-sidebar-radius, 12px)) no-repeat;
   }
 
   #menu > ul > .hasChildren > .sub {
@@ -788,10 +794,7 @@ body.icon-only-sidebar {
     right: auto !important;
     top: 71px !important;
     margin-top: 0 !important;
-    width: min(
-      var(--bsplus-sidebar-width, 270px),
-      calc(100vw - 70px)
-    ) !important;
+    width: min(var(--bsplus-sidebar-width, 270px), calc(100vw - 70px)) !important;
     background: var(--background-primary) !important;
     color: var(--text-primary) !important;
     border-right: 1px solid var(--border-color, rgba(128, 128, 128, 0.3)) !important;
@@ -815,22 +818,13 @@ body.icon-only-sidebar {
       fill: currentColor !important;
     }
     :is(li, section):hover {
-      background: color-mix(
-        in srgb,
-        var(--text-primary) 8%,
-        transparent
-      ) !important;
+      background: color-mix(in srgb, var(--text-primary) 8%, transparent) !important;
     }
     :is(li, section):is(.active, .bsplus-active):not(.hasChildren) {
-      background: color-mix(
-        in srgb,
-        var(--text-primary) 14%,
-        transparent
-      ) !important;
+      background: color-mix(in srgb, var(--text-primary) 14%, transparent) !important;
       &::after {
         background: var(--text-primary) !important;
-        box-shadow: 0 0 10px
-          color-mix(in srgb, var(--text-primary) 45%, transparent) !important;
+        box-shadow: 0 0 10px color-mix(in srgb, var(--text-primary) 45%, transparent) !important;
       }
     }
     .sub {
@@ -903,14 +897,15 @@ body.icon-only-sidebar {
   box-sizing: border-box !important;
   margin-inline: 0 !important;
 }
-body:not(.icon-only-sidebar) #menu#menu.bsplus-sidebar-style-strip > ul > :is(li.item, section.item) {
+body:not(.icon-only-sidebar)
+  #menu#menu.bsplus-sidebar-style-strip
+  > ul
+  > :is(li.item, section.item) {
   width: calc(100% + 1px) !important;
   box-sizing: border-box !important;
 }
 
-body.icon-only-sidebar:has(
-    #menu > ul > .hasChildren:is(.active, .bsplus-active)
-  ) {
+body.icon-only-sidebar:has(#menu > ul > .hasChildren:is(.active, .bsplus-active)) {
   --bsplus-icon-rail-space: calc(
     70px + min(var(--bsplus-sidebar-width, 270px), calc(100vw - 70px))
   );
@@ -1353,11 +1348,7 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li {
   border-bottom: none !important;
 }
 
-html.transparencyEffects
-  [class*="BasicPanel__BasicPanel___q92_U"]
-  > ol
-  > li
-  + li {
+html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + li {
   border-top: 1px solid var(--theme-offset-bg);
 }
 
@@ -1383,7 +1374,9 @@ html.transparencyEffects
 }
 
 #content {
-  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.4s ease;
+  transition:
+    left 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.4s ease;
   left: var(--bsplus-sidebar-width, 270px);
   background: unset;
 }
@@ -1432,7 +1425,9 @@ html.transparencyEffects
       -webkit-transform: translatex(-70px);
       transform: translatex(-70px);
     }
-    #content { left: 0 !important; }
+    #content {
+      left: 0 !important;
+    }
   }
   body.icon-only-sidebar.menuShown #content {
     -webkit-transform: translatex(var(--bsplus-icon-rail-space)) !important;
@@ -2008,13 +2003,10 @@ html.transparencyEffects
   margin: 20px auto 0px;
   cursor: pointer;
 }
-.dark
-  [class*="notifications__detailsBody___"]
-  > [class*="notifications__subtitle___"] {
+.dark [class*="notifications__detailsBody___"] > [class*="notifications__subtitle___"] {
   color: #c1bcbc;
 }
-[class*="notifications__detailsBody___"]
-  > [class*="notifications__subtitle___"] {
+[class*="notifications__detailsBody___"] > [class*="notifications__subtitle___"] {
   font-size: 12px;
 }
 [class*="notifications__notifications___"] > button {
@@ -2028,9 +2020,7 @@ html.transparencyEffects
   height: 25px;
   width: 24px;
 }
-[class*="notifications__notifications___"]
-  > button
-  > [class*="notifications__bubble___"] {
+[class*="notifications__notifications___"] > button > [class*="notifications__bubble___"] {
   background: var(--better-alert-highlight);
   width: 25px;
   height: 25px;
@@ -2258,20 +2248,32 @@ iframe.userHTML {
   background-color: var(--auto-background);
 }
 [class*="OverallResult__OverallResult___"] {
-  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+  --fill-colour: var(
+    --assessment-accent-colour,
+    var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts))))
+  );
 }
 [class*="OverallResult__OverallResult___"] [class*="Thermoscore__Thermoscore___"],
 [class*="OverallResult__OverallResult___"] [class*="Thermoscore__fill___"],
 [class*="OverallResult__OverallResult___"] > div > div {
-  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+  --fill-colour: var(
+    --assessment-accent-colour,
+    var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts))))
+  );
 }
 [class*="AssessableCriterion__header___"] {
-  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+  --fill-colour: var(
+    --assessment-accent-colour,
+    var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts))))
+  );
 }
 [class*="AssessableCriterion__header___"] [class*="Thermoscore__Thermoscore___"],
 [class*="AssessableCriterion__header___"] [class*="Thermoscore__fill___"],
 [class*="AssessableCriterion__header___"] > div > div > div {
-  --fill-colour: var(--assessment-accent-colour, var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts)))));
+  --fill-colour: var(
+    --assessment-accent-colour,
+    var(--item-colour, var(--container-accent, rgb(var(--theme-sel-bg-parts))))
+  );
 }
 .dark [class*="Thermoscore__Thermoscore___"] {
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -2468,13 +2470,10 @@ div:has(> [class*="AssessmentDetails__AssessmentDetails___"]) {
   > [class*="SelectedAssessment__clearBtn___"] {
   background: var(--better-main);
 }
-[class*="SelectedAssessment__SelectedAssessment___"]
-  > [class*="SelectedAssessment__meta___"] {
+[class*="SelectedAssessment__SelectedAssessment___"] > [class*="SelectedAssessment__meta___"] {
   border-bottom: 1px solid var(--better-main);
 }
-[class*="TabSet__TabSet___"]
-  > ol[class*="TabSet__tabs___"]
-  > li[class*="TabSet__selected___"] {
+[class*="TabSet__TabSet___"] > ol[class*="TabSet__tabs___"] > li[class*="TabSet__selected___"] {
   border-bottom-color: var(--better-main);
 }
 [class*="TabSet__TabSet___"] > ol[class*="TabSet__tabs___"] {
@@ -2597,15 +2596,7 @@ div.entry.class[style*="left: 46.5%"] {
 div.entry.class[style*="width: 46.5%"] {
   width: 50% !important;
 }
-.timetablepage
-  .dailycal
-  > .content
-  > .wrapper
-  > .days
-  > tbody
-  > tr
-  > td
-  > .entriesWrapper {
+.timetablepage .dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper {
   min-width: 0;
   width: auto !important;
 }
@@ -2996,15 +2987,7 @@ body {
 .forumView .assessment {
   background: var(--better-main);
 }
-.dailycal
-  > .content
-  > .wrapper
-  > .days
-  > tbody
-  > tr
-  > td
-  > .entriesWrapper
-  > .entry {
+.dailycal > .content > .wrapper > .days > tbody > tr > td > .entriesWrapper > .entry {
   padding: 3px;
   transition: opacity 0.2s ease-in-out;
 }
@@ -3080,9 +3063,7 @@ body {
   box-shadow: none;
 }
 
-[class*="MessageList__MessageList___"]
-  > ol
-  > li[class*="MessageList__unread___"]::before,
+[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__unread___"]::before,
 [class*="MessageList__MessageList___"] > ol > li::before {
   content: "";
   position: absolute;
@@ -3094,9 +3075,7 @@ body {
   transition: width 0.1s;
 }
 
-[class*="MessageList__MessageList___"]
-  > ol
-  > li[class*="MessageList__unread___"]::before {
+[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__unread___"]::before {
   width: 3px;
 }
 .connectedNotificationsWrapper > div > button {
@@ -3152,16 +3131,11 @@ body:not(.clr-open) .clr-picker,
   visibility: hidden !important;
 }
 
-.dark
-  [class*="MessageList__MessageList___"]
-  > ol
-  > li[class*="MessageList__selected___"] {
+.dark [class*="MessageList__MessageList___"] > ol > li[class*="MessageList__selected___"] {
   background: var(--background-secondary);
 }
 
-[class*="MessageList__MessageList___"]
-  > ol
-  > li[class*="MessageList__selected___"] {
+[class*="MessageList__MessageList___"] > ol > li[class*="MessageList__selected___"] {
   background: var(--background-secondary, rgb(228 225 225));
   color: var(--text-primary);
   box-shadow: none !important;
@@ -3793,12 +3767,16 @@ div.day-empty {
   max-width: 16rem;
   min-width: 10rem;
   padding: 0.35rem 0.6rem;
-  transition: border-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  transition:
+    border-color 0.2s ease-in-out,
+    color 0.2s ease-in-out;
 }
 
 .engage-child-select:focus {
   outline: none;
-  box-shadow: 0 0 0 2px var(--background-primary), 0 0 0 4px rgba(59, 130, 246, 0.45);
+  box-shadow:
+    0 0 0 2px var(--background-primary),
+    0 0 0 4px rgba(59, 130, 246, 0.45);
 }
 
 #engage-day-container:has(> .day-empty) {
@@ -4321,14 +4299,16 @@ div.day-empty {
 /* Lightweight popup motion (performance mode) — fade + scale, no blur springs. */
 .whatsnewBackground.bsplus-popup-css-animate {
   opacity: 0;
-  transition: opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+  transition: opacity var(--bs-motion-duration, 0.2s)
+    var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
 
   .whatsnewContainer {
     opacity: 0;
     transform: scale(0.94);
     transition:
       opacity var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1)),
-      transform var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
+      transform var(--bs-motion-duration, 0.2s)
+        var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1));
   }
 
   &.bsplus-popup-css-animate--open {
@@ -4777,7 +4757,9 @@ div.day-empty {
     inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 14%, transparent);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 .themeOfTheMonthCardPopoutIcon {
   display: inline-flex;
@@ -4961,7 +4943,9 @@ div.day-empty {
   border-radius: 9999px;
   cursor: pointer;
   background: color-mix(in srgb, var(--text-primary) 28%, transparent);
-  transition: background 0.15s ease, transform 0.15s ease;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
 }
 .themeOfTheMonthCardGalleryDotActive {
   background: var(--better-pri, #6366f1);
@@ -5039,7 +5023,10 @@ div.day-empty {
   padding: 0.5rem 0.85rem;
   font-size: 0.84rem;
   font-weight: 700;
-  transition: transform 0.15s ease, filter 0.15s ease, background 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    filter 0.15s ease,
+    background 0.15s ease;
 }
 .themeOfTheMonthCardConfirmCancel {
   background: color-mix(in srgb, var(--text-primary) 10%, transparent);
@@ -5151,7 +5138,9 @@ div.day-empty {
   padding: 0.58rem 0.9rem;
   font-size: 0.86rem;
   font-weight: 700;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
 }
 .themeOfTheMonthCardPrimary {
   background: var(--better-pri, #6366f1);
@@ -5223,7 +5212,8 @@ div.day-empty {
   animation: bsplusThemeHighlightPulse 1.4s ease-in-out 2;
 }
 @keyframes bsplusThemeHighlightPulse {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--better-pri, #6366f1) 0%, transparent);
   }
   50% {
@@ -5233,7 +5223,9 @@ div.day-empty {
 
 .popup-media-fullscreenable {
   cursor: pointer;
-  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transition:
+    opacity 0.2s ease-in-out,
+    transform 0.2s ease-in-out;
 }
 .popup-media-fullscreenable:hover {
   opacity: 0.95;
@@ -5448,10 +5440,7 @@ div.day-empty {
       }
     }
 
-    &:not(:hover)
-      .cke_button:not(.cke_button_on):not(
-        .cke_button__seqta-align-left:first-child
-      ) {
+    &:not(:hover) .cke_button:not(.cke_button_on):not(.cke_button__seqta-align-left:first-child) {
       transform: translateY(0);
       visibility: hidden;
       transition:

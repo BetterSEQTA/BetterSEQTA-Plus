@@ -23,10 +23,7 @@ export type SettingsSectionSharedProps = {
   searchQuery?: string;
 };
 
-export function matchesSearch(
-  searchQuery: string,
-  ...parts: Array<string | undefined>
-): boolean {
+export function matchesSearch(searchQuery: string, ...parts: Array<string | undefined>): boolean {
   const q = searchQuery.trim().toLowerCase();
   return !q || parts.some((part) => part?.toLowerCase().includes(q));
 }

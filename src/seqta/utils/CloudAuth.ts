@@ -81,10 +81,7 @@ class CloudAuthService {
   }
 
   private async loadFromStorage(): Promise<void> {
-    const result = await browser.storage.local.get([
-      STORAGE_KEYS.accessToken,
-      STORAGE_KEYS.user,
-    ]);
+    const result = await browser.storage.local.get([STORAGE_KEYS.accessToken, STORAGE_KEYS.user]);
     const token = result[STORAGE_KEYS.accessToken] as string | undefined;
     const user = result[STORAGE_KEYS.user] as CloudUser | undefined;
     this._state = {
@@ -172,7 +169,7 @@ class CloudAuthService {
 
   public async login(
     login: string,
-    password: string
+    password: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const clientId = await this.getClientId();

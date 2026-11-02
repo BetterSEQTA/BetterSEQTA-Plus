@@ -21,18 +21,10 @@ function buildFormDataFromPayload(payload: UploadPayload): FormData {
   const form = new FormData();
   if (payload.themeZip) {
     const part = payload.themeZip;
-    form.append(
-      part.fieldName,
-      base64ToBlob(part.dataBase64, part.mimeType),
-      part.filename,
-    );
+    form.append(part.fieldName, base64ToBlob(part.dataBase64, part.mimeType), part.filename);
   }
   for (const part of payload.looseFiles ?? []) {
-    form.append(
-      part.fieldName,
-      base64ToBlob(part.dataBase64, part.mimeType),
-      part.filename,
-    );
+    form.append(part.fieldName, base64ToBlob(part.dataBase64, part.mimeType), part.filename);
   }
   if (payload.submissionNotes?.trim()) {
     form.append("submission_notes", payload.submissionNotes.trim());
@@ -137,9 +129,7 @@ export function createCustomThemesHandlers(deps: {
         params.set("type", "betterseqta");
         (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.status) params.set("status", String(request.status));
-        sendResponse(
-          await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true),
-        );
+        sendResponse(await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true));
       } catch (err) {
         console.error("[Background] fetchMyCustomThemes error:", err);
         sendResponse({

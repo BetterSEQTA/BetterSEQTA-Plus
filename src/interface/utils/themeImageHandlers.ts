@@ -1,9 +1,6 @@
 import type { LoadedCustomTheme } from "@/types/CustomThemes";
 
-export function handleImageUpload(
-  event: Event,
-  theme: LoadedCustomTheme,
-): LoadedCustomTheme {
+export function handleImageUpload(event: Event, theme: LoadedCustomTheme): LoadedCustomTheme {
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   input.value = "";
@@ -22,10 +19,7 @@ export function handleImageUpload(
   };
 }
 
-export function handleRemoveImage(
-  imageId: string,
-  theme: LoadedCustomTheme,
-): LoadedCustomTheme {
+export function handleRemoveImage(imageId: string, theme: LoadedCustomTheme): LoadedCustomTheme {
   return {
     ...theme,
     CustomImages: theme.CustomImages.filter((image) => image.id !== imageId),

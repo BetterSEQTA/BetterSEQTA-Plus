@@ -1,11 +1,6 @@
 import type { IndexItem } from "./types";
 import { getAll, put } from "./db";
-import {
-  buildIndexItem,
-  extractTextFromValue,
-  pickId,
-  pickTitle,
-} from "./extract";
+import { buildIndexItem, extractTextFromValue, pickId, pickTitle } from "./extract";
 import { verboseDebug } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
@@ -83,7 +78,10 @@ interface CapturedContext {
 function categoryFromRoute(route: string): string {
   // /seqta/student/load/courses -> courses
   // /seqta/student/load/message -> message
-  const tail = route.replace(/^\/seqta\/student\//, "").split("/").filter(Boolean);
+  const tail = route
+    .replace(/^\/seqta\/student\//, "")
+    .split("/")
+    .filter(Boolean);
   if (tail.length === 0) return "passive";
   // message/people is a support endpoint that backs the messages compose UI.
   // We treat it as a low-priority `messages-support` record rather than a
@@ -111,13 +109,7 @@ function isPeopleEntityWorthIndexing(entity: unknown): boolean {
     "given",
     "givenName",
   ]);
-  const last = stringField(obj, [
-    "surname",
-    "lastname",
-    "lastName",
-    "last_name",
-    "familyName",
-  ]);
+  const last = stringField(obj, ["surname", "lastname", "lastName", "last_name", "familyName"]);
   const display = stringField(obj, ["displayName", "name", "fullName"]);
   return Boolean((first && last) || display);
 }
@@ -158,12 +150,8 @@ function extractProgrammeMetaclass(
     src: Record<string, unknown> | null,
   ): { programme: number; metaclass: number } | null => {
     if (!src) return null;
-    const programme = coerce(
-      src.programme ?? src.programmeId ?? src.programmeID,
-    );
-    const metaclass = coerce(
-      src.metaclass ?? src.metaclassId ?? src.metaclassID ?? src.subjectId,
-    );
+    const programme = coerce(src.programme ?? src.programmeId ?? src.programmeID);
+    const metaclass = coerce(src.metaclass ?? src.metaclassId ?? src.metaclassID ?? src.subjectId);
     if (programme !== undefined && metaclass !== undefined) {
       return { programme, metaclass };
     }
@@ -189,15 +177,7 @@ function entitiesFromPayload(payload: unknown): unknown[] {
     // `.items`, `.tasks`, etc. Pull the first array-shaped child as our
     // best guess; if none exists, fall back to the object itself so we
     // still index a single entry.
-    for (const key of [
-      "list",
-      "items",
-      "messages",
-      "tasks",
-      "pending",
-      "forums",
-      "docs",
-    ]) {
+    for (const key of ["list", "items", "messages", "tasks", "pending", "forums", "docs"]) {
       const value = obj[key];
       if (Array.isArray(value)) return value;
     }
@@ -229,9 +209,7 @@ const DEEP_LINK_FIELDS = [
   "messageId",
 ] as const;
 
-function pickDeepLinkHints(
-  entity: unknown,
-): Record<string, string | number> {
+function pickDeepLinkHints(entity: unknown): Record<string, string | number> {
   if (!entity || typeof entity !== "object") return {};
   const src = entity as Record<string, unknown>;
   const out: Record<string, string | number> = {};
@@ -246,10 +224,7 @@ function pickDeepLinkHints(
   return out;
 }
 
-function stringField(
-  entity: Record<string, unknown>,
-  keys: readonly string[],
-): string | undefined {
+function stringField(entity: Record<string, unknown>, keys: readonly string[]): string | undefined {
   for (const key of keys) {
     const value = entity[key];
     if (typeof value === "string" && value.trim()) return value.trim();
@@ -274,13 +249,7 @@ function titleFromEndpoint(
       "given",
       "givenName",
     ]);
-    const last = stringField(obj, [
-      "surname",
-      "lastname",
-      "lastName",
-      "last_name",
-      "familyName",
-    ]);
+    const last = stringField(obj, ["surname", "lastname", "lastName", "last_name", "familyName"]);
     const full = [first, last].filter(Boolean).join(" ").trim();
     if (full) return full.slice(0, 200);
   }
@@ -354,9 +323,7 @@ function passiveEntityToIndexItem(
       sourcePage,
       ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
       ...deepLinkHints,
-      ...(coursePm
-        ? { programme: coursePm.programme, metaclass: coursePm.metaclass }
-        : {}),
+      ...(coursePm ? { programme: coursePm.programme, metaclass: coursePm.metaclass } : {}),
     },
     actionId: "passive",
     renderComponentId: "passive",
@@ -364,10 +331,7 @@ function passiveEntityToIndexItem(
   });
 }
 
-function synthesizeItems(
-  ctx: CapturedContext,
-  payload: unknown,
-): IndexItem[] {
+function synthesizeItems(ctx: CapturedContext, payload: unknown): IndexItem[] {
   if (isAssessmentListRoute(ctx.route)) return [];
 
   const entities = entitiesFromPayload(payload);
@@ -403,10 +367,7 @@ async function persistItems(items: IndexItem[]): Promise<void> {
       await put(STORE_ID, item, item.id);
       pendingChangedItems.set(item.id, item);
     } catch (e) {
-      console.warn(
-        `[Passive Observer] Failed to persist item ${item.id}:`,
-        e,
-      );
+      console.warn(`[Passive Observer] Failed to persist item ${item.id}:`, e);
     }
   }
 
@@ -468,10 +429,7 @@ async function handleCapturedPayload(
   requestBody: unknown,
   payload: unknown,
 ): Promise<void> {
-  const items = synthesizeItems(
-    { route, requestBody, observedAt: Date.now() },
-    payload,
-  );
+  const items = synthesizeItems({ route, requestBody, observedAt: Date.now() }, payload);
   if (items.length > 0) {
     await persistItems(items);
   }
@@ -541,17 +499,10 @@ export function installPassiveObserver(): void {
 
     try {
       const url =
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input.url;
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (isSameOriginSeqtaUrl(url)) {
         const body = init?.body;
-        const parsed =
-          body && typeof body === "string"
-            ? tryParseJson(body)
-            : undefined;
+        const parsed = body && typeof body === "string" ? tryParseJson(body) : undefined;
         // Fire-and-forget: never block the host page on indexing work.
         void consumeResponse(response, url, parsed);
       }
@@ -582,15 +533,11 @@ export function installPassiveObserver(): void {
       }
       return originalOpen.call(this, method, url, ...rest);
     };
-    ProtoXhr.send = function patchedSend(
-      this: XMLHttpRequest,
-      body?: any,
-    ) {
+    ProtoXhr.send = function patchedSend(this: XMLHttpRequest, body?: any) {
       try {
         const url = (this as any).__bsplusUrl as string | undefined;
         if (url && isSameOriginSeqtaUrl(url)) {
-          const parsed =
-            typeof body === "string" ? tryParseJson(body) : undefined;
+          const parsed = typeof body === "string" ? tryParseJson(body) : undefined;
           this.addEventListener("load", () => {
             try {
               if (this.status < 200 || this.status >= 300) return;

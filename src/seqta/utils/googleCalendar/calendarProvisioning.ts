@@ -60,9 +60,7 @@ async function createAppCalendar(accessToken: string): Promise<string> {
   );
 
   if (!ok || !data.id) {
-    throw new Error(
-      data.error?.message ?? `Could not create BetterSEQTA+ calendar (${status}).`,
-    );
+    throw new Error(data.error?.message ?? `Could not create BetterSEQTA+ calendar (${status}).`);
   }
   return data.id;
 }

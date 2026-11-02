@@ -6,7 +6,7 @@ import { VectorWorkerManager } from "../worker/vectorWorkerManager";
 import { loadAllStoredItems } from "../indexer";
 import { publishDynamicItemsUpdate } from "../renderComponents";
 
-import { verboseLog } from '@/utils/verboseLog';
+import { verboseLog } from "@/utils/verboseLog";
 const NOTIFICATIONS_RATE_LIMIT = {
   baseDelay: 150,
   maxDelay: 3000,
@@ -69,20 +69,14 @@ const fetchAssessmentName = async (
 ): Promise<string> => {
   const searchAssessment = (data: any): string | null => {
     for (const item of data.syllabus || []) {
-      const found = (item.assessments || []).find(
-        (a: any) => a.id === assessmentId,
-      );
+      const found = (item.assessments || []).find((a: any) => a.id === assessmentId);
       if (found) return found.title;
     }
 
-    const foundPending = (data.pending || []).find(
-      (a: any) => a.id === assessmentId,
-    );
+    const foundPending = (data.pending || []).find((a: any) => a.id === assessmentId);
     if (foundPending) return foundPending.title;
 
-    const foundTask = (data.tasks || []).find(
-      (a: any) => a.id === assessmentId,
-    );
+    const foundTask = (data.tasks || []).find((a: any) => a.id === assessmentId);
     if (foundTask) return foundTask.title;
 
     return null;
@@ -130,29 +124,18 @@ const fetchAssessmentName = async (
 
     await delay(NOTIFICATIONS_RATE_LIMIT.baseDelay);
 
-    const upcomingPayload = await fetchAssessments(
-      "/seqta/student/assessment/list/upcoming",
-    );
-    const foundUpcoming = (upcomingPayload || []).find(
-      (a: any) => a.id === assessmentId,
-    );
+    const upcomingPayload = await fetchAssessments("/seqta/student/assessment/list/upcoming");
+    const foundUpcoming = (upcomingPayload || []).find((a: any) => a.id === assessmentId);
     if (foundUpcoming) return foundUpcoming.title;
 
-    throw new Error(
-      `Assessment with ID ${assessmentId} not found in past or upcoming.`,
-    );
+    throw new Error(`Assessment with ID ${assessmentId} not found in past or upcoming.`);
   } catch (error) {
     if (retryCount < NOTIFICATIONS_RATE_LIMIT.maxRetries) {
       const retryDelay =
         NOTIFICATIONS_RATE_LIMIT.baseDelay *
         Math.pow(NOTIFICATIONS_RATE_LIMIT.backoffMultiplier, retryCount);
       await delay(Math.min(retryDelay, NOTIFICATIONS_RATE_LIMIT.maxDelay));
-      return fetchAssessmentName(
-        assessmentId,
-        metaclassId,
-        programmeId,
-        retryCount + 1,
-      );
+      return fetchAssessmentName(assessmentId, metaclassId, programmeId, retryCount + 1);
     }
 
     console.error(
@@ -213,29 +196,19 @@ export const notificationsJob: Job = {
           );
         }
       } catch (error) {
-        console.warn(
-          "[Notifications job] Failed to start streaming session:",
-          error,
-        );
+        console.warn("[Notifications job] Failed to start streaming session:", error);
       }
     }
 
     const notificationIsIndexed = async (id: string): Promise<boolean> => {
       try {
         const [inAssessments, inMessages] = await Promise.all([
-          ctx
-            .getStoredItems("notifications")
-            .then((items) => items.some((i) => i.id === id)),
-          ctx
-            .getStoredItems("messages")
-            .then((items) => items.some((i) => i.id === id)),
+          ctx.getStoredItems("notifications").then((items) => items.some((i) => i.id === id)),
+          ctx.getStoredItems("messages").then((items) => items.some((i) => i.id === id)),
         ]);
         return inAssessments || inMessages;
       } catch (error) {
-        console.warn(
-          `[Notifications job] Error checking if notification ${id} is indexed:`,
-          error,
-        );
+        console.warn(`[Notifications job] Error checking if notification ${id} is indexed:`, error);
         return false;
       }
     };
@@ -254,27 +227,18 @@ export const notificationsJob: Job = {
       const retryBatch = progress.retryQueue.slice(0, 3);
 
       for (const notificationId of retryBatch) {
-        const notification = notifications.find(
-          (n) => n.notificationID === notificationId,
-        );
+        const notification = notifications.find((n) => n.notificationID === notificationId);
         if (!notification) {
-          progress.retryQueue = progress.retryQueue.filter(
-            (id) => id !== notificationId,
-          );
+          progress.retryQueue = progress.retryQueue.filter((id) => id !== notificationId);
           continue;
         }
 
         await delay(progress.currentDelay);
 
         try {
-          const { success, item } = await processNotification(
-            notification,
-            ctx,
-          );
+          const { success, item } = await processNotification(notification, ctx);
           if (success) {
-            progress.retryQueue = progress.retryQueue.filter(
-              (id) => id !== notificationId,
-            );
+            progress.retryQueue = progress.retryQueue.filter((id) => id !== notificationId);
             progress.failedRequests = Math.max(0, progress.failedRequests - 1);
             progress.currentDelay = Math.max(
               progress.currentDelay * 0.9,
@@ -328,10 +292,7 @@ export const notificationsJob: Job = {
           }
         }
       } catch (error) {
-        console.error(
-          `[Notifications job] Failed to process notification ${id}:`,
-          error,
-        );
+        console.error(`[Notifications job] Failed to process notification ${id}:`, error);
 
         if (progress.retryQueue.length < 10) {
           progress.retryQueue.push(notif.notificationID);
@@ -357,10 +318,7 @@ export const notificationsJob: Job = {
           );
           itemsToStream.length = 0;
         } catch (error) {
-          console.warn(
-            "[Notifications job] Failed to stream items to vector worker:",
-            error,
-          );
+          console.warn("[Notifications job] Failed to stream items to vector worker:", error);
         }
       }
 
@@ -371,11 +329,7 @@ export const notificationsJob: Job = {
 
         if (items.length > 0) {
           try {
-            publishDynamicItemsUpdate(
-              await loadAllStoredItems(),
-              "notifications",
-              items.length,
-            );
+            publishDynamicItemsUpdate(await loadAllStoredItems(), "notifications", items.length);
           } catch (error) {
             console.warn(
               "[Notifications job] Failed to dispatch incremental search update:",
@@ -394,10 +348,7 @@ export const notificationsJob: Job = {
           `[Notifications job] Streamed final ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
         );
       } catch (error) {
-        console.warn(
-          "[Notifications job] Failed to stream final items to vector worker:",
-          error,
-        );
+        console.warn("[Notifications job] Failed to stream final items to vector worker:", error);
       }
     }
 
@@ -409,18 +360,12 @@ export const notificationsJob: Job = {
         );
         progress.streamingStarted = false;
       } catch (error) {
-        console.warn(
-          "[Notifications job] Failed to end streaming session:",
-          error,
-        );
+        console.warn("[Notifications job] Failed to end streaming session:", error);
       }
     }
 
     if (items.length) {
-      const latest = Math.max(
-        ...items.map((i) => i.dateAdded),
-        progress.lastTs,
-      );
+      const latest = Math.max(...items.map((i) => i.dateAdded), progress.lastTs);
       progress.lastTs = latest;
     }
 
@@ -450,11 +395,7 @@ async function processNotification(
     if (notif.type === "coneqtassessments") {
       const a = notif.coneqtAssessments;
 
-      const content = await fetchAssessmentName(
-        a.assessmentID,
-        a.metaclassID,
-        a.programmeID,
-      );
+      const content = await fetchAssessmentName(a.assessmentID, a.metaclassID, a.programmeID);
 
       const item: IndexItem = {
         id,
@@ -502,10 +443,7 @@ async function processNotification(
 
     return { success: false };
   } catch (error) {
-    console.error(
-      `[Notifications job] Error processing notification ${id}:`,
-      error,
-    );
+    console.error(`[Notifications job] Error processing notification ${id}:`, error);
     return { success: false };
   }
 }

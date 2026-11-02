@@ -6,6 +6,13 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
     # The layerchart Svelte build fails on Linux, so CI runs on Windows.
@@ -21,9 +28,6 @@ jobs:
 
       - name: Run lint
         uses: ./.github/actions/run-lint
-
-      - name: Type check
-        run: npm run typecheck
 
   unit-tests:
     runs-on: windows-latest

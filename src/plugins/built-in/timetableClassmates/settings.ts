@@ -10,7 +10,8 @@ export const timetableClassmatesSettings = defineSettings({
   }),
   showAvatars: componentSetting({
     title: "Show classmate avatars",
-    description: "Display avatar stacks on lessons (saved per SEQTA site and student on this device)",
+    description:
+      "Display avatar stacks on lessons (saved per SEQTA site and student on this device)",
     component: TimetableClassmatesAvatarsSwitch,
   }),
   sharing: componentSetting({

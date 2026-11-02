@@ -6,7 +6,7 @@ export default function stringToHTML(str: string, styles = false) {
   str = DOMPurify.sanitize(str, {
     ADD_ATTR: ["onclick"],
     ALLOWED_URI_REGEXP:
-      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|chrome-extension):|\/|#|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i,
+      /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp|chrome-extension):|\/|#|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
   });
 
   const doc = parser.parseFromString(str, "text/html");

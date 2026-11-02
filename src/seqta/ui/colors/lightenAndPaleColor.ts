@@ -1,10 +1,6 @@
 import Color from "color";
 
-export function lightenAndPaleColor(
-  inputColor: any,
-  lightenFactor = 0.75,
-  paleFactor = 0.55,
-) {
+export function lightenAndPaleColor(inputColor: any, lightenFactor = 0.75, paleFactor = 0.55) {
   if (!inputColor) return;
 
   if (inputColor.includes("gradient")) {
@@ -41,11 +37,7 @@ function averageColors(colors: any) {
     avgG += color.green();
     avgB += color.blue();
   });
-  return Color.rgb(
-    avgR / colors.length,
-    avgG / colors.length,
-    avgB / colors.length,
-  );
+  return Color.rgb(avgR / colors.length, avgG / colors.length, avgB / colors.length);
 }
 // Main function to find a matching color for a CSS gradient
 function findMatchingColor(cssGradient: any) {
@@ -56,9 +48,7 @@ function findMatchingColor(cssGradient: any) {
     const colorStops = cssGradient.match(regex);
 
     if (!colorStops) {
-      throw new Error(
-        "No valid color stops found in the provided CSS gradient.",
-      );
+      throw new Error("No valid color stops found in the provided CSS gradient.");
     }
 
     // Normalize and trim the color stops

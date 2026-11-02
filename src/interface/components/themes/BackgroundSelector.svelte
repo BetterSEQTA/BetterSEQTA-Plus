@@ -128,7 +128,7 @@
 
   $effect(() => {
     loadBackground();
-    selectedBackground
+    void selectedBackground;
   });
 
   onMount(() => {

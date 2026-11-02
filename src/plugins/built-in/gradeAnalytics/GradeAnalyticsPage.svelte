@@ -82,7 +82,7 @@
   const totalCount = $derived(analyticsData?.length ?? 0);
 
   const formattedTimestamp = $derived.by(() => {
-    timestampRefresh;
+    void timestampRefresh;
     return lastUpdated ? formatLastUpdated(lastUpdated) : "";
   });
 

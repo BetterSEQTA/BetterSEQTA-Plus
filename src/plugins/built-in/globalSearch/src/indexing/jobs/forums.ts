@@ -21,9 +21,7 @@ export const forumsJob: Job = {
   frequency: { type: "expiry", afterMs: 30 * 24 * 60 * 60 * 1000 }, // 30 days
 
   run: async (ctx) => {
-    const existingIds = new Set(
-      (await ctx.getStoredItems("forums")).map((i) => i.id),
-    );
+    const existingIds = new Set((await ctx.getStoredItems("forums")).map((i) => i.id));
 
     let list;
     try {
@@ -61,7 +59,7 @@ export const forumsJob: Job = {
     return items;
   },
 
-  /** Keep only forums from the last year. */
+  /** Keep only forums from the last year. */
   purge: (items) => {
     const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
     return items.filter((i) => i.dateAdded >= oneYearAgo);

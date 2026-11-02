@@ -35,7 +35,7 @@ export function mergePayloadIntoRoster(
   for (const ref of refs) {
     const key = classRosterKey(ref);
     if (!key) continue;
-    const bucket = { ...(next[key] ?? {}) };
+    const bucket = { ...next[key] };
     bucket[String(senderId)] = member;
     next[key] = bucket;
   }
@@ -62,20 +62,14 @@ export function removeMemberFromRoster(
   return next;
 }
 
-export function archiveMember(
-  archived: ArchivedMembers,
-  seqtaStudentId: number,
-): ArchivedMembers {
+export function archiveMember(archived: ArchivedMembers, seqtaStudentId: number): ArchivedMembers {
   return {
     ...archived,
     [String(seqtaStudentId)]: { archivedAt: Date.now() },
   };
 }
 
-export function isMemberArchived(
-  archived: ArchivedMembers,
-  seqtaStudentId: number,
-): boolean {
+export function isMemberArchived(archived: ArchivedMembers, seqtaStudentId: number): boolean {
   return Boolean(archived[String(seqtaStudentId)]);
 }
 
@@ -86,7 +80,5 @@ export function rosterPeersForClass(
 ): RosterMember[] {
   const bucket = index[classKey];
   if (!bucket) return [];
-  return Object.values(bucket).filter(
-    (m) => !isMemberArchived(archived, m.seqtaStudentId),
-  );
+  return Object.values(bucket).filter((m) => !isMemberArchived(archived, m.seqtaStudentId));
 }

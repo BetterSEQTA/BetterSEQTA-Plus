@@ -60,10 +60,7 @@ function createSettingsAPI<T extends PluginSettings>(
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
 
   const settingsWithMeta: any = {
-    onChange: <K extends keyof T>(
-      key: K,
-      callback: (value: SettingValue<T[K]>) => void,
-    ) => {
+    onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       if (!listeners.has(key)) {
         listeners.set(key, new Set());
       }
@@ -74,17 +71,14 @@ function createSettingsAPI<T extends PluginSettings>(
         },
       };
     },
-    offChange: <K extends keyof T>(
-      key: K,
-      callback: (value: SettingValue<T[K]>) => void,
-    ) => {
+    offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       listeners.get(key)?.delete(callback);
     },
     loaded: Promise.resolve(), // will be replaced below
   };
 
   for (const key in plugin.settings) {
-    if (plugin.settings[key].type !== 'component' && plugin.settings[key].type !== 'button') {
+    if (plugin.settings[key].type !== "component" && plugin.settings[key].type !== "button") {
       settingsWithMeta[key] = plugin.settings[key].default;
     }
   }
@@ -98,17 +92,12 @@ function createSettingsAPI<T extends PluginSettings>(
         for (const key in storedSettings) {
           if (key in settingsWithMeta) {
             settingsWithMeta[key] = storedSettings[key];
-            listeners
-              .get(key as keyof T)
-              ?.forEach((cb) => cb(storedSettings[key]));
+            listeners.get(key as keyof T)?.forEach((cb) => cb(storedSettings[key]));
           }
         }
       }
     } catch (error) {
-      console.error(
-        `[BetterSEQTA+] Error loading settings for plugin ${plugin.id}:`,
-        error,
-      );
+      console.error(`[BetterSEQTA+] Error loading settings for plugin ${plugin.id}:`, error);
     }
   })();
 
@@ -125,16 +114,10 @@ function createSettingsAPI<T extends PluginSettings>(
     }
   };
 
-  settingsState.register(
-    storageKey as keyof SettingsState,
-    handleSettingsChange,
-  );
+  settingsState.register(storageKey as keyof SettingsState, handleSettingsChange);
 
   const dispose = () => {
-    settingsState.unregister(
-      storageKey as keyof SettingsState,
-      handleSettingsChange,
-    );
+    settingsState.unregister(storageKey as keyof SettingsState, handleSettingsChange);
   };
 
   const proxy = new Proxy(settingsWithMeta, {
@@ -142,8 +125,7 @@ function createSettingsAPI<T extends PluginSettings>(
       return target[prop];
     },
     set(target, prop, value) {
-      if (["onChange", "offChange", "loaded"].includes(prop as string))
-        return false;
+      if (["onChange", "offChange", "loaded"].includes(prop as string)) return false;
 
       target[prop] = value;
 
@@ -156,9 +138,7 @@ function createSettingsAPI<T extends PluginSettings>(
       // Preserve enabled flag managed separately for disableToggle plugins
       if (plugin.disableToggle) {
         const allSettings = settingsState.getAll() as Record<string, unknown>;
-        const existing = allSettings[storageKey] as
-          | { enabled?: boolean }
-          | undefined;
+        const existing = allSettings[storageKey] as { enabled?: boolean } | undefined;
         if (existing?.enabled !== undefined) {
           dataToStore.enabled = existing.enabled;
         }
@@ -197,18 +177,11 @@ function createStorageAPI<T = any>(
         }
       });
     } catch (error) {
-      console.error(
-        `[BetterSEQTA+] Error loading storage for plugin ${pluginId}:`,
-        error,
-      );
+      console.error(`[BetterSEQTA+] Error loading storage for plugin ${pluginId}:`, error);
     }
   })();
 
-  const handleStorageChange = (
-    newValue: unknown,
-    _oldValue: unknown,
-    key: string,
-  ) => {
+  const handleStorageChange = (newValue: unknown, _oldValue: unknown, key: string) => {
     if (!key.startsWith(prefix)) return;
 
     const shortKey = key.slice(prefix.length);

@@ -1,12 +1,15 @@
 {
   "name": "betterseqtaplus",
   "version": "3.7.6",
-  "type": "module",
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development and add heaps more features!",
-  "browserslist": "> 0.5%, last 2 versions, not dead",
-  "engines": {
-    "node": ">=26"
+  "keywords": [],
+  "license": "MIT",
+  "author": {
+    "name": "SethBurkart123",
+    "email": "betterseqta.plus@gmail.com",
+    "url": "https://github.com/BetterSEQTA/BetterSEQTA-Plus"
   },
+  "type": "module",
   "scripts": {
     "compile:layerchart": "node scripts/compile-layerchart-vendor.mjs",
     "postinstall": "node scripts/copy-runtime-assets.mjs && npm run compile:layerchart",
@@ -20,7 +23,9 @@
     "build:safari": "cross-env MODE=safari vite build",
     "build:dev": "cross-env MODE=chrome SOURCEMAP=true vite build && cross-env MODE=firefox SOURCEMAP=true vite build",
     "convert:safari": "xcrun safari-web-extension-converter dist/safari --project-location . --app-name $npm_package_name-safari",
-    "lint": "eslint \"src/**/*.{js,ts}\"",
+    "lint": "oxlint --deny-warnings",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json --fail-on-warnings",
     "test": "npm run test:unit",
     "test:unit": "cross-env NODE_OPTIONS=--no-experimental-webstorage jest",
@@ -29,47 +34,6 @@
     "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus ./dist/*.zip --generate-notes",
     "publish": "node lib/publish.js --b",
     "zip": "node scripts/package-extension-zips.mjs"
-  },
-  "keywords": [],
-  "author": {
-    "name": "SethBurkart123",
-    "email": "betterseqta.plus@gmail.com",
-    "url": "https://github.com/BetterSEQTA/BetterSEQTA-Plus"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "@crxjs/vite-plugin": "^3.0.0",
-    "@eslint/js": "^10.0.1",
-    "@sveltejs/vite-plugin-svelte": "^7.3.1",
-    "@tailwindcss/forms": "^0.5.11",
-    "@tailwindcss/postcss": "^4.3.3",
-    "@tsconfig/svelte": "^5.0.8",
-    "@types/canvas-confetti": "^1.9.0",
-    "@types/chrome": "^0.3.7",
-    "@types/d3-scale": "^4.0.9",
-    "@types/d3-shape": "^3.2.0",
-    "@types/jest": "^30.0.0",
-    "@types/mime-types": "^3.0.1",
-    "@types/node": "^26.6.6",
-    "@types/qrcode": "^1.5.6",
-    "@types/semver": "^7.8.0",
-    "@types/sortablejs": "^1.15.9",
-    "cross-env": "^10.1.0",
-    "esbuild": "^0.28.2",
-    "eslint": "^10.14.0",
-    "globals": "^17.14.0",
-    "jest": "^30.5.2",
-    "jest-environment-jsdom": "^30.5.2",
-    "mime-types": "^3.0.2",
-    "prettier": "^3.9.10",
-    "publish-browser-extension": "^6.2.0",
-    "sass": "^1.107.1",
-    "svelte-check": "^4.7.8",
-    "tailwindcss": "^4.3.3",
-    "ts-jest": "^29.4.15",
-    "typescript": "~6.0.3",
-    "typescript-eslint": "^8.72.1",
-    "vite": "^8.3.5"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.20.4",
@@ -101,8 +65,43 @@
     "sortablejs": "^1.15.7",
     "svelte": "^5.57.3"
   },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^7.3.1",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4.3.3",
+    "@tsconfig/svelte": "^5.0.8",
+    "@types/canvas-confetti": "^1.9.0",
+    "@types/chrome": "^0.3.7",
+    "@types/d3-scale": "^4.0.9",
+    "@types/d3-shape": "^3.2.0",
+    "@types/jest": "^30.0.0",
+    "@types/mime-types": "^3.0.1",
+    "@types/node": "^26.6.6",
+    "@types/qrcode": "^1.5.6",
+    "@types/semver": "^7.8.0",
+    "@types/sortablejs": "^1.15.9",
+    "cross-env": "^10.1.0",
+    "esbuild": "^0.28.2",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
+    "mime-types": "^3.0.2",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "publish-browser-extension": "^6.2.0",
+    "sass": "^1.107.1",
+    "svelte-check": "^4.7.8",
+    "tailwindcss": "^4.3.3",
+    "ts-jest": "^29.4.15",
+    "typescript": "~6.0.3",
+    "vite": "^8.3.5"
+  },
   "overrides": {
     "glob": "^14.0.3"
+  },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "engines": {
+    "node": ">=26"
   },
   "allowScripts": {
     "@parcel/watcher": false,

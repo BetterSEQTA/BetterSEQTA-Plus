@@ -202,9 +202,10 @@ async function applyRemoteTheme(
     for (const layer of layers) {
       if (typeof layer.id === "string") layerIds.push(layer.id);
       if (typeof layer.CustomCSS === "string") css.push(layer.CustomCSS);
-      const stored = typeof layer.id === "string"
-        ? ((await localforage.getItem(layer.id)) as CustomTheme | null)
-        : null;
+      const stored =
+        typeof layer.id === "string"
+          ? ((await localforage.getItem(layer.id)) as CustomTheme | null)
+          : null;
       for (const img of stored?.CustomImages ?? []) {
         if (img.variableName && img.blob) images.set(img.variableName, img);
       }

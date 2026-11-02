@@ -6,10 +6,7 @@ import debounce from "@/seqta/utils/debounce";
 export class SettingsResizer {
   constructor() {
     this.adjustPopupHeight();
-    window.addEventListener(
-      "resize",
-      debounce(this.adjustPopupHeight, 250) as EventListener,
-    );
+    window.addEventListener("resize", debounce(this.adjustPopupHeight, 250) as EventListener);
     document.addEventListener("DOMContentLoaded", this.adjustPopupHeight);
   }
 

@@ -47,9 +47,7 @@ const STRUCTURED_DB = "betterseqta-index";
 const VECTOR_DB = "embeddiaDB";
 const STRUCTURED_VERSION_KEY = "betterseqta-index-version";
 
-function tryDeleteDatabase(
-  name: string,
-): Promise<"success" | "blocked" | "error"> {
+function tryDeleteDatabase(name: string): Promise<"success" | "blocked" | "error"> {
   return new Promise((resolve) => {
     let req: IDBOpenDBRequest;
     try {
@@ -91,15 +89,9 @@ async function deleteIndexedDb(name: string): Promise<void> {
 export async function resetSearchIndexes(): Promise<void> {
   try {
     if (typeof window !== "undefined") {
-      window.dispatchEvent(
-        new CustomEvent("betterseqta-clear-search-cache"),
-      );
-      window.dispatchEvent(
-        new CustomEvent("betterseqta-clear-embedding-cache"),
-      );
-      window.dispatchEvent(
-        new CustomEvent("betterseqta-reset-search-index"),
-      );
+      window.dispatchEvent(new CustomEvent("betterseqta-clear-search-cache"));
+      window.dispatchEvent(new CustomEvent("betterseqta-clear-embedding-cache"));
+      window.dispatchEvent(new CustomEvent("betterseqta-reset-search-index"));
     }
   } catch {
     /* ignore */
@@ -107,10 +99,7 @@ export async function resetSearchIndexes(): Promise<void> {
 
   await delay(300);
 
-  await Promise.allSettled([
-    deleteIndexedDb(STRUCTURED_DB),
-    deleteIndexedDb(VECTOR_DB),
-  ]);
+  await Promise.allSettled([deleteIndexedDb(STRUCTURED_DB), deleteIndexedDb(VECTOR_DB)]);
 
   try {
     localStorage.removeItem(STRUCTURED_VERSION_KEY);

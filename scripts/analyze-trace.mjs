@@ -13,7 +13,6 @@ if (!path) {
 const raw = fs.readFileSync(path, "utf8");
 const { traceEvents } = JSON.parse(raw);
 
-const DURATION_PHASES = new Set(["X", "b", "e"]);
 const openStacks = new Map(); // key -> { name, cat, args, ts }
 
 const byName = new Map();
@@ -38,10 +37,6 @@ function add(map, key, dur, count = 1) {
   e.dur += dur;
   e.count += count;
   map.set(key, e);
-}
-
-function stackKey(ev) {
-  return `${ev.pid}:${ev.tid}:${ev.name}:${ev.ts}`;
 }
 
 for (const ev of traceEvents) {
@@ -75,20 +70,13 @@ for (const ev of traceEvents) {
   }
 
   const url =
-    args.data?.url ??
-    args.url ??
-    args.fileName ??
-    args.data?.scriptName ??
-    args.data?.frame ??
-    "";
+    args.data?.url ?? args.url ?? args.fileName ?? args.data?.scriptName ?? args.data?.frame ?? "";
   if (url && typeof url === "string" && dur > 0) {
     add(byUrl, url.slice(0, 200), dur);
   }
 
   const fn =
-    args.data?.functionName ??
-    args.functionName ??
-    args.data?.columnNumber != null
+    (args.data?.functionName ?? args.functionName ?? args.data?.columnNumber != null)
       ? `${args.data?.functionName ?? name}@${args.data?.url ?? ""}:${args.data?.lineNumber ?? "?"}`
       : "";
   if (fn && dur > 100) {
@@ -104,10 +92,18 @@ for (const ev of traceEvents) {
   if (name === "RunTask" && dur > 50000) {
     longTasks.push({ dur, ts: ev.ts, cat, args: JSON.stringify(args).slice(0, 300) });
   }
-  if (/Timer|setTimeout|setInterval|FireIdleCallback|requestAnimationFrame|RequestAnimationFrame/i.test(name)) {
+  if (
+    /Timer|setTimeout|setInterval|FireIdleCallback|requestAnimationFrame|RequestAnimationFrame/i.test(
+      name,
+    )
+  ) {
     timers.push({ name, dur, ts: ev.ts });
   }
-  if (/MutationObserver|ResizeObserver|IntersectionObserver|DeliverObservations|NotifyMutation/i.test(name)) {
+  if (
+    /MutationObserver|ResizeObserver|IntersectionObserver|DeliverObservations|NotifyMutation/i.test(
+      name,
+    )
+  ) {
     observers.push({ name, dur, ts: ev.ts });
   }
   if (/HitTest|FindElement|ElementAt/i.test(name)) {
@@ -142,39 +138,57 @@ function top(map, n = 40, minCount = 1) {
 
 const traceDurationMs = ((maxTs - minTs) / 1000).toFixed(0);
 
-console.log(JSON.stringify({
-  summary: {
-    traceDurationMs,
-    eventCount: traceEvents.length,
-    layoutCount: layoutEvents.length,
-    layoutTotalMs: (layoutEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    paintCount: paintEvents.length,
-    paintTotalMs: (paintEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    longTaskCount: longTasks.length,
-    longTaskTotalMs: (longTasks.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    timerCount: timers.length,
-    timerTotalMs: (timers.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    observerCount: observers.length,
-    observerTotalMs: (observers.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    hitTestCount: hitTests.length,
-    hitTestTotalMs: (hitTests.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-    gcCount: gcEvents.length,
-    gcTotalMs: (gcEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
-  },
-  topEventNames: top(byName, 50),
-  topCategories: top(byCat, 30),
-  topUrls: top(byUrl, 40),
-  topFunctions: top(byFunction, 40, 1),
-  topBetterseqta: top(betterseqtaHits, 50),
-  topLongTasks: longTasks.sort((a, b) => b.dur - a.dur).slice(0, 20).map(e => ({
-    ms: (e.dur / 1000).toFixed(1),
-    cat: e.cat,
-    args: e.args,
-  })),
-  topLayout: layoutEvents.sort((a, b) => b.dur - a.dur).slice(0, 15).map(e => ({
-    name: e.name, ms: (e.dur / 1000).toFixed(2),
-  })),
-  topObservers: observers.sort((a, b) => b.dur - a.dur).slice(0, 15).map(e => ({
-    name: e.name, ms: (e.dur / 1000).toFixed(2), count: 1,
-  })),
-}, null, 2));
+console.log(
+  JSON.stringify(
+    {
+      summary: {
+        traceDurationMs,
+        eventCount: traceEvents.length,
+        layoutCount: layoutEvents.length,
+        layoutTotalMs: (layoutEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        paintCount: paintEvents.length,
+        paintTotalMs: (paintEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        longTaskCount: longTasks.length,
+        longTaskTotalMs: (longTasks.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        timerCount: timers.length,
+        timerTotalMs: (timers.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        observerCount: observers.length,
+        observerTotalMs: (observers.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        hitTestCount: hitTests.length,
+        hitTestTotalMs: (hitTests.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+        gcCount: gcEvents.length,
+        gcTotalMs: (gcEvents.reduce((s, e) => s + e.dur, 0) / 1000).toFixed(1),
+      },
+      topEventNames: top(byName, 50),
+      topCategories: top(byCat, 30),
+      topUrls: top(byUrl, 40),
+      topFunctions: top(byFunction, 40, 1),
+      topBetterseqta: top(betterseqtaHits, 50),
+      topLongTasks: longTasks
+        .sort((a, b) => b.dur - a.dur)
+        .slice(0, 20)
+        .map((e) => ({
+          ms: (e.dur / 1000).toFixed(1),
+          cat: e.cat,
+          args: e.args,
+        })),
+      topLayout: layoutEvents
+        .sort((a, b) => b.dur - a.dur)
+        .slice(0, 15)
+        .map((e) => ({
+          name: e.name,
+          ms: (e.dur / 1000).toFixed(2),
+        })),
+      topObservers: observers
+        .sort((a, b) => b.dur - a.dur)
+        .slice(0, 15)
+        .map((e) => ({
+          name: e.name,
+          ms: (e.dur / 1000).toFixed(2),
+          count: 1,
+        })),
+    },
+    null,
+    2,
+  ),
+);

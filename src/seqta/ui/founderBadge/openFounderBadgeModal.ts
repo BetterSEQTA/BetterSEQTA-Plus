@@ -18,10 +18,7 @@ function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function openFounderBadgeModal(
-  badge: BadgeItem,
-  signupNumber?: number | null,
-): void {
+export function openFounderBadgeModal(badge: BadgeItem, signupNumber?: number | null): void {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return;
 

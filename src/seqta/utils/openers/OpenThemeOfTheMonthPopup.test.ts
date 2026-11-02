@@ -29,9 +29,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  document
-    .querySelector<HTMLButtonElement>(".themeOfTheMonthCardSecondary")
-    ?.click();
+  document.querySelector<HTMLButtonElement>(".themeOfTheMonthCardSecondary")?.click();
   jest.runOnlyPendingTimers();
   jest.useRealTimers();
 });
@@ -41,10 +39,7 @@ it.each([false, true])(
   async (expanded) => {
     const onDismissed = jest.fn();
     await OpenThemeOfTheMonthPopup(entry, onDismissed);
-    if (expanded)
-      document
-        .querySelector<HTMLButtonElement>(".themeOfTheMonthCardPopout")!
-        .click();
+    if (expanded) document.querySelector<HTMLButtonElement>(".themeOfTheMonthCardPopout")!.click();
     const outside = expanded
       ? document.getElementById("theme-of-the-month-backdrop")!
       : document.body;
@@ -61,9 +56,7 @@ it.each([false, true])(
 it("keeps the card open while interacting with it and its fullscreen preview", async () => {
   await OpenThemeOfTheMonthPopup(entry);
   document.querySelector<HTMLElement>(".themeOfTheMonthCardBody")!.click();
-  document
-    .querySelector<HTMLImageElement>(".themeOfTheMonthCardImage")!
-    .click();
+  document.querySelector<HTMLImageElement>(".themeOfTheMonthCardImage")!.click();
   const overlay = document.getElementById("bsplus-popup-media-overlay")!;
   expect(overlay).not.toBeNull();
   overlay.querySelector<HTMLImageElement>("img")!.click();
@@ -80,10 +73,7 @@ it("ignores the opening click and cleans up an existing card when replaced", asy
   const opener = document.createElement("button");
   document.body.append(opener);
   const oldDismissed = jest.fn();
-  opener.addEventListener(
-    "click",
-    () => void OpenThemeOfTheMonthPopup(entry, oldDismissed),
-  );
+  opener.addEventListener("click", () => void OpenThemeOfTheMonthPopup(entry, oldDismissed));
   opener.click();
   expect(document.getElementById("theme-of-the-month-card")).not.toBeNull();
   const newDismissed = jest.fn();

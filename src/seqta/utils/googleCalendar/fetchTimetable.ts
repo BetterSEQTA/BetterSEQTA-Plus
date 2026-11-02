@@ -72,7 +72,6 @@ function withSubjectColours(
   });
 }
 
-
 export async function resolveStudentId(): Promise<number | undefined> {
   if (isEngageParentContext()) {
     const data = await postSeqtaJson<{ payload?: { id?: string | number }[] }>(
@@ -113,7 +112,9 @@ type SeqtaAppointmentPayload = {
 };
 
 /** Parse SEQTA datetimes like `2026-07-20 09:30:00.0` into lesson date/time fields. */
-export function parseSeqtaDateTime(value: string | undefined): { date: string; time: string } | null {
+export function parseSeqtaDateTime(
+  value: string | undefined,
+): { date: string; time: string } | null {
   if (!value) return null;
   const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2})/);
   if (!match) return null;
@@ -144,8 +145,7 @@ export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTime
   if (isEngageParentContext()) return [];
 
   const person = await resolveStudentId();
-  if (person == null)
-    throw new Error("Could not resolve student for calendar sync.");
+  if (person == null) throw new Error("Could not resolve student for calendar sync.");
 
   const personType = await resolvePersonType();
   const data = await postSeqtaJson<{ payload?: SeqtaAppointmentPayload[] }>(
@@ -170,9 +170,7 @@ export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTime
   return lessons;
 }
 
-export async function fetchTimetableLessons(
-  range: SyncDateRange,
-): Promise<SeqtaTimetableLesson[]> {
+export async function fetchTimetableLessons(range: SyncDateRange): Promise<SeqtaTimetableLesson[]> {
   const { from, until } = range;
   const coloursPromise = fetchSubjectColours();
 
@@ -236,8 +234,7 @@ export async function fetchAssessmentsForCalendarSync(
   range: SyncDateRange,
 ): Promise<CalendarSyncAssessment[]> {
   const studentId = await resolveStudentId();
-  if (studentId == null)
-    throw new Error("Could not resolve student for calendar sync.");
+  if (studentId == null) throw new Error("Could not resolve student for calendar sync.");
 
   const path = isEngageParentContext()
     ? "/seqta/parent/assessment/list/upcoming?"

@@ -33,15 +33,18 @@ export async function SendNewsPage() {
 
   const displayCountry = (() => {
     switch (settingsState.newsSource?.toLowerCase()) {
-      case "usa": return "the USA";
-      case "uk": return "the UK";
-      case "netherlands": return "the Netherlands";
+      case "usa":
+        return "the USA";
+      case "uk":
+        return "the UK";
+      case "netherlands":
+        return "the Netherlands";
       default:
         return settingsState.newsSource
           ? settingsState.newsSource
-            .split("_")
-            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-            .join(" ")
+              .split("_")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ")
           : "Australia";
     }
   })();
@@ -117,9 +120,7 @@ export async function SendNewsPage() {
     const description = document.createElement("p");
     const articleDescription = article.description || "No description available.";
     description.textContent =
-      articleDescription.length > 400
-        ? `${articleDescription.slice(0, 400)}…`
-        : articleDescription;
+      articleDescription.length > 400 ? `${articleDescription.slice(0, 400)}…` : articleDescription;
 
     articletext.append(title, description);
     newsarticle.append(articleimage, articletext);

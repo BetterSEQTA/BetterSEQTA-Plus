@@ -90,13 +90,27 @@ describe("toNewsArticles", () => {
     expect(
       toNewsArticles({
         articles: [
-          { title: "Good", description: null, url: "https://abc.net.au/a", urlToImage: "https://abc.net.au/a.jpg" },
+          {
+            title: "Good",
+            description: null,
+            url: "https://abc.net.au/a",
+            urlToImage: "https://abc.net.au/a.jpg",
+          },
           { title: "Bad", url: "javascript:alert(1)" },
-          { title: "No image", url: "https://abc.net.au/b", urlToImage: "data:image/png;base64,AAAA" },
+          {
+            title: "No image",
+            url: "https://abc.net.au/b",
+            urlToImage: "data:image/png;base64,AAAA",
+          },
         ],
       }),
     ).toEqual([
-      { title: "Good", description: "", url: "https://abc.net.au/a", imageUrl: "https://abc.net.au/a.jpg" },
+      {
+        title: "Good",
+        description: "",
+        url: "https://abc.net.au/a",
+        imageUrl: "https://abc.net.au/a.jpg",
+      },
       { title: "No image", description: "", url: "https://abc.net.au/b", imageUrl: null },
     ]);
   });

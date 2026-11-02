@@ -1,8 +1,4 @@
-import {
-  computeEffectiveEnabled,
-  isRemoteFeatureAllowed,
-  resolveFeatureMode,
-} from "./apply";
+import { computeEffectiveEnabled, isRemoteFeatureAllowed, resolveFeatureMode } from "./apply";
 import { DEFAULT_REMOTE_CONFIG } from "./normalize";
 import type { RemoteConfigSnapshot } from "./types";
 
@@ -21,9 +17,7 @@ describe("computeEffectiveEnabled", () => {
   });
 
   it("allows when remote mode is on", () => {
-    expect(computeEffectiveEnabled(true, snapshot({ global: { mode: "on" } }), false)).toBe(
-      true,
-    );
+    expect(computeEffectiveEnabled(true, snapshot({ global: { mode: "on" } }), false)).toBe(true);
   });
 
   it("blocks when remote kill without local override", () => {
@@ -113,7 +107,14 @@ describe("hydrateRemoteConfigFromStorage", () => {
         getManifest: () => ({ version: "3.7.6" }),
         sendMessage: jest.fn(async (msg: { type?: string }) =>
           msg.type === "getRemoteConfigSnapshot"
-            ? { snapshot: { configVersion: "1", global: { mode: "on" }, features: {}, campaigns: [] } }
+            ? {
+                snapshot: {
+                  configVersion: "1",
+                  global: { mode: "on" },
+                  features: {},
+                  campaigns: [],
+                },
+              }
             : {},
         ),
       },
@@ -129,7 +130,8 @@ describe("hydrateRemoteConfigFromStorage", () => {
       dismissOptionalRemoteTheme: jest.fn(),
       resolveEffectiveRemoteTheme: jest.fn(),
     }));
-    const { hydrateRemoteConfigFromStorage, notifyRemoteConfigPageContext } = await import("./runtime");
+    const { hydrateRemoteConfigFromStorage, notifyRemoteConfigPageContext } =
+      await import("./runtime");
     await hydrateRemoteConfigFromStorage();
     notifyRemoteConfigPageContext("learn.example.edu.au");
     const browser = jest.requireMock("@/lib/browser");

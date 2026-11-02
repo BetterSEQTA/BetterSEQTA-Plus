@@ -41,7 +41,11 @@ function keepOverlayStylesLast() {
 
 function keepThemeStyleLast() {
   const themeStyle = document.getElementById(THEME_STYLE_ID);
-  if (themeStyle && document.head.contains(themeStyle) && document.head.lastElementChild !== themeStyle) {
+  if (
+    themeStyle &&
+    document.head.contains(themeStyle) &&
+    document.head.lastElementChild !== themeStyle
+  ) {
     document.head.appendChild(themeStyle);
   }
   keepOverlayStylesLast();
@@ -131,7 +135,12 @@ function processPayload() {
       log("custom css applied");
     }
     if (payload.overlayImages !== undefined) {
-      applyRootImages(payload.overlayImages, OVERLAY_IMAGES_STYLE_ID, overlayUrlCache, keepOverlayStylesLast);
+      applyRootImages(
+        payload.overlayImages,
+        OVERLAY_IMAGES_STYLE_ID,
+        overlayUrlCache,
+        keepOverlayStylesLast,
+      );
     }
     if (payload.overlayCss !== undefined) {
       setStyleText(OVERLAY_STYLE_ID, payload.overlayCss || "", false);

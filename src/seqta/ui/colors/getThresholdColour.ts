@@ -16,16 +16,13 @@ export function GetThresholdOfColor(color: any) {
       const [r, g, b] = rgbaString.split(",").map((str) => str.trim());
 
       // Compute the threshold using your existing algorithm
-      const threshold = Math.sqrt(
-        parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2,
-      );
+      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2);
 
       gradientThresholds.push(threshold);
     }
 
     const averageThreshold =
-      gradientThresholds.reduce((acc, val) => acc + val, 0) /
-      gradientThresholds.length;
+      gradientThresholds.reduce((acc, val) => acc + val, 0) / gradientThresholds.length;
 
     return averageThreshold;
   } else {

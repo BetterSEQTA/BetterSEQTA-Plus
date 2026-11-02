@@ -4,11 +4,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import loadingSpinner from "./loading-spinner.html?raw";
 import loadingOverlay from "./loading-overlay.html?raw";
 import { startLoadingCanvas } from "./loadingCanvas";
-import {
-  pickLoadingVariant,
-  resolveLoadingTheme,
-  type LoadingVariant,
-} from "./loadingVariants";
+import { pickLoadingVariant, resolveLoadingTheme, type LoadingVariant } from "./loadingVariants";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 let stopCanvas: (() => void) | null = null;
@@ -208,7 +204,7 @@ const loadingStyles = /* css */ `
 
 function overlayWithSpinner(): string {
   return loadingOverlay.replace(
-    "<div class=\"bkloading__logo-stage\"></div>",
+    '<div class="bkloading__logo-stage"></div>',
     `<div class="bkloading__logo-stage">${loadingSpinner}</div>`,
   );
 }
@@ -230,11 +226,7 @@ function applyHostShell(host: HTMLElement) {
   }
 }
 
-function applyVariantTheme(
-  host: HTMLElement,
-  shadow: ShadowRoot,
-  variant: LoadingVariant,
-) {
+function applyVariantTheme(host: HTMLElement, shadow: ShadowRoot, variant: LoadingVariant) {
   const darkMode = !!settingsState.DarkMode;
   const theme = resolveLoadingTheme(variant, darkMode);
   host.dataset.variant = variant.id;
@@ -276,11 +268,7 @@ function bindLoadingThemeGuard() {
   };
 }
 
-function startCanvasForRoot(
-  host: HTMLElement,
-  shadow: ShadowRoot,
-  variant: LoadingVariant,
-) {
+function startCanvasForRoot(host: HTMLElement, shadow: ShadowRoot, variant: LoadingVariant) {
   stopCanvas?.();
   const canvas = shadow.querySelector(".bkloading__canvas") as HTMLCanvasElement | null;
   stopCanvas = canvas ? startLoadingCanvas(canvas, host, variant) : null;

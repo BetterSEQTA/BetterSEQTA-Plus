@@ -1,9 +1,6 @@
 import { getStudentId, tryGetUserInfo } from "@/seqta/utils/userInfo";
 
-export async function postSeqtaJson<T>(
-  path: string,
-  body: Record<string, unknown>,
-): Promise<T> {
+export async function postSeqtaJson<T>(path: string, body: Record<string, unknown>): Promise<T> {
   const res = await fetch(`${location.origin}${path}`, {
     method: "POST",
     credentials: "include",

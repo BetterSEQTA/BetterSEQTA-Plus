@@ -27,9 +27,7 @@ class ReactFiber {
   }
 
   private isTrustedMessage(event: MessageEvent): boolean {
-    return (
-      event.source === window && event.origin === this.getTargetOrigin()
-    );
+    return event.source === window && event.origin === this.getTargetOrigin();
   }
 
   private async sendMessage(action: string, payload: any = {}): Promise<any> {
@@ -70,9 +68,7 @@ class ReactFiber {
 
   async setState(update: Record<string, unknown>): Promise<ReactFiber> {
     if (typeof update !== "object" || update === null || Array.isArray(update)) {
-      throw new TypeError(
-        "ReactFiber.setState only accepts plain JSON-serializable objects",
-      );
+      throw new TypeError("ReactFiber.setState only accepts plain JSON-serializable objects");
     }
 
     await this.sendMessage("setState", { updateObject: update });

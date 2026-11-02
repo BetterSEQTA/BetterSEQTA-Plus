@@ -1,8 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 
 function detectLowEndDevice(): boolean {
-  const lowCoreCount =
-    navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+  const lowCoreCount = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
   const lowMemory =
     (navigator as Navigator & { deviceMemory?: number }).deviceMemory != null &&
     (navigator as Navigator & { deviceMemory?: number }).deviceMemory! <= 2;
@@ -44,8 +43,7 @@ export function getDefaultSettingsState(): SettingsState {
     menuorder: [],
     subjectfilters: {},
     selectedTheme: "",
-    selectedColor:
-      "linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)",
+    selectedColor: "linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)",
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,

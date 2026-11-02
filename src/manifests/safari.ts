@@ -3,7 +3,10 @@ import type { Manifest } from "../../lib/types.ts";
 import baseManifest from "./manifest.json" with { type: "json" };
 import pkg from "../../package.json" with { type: "json" };
 
-type BrowserSpecificSettings = Extract<Manifest, { manifest_version: number }>["browser_specific_settings"];
+type BrowserSpecificSettings = Extract<
+  Manifest,
+  { manifest_version: number }
+>["browser_specific_settings"];
 
 const safariSettings = {
   safari: {

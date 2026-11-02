@@ -1,5 +1,9 @@
 import { closeExtensionPopup, getSettingsOpenGeneration } from "./closers/closeExtensionPopup";
-import { animateSettingsOpen, isExtensionSettingsOpen, prefetchSettingsShell } from "./settingsPopupAnimation";
+import {
+  animateSettingsOpen,
+  isExtensionSettingsOpen,
+  prefetchSettingsShell,
+} from "./settingsPopupAnimation";
 import { addExtensionSettings, renderSettingsIfNeeded } from "./adders/AddExtensionSettings";
 
 export function setupSettingsButton() {

@@ -8,27 +8,21 @@ import type {
   StringSetting,
 } from "./types";
 
-export function numberSetting(
-  options: Omit<NumberSetting, "type">,
-): NumberSetting {
+export function numberSetting(options: Omit<NumberSetting, "type">): NumberSetting {
   return {
     type: "number",
     ...options,
   };
 }
 
-export function booleanSetting(
-  options: Omit<BooleanSetting, "type">,
-): BooleanSetting {
+export function booleanSetting(options: Omit<BooleanSetting, "type">): BooleanSetting {
   return {
     type: "boolean",
     ...options,
   };
 }
 
-export function stringSetting(
-  options: Omit<StringSetting, "type">,
-): StringSetting {
+export function stringSetting(options: Omit<StringSetting, "type">): StringSetting {
   return {
     type: "string",
     ...options,
@@ -44,35 +38,30 @@ export function selectSetting<TValue extends string>(
   };
 }
 
-export function buttonSetting(
-  options: Omit<ButtonSetting, "type">,
-): ButtonSetting {
+export function buttonSetting(options: Omit<ButtonSetting, "type">): ButtonSetting {
   return {
     type: "button",
     ...options,
   };
 }
 
-
-export function componentSetting(
-  options: Omit<ComponentSetting, "type">,
-): ComponentSetting {
+export function componentSetting(options: Omit<ComponentSetting, "type">): ComponentSetting {
   return {
     type: "component",
     ...options,
   };
 }
 
-export function hotkeySetting(
-  options: Omit<HotkeySetting, "type">,
-): HotkeySetting {
+export function hotkeySetting(options: Omit<HotkeySetting, "type">): HotkeySetting {
   return {
     type: "hotkey",
     ...options,
   };
 }
 
-export function defineSettings<TSettings extends Record<string, any>>(settings: TSettings): TSettings {
+export function defineSettings<TSettings extends Record<string, any>>(
+  settings: TSettings,
+): TSettings {
   return settings;
 }
 

@@ -23,10 +23,7 @@ function parsePageContext(): { programme: number; metaclass: number } | null {
 /**
  * Fetches subjects and finds the subject matching programme:metaclass.
  */
-async function getSubjectCode(
-  programme: number,
-  metaclass: number
-): Promise<string | null> {
+async function getSubjectCode(programme: number, metaclass: number): Promise<string | null> {
   try {
     const res = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
       method: "POST",
@@ -42,10 +39,7 @@ async function getSubjectCode(
       const subjects = semester?.subjects;
       if (!Array.isArray(subjects)) continue;
       const subject = subjects.find(
-        (s: any) =>
-          s &&
-          Number(s.programme) === programme &&
-          Number(s.metaclass) === metaclass
+        (s: any) => s && Number(s.programme) === programme && Number(s.metaclass) === metaclass,
       );
       if (subject?.code) return subject.code;
     }
@@ -59,10 +53,7 @@ async function getSubjectCode(
 /**
  * Fetches user prefs and returns the colour for the given subject code.
  */
-async function getSubjectColour(
-  subjectCode: string,
-  userId: number
-): Promise<string | null> {
+async function getSubjectColour(subjectCode: string, userId: number): Promise<string | null> {
   try {
     const res = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: "POST",
@@ -79,8 +70,7 @@ async function getSubjectColour(
     if (!Array.isArray(payload)) return null;
 
     const pref = payload.find(
-      (p: { name: string; value: string }) =>
-        p.name === `timetable.subject.colour.${subjectCode}`
+      (p: { name: string; value: string }) => p.name === `timetable.subject.colour.${subjectCode}`,
     );
     return pref?.value ?? null;
   } catch (error) {

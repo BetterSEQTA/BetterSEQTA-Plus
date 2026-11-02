@@ -6,10 +6,7 @@ import type { RemoteCampaign } from "@/seqta/utils/remoteConfig/types";
 import { requestSettingsDestination } from "@/seqta/utils/settingsNavigation";
 import { openSettingsPopup } from "@/seqta/utils/setupSettingsButton";
 
-export function openRemoteCampaignPopup(
-  campaign: RemoteCampaign,
-  onDismissed?: () => void,
-): void {
+export function openRemoteCampaignPopup(campaign: RemoteCampaign, onDismissed?: () => void): void {
   const title = campaign.header?.title ?? "BetterSEQTA+";
   const subtitle = campaign.header?.subtitle ?? "";
   let acknowledged = false;
@@ -78,10 +75,7 @@ export function openRemoteCampaignPopup(
     animateSelector: ".whatsnewImgContainer, .whatsnewTextContainer *",
     actions,
     afterClose: () => {
-      void markCampaignSeen(
-        campaign.id,
-        campaign.requireAcknowledge ? acknowledged : undefined,
-      );
+      void markCampaignSeen(campaign.id, campaign.requireAcknowledge ? acknowledged : undefined);
       onDismissed?.();
     },
   });

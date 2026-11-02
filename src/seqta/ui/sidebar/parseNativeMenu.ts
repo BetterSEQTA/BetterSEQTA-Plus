@@ -44,25 +44,15 @@ function inferPath(
   return null;
 }
 
-function parseEntry(
-  entry: HTMLElement,
-  parentPath: string | null = null,
-): SidebarItem | null {
+function parseEntry(entry: HTMLElement, parentPath: string | null = null): SidebarItem | null {
   if (!entry.matches("li.item, section.item, li, section")) return null;
 
   const label = entry.querySelector(":scope > label") as HTMLElement | null;
   const labelText = readLabelText(label);
-  let key =
-    entry.dataset.key ??
-    entry.id ??
-    labelText.toLowerCase().replace(/\s+/g, "-") ??
-    "";
+  let key = entry.dataset.key ?? entry.id ?? labelText.toLowerCase().replace(/\s+/g, "-") ?? "";
 
   // Stable key for BS+ Overview injection (no data-key on the native node).
-  if (
-    !entry.dataset.key &&
-    entry.classList.contains("betterseqta-assessments-overview-item")
-  ) {
+  if (!entry.dataset.key && entry.classList.contains("betterseqta-assessments-overview-item")) {
     key = "assessments-overview";
   }
 
@@ -70,9 +60,7 @@ function parseEntry(
 
   const path = inferPath(entry.dataset.path, key || labelText, parentPath);
 
-  const childList = entry.querySelector(
-    ":scope > .sub > ul",
-  ) as HTMLElement | null;
+  const childList = entry.querySelector(":scope > .sub > ul") as HTMLElement | null;
   const children = childList
     ? [...childList.children]
         .filter((node): node is HTMLElement => node instanceof HTMLElement)
@@ -98,9 +86,7 @@ export function folderNeedsNativePopulate(item: SidebarItem): boolean {
   if (item.key !== "assessments" && item.key !== "courses") return false;
   return !item.children.some(
     (child) =>
-      !child.betterseqta &&
-      child.key !== "upcoming" &&
-      child.key !== "assessments-overview",
+      !child.betterseqta && child.key !== "upcoming" && child.key !== "assessments-overview",
   );
 }
 
@@ -123,9 +109,7 @@ export function findNativeMenuEntry(
   if (!list) return null;
 
   if (item.key === "assessments-overview") {
-    const overview = list.querySelector(
-      ".betterseqta-assessments-overview-item",
-    );
+    const overview = list.querySelector(".betterseqta-assessments-overview-item");
     if (overview instanceof HTMLElement) return overview;
   }
 
@@ -162,24 +146,17 @@ export function findNativeMenuEntry(
         }
       }
 
-      const leaf = matches.find(
-        (node) => !node.classList.contains("hasChildren"),
-      );
+      const leaf = matches.find((node) => !node.classList.contains("hasChildren"));
       if (leaf) return leaf;
       return matches[0];
     }
   }
 
   if (item.label) {
-    const candidates = list.querySelectorAll<HTMLElement>(
-      "li.item, section.item",
-    );
+    const candidates = list.querySelectorAll<HTMLElement>("li.item, section.item");
     for (const candidate of candidates) {
       const label = candidate.querySelector(":scope > label");
-      if (
-        label instanceof HTMLElement &&
-        readLabelText(label) === item.label
-      ) {
+      if (label instanceof HTMLElement && readLabelText(label) === item.label) {
         return candidate;
       }
     }

@@ -22,7 +22,6 @@ jobs:
       run:
         shell: bash
     steps:
-          
       - uses: actions/checkout@v7
 
       - name: Set build date

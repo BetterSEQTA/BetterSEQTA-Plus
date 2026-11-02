@@ -36,10 +36,7 @@ function attachConnection(db: IDBDatabase): void {
   updateVersion(db.version);
 }
 
-function setupUpgradeHandler(
-  request: IDBOpenDBRequest,
-  extraStore?: string,
-): void {
+function setupUpgradeHandler(request: IDBOpenDBRequest, extraStore?: string): void {
   request.onupgradeneeded = (event) => {
     const db = request.result;
 
@@ -61,10 +58,7 @@ function openDatabase(version?: number, extraStore?: string): Promise<IDBDatabas
   return new Promise((resolve, reject) => {
     let request: IDBOpenDBRequest;
     try {
-      request =
-        version != null
-          ? indexedDB.open(DB_NAME, version)
-          : indexedDB.open(DB_NAME);
+      request = version != null ? indexedDB.open(DB_NAME, version) : indexedDB.open(DB_NAME);
     } catch (error) {
       reject(error);
       return;
@@ -85,10 +79,7 @@ function wipeDatabase(): Promise<void> {
   return deleteDatabaseWithRetries(DB_NAME);
 }
 
-function deleteDatabaseWithRetries(
-  name: string,
-  maxAttempts = 6,
-): Promise<void> {
+function deleteDatabaseWithRetries(name: string, maxAttempts = 6): Promise<void> {
   return new Promise((resolve) => {
     const attemptDelete = (attempt: number) => {
       let req: IDBOpenDBRequest;
@@ -146,9 +137,7 @@ async function openDBInternal(): Promise<IDBDatabase> {
     const domError = error as DOMException | undefined;
 
     if (domError?.name === "VersionError") {
-      console.warn(
-        "[DB] localStorage version out of sync with IndexedDB; opening current version",
-      );
+      console.warn("[DB] localStorage version out of sync with IndexedDB; opening current version");
       invalidateConnection();
       try {
         return await openDatabase();
@@ -293,9 +282,7 @@ export async function ensureStoresExist(stores: string[]): Promise<void> {
       return;
     }
 
-    const missing = uniqueStores.filter(
-      (store) => !db.objectStoreNames.contains(store),
-    );
+    const missing = uniqueStores.filter((store) => !db.objectStoreNames.contains(store));
     if (missing.length === 0) return;
 
     invalidateConnection();
@@ -334,9 +321,7 @@ async function withObjectStore<T>(
 
 export async function getAll(store: string): Promise<any[]> {
   try {
-    return await withObjectStore(store, "readonly", async (s) =>
-      idbRequest(s.getAll()),
-    );
+    return await withObjectStore(store, "readonly", async (s) => idbRequest(s.getAll()));
   } catch (error) {
     console.error(`Error in getAll for store ${store}:`, error);
     return [];
@@ -345,20 +330,14 @@ export async function getAll(store: string): Promise<any[]> {
 
 export async function get(store: string, key: string): Promise<any> {
   try {
-    return await withObjectStore(store, "readonly", async (s) =>
-      idbRequest(s.get(key)),
-    );
+    return await withObjectStore(store, "readonly", async (s) => idbRequest(s.get(key)));
   } catch (error) {
     console.error(`Error in get for store ${store}, key ${key}:`, error);
     return null;
   }
 }
 
-export async function put(
-  store: string,
-  value: any,
-  key?: string,
-): Promise<void> {
+export async function put(store: string, value: any, key?: string): Promise<void> {
   try {
     await withObjectStore(store, "readwrite", async (s) => {
       await idbRequest(key ? s.put(value, key) : s.put(value));

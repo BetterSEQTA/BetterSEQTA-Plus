@@ -1,7 +1,4 @@
-export function convertTo12HourFormat(
-  time: string,
-  noMinutes: boolean = false,
-): string {
+export function convertTo12HourFormat(time: string, noMinutes: boolean = false): string {
   let [hours, minutes] = time.split(":").map(Number);
   let period = "am";
 

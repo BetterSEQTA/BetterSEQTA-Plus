@@ -23,7 +23,10 @@ function stopBadgeCarousel(slot: HTMLElement): void {
   carouselTimers.delete(slot);
 }
 
-function createBadgeButton(badge: BadgeItem, signupNumber?: number | null): HTMLButtonElement | null {
+function createBadgeButton(
+  badge: BadgeItem,
+  signupNumber?: number | null,
+): HTMLButtonElement | null {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return null;
   const button = document.createElement("button");

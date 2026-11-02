@@ -13,7 +13,7 @@ import {
 
 const SAMPLE_TERMS = {
   last_updated: "2024-06-15T12:00:00Z",
-  whatsnew_html: "<div class=\"whatsnewTextContainer\"><p>Terms body</p></div>",
+  whatsnew_html: '<div class="whatsnewTextContainer"><p>Terms body</p></div>',
 };
 
 describe("shouldShowTermsOfServicePopup", () => {

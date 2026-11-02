@@ -70,11 +70,7 @@ export function looksLikeSecretValue(value: unknown): boolean {
   if (/^[A-Za-z0-9+/=._-]{32,}$/.test(trimmed) && !/[.,!?]/.test(trimmed)) {
     // Reject obvious URLs and UUIDs (they're useful and not secret).
     if (/^https?:\/\//i.test(trimmed)) return false;
-    if (
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        trimmed,
-      )
-    ) {
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(trimmed)) {
       return false;
     }
     return true;
@@ -119,10 +115,7 @@ const DEFAULT_EXTRACT_OPTIONS: Required<ExtractTextOptions> = {
   maxStringLength: 8000,
 };
 
-export function extractTextFromValue(
-  value: unknown,
-  options: ExtractTextOptions = {},
-): string {
+export function extractTextFromValue(value: unknown, options: ExtractTextOptions = {}): string {
   const opts = { ...DEFAULT_EXTRACT_OPTIONS, ...options };
   const parts: string[] = [];
   let remaining = opts.maxChars;
@@ -197,9 +190,7 @@ export function redactSensitive<T>(value: T, depth = 0): T {
   if (depth >= 8) return value;
 
   if (Array.isArray(value)) {
-    return value
-      .slice(0, 200)
-      .map((v) => redactSensitive(v, depth + 1)) as unknown as T;
+    return value.slice(0, 200).map((v) => redactSensitive(v, depth + 1)) as unknown as T;
   }
   if (typeof value === "object") {
     const out: Record<string, unknown> = {};

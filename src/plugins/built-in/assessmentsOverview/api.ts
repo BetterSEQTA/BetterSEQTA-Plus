@@ -14,12 +14,9 @@ import { getUserInfo } from "@/seqta/utils/userInfo";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import {
-  getEngageAssessmentsData,
-} from "./engageApi";
+import { getEngageAssessmentsData } from "./engageApi";
 
-let cache: { time: number; engageAll?: boolean; studentId: number; data: any } | null =
-  null;
+let cache: { time: number; engageAll?: boolean; studentId: number; data: any } | null = null;
 const CACHE_MS = 10 * 60 * 1000;
 
 async function fetchJSON(url: string, body: any) {
@@ -111,21 +108,15 @@ async function loadSubmissions(student: number, assessments: any[]) {
   await Promise.all(
     assessments.map(async (assessment) => {
       try {
-        const res = await fetchJSON(
-          "/seqta/student/assessment/submissions/get",
-          {
-            assessment: assessment.id,
-            metaclass: assessment.metaclassID,
-            student,
-          },
-        );
+        const res = await fetchJSON("/seqta/student/assessment/submissions/get", {
+          assessment: assessment.id,
+          metaclass: assessment.metaclassID,
+          student,
+        });
 
         submissionMap[assessment.id] = res.payload && res.payload.length > 0;
       } catch (error) {
-        console.warn(
-          `Failed to fetch submission for assessment ${assessment.id}:`,
-          error,
-        );
+        console.warn(`Failed to fetch submission for assessment ${assessment.id}:`, error);
         submissionMap[assessment.id] = false;
       }
     }),
@@ -153,10 +144,7 @@ async function getLearnAssessmentsData(studentId: number) {
     else map[t.id] = t;
   });
 
-  const allAssessments = filterAssessmentsForActiveSubjects(
-    Object.values(map),
-    subjects,
-  );
+  const allAssessments = filterAssessmentsForActiveSubjects(Object.values(map), subjects);
   const submissions = await loadSubmissions(studentId, allAssessments);
 
   allAssessments.forEach((assessment: any) => {
@@ -183,11 +171,7 @@ export async function getAssessmentsData() {
 
   const studentId = (await getUserInfo()).id;
 
-  if (
-    cache &&
-    Date.now() - cache.time < CACHE_MS &&
-    cache.studentId === studentId
-  ) {
+  if (cache && Date.now() - cache.time < CACHE_MS && cache.studentId === studentId) {
     return cache.data;
   }
 

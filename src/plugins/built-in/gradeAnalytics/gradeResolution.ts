@@ -4,11 +4,7 @@ import {
   type AnalyticsGradeInferenceSettings,
 } from "./gradeInferenceSettings";
 
-export type GradeResolutionSource =
-  | "seqta"
-  | "criteriaRollup"
-  | "customBand"
-  | "defaultLetter";
+export type GradeResolutionSource = "seqta" | "criteriaRollup" | "customBand" | "defaultLetter";
 
 export type GradeResolution = {
   finalGrade?: number;
@@ -77,8 +73,7 @@ export function rollupPercentFromCriteria(
     }
     const letter = parseGradeString(row.results?.grade);
     const mapped =
-      customPercentFromGradeLabel(letter, settings) ??
-      approximatePercentFromLetterGrade(letter);
+      customPercentFromGradeLabel(letter, settings) ?? approximatePercentFromLetterGrade(letter);
     if (mapped !== undefined) {
       parts.push({ percent: mapped, weight: criterionWeight(row) });
     }
@@ -90,10 +85,7 @@ export function rollupPercentFromCriteria(
   if (withWeights.length === parts.length) {
     const totalWeight = withWeights.reduce((sum, p) => sum + (p.weight ?? 0), 0);
     if (totalWeight > 0) {
-      const weighted = withWeights.reduce(
-        (sum, p) => sum + p.percent * (p.weight ?? 0),
-        0,
-      );
+      const weighted = withWeights.reduce((sum, p) => sum + p.percent * (p.weight ?? 0), 0);
       return Math.round((weighted / totalWeight) * 10) / 10;
     }
   }
@@ -157,8 +149,7 @@ export function resolveGradeFromAssessmentPayload(
     const custom = settings.useCustomGradeBands
       ? customPercentFromGradeLabel(letter, settings)
       : undefined;
-    const finalGrade =
-      custom ?? approximatePercentFromLetterGrade(letter);
+    const finalGrade = custom ?? approximatePercentFromLetterGrade(letter);
     if (finalGrade !== undefined) {
       return {
         finalGrade,

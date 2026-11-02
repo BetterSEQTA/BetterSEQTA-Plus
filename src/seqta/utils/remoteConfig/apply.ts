@@ -15,9 +15,7 @@ export function isHostnameAllowedByPolicy(
   if (!policy?.suffixes?.length) return true;
   const host = normalizeHostname(hostname);
   const suffixes = policy.suffixes.map((s) => normalizeHostname(s));
-  const matches = suffixes.some(
-    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
-  );
+  const matches = suffixes.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
   if (policy.mode === "denylist") return !matches;
   if (policy.mode === "allowlist") return matches;
   return true;
@@ -64,7 +62,9 @@ export function getRemoteStatusMessage(snapshot: RemoteConfigSnapshot): string |
   const maint = snapshot.global.maintenance;
   if (maint?.body) return maint.body;
   if (maint?.title) return maint.title;
-  if (!isHostnameAllowedByPolicy(snapshot, typeof location !== "undefined" ? location.hostname : "")) {
+  if (
+    !isHostnameAllowedByPolicy(snapshot, typeof location !== "undefined" ? location.hostname : "")
+  ) {
     return "BetterSEQTA+ is not enabled for this SEQTA site.";
   }
   return snapshot.global.mode === "off"

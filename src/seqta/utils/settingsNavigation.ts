@@ -11,9 +11,7 @@ let pendingDestination: SettingsDestination | null = null;
 
 export function requestSettingsDestination(destination: SettingsDestination): void {
   pendingDestination = destination;
-  window.dispatchEvent(
-    new CustomEvent(SETTINGS_NAVIGATION_EVENT, { detail: destination }),
-  );
+  window.dispatchEvent(new CustomEvent(SETTINGS_NAVIGATION_EVENT, { detail: destination }));
 }
 
 export function consumeSettingsDestination(): SettingsDestination | null {

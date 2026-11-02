@@ -19,9 +19,7 @@ export default function renderSvelte(
   if (mountPoint instanceof ShadowRoot || props.standalone === true) {
     const styleElement = document.createElement("style");
     styleElement.textContent = shadowStyles[shadowStyle];
-    (mountPoint instanceof ShadowRoot ? mountPoint : document.head).appendChild(
-      styleElement,
-    );
+    (mountPoint instanceof ShadowRoot ? mountPoint : document.head).appendChild(styleElement);
   }
 
   const app = mount(Component, {

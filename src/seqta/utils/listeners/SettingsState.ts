@@ -155,10 +155,7 @@ class StorageManager {
         try {
           await browser.runtime.sendMessage({ type: "ensureStorageDefaults" });
         } catch (e) {
-          console.warn(
-            "[BetterSEQTA+] ensureStorageDefaults message failed:",
-            e,
-          );
+          console.warn("[BetterSEQTA+] ensureStorageDefaults message failed:", e);
         }
         await instance.loadFromStorage();
         instance.initialized = true;
@@ -169,10 +166,7 @@ class StorageManager {
     return instance;
   }
 
-  public setKey<K extends keyof SettingsState>(
-    key: K,
-    value: SettingsState[K],
-  ): void {
+  public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
     if (typeof key === "string" && isExcludedSettingsKey(key)) {
       void browser.storage.local.set({ [key]: value });
       return;
@@ -192,11 +186,7 @@ class StorageManager {
     }
   }
 
-  private notifySettingChange(
-    key: string,
-    newValue: unknown,
-    oldValue: unknown,
-  ): void {
+  private notifySettingChange(key: string, newValue: unknown, oldValue: unknown): void {
     if (this.bootstrapping) return;
     const listeners = this.listeners.get(key);
     if (listeners) {
@@ -214,7 +204,7 @@ class StorageManager {
       Reflect.set(this.data, key, value);
     });
   }
-  
+
   public setSuppressWrites(suppress: boolean): void {
     this.suppressWrites = suppress;
     if (!suppress) {
@@ -223,10 +213,7 @@ class StorageManager {
   }
 
   private queueStoragePatch(changedKeys?: string[]): void {
-    const keys =
-      changedKeys && changedKeys.length > 0
-        ? changedKeys
-        : Object.keys(this.data);
+    const keys = changedKeys && changedKeys.length > 0 ? changedKeys : Object.keys(this.data);
 
     for (const key of keys) {
       if (isExcludedSettingsKey(key)) continue;
@@ -300,11 +287,7 @@ class StorageManager {
         }
       }
 
-      if (
-        !this.bootstrapping &&
-        actualChanges.length > 0 &&
-        this.globalListeners.size > 0
-      ) {
+      if (!this.bootstrapping && actualChanges.length > 0 && this.globalListeners.size > 0) {
         for (const listener of this.globalListeners) {
           for (const key of actualChanges) {
             const { oldValue, newValue } = changes[key];
@@ -326,7 +309,7 @@ class StorageManager {
     }
     this.listeners.get(key)!.add(listener);
   }
-  
+
   public unregister(prop: keyof SettingsState, listener: ChangeListener): void {
     this.listeners.get(prop as string)?.delete(listener);
   }
@@ -334,7 +317,7 @@ class StorageManager {
   public registerGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.add(listener);
   }
-  
+
   public unregisterGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.delete(listener);
   }
@@ -365,8 +348,7 @@ class StorageManager {
 }
 
 export const settingsState = StorageManager.getInstance();
-export const initializeSettingsState = async () =>
-  await StorageManager.initialize();
+export const initializeSettingsState = async () => await StorageManager.initialize();
 
 export function setSettingsStateSuppressWrites(suppress: boolean): void {
   settingsState.setSuppressWrites(suppress);

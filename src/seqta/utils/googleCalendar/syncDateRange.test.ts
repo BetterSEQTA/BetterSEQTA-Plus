@@ -1,9 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import {
-  droppedWeekRange,
-  syncWindowRange,
-  trailingWeekRange,
-} from "./syncDateRange";
+import { droppedWeekRange, syncWindowRange, trailingWeekRange } from "./syncDateRange";
 
 describe("syncDateRange", () => {
   it("builds a 12-week rolling window from the current week", () => {

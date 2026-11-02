@@ -11,16 +11,13 @@ const handleNotificationClick = async (target: HTMLElement) => {
   const buttonType = notificationItem.getAttribute("data-type");
   if (buttonType !== "message") return;
 
-  const notificationList = await ReactFiber.find(
-    '[class*="notifications__list___"]',
-  ).getState();
+  const notificationList = await ReactFiber.find('[class*="notifications__list___"]').getState();
   const buttonId = notificationItem.getAttribute("data-id");
   if (!buttonId) return;
 
-  const matchingNotification =
-    notificationList.items.find(
-      (item: any) => item.notificationID === parseInt(buttonId),
-    );
+  const matchingNotification = notificationList.items.find(
+    (item: any) => item.notificationID === parseInt(buttonId),
+  );
 
   if (!matchingNotification?.message?.messageID) return;
 
@@ -42,14 +39,14 @@ const handleNotificationClick = async (target: HTMLElement) => {
   if (button) {
     (button as HTMLElement).click();
   }
-  
+
   // send a network request to mark as read
-  fetch('/seqta/student/save/message', {
+  fetch("/seqta/student/save/message", {
     method: "POST",
     credentials: "include",
     body: JSON.stringify({
       items: [matchingNotification.message.messageID],
-      mode: 'x-read',
+      mode: "x-read",
       read: true,
     }),
   });

@@ -36,8 +36,8 @@
   );
 
   $effect(() => {
-    sortedData.length;
-    itemsPerPage;
+    void sortedData.length;
+    void itemsPerPage;
     const maxPage = Math.max(0, pageCount - 1);
     if (currentPage > maxPage) {
       currentPage = maxPage;

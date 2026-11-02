@@ -35,9 +35,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
   }
 
   document
-    .querySelectorAll(
-      `#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`,
-    )
+    .querySelectorAll(`#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`)
     .forEach((node) => {
       node.remove();
     });

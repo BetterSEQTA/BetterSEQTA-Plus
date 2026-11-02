@@ -7,10 +7,7 @@ import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.sve
 import popupStyles from "./consentPopup.css?inline";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { loadSession } from "./rosterStore";
-import {
-  clearResumeOptInAfterCloudLogin,
-  shouldResumeOptInAfterCloudLogin,
-} from "./optInResume";
+import { clearResumeOptInAfterCloudLogin, shouldResumeOptInAfterCloudLogin } from "./optInResume";
 
 const STYLE_ID = "bsplus-timetable-classmates-popup-styles";
 const CLASSMATES_VIDEO_URL =

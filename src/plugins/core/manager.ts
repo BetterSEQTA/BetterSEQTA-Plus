@@ -113,9 +113,7 @@ export class PluginManager {
     }
   }
 
-  public registerPlugin<T extends PluginSettings, S>(
-    plugin: Plugin<T, S>,
-  ): void {
+  public registerPlugin<T extends PluginSettings, S>(plugin: Plugin<T, S>): void {
     if (this.plugins.has(plugin.id)) {
       throw new Error(`Plugin with id "${plugin.id}" is already registered`);
     }
@@ -186,10 +184,7 @@ export class PluginManager {
     } catch (error) {
       this.removePluginStyles(pluginId);
       this.disposePluginAPI(pluginId);
-      console.error(
-        `[BetterSEQTA+] Failed to start plugin ${pluginId}:`,
-        error,
-      );
+      console.error(`[BetterSEQTA+] Failed to start plugin ${pluginId}:`, error);
       throw error;
     }
   }
@@ -201,10 +196,7 @@ export class PluginManager {
     if (!isRemotePluginStartAllowed(plugin.id)) {
       return false;
     }
-    if (
-      isRemoteRouteEnhancementsStripped() &&
-      !ROUTE_STRIP_KEEP_PLUGINS.has(plugin.id)
-    ) {
+    if (isRemoteRouteEnhancementsStripped() && !ROUTE_STRIP_KEEP_PLUGINS.has(plugin.id)) {
       return false;
     }
     if (!plugin.disableToggle) return true;
@@ -314,7 +306,11 @@ export class PluginManager {
             id: string;
             options: Array<{ value: string; label: string }>;
           })
-        | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> })
+        | (Omit<ButtonSetting, "type"> & {
+            type: "button";
+            id: string;
+            trigger?: () => void | Promise<void>;
+          })
         | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string })
         | (Omit<ComponentSetting, "type"> & { type: "component"; id: string; component: any });
     };
@@ -322,27 +318,23 @@ export class PluginManager {
     // Array<{ pluginId: string; name: string; description: string; beta?: boolean; settings: Record<string, ProcessedSetting>; disableToggle?: boolean; }>
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {
-      const settingsEntries = Object.entries(plugin.settings).map(
-        ([key, setting]) => {
-          const settingObj = setting as any;
-          let result: any;
-          if (settingObj.type === "button" || settingObj.type === "component") {
-            // For button or component, keep the functions
-            result = { ...settingObj };
-          } else {
-            result = Object.fromEntries(
-              Object.entries(settingObj).filter(
-                ([_, value]) => typeof value !== "function",
-              ),
-            );
-          }
-          result.id = key;
-          result.title = result.title || key;
-          result.description = result.description || "";
-          result.defaultEnabled = plugin.defaultEnabled ?? true;
-          return [key, result];
-        },
-      );
+      const settingsEntries = Object.entries(plugin.settings).map(([key, setting]) => {
+        const settingObj = setting as any;
+        let result: any;
+        if (settingObj.type === "button" || settingObj.type === "component") {
+          // For button or component, keep the functions
+          result = { ...settingObj };
+        } else {
+          result = Object.fromEntries(
+            Object.entries(settingObj).filter(([_, value]) => typeof value !== "function"),
+          );
+        }
+        result.id = key;
+        result.title = result.title || key;
+        result.description = result.description || "";
+        result.defaultEnabled = plugin.defaultEnabled ?? true;
+        return [key, result];
+      });
 
       if (plugin.disableToggle) {
         settingsEntries.push([
@@ -392,10 +384,7 @@ export class PluginManager {
     }
   }
 
-  private async handlePluginStateChange(
-    pluginId: string,
-    enabled: boolean,
-  ): Promise<void> {
+  private async handlePluginStateChange(pluginId: string, enabled: boolean): Promise<void> {
     if (enabled) {
       await this.startPlugin(pluginId);
     } else {
@@ -425,13 +414,9 @@ export class PluginManager {
           if (!plugin?.disableToggle) continue;
 
           const enabled =
-            (change.newValue as PluginSettingsStorage)?.enabled ??
-            plugin.defaultEnabled ??
-            true;
+            (change.newValue as PluginSettingsStorage)?.enabled ?? plugin.defaultEnabled ?? true;
           const wasEnabled =
-            (change.oldValue as PluginSettingsStorage)?.enabled ??
-            plugin.defaultEnabled ??
-            true;
+            (change.oldValue as PluginSettingsStorage)?.enabled ?? plugin.defaultEnabled ?? true;
 
           if (enabled !== wasEnabled) {
             this.handlePluginStateChange(pluginId, enabled);

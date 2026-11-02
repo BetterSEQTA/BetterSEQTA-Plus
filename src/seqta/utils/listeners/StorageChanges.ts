@@ -20,33 +20,17 @@ export class StorageChangeHandler {
     settingsState.register("selectedColor", () => void updateAllColors());
     settingsState.register("adaptiveThemeColour", () => void updateAllColors());
     settingsState.register("adaptiveThemeGradient", () => void updateAllColors());
-    settingsState.register("adaptiveThemeColourTransition", () =>
-      void updateAllColors(),
-    );
+    settingsState.register("adaptiveThemeColourTransition", () => void updateAllColors());
     settingsState.register("selectedTheme", () => void updateAllColors());
     settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
     settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
-    settingsState.register(
-      "customshortcuts",
-      this.handleCustomShortcutsChange.bind(this),
-    );
-    settingsState.register(
-      "transparencyEffects",
-      this.handleTransparencyEffectsChange.bind(this),
-    );
+    settingsState.register("customshortcuts", this.handleCustomShortcutsChange.bind(this));
+    settingsState.register("transparencyEffects", this.handleTransparencyEffectsChange.bind(this));
     settingsState.register("performanceMode", () => syncPerformanceModeEffects());
-    settingsState.register("performanceModePluginOverrides", () =>
-      syncPerformanceModeEffects(),
-    );
-    settingsState.register(
-      "subjectfilters",
-      FilterUpcomingAssessments.bind(this),
-    );
+    settingsState.register("performanceModePluginOverrides", () => syncPerformanceModeEffects());
+    settingsState.register("subjectfilters", FilterUpcomingAssessments.bind(this));
     registerHomeUpcomingSettingsListeners();
-    settingsState.register(
-      "iconOnlySidebar",
-      this.handleIconOnlySidebarChange.bind(this),
-    );
+    settingsState.register("iconOnlySidebar", this.handleIconOnlySidebarChange.bind(this));
     settingsState.register("selectedFont", () => applySelectedFont());
     settingsState.register("menuitems", () => scheduleMenuItemVisibility());
     settingsState.register("menuorder", (order) => {
@@ -74,9 +58,7 @@ export class StorageChangeHandler {
     renderShortcuts();
   }
 
-  private handleShortcutsChange(
-    newValue: { enabled: boolean; name: string }[] | undefined,
-  ) {
+  private handleShortcutsChange(newValue: { enabled: boolean; name: string }[] | undefined) {
     if (!Array.isArray(newValue)) return;
     renderShortcuts();
   }

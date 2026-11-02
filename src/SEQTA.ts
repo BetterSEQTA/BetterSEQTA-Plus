@@ -1,7 +1,4 @@
-import {
-  initializeSettingsState,
-  settingsState,
-} from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/SettingsState";
 import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "@/lib/browser";
@@ -51,9 +48,7 @@ let hasSEQTAText = false;
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
 if (document.childNodes[1]) {
   hasSEQTAText =
-    document.childNodes[1].textContent?.includes(
-      "Copyright (c) SEQTA Software",
-    ) ?? false;
+    document.childNodes[1].textContent?.includes("Copyright (c) SEQTA Software") ?? false;
   if (hasSEQTAText) {
     installSeqtaMenuColourPatch();
     installThemeImagePagePatch();
@@ -73,8 +68,7 @@ if (import.meta.env.DEV) {
 async function init() {
   if (
     hasSEQTAText &&
-    (document.title.includes("SEQTA Learn") ||
-      document.title.includes("SEQTA Engage")) &&
+    (document.title.includes("SEQTA Learn") || document.title.includes("SEQTA Engage")) &&
     !IsSEQTAPage
   ) {
     IsSEQTAPage = true;
@@ -90,7 +84,6 @@ async function init() {
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-
         if (
           mutation.type === "attributes" &&
           mutation.target instanceof HTMLLinkElement &&
@@ -108,8 +101,6 @@ async function init() {
       attributes: true,
       attributeFilter: ["href"],
     });
-
-
 
     try {
       await initializeSettingsState();
@@ -152,9 +143,7 @@ async function init() {
         sessionStorage.removeItem("bsplus-dev-export-recovery");
       }
 
-      verboseInfo(
-        "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
-      );
+      verboseInfo("[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.");
     } catch (error) {
       console.error(error);
       recoverFromStaleDevModuleGraph(error);
@@ -167,22 +156,17 @@ function inject404FlashHide(): void {
   if (document.getElementById("bsplus-404-flash-hide")) return;
   const style = document.createElement("style");
   style.id = "bsplus-404-flash-hide";
-  style.textContent =
-    "html,body{background:#333!important}.message{display:none!important}";
+  style.textContent = "html,body{background:#333!important}.message{display:none!important}";
   (document.head ?? document.documentElement).appendChild(style);
 }
 
 async function bootErrorPage() {
   if (IsSEQTAPage) return;
 
-  const { isSeqta404Page, mountErrorPageKitten } = await import(
-    "@/plugins/built-in/errorPageKitten"
-  );
+  const { isSeqta404Page, mountErrorPageKitten } =
+    await import("@/plugins/built-in/errorPageKitten");
 
-  const storagePromise = browser.storage.local.get([
-    "onoff",
-    "plugin.error-page-kitten.settings",
-  ]);
+  const storagePromise = browser.storage.local.get(["onoff", "plugin.error-page-kitten.settings"]);
 
   const watchTitle = () => {
     if (isSeqta404Page()) inject404FlashHide();
@@ -221,13 +205,11 @@ async function bootErrorPage() {
 }
 
 function replaceIcons() {
-  document
-    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
-    .forEach((link) => {
-      if (link.href !== icon48) {
-        link.href = icon48;
-      }
-    });
+  document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]').forEach((link) => {
+    if (link.href !== icon48) {
+      link.href = icon48;
+    }
+  });
 }
 
 /** Vite/CRX HMR can leave modules with missing named exports until the graph is cleared. */

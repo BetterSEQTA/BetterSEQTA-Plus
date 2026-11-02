@@ -14,10 +14,7 @@ export type OverviewIconName =
   | "ellipsis-vertical"
   | "exclamation-circle";
 
-export const OVERVIEW_ICON_PATHS: Record<
-  OverviewIconName,
-  string | string[]
-> = {
+export const OVERVIEW_ICON_PATHS: Record<OverviewIconName, string | string[]> = {
   "calendar-days":
     "M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5",
   clock: "M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z",
@@ -25,8 +22,7 @@ export const OVERVIEW_ICON_PATHS: Record<
     "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z",
   "document-check":
     "M10.125 2.25h-4.5c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9zm3.75 8.625a2.625 2.625 0 100-5.25 2.625 2.625 0 000 5.25zm0 0l-3 3m3-3l3 3",
-  "check-circle":
-    "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
+  "check-circle": "M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
   "book-open":
     "M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25",
   calendar:
@@ -45,8 +41,7 @@ export const OVERVIEW_ICON_PATHS: Record<
   ],
   "ellipsis-vertical":
     "M12 6.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 12.75a.75.75 0 110-1.5.75.75 0 010 1.5zM12 18.75a.75.75 0 110-1.5.75.75 0 010 1.5z",
-  "exclamation-circle":
-    "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z",
+  "exclamation-circle": "M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z",
 };
 
 export const STATUS_COLUMN_ICONS: Record<string, OverviewIconName> = {

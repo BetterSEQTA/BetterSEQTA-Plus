@@ -86,7 +86,10 @@ async function upsertRemoteEvent(
     { method: "POST", headers, body: JSON.stringify(body) },
     refreshAccessToken,
   );
-  const json = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string } };
+  const json = (await res.json().catch(() => ({}))) as {
+    id?: string;
+    error?: { message?: string };
+  };
   if (!res.ok || !json.id) {
     throw new Error(json?.error?.message ?? `${label} create failed (${res.status})`);
   }
@@ -210,7 +213,8 @@ function googleItemToRemote(
   if (!item.id) return null;
   const seqtaKey = item.extendedProperties?.private?.[BSPLUS_GOOGLE_CALENDAR_EVENT_PROP] ?? "";
   if (!seqtaKey && !includeUnkeyed) return null;
-  const startDateTime = item.start?.dateTime ?? (item.start?.date ? `${item.start.date}T00:00:00` : "");
+  const startDateTime =
+    item.start?.dateTime ?? (item.start?.date ? `${item.start.date}T00:00:00` : "");
   const endDateTime = item.end?.dateTime ?? (item.end?.date ? `${item.end.date}T00:00:00` : "");
   const timeZone = item.start?.timeZone ?? item.end?.timeZone ?? "UTC";
   return {
@@ -247,8 +251,7 @@ export async function listGoogleSyncedEvents(
       maxResults: "2500",
       timeMin: toRfc3339Start(range.from),
       timeMax: toRfc3339EndExclusive(range.until),
-      fields:
-        "nextPageToken,items(id,summary,location,description,start,end,extendedProperties)",
+      fields: "nextPageToken,items(id,summary,location,description,start,end,extendedProperties)",
     });
     if (pageToken) params.set("pageToken", pageToken);
 
@@ -350,8 +353,7 @@ export async function listOutlookSyncedEvents(
     $select: "id,subject,body,location,start,end,categories",
   });
 
-  let nextUrl: string | undefined =
-    `${OUTLOOK_GRAPH_API}/me/calendarView?${params.toString()}`;
+  let nextUrl: string | undefined = `${OUTLOOK_GRAPH_API}/me/calendarView?${params.toString()}`;
 
   while (nextUrl) {
     const res = await authorizedFetch(

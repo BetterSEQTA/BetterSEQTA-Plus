@@ -16,11 +16,7 @@ export function insertMenuItemAfterKey(
   }
 }
 
-export function insertKeyAfterInOrder(
-  order: string[],
-  key: string,
-  afterKey: string,
-): string[] {
+export function insertKeyAfterInOrder(order: string[], key: string, afterKey: string): string[] {
   if (order.includes(key)) return order;
   const copy = [...order];
   const afterIdx = copy.indexOf(afterKey);

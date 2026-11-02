@@ -170,12 +170,14 @@ export function openNoticeModal(
   sourceElement.style.opacity = "0";
   sourceElement.style.transform = "scale(0.95)";
 
-  const initialWidth = Math.round(
-    Math.min(Math.max(sourceWidth, 800), window.innerWidth - 40),
-  );
+  const initialWidth = Math.round(Math.min(Math.max(sourceWidth, 800), window.innerWidth - 40));
   const measuredHeight = measureNoticeHeight(notice, cleanContent, initialWidth);
-  let { width: targetWidth, height: targetHeight, left: targetLeft, top: targetTop } =
-    modalTargetSize(sourceWidth, measuredHeight);
+  let {
+    width: targetWidth,
+    height: targetHeight,
+    left: targetLeft,
+    top: targetTop,
+  } = modalTargetSize(sourceWidth, measuredHeight);
 
   const applyTargetLayout = () => {
     transitionContainer.style.left = `${Math.round(targetLeft + scrollX)}px`;
@@ -206,12 +208,16 @@ export function openNoticeModal(
     animate(transitionContainer, { opacity: [1, 0] }, { duration: 0.2, delay: 0.3 });
     showSourceElement(sourceElement);
     modal.style.pointerEvents = "none";
-    animate(transitionContainer, {
-      left: [targetLeft + scrollX, sourceLeft + scrollX],
-      top: [targetTop, sourceTop + scrollY],
-      width: [targetWidth, sourceWidth],
-      height: [targetHeight, sourceHeight],
-    }, SPRING_CLOSE).finished.then(() => {
+    animate(
+      transitionContainer,
+      {
+        left: [targetLeft + scrollX, sourceLeft + scrollX],
+        top: [targetTop, sourceTop + scrollY],
+        width: [targetWidth, sourceWidth],
+        height: [targetHeight, sourceHeight],
+      },
+      SPRING_CLOSE,
+    ).finished.then(() => {
       modal.remove();
       sourceElement.removeAttribute("data-transitioning");
     });
@@ -237,10 +243,7 @@ export function openNoticeModal(
     sourceLeft = rect.left - (sourceWidth - rect.width) / 2;
     sourceTop = rect.top - (sourceHeight - rect.height) / 2;
 
-    const next = modalTargetSize(
-      sourceWidth,
-      unifiedContent.getBoundingClientRect().height,
-    );
+    const next = modalTargetSize(sourceWidth, unifiedContent.getBoundingClientRect().height);
     targetLeft = next.left;
     targetTop = next.top;
     targetWidth = next.width;
@@ -253,12 +256,16 @@ export function openNoticeModal(
   unifiedContent.classList.replace("notice-card-state", "notice-modal-state");
   if (settingsState.animations) {
     animate(modal, { opacity: [0, 1] }, { duration: 0.2 });
-    animate(transitionContainer, {
-      left: [sourceLeft + scrollX, targetLeft + scrollX],
-      top: [sourceTop + scrollY, targetTop],
-      width: [sourceWidth, targetWidth],
-      height: [sourceHeight, targetHeight],
-    }, SPRING_OPEN);
+    animate(
+      transitionContainer,
+      {
+        left: [sourceLeft + scrollX, targetLeft + scrollX],
+        top: [sourceTop + scrollY, targetTop],
+        width: [sourceWidth, targetWidth],
+        height: [sourceHeight, targetHeight],
+      },
+      SPRING_OPEN,
+    );
   } else {
     modal.style.opacity = "1";
     applyTargetLayout();
@@ -285,10 +292,7 @@ export function renderNoticesIntoContainer(
 
   const fragment = document.createDocumentFragment();
   for (const notice of notices) {
-    if (
-      settingsState.mockNotices ||
-      noticeMatchesLabelFilter(notice, labelTokens)
-    ) {
+    if (settingsState.mockNotices || noticeMatchesLabelFilter(notice, labelTokens)) {
       fragment.appendChild(createNoticeElement(notice, processNoticeColor(notice.colour)));
     }
   }

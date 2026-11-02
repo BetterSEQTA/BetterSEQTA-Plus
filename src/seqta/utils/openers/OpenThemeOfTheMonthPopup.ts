@@ -6,10 +6,7 @@ import { getApiBase } from "../DevApiBase";
 import { withBsplusApiQuery } from "../bsplusClientContext";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
 import type { Theme } from "@/interface/types/Theme";
-import {
-  buildModalHeroSlides,
-  normalizeStoreTheme,
-} from "@/interface/utils/themeStoreFlavours";
+import { buildModalHeroSlides, normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
 import { delay } from "@/seqta/utils/delay";
@@ -48,9 +45,7 @@ async function readCachedThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | null>
   }
 }
 
-async function writeCachedThemeOfTheMonth(
-  entry: ThemeOfTheMonthEntry,
-): Promise<void> {
+async function writeCachedThemeOfTheMonth(entry: ThemeOfTheMonthEntry): Promise<void> {
   try {
     await browser.storage.local.set({ [TOTM_CACHE_KEY]: entry });
   } catch {
@@ -112,11 +107,11 @@ function heroUrlFromStoreTheme(theme: {
 }
 
 export async function fetchThemeStoreTheme(themeId: string): Promise<Theme | null> {
-    try {
-      const res = (await browser.runtime.sendMessage({
-        type: "fetchThemeDetails",
-        themeId,
-      })) as { success?: boolean; data?: { theme?: Record<string, unknown> } };
+  try {
+    const res = (await browser.runtime.sendMessage({
+      type: "fetchThemeDetails",
+      themeId,
+    })) as { success?: boolean; data?: { theme?: Record<string, unknown> } };
 
     if (!res?.success || !res?.data?.theme) return null;
     return normalizeStoreTheme(res.data.theme);
@@ -158,13 +153,10 @@ function renderHeroEmbossHtml(storeTheme: Theme, entry: ThemeOfTheMonthEntry): s
   const author = storeTheme.author?.trim() ?? "";
   const storeDescription = storeTheme.description?.trim() ?? "";
   const entryDesc = entry.description.trim();
-  const showDescription =
-    storeDescription.length > 0 && storeDescription !== entryDesc;
+  const showDescription = storeDescription.length > 0 && storeDescription !== entryDesc;
   const flavourCount = storeTheme.flavours?.length ?? 0;
   const flavourLine =
-    flavourCount > 0
-      ? `${flavourCount} colour variant${flavourCount === 1 ? "" : "s"}`
-      : "";
+    flavourCount > 0 ? `${flavourCount} colour variant${flavourCount === 1 ? "" : "s"}` : "";
 
   if (!name && !author && !showDescription && !flavourLine) return "";
 
@@ -302,10 +294,7 @@ function computeCardTranslate(
       ),
     );
     const y = Math.round(
-      Math.max(
-        TOTM_MARGIN_PX,
-        window.innerHeight - cardHeight - TOTM_MARGIN_PX,
-      ),
+      Math.max(TOTM_MARGIN_PX, window.innerHeight - cardHeight - TOTM_MARGIN_PX),
     );
     return { x, y };
   }
@@ -325,9 +314,7 @@ function applyThemeOfTheMonthCardPosition(
   animate: boolean,
   targetHeight?: number,
 ): void {
-  const width = expanded
-    ? themeOfTheMonthExpandedWidth()
-    : themeOfTheMonthCollapsedWidth();
+  const width = expanded ? themeOfTheMonthExpandedWidth() : themeOfTheMonthCollapsedWidth();
 
   card.style.width = `${width}px`;
   card.style.maxHeight = expanded ? `${themeOfTheMonthMaxCardHeight()}px` : "";
@@ -337,9 +324,7 @@ function applyThemeOfTheMonthCardPosition(
   const { x, y } = computeCardTranslate(width, h, expanded);
 
   const canAnimate =
-    animate &&
-    settingsState.animations &&
-    card.classList.contains("themeOfTheMonthCardMorphReady");
+    animate && settingsState.animations && card.classList.contains("themeOfTheMonthCardMorphReady");
 
   if (canAnimate) {
     card.style.transition = [
@@ -520,10 +505,7 @@ async function runThemeOfTheMonthCollapse(
   await delay(TOTM_LAYOUT_SWAP_MS);
   if (gen !== themeOfTheMonthAnimGen) return;
 
-  card.classList.remove(
-    "themeOfTheMonthCardExpanding",
-    "themeOfTheMonthCardCollapsing",
-  );
+  card.classList.remove("themeOfTheMonthCardExpanding", "themeOfTheMonthCardCollapsing");
   card.style.height = `${toH}px`;
   card.style.overflow = "";
   card.style.transition = "";
@@ -690,8 +672,7 @@ export async function OpenThemeOfTheMonthPopup(
   const hasExpandableContent = gallerySlides.length > 0 || entry.description.trim().length > 0;
 
   const descriptionHtml = escapeHTML(entry.description).replace(/\n/g, "<br />");
-  const heroEmbossHtml =
-    heroUrl && storeTheme ? renderHeroEmbossHtml(storeTheme, entry) : "";
+  const heroEmbossHtml = heroUrl && storeTheme ? renderHeroEmbossHtml(storeTheme, entry) : "";
 
   const backdrop = stringToHTML(/* html */ `
     <div id="theme-of-the-month-backdrop" class="themeOfTheMonthBackdrop" hidden aria-hidden="true"></div>
@@ -840,12 +821,16 @@ export async function OpenThemeOfTheMonthPopup(
     requestAnimationFrame(() => confirmEl.classList.add("themeOfTheMonthCardConfirmVisible"));
   };
 
-  card.querySelector(".themeOfTheMonthCardDontShow")?.addEventListener("click", openDontShowConfirm);
+  card
+    .querySelector(".themeOfTheMonthCardDontShow")
+    ?.addEventListener("click", openDontShowConfirm);
 
   card.querySelector(".themeOfTheMonthCardConfirmCancel")?.addEventListener("click", () => {
     if (!confirmEl) return;
     confirmEl.classList.remove("themeOfTheMonthCardConfirmVisible");
-    window.setTimeout(() => { confirmEl.hidden = true; }, 160);
+    window.setTimeout(() => {
+      confirmEl.hidden = true;
+    }, 160);
   });
 
   card.querySelector(".themeOfTheMonthCardConfirmAccept")?.addEventListener("click", () => {

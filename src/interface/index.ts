@@ -25,9 +25,7 @@ if (!mountPoint) {
   // In production, Rollup may put this entry in a shared chunk that content
   // scripts load via `import("@/interface/main")`. Only the settings page
   // has `#app` — never throw on SEQTA tabs.
-  verboseInfo(
-    "[BetterSEQTA+] Settings bootstrap skipped (no #app — not the settings page)",
-  );
+  verboseInfo("[BetterSEQTA+] Settings bootstrap skipped (no #app — not the settings page)");
 } else {
   InjectCustomIcons();
 

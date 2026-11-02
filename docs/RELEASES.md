@@ -4,21 +4,26 @@ BetterSEQTA+ ships through the Chrome Web Store and Firefox Add-ons. GitHub also
 
 ## Workflows
 
-| Workflow | Runs on | What it does |
-|----------|---------|--------------|
-| [`pr-ci.yml`](../.github/workflows/pr-ci.yml) | Every pull request and push to `main` | Lint, unit tests, then build and smoke test. Uploads the zips as an artifact. |
-| [`nightly.yml`](../.github/workflows/nightly.yml) | Daily at 13:30 UTC (midnight in Adelaide during daylight saving) | Builds `main` and replaces the assets on the `nightly` prerelease. |
-| [`release.yml`](../.github/workflows/release.yml) | Manually only | Builds the version in `package.json` and publishes it as a release with that tag. |
+| Workflow                                          | Runs on                                                          | What it does                                                                  |
+| ------------------------------------------------- | ---------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| [`pr-ci.yml`](../.github/workflows/pr-ci.yml)     | Every pull request and push to `main`                            | Lint, unit tests, then build and smoke test. Uploads the zips as an artifact. |
+| [`nightly.yml`](../.github/workflows/nightly.yml) | Daily at 13:30 UTC (midnight in Adelaide during daylight saving) | Builds `main` and replaces the assets on the `nightly` prerelease.            |
 
-Every build goes through the shared [`build-extension`](../.github/actions/build-extension/action.yml) action: install with `npm ci`, run `npm run build` for Chrome and Firefox, then zip `dist/chrome` and `dist/firefox`. The release workflows publish with the default `GITHUB_TOKEN`, so they need no extra secrets.
+Both build through the shared [`build-extension`](../.github/actions/build-extension/action.yml) action: install with `npm ci`, run `npm run build` for Chrome and Firefox, then zip `dist/chrome` and `dist/firefox`. Nightly publishes with the default `GITHUB_TOKEN`, so it needs no extra secrets.
 
 ## Publishing a stable release
 
-1. Bump `version` in `package.json` on `main` and push it.
-2. Go to Actions → **Release** → **Run workflow** and tick the confirmation box.
-3. On the first run for a version, edit the release title and notes on GitHub afterwards.
+Stable releases are published by hand:
 
-Running it again for the same version only replaces the zips (`betterseqtaplus@{version}-chrome.zip` and `-firefox.zip`).
+1. Bump `version` in `package.json` on `main` and push it.
+2. Build with the update checker, then zip:
+
+   ```bash
+   GH_RELEASE_UPDATE_CHECK=true UPDATE_CHANNEL=stable npm run build
+   npm run zip
+   ```
+
+3. Run `npm run release`. It creates the release for that version with generated notes and uploads `betterseqtaplus@{version}-chrome.zip` and `-firefox.zip`.
 
 ## Nightly builds
 
@@ -30,20 +35,16 @@ GitHub builds are for sideloading only. Never upload them to an extension store.
 
 ## Build-time flags
 
-Release workflows pass these into Vite, which bakes them in through `define` in [`vite.config.ts`](../vite.config.ts). Their types live in [`src/env.d.ts`](../src/env.d.ts).
+Release builds pass these into Vite, which bakes them in through `define` in [`vite.config.ts`](../vite.config.ts). Their types live in [`src/env.d.ts`](../src/env.d.ts).
 
-| Variable | Stable | Nightly | PRs and local builds |
-|----------|--------|---------|----------------------|
-| `GH_RELEASE_UPDATE_CHECK` | `true` | `true` | unset |
-| `UPDATE_CHANNEL` | `stable` | `nightly` | unset |
-| `GH_RELEASE_REPO` | `BetterSEQTA/BetterSEQTA-Plus` | same | same |
-| `BUILD_LABEL` | empty | UTC build date | empty |
+| Variable                  | Stable                         | Nightly        | PRs and local builds |
+| ------------------------- | ------------------------------ | -------------- | -------------------- |
+| `GH_RELEASE_UPDATE_CHECK` | `true`                         | `true`         | unset                |
+| `UPDATE_CHANNEL`          | `stable`                       | `nightly`      | unset                |
+| `GH_RELEASE_REPO`         | `BetterSEQTA/BetterSEQTA-Plus` | same           | same                 |
+| `BUILD_LABEL`             | empty                          | UTC build date | empty                |
 
-Without `GH_RELEASE_UPDATE_CHECK=true`, the update checker is removed from the bundle entirely. To try a release-style build locally:
-
-```bash
-GH_RELEASE_UPDATE_CHECK=true UPDATE_CHANNEL=stable npm run build
-```
+Without `GH_RELEASE_UPDATE_CHECK=true`, the update checker is removed from the bundle entirely.
 
 ## Update badge
 

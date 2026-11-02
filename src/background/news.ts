@@ -10,10 +10,7 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
     "https://feeds.npr.org/1001/rss.xml",
   ],
-  taiwan: [
-    "https://news.ltn.com.tw/rss/all.xml",
-    "https://www.taipeitimes.com/xml/index.rss",
-  ],
+  taiwan: ["https://news.ltn.com.tw/rss/all.xml", "https://www.taipeitimes.com/xml/index.rss"],
   hong_kong: [
     "https://rthk9.rthk.hk/rthk/news/rss/e_expressnews_elocal.xml",
     "https://www.scmp.com/rss/91/feed",
@@ -32,10 +29,7 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://www.straitstimes.com/news/singapore/rss.xml",
     "https://www.channelnewsasia.com/rssfeeds/8395986",
   ],
-  uk: [
-    "https://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.theguardian.com/uk/rss",
-  ],
+  uk: ["https://feeds.bbci.co.uk/news/rss.xml", "https://www.theguardian.com/uk/rss"],
   japan: [
     "https://www3.nhk.or.jp/rss/news/cat0.xml",
     "https://news.livedoor.com/topics/rss/int.xml",

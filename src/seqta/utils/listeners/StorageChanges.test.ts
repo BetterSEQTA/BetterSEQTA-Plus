@@ -26,12 +26,10 @@ test("changing the selected font updates the page without reloading", () => {
   new StorageChangeHandler();
   settingsState.selectedFont = "inter";
 
-  expect(
-    document.documentElement.style.getPropertyValue(
-      "--betterseqta-font-family",
-    ),
-  ).toBe("Inter");
-  expect(
-    document.getElementById("betterseqta-font-override")?.textContent,
-  ).toContain("font-family: Inter");
+  expect(document.documentElement.style.getPropertyValue("--betterseqta-font-family")).toBe(
+    "Inter",
+  );
+  expect(document.getElementById("betterseqta-font-override")?.textContent).toContain(
+    "font-family: Inter",
+  );
 });

@@ -18,9 +18,7 @@ describe("outlook calendar remote events", () => {
   });
 
   it("creates a new event when none exists", async () => {
-    mockFetch.mockResolvedValueOnce(
-      new Response(JSON.stringify({ id: "evt-1" }), { status: 201 }),
-    );
+    mockFetch.mockResolvedValueOnce(new Response(JSON.stringify({ id: "evt-1" }), { status: 201 }));
 
     const id = await upsertOutlookCalendarEvent("token", undefined, { subject: "Math" });
     expect(id).toBe("evt-1");
@@ -102,7 +100,9 @@ describe("google calendar remote list", () => {
               start: { dateTime: "2026-07-13T09:00:00", timeZone: "UTC" },
               end: { dateTime: "2026-07-13T10:00:00", timeZone: "UTC" },
               extendedProperties: {
-                private: { [BSPLUS_GOOGLE_CALENDAR_EVENT_PROP]: "https://school.seqta.com.au:cal:1" },
+                private: {
+                  [BSPLUS_GOOGLE_CALENDAR_EVENT_PROP]: "https://school.seqta.com.au:cal:1",
+                },
               },
             },
             {

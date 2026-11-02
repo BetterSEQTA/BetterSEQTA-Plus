@@ -1,9 +1,6 @@
 import { settingsState } from "../listeners/SettingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
-import {
-  animatePopupClose,
-  animatePopupOpen,
-} from "@/seqta/utils/popupAnimation";
+import { animatePopupClose, animatePopupOpen } from "@/seqta/utils/popupAnimation";
 import { animate as motionAnimate, stagger } from "motion";
 
 type AnimationTarget = string | Element | Element[] | NodeList | null;
@@ -49,9 +46,7 @@ export async function closePopup() {
   detachEscapeListener();
 
   const background = document.getElementById("whatsnewbk");
-  const popup = document.getElementsByClassName("whatsnewContainer")[0] as
-    | HTMLElement
-    | undefined;
+  const popup = document.getElementsByClassName("whatsnewContainer")[0] as HTMLElement | undefined;
 
   if (!background || !popup) {
     isClosing = false;

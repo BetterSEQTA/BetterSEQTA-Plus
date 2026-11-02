@@ -51,9 +51,7 @@ describe("eventFingerprint", () => {
       timeZone: "Australia/Adelaide",
     };
     expect(eventFingerprint(base)).toBe(eventFingerprint({ ...base }));
-    expect(eventFingerprint(base)).not.toBe(
-      eventFingerprint({ ...base, summary: "English" }),
-    );
+    expect(eventFingerprint(base)).not.toBe(eventFingerprint({ ...base, summary: "English" }));
   });
 });
 

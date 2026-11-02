@@ -77,8 +77,7 @@ test.each(["plugin", "master", "performance"])(
 
     const startup = manager.startPlugin(id);
     await entered;
-    if (disable === "plugin")
-      settingsState.setKey(storageKey, { enabled: false });
+    if (disable === "plugin") settingsState.setKey(storageKey, { enabled: false });
     if (disable === "master") settingsState.onoff = false;
     if (disable === "performance")
       jest.mocked(isPluginAllowedInPerformanceMode).mockReturnValue(false);

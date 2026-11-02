@@ -243,7 +243,7 @@
 
   $effect(() => {
     loadBackground();
-    selectedBackground
+    void selectedBackground;
   });
 
   $effect(() => {

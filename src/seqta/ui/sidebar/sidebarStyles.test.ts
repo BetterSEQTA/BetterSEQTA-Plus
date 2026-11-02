@@ -25,18 +25,21 @@ test("early sidebar preparation and cleanup work before body exists", () => {
   }
 });
 
-test.each([false, true])("applies unchanged settings to a newly available menu (replacement: %s)", (replacement) => {
-  const initialMenu = replacement ? document.createElement("div") : null;
-  applySidebarLook(initialMenu);
-  const menu = document.createElement("div");
-  menu.id = "menu";
-  document.body.append(menu);
+test.each([false, true])(
+  "applies unchanged settings to a newly available menu (replacement: %s)",
+  (replacement) => {
+    const initialMenu = replacement ? document.createElement("div") : null;
+    applySidebarLook(initialMenu);
+    const menu = document.createElement("div");
+    menu.id = "menu";
+    document.body.append(menu);
 
-  applySidebarLook(menu);
+    applySidebarLook(menu);
 
-  expect(menu.classList.contains("bsplus-sidebar-density-compact")).toBe(true);
-  expect(menu.classList.contains("bsplus-sidebar-indicator-outline")).toBe(true);
-});
+    expect(menu.classList.contains("bsplus-sidebar-density-compact")).toBe(true);
+    expect(menu.classList.contains("bsplus-sidebar-indicator-outline")).toBe(true);
+  },
+);
 
 test("restores sidebar variables and classes after disable and re-enable", () => {
   const menu = document.createElement("div");

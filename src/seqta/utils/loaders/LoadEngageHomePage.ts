@@ -31,8 +31,7 @@ export function updateEngageHomeMenuActive(isHome: boolean): void {
   }
 }
 
-const STORAGE_KEY_STUDENT = () =>
-  `bsplus.engageTimetable.student.${location.origin}`;
+const STORAGE_KEY_STUDENT = () => `bsplus.engageTimetable.student.${location.origin}`;
 
 let engageViewDate = new Date();
 let engageWeekFrom = "";
@@ -47,10 +46,7 @@ function setEngageTimetableSubtitle(): void {
   el.textContent = lessonsSubtitleForViewDate(engageViewDate);
 }
 
-function makeEngageLessonDiv(
-  lesson: EngageParentTimetableItem,
-  index: number,
-): HTMLElement {
+function makeEngageLessonDiv(lesson: EngageParentTimetableItem, index: number): HTMLElement {
   let from = lesson.from?.substring(0, 5) ?? "";
   let until = lesson.until?.substring(0, 5) ?? "";
   if (settingsState.timeFormat === "12") {
@@ -58,10 +54,7 @@ function makeEngageLessonDiv(
     until = convertTo12HourFormat(until);
   }
 
-  const title =
-    lesson.type === "class"
-      ? lesson.description
-      : lesson.type || "Lesson";
+  const title = lesson.type === "class" ? lesson.description : lesson.type || "Lesson";
 
   const div = document.createElement("div");
   div.className = "day";
@@ -123,11 +116,7 @@ async function fetchWeekAndRender(): Promise<void> {
 
   const { from, until } = weekRangeContaining(engageViewDate);
   try {
-    engageWeekItems = await fetchEngageParentTimetableWeek(
-      from,
-      until,
-      engageSelectedStudentId,
-    );
+    engageWeekItems = await fetchEngageParentTimetableWeek(from, until, engageSelectedStudentId);
     engageWeekFrom = from;
     engageWeekUntil = until;
   } catch (e) {
@@ -147,7 +136,7 @@ function shiftEngageDay(delta: number): void {
 
   const dayContainer = document.getElementById("engage-day-container");
   dayContainer?.classList.add("loading");
-  dayContainer && (dayContainer.innerHTML = "");
+  if (dayContainer) dayContainer.innerHTML = "";
 
   if (
     engageWeekFrom &&
@@ -160,10 +149,7 @@ function shiftEngageDay(delta: number): void {
   }
 }
 
-function populateChildSelector(
-  select: HTMLSelectElement,
-  children: EngageParentChild[],
-): void {
+function populateChildSelector(select: HTMLSelectElement, children: EngageParentChild[]): void {
   select.innerHTML = "";
   for (const c of children) {
     const opt = document.createElement("option");
@@ -174,9 +160,7 @@ function populateChildSelector(
 
   const stored = localStorage.getItem(STORAGE_KEY_STUDENT());
   const validStored = stored && children.some((c) => c.id === stored);
-  engageSelectedStudentId = validStored
-    ? stored!
-    : children[0]?.id ?? null;
+  engageSelectedStudentId = validStored ? stored! : (children[0]?.id ?? null);
 
   if (engageSelectedStudentId) {
     select.value = engageSelectedStudentId;
@@ -190,9 +174,7 @@ function bindEngageTimetableUi(): void {
 
   const back = document.getElementById("engage-home-timetable-back");
   const forward = document.getElementById("engage-home-timetable-forward");
-  const select = document.getElementById(
-    "engage-child-selector",
-  ) as HTMLSelectElement | null;
+  const select = document.getElementById("engage-child-selector") as HTMLSelectElement | null;
 
   const onBack = () => shiftEngageDay(-1);
   const onForward = () => shiftEngageDay(1);
@@ -211,9 +193,7 @@ function bindEngageTimetableUi(): void {
     void fetchWeekAndRender();
   };
   select?.addEventListener("change", onSelectChange);
-  cleanups.push(() =>
-    select?.removeEventListener("change", onSelectChange),
-  );
+  cleanups.push(() => select?.removeEventListener("change", onSelectChange));
 
   engageListenersCleanup = () => {
     cleanups.forEach((fn) => fn());
@@ -297,9 +277,7 @@ export async function loadEngageHomePage(): Promise<void> {
     /* Engage mounts `#main` after React hydrates; a single rAF often loses the race on cold load. */
     main = (await waitForElm("#main", true, 100, 200)) as HTMLElement;
   } catch {
-    console.warn(
-      "[BetterSEQTA+] Engage home: timed out waiting for #main (shell not ready).",
-    );
+    console.warn("[BetterSEQTA+] Engage home: timed out waiting for #main (shell not ready).");
     return;
   }
 
@@ -355,9 +333,7 @@ export async function loadEngageHomePage(): Promise<void> {
   setEngageTimetableSubtitle();
   renderShortcuts();
 
-  const select = document.getElementById(
-    "engage-child-selector",
-  ) as HTMLSelectElement | null;
+  const select = document.getElementById("engage-child-selector") as HTMLSelectElement | null;
 
   const todayFormatted = toISODate(new Date());
 

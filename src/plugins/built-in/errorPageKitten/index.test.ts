@@ -15,10 +15,7 @@ jest.mock("./styles.css?inline", () => ({
   default: "/* test */",
 }));
 
-import errorPageKittenPlugin, {
-  isSeqta404Page,
-  mountErrorPageKitten,
-} from "./index";
+import errorPageKittenPlugin, { isSeqta404Page, mountErrorPageKitten } from "./index";
 
 const REBRANDED_404_BODY = `
   <div class="message">
@@ -86,7 +83,9 @@ describe("errorPageKitten", () => {
     document.title = "SEQTA Learn";
     document.body.innerHTML = '<div id="container"></div>';
 
-    const cleanup = await errorPageKittenPlugin.run({} as Parameters<typeof errorPageKittenPlugin.run>[0]);
+    const cleanup = await errorPageKittenPlugin.run(
+      {} as Parameters<typeof errorPageKittenPlugin.run>[0],
+    );
 
     expect(getCard()).toBeNull();
     expect(cleanup).toBeDefined();

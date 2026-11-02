@@ -36,8 +36,7 @@ export function CreateCustomShortcutDiv(element: any) {
     img.style.height = "39px";
     image = img;
   } else {
-    image = stringToHTML(
-      /* html */`
+    image = stringToHTML(/* html */ `
       <svg style="width:39px;height:39px" viewBox="0 0 40 40" class="shortcuticondiv">
         <text
           text-anchor="middle"
@@ -51,8 +50,7 @@ export function CreateCustomShortcutDiv(element: any) {
           ${element.icon}
         </text>
       </svg>
-      `,
-    ).firstChild;
+      `).firstChild;
   }
   (image as HTMLElement).classList.add("shortcuticondiv");
   const text = document.createElement("p");
