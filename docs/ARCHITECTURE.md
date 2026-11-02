@@ -72,12 +72,13 @@ Think of it like this: **SEQTA Learn + BetterSEQTA+ = Enhanced SEQTA Experience*
 ## Core Components
 
 ### 1. Entry Point (`src/SEQTA.ts`)
-This is where it all begins! When you visit a SEQTA page:
+This is where it all begins! It runs on every website, so it stays tiny:
 1. Detects if you're on a SEQTA Learn page
-2. Injects our CSS styles
-3. Changes the favicon to BetterSEQTA+ icon
-4. Loads settings from storage
-5. Initializes the plugin system
+2. If you are, loads `src/seqta/boot.ts`, which:
+   - Injects our CSS styles
+   - Changes the favicon to BetterSEQTA+ icon
+   - Loads settings from storage
+   - Initializes the plugin system
 
 ### 2. Plugin System (`src/plugins/`)
 The heart of BetterSEQTA+! This is what makes it extensible:
