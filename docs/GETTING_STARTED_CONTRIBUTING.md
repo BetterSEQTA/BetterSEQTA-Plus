@@ -59,7 +59,7 @@ npm run dev
 
 ### 5. Make a Tiny Change (5 minutes)
 Let's prove everything works:
-1. Open `src/SEQTA.ts`
+1. Open `src/seqta/boot.ts`
 2. Find the line that says `"[BetterSEQTA+] Successfully initialised"`
 3. Change it to `"[BetterSEQTA+] Successfully initialised - Hello [YOUR_NAME]!"`
 4. Save the file
@@ -68,7 +68,7 @@ Let's prove everything works:
 
 ### 6. Reset Your Change (3 minutes)
 ```bash
-git checkout -- src/SEQTA.ts
+git checkout -- src/seqta/boot.ts
 ```
 
 **Congratulations! 🎉 You've successfully set up BetterSEQTA+ for development!**
