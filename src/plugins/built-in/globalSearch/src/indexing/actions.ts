@@ -65,6 +65,246 @@ function navigateInCurrentSeqtaApp(routeWithLeadingSlash: string): void {
  */
 const FALLBACK_ROUTE = "/dashboard";
 
+function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetadata }): {
+  itemClone: IndexItem & { metadata: AssessmentMetadata };
+  metadata: AssessmentMetadata;
+} {
+  try {
+    const itemClone = JSON.parse(JSON.stringify(item)) as IndexItem & { metadata: AssessmentMetadata };
+    return { itemClone, metadata: itemClone.metadata || {} };
+  } catch (e) {
+    console.warn(
+      "[Assessment Action] Failed to clone item, trying to clone metadata separately:",
+      e,
+    );
+    try {
+      const metadata = JSON.parse(JSON.stringify(item.metadata || {})) as AssessmentMetadata;
+      return { itemClone: { ...item, metadata }, metadata };
+    } catch (e2) {
+      console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
+      const metadata = item.metadata || ({} as AssessmentMetadata);
+      return { itemClone: item, metadata };
+    }
+  }
+}
+
+function createMetadataValueReader(metadata: AssessmentMetadata) {
+  const bag = metadata as Record<string, unknown>;
+  return (key: string, altKey?: string): unknown => {
+    try {
+      const value = bag[key];
+      if (value !== undefined && value !== null) {
+        return value;
+      }
+      if (altKey) {
+        const altValue = bag[altKey];
+        if (altValue !== undefined && altValue !== null) {
+          return altValue;
+        }
+      }
+      try {
+        for (const k of Object.keys(bag)) {
+          if (k === key || k === altKey) {
+            const val = bag[k];
+            if (val !== undefined && val !== null) {
+              return val;
+            }
+          }
+        }
+      } catch {
+        // Object.keys might fail on XrayWrapper, that's okay
+      }
+      return undefined;
+    } catch (e) {
+      console.warn(`[Assessment Action] Failed to access metadata.${key}:`, e);
+      return undefined;
+    }
+  };
+}
+
+function coerceNumericMetadataId(value: unknown): unknown {
+  if (value === undefined || value === null || value === "") return value;
+  const num = Number(value);
+  return Number.isNaN(num) ? value : num;
+}
+
+async function runAssessmentSearchAction(item: IndexItem & { metadata: AssessmentMetadata }) {
+  const { itemClone, metadata } = cloneAssessmentActionItem(item);
+  const getMetadataValue = createMetadataValueReader(metadata);
+
+  if (getMetadataValue("isMessageBased")) {
+    window.location.hash = `#?page=/messages`;
+
+    await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
+
+    ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
+      selected: new Set([getMetadataValue("messageId")]),
+    });
+    return;
+  }
+
+  let programmeId = getMetadataValue("programmeId", "programmeID");
+  let metaclassId = getMetadataValue("metaclassId", "metaclassID");
+  let assessmentId = getMetadataValue("assessmentId", "assessmentID");
+
+  if (
+    (assessmentId === undefined || assessmentId === null) &&
+    itemClone.id?.startsWith("assignment-")
+  ) {
+    const extractedId = itemClone.id.replace("assignment-", "");
+    assessmentId = Number(extractedId) || extractedId;
+    verboseLog("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
+  }
+
+  programmeId = coerceNumericMetadataId(programmeId);
+  metaclassId = coerceNumericMetadataId(metaclassId);
+  assessmentId = coerceNumericMetadataId(assessmentId);
+
+  const hasProgrammeId = typeof programmeId === "number";
+  const hasMetaclassId = typeof metaclassId === "number";
+  const hasAssessmentId = typeof assessmentId === "number";
+
+  if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
+    const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
+    verboseLog("[Assessment Action] ✅ Navigating to:", url);
+    window.location.hash = url;
+    return;
+  }
+
+  console.error("[Assessment Action] ❌ Missing required metadata:", {
+    programmeId,
+    metaclassId,
+    assessmentId,
+    hasProgrammeId,
+    hasMetaclassId,
+    hasAssessmentId,
+    metadataKeys: Object.keys(metadata),
+    metadataString: JSON.stringify(metadata),
+    itemId: itemClone.id,
+  });
+
+  if (hasAssessmentId) {
+    window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
+  } else {
+    console.warn("[Assessment Action] No valid assessment ID, redirecting to upcoming");
+    window.location.hash = `#?page=/assessments/upcoming`;
+  }
+}
+
+function runPassiveSearchAction(item: IndexItem): void {
+  const md = (item.metadata ?? {}) as Record<string, unknown>;
+  const route = typeof md.route === "string" ? md.route : "";
+  const sourcePage = typeof md.sourcePage === "string" ? md.sourcePage : "";
+  const routeParts = route
+    .replace(/^\/seqta\/student\/?/, "")
+    .replace(/^load\//, "")
+    .split("/")
+    .filter(Boolean)
+    .map((part) => part.toLowerCase());
+  const tail = routeParts[0] ?? "";
+  const child = routeParts[1] ?? "";
+
+  const num = (key: string): number | undefined => {
+    const value = md[key];
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value === "string" && value && Number.isFinite(Number(value))) {
+      return Number(value);
+    }
+    return undefined;
+  };
+  const str = (key: string): string | undefined => {
+    const value = md[key];
+    return typeof value === "string" && value ? value : undefined;
+  };
+
+  const programme = num("programme") ?? num("programmeId") ?? num("programmeID");
+  const metaclass = num("metaclass") ?? num("metaclassId") ?? num("metaclassID");
+  const portalUuid = str("portalUuid") ?? str("uuid");
+  const forumId = num("forumId") ?? num("forum");
+  const year = num("year");
+  const assessmentId = num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id");
+
+  const navigateToAssessment = (): void => {
+    if (programme !== undefined && metaclass !== undefined) {
+      const itemSuffix = assessmentId !== undefined ? `&item=${assessmentId}` : "";
+      navigateToHashRoute(`/assessments/${programme}:${metaclass}${itemSuffix}`);
+      return;
+    }
+    if (assessmentId !== undefined) {
+      navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
+      return;
+    }
+    navigateToHashRoute("/assessments/upcoming");
+  };
+
+  if (sourcePage === "/messages") {
+    navigateInCurrentSeqtaApp("/messages");
+    return;
+  }
+
+  switch (tail) {
+    case "courses":
+      if (programme !== undefined && metaclass !== undefined) {
+        navigateToHashRoute(`/courses/${programme}:${metaclass}`);
+        return;
+      }
+      break;
+    case "assessments":
+    case "assessment":
+      navigateToAssessment();
+      return;
+    case "forums":
+    case "forum":
+      if (forumId !== undefined) {
+        navigateToHashRoute(`/forums/${forumId}`);
+        return;
+      }
+      break;
+    case "portals":
+    case "portal":
+      if (portalUuid) {
+        navigateToHashRoute(`/portals/${portalUuid}`);
+        return;
+      }
+      break;
+    case "goals":
+    case "goal":
+      navigateToHashRoute(year !== undefined ? `/goals/${year}` : "/goals");
+      return;
+    case "folio":
+    case "folios":
+      navigateToHashRoute("/folios/read");
+      return;
+    case "notices":
+    case "notice":
+      navigateToHashRoute("/notices");
+      return;
+    case "documents":
+    case "document":
+      navigateToHashRoute("/documents");
+      return;
+    case "reports":
+    case "report":
+      navigateToHashRoute("/reports");
+      return;
+    case "messages":
+    case "message":
+      navigateInCurrentSeqtaApp("/messages");
+      return;
+    case "people":
+      if (route.includes("/load/message/people") || child === "people") {
+        navigateInCurrentSeqtaApp("/messages");
+        return;
+      }
+      break;
+    case "timetable":
+      navigateToHashRoute("/timetable");
+      return;
+  }
+
+  navigateToHashRoute(FALLBACK_ROUTE);
+}
+
 export const actionMap: Record<string, ActionHandler<Record<string, unknown>>> = {
   message: (async (item: IndexItem & { metadata: MessageMetadata }) => {
     window.location.hash = `#?page=/messages`;
@@ -96,152 +336,7 @@ export const actionMap: Record<string, ActionHandler<Record<string, unknown>>> =
   }) as ActionHandler<Record<string, unknown>>,
 
   assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
-    // Deep clone the entire item to avoid Firefox XrayWrapper issues
-    // Firefox XrayWrapper prevents direct access to nested properties
-    let itemClone: IndexItem & { metadata: AssessmentMetadata };
-    let metadata: AssessmentMetadata;
-
-    try {
-      // First try to clone the entire item
-      itemClone = JSON.parse(JSON.stringify(item));
-      metadata = itemClone.metadata || {};
-    } catch (e) {
-      console.warn(
-        "[Assessment Action] Failed to clone item, trying to clone metadata separately:",
-        e,
-      );
-      try {
-        // If full clone fails, try cloning just metadata
-        metadata = JSON.parse(JSON.stringify(item.metadata || {}));
-        itemClone = { ...item, metadata };
-      } catch (e2) {
-        console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
-        itemClone = item;
-        metadata = item.metadata || ({} as AssessmentMetadata);
-      }
-    }
-
-    // Try to extract metadata values using multiple methods to handle XrayWrapper.
-    // The metadata bag is intentionally typed loosely here because Firefox's
-    // XrayWrapper occasionally surfaces extra/casing-variant keys we still
-    // want to read defensively.
-    const getMetadataValue = (key: string, altKey?: string): unknown => {
-      const bag = metadata as Record<string, unknown>;
-      try {
-        const value = bag[key];
-        if (value !== undefined && value !== null) {
-          return value;
-        }
-        if (altKey) {
-          const altValue = bag[altKey];
-          if (altValue !== undefined && altValue !== null) {
-            return altValue;
-          }
-        }
-        try {
-          const keys = Object.keys(bag);
-          for (const k of keys) {
-            if (k === key || k === altKey) {
-              const val = bag[k];
-              if (val !== undefined && val !== null) {
-                return val;
-              }
-            }
-          }
-        } catch {
-          // Object.keys might fail on XrayWrapper, that's okay
-        }
-        return undefined;
-      } catch (e) {
-        console.warn(`[Assessment Action] Failed to access metadata.${key}:`, e);
-        return undefined;
-      }
-    };
-
-    if (getMetadataValue("isMessageBased")) {
-      window.location.hash = `#?page=/messages`;
-
-      await waitForElm('[class*="Viewer__Viewer___"] > div', true, 20);
-
-      // Select the specific direct message
-      ReactFiber.find('[class*="Viewer__Viewer___"] > div').setState({
-        selected: new Set([getMetadataValue("messageId")]),
-      });
-    } else {
-      // Extract values - check both camelCase and PascalCase, and try multiple access methods
-      let programmeId = getMetadataValue("programmeId", "programmeID");
-      let metaclassId = getMetadataValue("metaclassId", "metaclassID");
-      let assessmentId = getMetadataValue("assessmentId", "assessmentID");
-
-      // Fallback: try to extract assessmentId from item ID if metadata is missing
-      if (
-        (assessmentId === undefined || assessmentId === null) &&
-        itemClone.id &&
-        itemClone.id.startsWith("assignment-")
-      ) {
-        const extractedId = itemClone.id.replace("assignment-", "");
-        assessmentId = Number(extractedId) || extractedId;
-        verboseLog("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
-      }
-
-      // Convert to numbers, but preserve 0 as valid
-      if (programmeId !== undefined && programmeId !== null && programmeId !== "") {
-        const num = Number(programmeId);
-        programmeId = isNaN(num) ? programmeId : num;
-      }
-      if (metaclassId !== undefined && metaclassId !== null && metaclassId !== "") {
-        const num = Number(metaclassId);
-        metaclassId = isNaN(num) ? metaclassId : num;
-      }
-      if (assessmentId !== undefined && assessmentId !== null && assessmentId !== "") {
-        const num = Number(assessmentId);
-        assessmentId = isNaN(num) ? assessmentId : num;
-      }
-
-      // Check if values exist (including 0, which is a valid ID)
-      // Use typeof check to properly handle 0
-      const hasProgrammeId =
-        programmeId !== undefined &&
-        programmeId !== null &&
-        programmeId !== "" &&
-        typeof programmeId === "number";
-      const hasMetaclassId =
-        metaclassId !== undefined &&
-        metaclassId !== null &&
-        metaclassId !== "" &&
-        typeof metaclassId === "number";
-      const hasAssessmentId =
-        assessmentId !== undefined &&
-        assessmentId !== null &&
-        assessmentId !== "" &&
-        typeof assessmentId === "number";
-
-      if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
-        const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
-        verboseLog("[Assessment Action] ✅ Navigating to:", url);
-        window.location.hash = url;
-      } else {
-        // Fallback: try to navigate to assessments page if metadata is incomplete
-        console.error("[Assessment Action] ❌ Missing required metadata:", {
-          programmeId,
-          metaclassId,
-          assessmentId,
-          hasProgrammeId,
-          hasMetaclassId,
-          hasAssessmentId,
-          metadataKeys: Object.keys(metadata),
-          metadataString: JSON.stringify(metadata),
-          itemId: itemClone.id,
-        });
-        // If we at least have an assessmentId, try to navigate to the general assessments page
-        if (hasAssessmentId) {
-          window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
-        } else {
-          console.warn("[Assessment Action] No valid assessment ID, redirecting to upcoming");
-          window.location.hash = `#?page=/assessments/upcoming`;
-        }
-      }
-    }
+    await runAssessmentSearchAction(item);
   }) as ActionHandler<Record<string, unknown>>,
 
   subjectassessment: ((item: IndexItem) => {
@@ -335,122 +430,6 @@ export const actionMap: Record<string, ActionHandler<Record<string, unknown>>> =
    * `save/*` and friends.
    */
   passive: ((item: IndexItem) => {
-    const md = (item.metadata ?? {}) as Record<string, unknown>;
-    const route = typeof md.route === "string" ? (md.route as string) : "";
-    const sourcePage = typeof md.sourcePage === "string" ? (md.sourcePage as string) : "";
-    const routeParts = route
-      .replace(/^\/seqta\/student\/?/, "")
-      .replace(/^load\//, "")
-      .split("/")
-      .filter(Boolean)
-      .map((part) => part.toLowerCase());
-    const tail = routeParts[0] ?? "";
-    const child = routeParts[1] ?? "";
-
-    const num = (key: string): number | undefined => {
-      const value = md[key];
-      if (typeof value === "number" && Number.isFinite(value)) return value;
-      if (typeof value === "string" && value && Number.isFinite(Number(value))) {
-        return Number(value);
-      }
-      return undefined;
-    };
-    const str = (key: string): string | undefined => {
-      const value = md[key];
-      return typeof value === "string" && value ? value : undefined;
-    };
-
-    const programme = num("programme") ?? num("programmeId") ?? num("programmeID");
-    const metaclass = num("metaclass") ?? num("metaclassId") ?? num("metaclassID");
-    const portalUuid = str("portalUuid") ?? str("uuid");
-    const forumId = num("forumId") ?? num("forum");
-    const year = num("year");
-    const assessmentId = num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id");
-
-    const navigateToAssessment = (): void => {
-      if (programme !== undefined && metaclass !== undefined) {
-        const itemSuffix = assessmentId !== undefined ? `&item=${assessmentId}` : "";
-        navigateToHashRoute(`/assessments/${programme}:${metaclass}${itemSuffix}`);
-        return;
-      }
-      if (assessmentId !== undefined) {
-        navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
-        return;
-      }
-      navigateToHashRoute("/assessments/upcoming");
-    };
-
-    if (sourcePage === "/messages") {
-      navigateInCurrentSeqtaApp("/messages");
-      return;
-    }
-
-    switch (tail) {
-      case "courses":
-        if (programme !== undefined && metaclass !== undefined) {
-          navigateToHashRoute(`/courses/${programme}:${metaclass}`);
-          return;
-        }
-        break;
-      case "assessments":
-      case "assessment":
-        navigateToAssessment();
-        return;
-      case "forums":
-      case "forum":
-        if (forumId !== undefined) {
-          navigateToHashRoute(`/forums/${forumId}`);
-          return;
-        }
-        break;
-      case "portals":
-      case "portal":
-        if (portalUuid) {
-          navigateToHashRoute(`/portals/${portalUuid}`);
-          return;
-        }
-        break;
-      case "goals":
-      case "goal":
-        navigateToHashRoute(year !== undefined ? `/goals/${year}` : "/goals");
-        return;
-      case "folio":
-      case "folios":
-        navigateToHashRoute("/folios/read");
-        return;
-      case "notices":
-      case "notice":
-        navigateToHashRoute("/notices");
-        return;
-      case "documents":
-      case "document":
-        navigateToHashRoute("/documents");
-        return;
-      case "reports":
-      case "report":
-        navigateToHashRoute("/reports");
-        return;
-      case "messages":
-      case "message":
-        // `/seqta/student/load/message/people` and related endpoints are
-        // only meaningful while SEQTA's message module is mounted. Use the
-        // same live hash navigation as the real message action instead of
-        // forcing a fresh bootstrap, which can drop back to dashboard for
-        // context-only endpoints.
-
-        navigateInCurrentSeqtaApp("/messages");
-        return;
-      case "people":
-        if (route.includes("/load/message/people") || child === "people") {
-          navigateInCurrentSeqtaApp("/messages");
-          return;
-        }
-        break;
-      case "timetable":
-        navigateToHashRoute("/timetable");
-        return;
-    }
-
-    navigateToHashRoute(FALLBACK_ROUTE);
+    runPassiveSearchAction(item);
   }) as ActionHandler<Record<string, unknown>>,
 };

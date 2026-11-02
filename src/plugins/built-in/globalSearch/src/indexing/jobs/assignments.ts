@@ -92,6 +92,106 @@ const fetchPastAssessments = async (student: number, subjects: OverviewSubject[]
   return Object.values(map);
 };
 
+type AssignmentRow = OverviewAssessment & { isUpcoming?: boolean };
+
+function parseOptionalNumericId(value: unknown): number | undefined {
+  if (value === undefined || value === null || value === "") return undefined;
+  const num = Number(value);
+  return Number.isNaN(num) ? undefined : num;
+}
+
+function buildAssignmentIndexItem(
+  assessment: AssignmentRow,
+  processedIds: Set<string>,
+): IndexItem | null {
+  const id = `assignment-${assessment.id}`;
+
+  if (processedIds.has(id)) {
+    return null;
+  }
+
+  processedIds.add(id);
+
+  const programmeId = assessment.programmeID || assessment.programme;
+  const metaclassId = assessment.metaclassID || assessment.metaclass;
+
+  if (!programmeId || !metaclassId || !assessment.id) {
+    console.warn(
+      `[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`,
+      {
+        programmeId,
+        metaclassId,
+        assessmentId: assessment.id,
+        programmeID: assessment.programmeID,
+        metaclassID: assessment.metaclassID,
+        programme: assessment.programme,
+        metaclass: assessment.metaclass,
+        assessment,
+      },
+    );
+    return null;
+  }
+
+  const finalProgrammeId = parseOptionalNumericId(programmeId);
+  const finalMetaclassId = parseOptionalNumericId(metaclassId);
+
+  if (finalProgrammeId === undefined || finalMetaclassId === undefined) {
+    console.error(
+      `[Assignments job] ❌ Skipping assignment ${assessment.id} - invalid IDs after conversion:`,
+      {
+        programmeId: finalProgrammeId,
+        metaclassId: finalMetaclassId,
+        assessmentId: assessment.id,
+        rawProgrammeId: programmeId,
+        rawMetaclassId: metaclassId,
+        assessment,
+      },
+    );
+    return null;
+  }
+
+  const subjectName = String(assessment.subject || assessment.code || "Unknown Subject");
+  const dueDate = assessment.due ? new Date(String(assessment.due)).getTime() : null;
+
+  const item: IndexItem = {
+    id,
+    text: String(assessment.title || assessment.name || "Untitled Assignment"),
+    category: "assignments",
+    content:
+      `\nSubject: ${subjectName}\nDue: ${assessment.due || "No due date"}`.trim(),
+    dateAdded: dueDate || Date.now(),
+    metadata: {
+      assessmentId: assessment.id,
+      assessmentID: assessment.id,
+      subject: subjectName,
+      subjectCode: assessment.code,
+      dueDate: assessment.due,
+      programmeId: finalProgrammeId,
+      programmeID: finalProgrammeId,
+      metaclassId: finalMetaclassId,
+      metaclassID: finalMetaclassId,
+      submitted: assessment.submitted || false,
+      isUpcoming: assessment.isUpcoming || false,
+      term: assessment.term,
+      timestamp: assessment.due || new Date().toISOString(),
+    },
+    actionId: "assessment",
+    renderComponentId: "assessment",
+  };
+
+  verboseDebug(`[Assignments job] ✅ Created item for assignment ${assessment.id}:`, {
+    id: item.id,
+    programmeId: item.metadata.programmeId,
+    programmeID: item.metadata.programmeID,
+    metaclassId: item.metadata.metaclassId,
+    metaclassID: item.metadata.metaclassID,
+    assessmentId: item.metadata.assessmentId,
+    assessmentID: item.metadata.assessmentID,
+  });
+
+  return item;
+}
+
 export const assignmentsJob: Job = {
   id: "assignments",
   label: "Assignments",
@@ -229,106 +329,7 @@ export const assignmentsJob: Job = {
       const batch = assessmentArray.slice(i, i + batchSize);
 
       const batchItems = await Promise.all(
-        batch.map(async (assessment) => {
-          const id = `assignment-${assessment.id}`;
-
-          if (processedIds.has(id)) {
-            return null;
-          }
-
-          processedIds.add(id);
-
-          const description = "";
-
-          const subjectName = assessment.subject || assessment.code || "Unknown Subject";
-          const dueDate = assessment.due ? new Date(assessment.due).getTime() : null;
-
-          const programmeId = assessment.programmeID || assessment.programme;
-          const metaclassId = assessment.metaclassID || assessment.metaclass;
-
-          if (!programmeId || !metaclassId || !assessment.id) {
-            console.warn(
-              `[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`,
-              {
-                programmeId,
-                metaclassId,
-                assessmentId: assessment.id,
-                programmeID: assessment.programmeID,
-                metaclassID: assessment.metaclassID,
-                programme: assessment.programme,
-                metaclass: assessment.metaclass,
-                assessment,
-              },
-            );
-            return null;
-          }
-
-          let finalProgrammeId: number | undefined;
-          let finalMetaclassId: number | undefined;
-
-          if (programmeId !== undefined && programmeId !== null && programmeId !== "") {
-            const num = Number(programmeId);
-            finalProgrammeId = isNaN(num) ? undefined : num;
-          }
-
-          if (metaclassId !== undefined && metaclassId !== null && metaclassId !== "") {
-            const num = Number(metaclassId);
-            finalMetaclassId = isNaN(num) ? undefined : num;
-          }
-
-          if (finalProgrammeId === undefined || finalMetaclassId === undefined || !assessment.id) {
-            console.error(
-              `[Assignments job] ❌ Skipping assignment ${assessment.id} - invalid IDs after conversion:`,
-              {
-                programmeId: finalProgrammeId,
-                metaclassId: finalMetaclassId,
-                assessmentId: assessment.id,
-                rawProgrammeId: programmeId,
-                rawMetaclassId: metaclassId,
-                assessment,
-              },
-            );
-            return null;
-          }
-
-          const item: IndexItem = {
-            id,
-            text: assessment.title || assessment.name || "Untitled Assignment",
-            category: "assignments",
-            content:
-              `${description}\nSubject: ${subjectName}\nDue: ${assessment.due || "No due date"}`.trim(),
-            dateAdded: dueDate || Date.now(),
-            metadata: {
-              assessmentId: assessment.id,
-              assessmentID: assessment.id, // Store both variants for compatibility
-              subject: subjectName,
-              subjectCode: assessment.code,
-              dueDate: assessment.due,
-              programmeId: finalProgrammeId,
-              programmeID: finalProgrammeId, // Store both variants for compatibility
-              metaclassId: finalMetaclassId,
-              metaclassID: finalMetaclassId, // Store both variants for compatibility
-              submitted: assessment.submitted || false,
-              isUpcoming: assessment.isUpcoming || false,
-              term: assessment.term,
-              timestamp: assessment.due || new Date().toISOString(), // Required by AssessmentMetadata interface
-            },
-            actionId: "assessment",
-            renderComponentId: "assessment",
-          };
-
-          verboseDebug(`[Assignments job] ✅ Created item for assignment ${assessment.id}:`, {
-            id: item.id,
-            programmeId: item.metadata.programmeId,
-            programmeID: item.metadata.programmeID,
-            metaclassId: item.metadata.metaclassId,
-            metaclassID: item.metadata.metaclassID,
-            assessmentId: item.metadata.assessmentId,
-            assessmentID: item.metadata.assessmentID,
-          });
-
-          return item;
-        }),
+        batch.map(async (assessment) => buildAssignmentIndexItem(assessment, processedIds)),
       );
 
       batchItems.forEach((item) => {

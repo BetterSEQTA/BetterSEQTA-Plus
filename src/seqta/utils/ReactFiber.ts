@@ -34,7 +34,7 @@ class ReactFiber {
     action: string,
     payload: Record<string, unknown> = {},
   ): Promise<unknown> {
-    return new Promise((resolve, _) => {
+    return new Promise((resolve) => {
       const messageId = this.messageIdCounter++;
       const message = {
         type: "reactFiberRequest",

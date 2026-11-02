@@ -68,7 +68,7 @@ export const documentsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const payload = await seqtaFetchPayload<DocumentCategory[] | null>(
       "/seqta/student/load/documents",
       {},

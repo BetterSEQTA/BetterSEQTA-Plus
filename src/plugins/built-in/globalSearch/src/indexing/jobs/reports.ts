@@ -36,7 +36,7 @@ export const reportsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const payload = await seqtaFetchPayload<ReportEntry[] | null>(
       "/seqta/student/load/reports",
       {},

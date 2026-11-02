@@ -8,7 +8,7 @@ const themesPlugin: Plugin = {
   version: "1.0.0",
   settings: {},
 
-  run: async (_) => {
+  run: async () => {
     const themeManager = ThemeManager.getInstance();
     await themeManager.prepareThemeAfterCloudSync();
     await themeManager.initialize();

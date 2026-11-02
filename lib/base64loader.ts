@@ -3,7 +3,8 @@ import mime from "mime-types";
 
 export const base64Loader = {
   name: "base64-loader",
-  transform(_: any, id: string) {
+  transform(_sourceCode: string, id: string) {
+    void _sourceCode;
     const [filePath, query] = id.split("?");
     if (query !== "base64") return null;
 

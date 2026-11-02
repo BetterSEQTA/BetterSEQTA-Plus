@@ -37,7 +37,7 @@ export const goalsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const years = await seqtaFetchPayload<Array<string | number> | null>(
       "/seqta/student/load/goals",
       { mode: "years" },

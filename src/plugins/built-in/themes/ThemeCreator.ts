@@ -57,7 +57,7 @@ export async function OpenThemeCreator(themeID: string = "") {
 
   let isDragging = false;
 
-  const mouseDownHandler = (_: MouseEvent) => {
+  const mouseDownHandler = () => {
     isDragging = true;
     document.addEventListener("mousemove", mouseMoveHandler);
     document.addEventListener("mouseup", mouseUpHandler);

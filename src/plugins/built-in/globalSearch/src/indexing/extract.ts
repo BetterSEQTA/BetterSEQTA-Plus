@@ -115,65 +115,91 @@ const DEFAULT_EXTRACT_OPTIONS: Required<ExtractTextOptions> = {
   maxStringLength: 8000,
 };
 
+type ExtractWalkState = {
+  parts: string[];
+  remaining: number;
+  opts: Required<ExtractTextOptions>;
+};
+
+function pushExtractText(state: ExtractWalkState, text: string): void {
+  if (!text || state.remaining <= 0) return;
+  const trimmed = text.trim();
+  if (!trimmed) return;
+  const slice = trimmed.length > state.remaining ? trimmed.slice(0, state.remaining) : trimmed;
+  state.parts.push(slice);
+  state.remaining -= slice.length + 1;
+}
+
+function walkExtractString(state: ExtractWalkState, node: string): void {
+  if (node.length > state.opts.maxStringLength) return;
+  if (looksLikeSecretValue(node)) return;
+  if (node.includes("<") && node.includes(">")) {
+    pushExtractText(state, htmlToPlainText(node));
+  } else {
+    pushExtractText(state, node);
+  }
+}
+
+function walkExtractArray(
+  state: ExtractWalkState,
+  node: unknown[],
+  depth: number,
+  parentKey: string | null,
+  walk: (node: unknown, depth: number, parentKey: string | null) => void,
+): void {
+  const limit = Math.min(node.length, state.opts.maxArrayItems);
+  for (let i = 0; i < limit; i++) {
+    walk(node[i], depth + 1, parentKey);
+    if (state.remaining <= 0) return;
+  }
+}
+
+function walkExtractObject(
+  state: ExtractWalkState,
+  node: Record<string, unknown>,
+  depth: number,
+  walk: (node: unknown, depth: number, parentKey: string | null) => void,
+): void {
+  for (const [key, child] of Object.entries(node)) {
+    if (state.remaining <= 0) return;
+    if (isSensitiveKey(key)) continue;
+    walk(child, depth + 1, key);
+  }
+}
+
 export function extractTextFromValue(value: unknown, options: ExtractTextOptions = {}): string {
   const opts = { ...DEFAULT_EXTRACT_OPTIONS, ...options };
-  const parts: string[] = [];
-  let remaining = opts.maxChars;
-
-  const push = (text: string) => {
-    if (!text || remaining <= 0) return;
-    const trimmed = text.trim();
-    if (!trimmed) return;
-    const slice = trimmed.length > remaining ? trimmed.slice(0, remaining) : trimmed;
-    parts.push(slice);
-    remaining -= slice.length + 1;
-  };
+  const state: ExtractWalkState = { parts: [], remaining: opts.maxChars, opts };
 
   const walk = (node: unknown, depth: number, parentKey: string | null) => {
-    if (remaining <= 0) return;
+    if (state.remaining <= 0) return;
     if (node === null || node === undefined) return;
     if (parentKey && isSensitiveKey(parentKey)) return;
 
     if (typeof node === "string") {
-      if (node.length > opts.maxStringLength) return;
-      if (looksLikeSecretValue(node)) return;
-      if (node.includes("<") && node.includes(">")) {
-        push(htmlToPlainText(node));
-      } else {
-        push(node);
-      }
+      walkExtractString(state, node);
       return;
     }
 
     if (typeof node === "number" || typeof node === "boolean") {
-      // Numbers/booleans rarely contribute to search recall; skip to keep
-      // the index focused on text.
       return;
     }
 
     if (depth >= opts.maxDepth) return;
 
     if (Array.isArray(node)) {
-      const limit = Math.min(node.length, opts.maxArrayItems);
-      for (let i = 0; i < limit; i++) {
-        walk(node[i], depth + 1, parentKey);
-        if (remaining <= 0) return;
-      }
+      walkExtractArray(state, node, depth, parentKey, walk);
       return;
     }
 
     if (typeof node === "object") {
-      for (const [key, child] of Object.entries(node as Record<string, unknown>)) {
-        if (remaining <= 0) return;
-        if (isSensitiveKey(key)) continue;
-        walk(child, depth + 1, key);
-      }
+      walkExtractObject(state, node as Record<string, unknown>, depth, walk);
     }
   };
 
   walk(value, 0, null);
 
-  return parts.join("\n").trim();
+  return state.parts.join("\n").trim();
 }
 
 /* ------------------------------------------------------------------ */

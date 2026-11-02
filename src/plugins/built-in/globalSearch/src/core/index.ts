@@ -33,7 +33,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
         );
       }
     } catch (error: unknown) {
-      const msg = error?.message ?? "";
+      const msg = error instanceof Error ? error.message : "";
       if (
         msg.includes("preload CSS") ||
         msg.includes("MIME type") ||
@@ -63,7 +63,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
       console.error("Failed to create IndexedDB:", error);
     }
 
-    // @ts-ignore
+    // @ts-expect-error debug hook attached for support tooling
     window.globalSearchDebug = {
       resetWorker: async () =>
         (

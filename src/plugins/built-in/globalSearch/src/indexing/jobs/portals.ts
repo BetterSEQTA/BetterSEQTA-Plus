@@ -42,7 +42,7 @@ export const portalsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const payload = await seqtaFetchPayload<PortalPayload[] | null>(
       "/seqta/student/load/portals",
       {},
