@@ -5,7 +5,7 @@
   "description": "Enhance SEQTA Learn's usability and aesthetics! A fork of BetterSEQTA to continue development and add heaps more features!",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "engines": {
-    "node": ">=22.12"
+    "node": ">=26"
   },
   "scripts": {
     "compile:layerchart": "node scripts/compile-layerchart-vendor.mjs",
@@ -23,11 +23,11 @@
     "dependency-graph": "depcruise src --include-only \"^src\" --output-type dot | dot -T svg > dependency-graph.svg",
     "lint": "eslint \"src/**/*.{js,ts}\"",
     "test": "npm run test:unit",
-    "test:unit": "jest",
+    "test:unit": "cross-env NODE_OPTIONS=--no-experimental-webstorage jest",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:ci": "npm run test:unit && npm run build && npm run test:smoke",
     "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus ./dist/*.zip --generate-notes",
-    "publish": "bun lib/publish.js --b",
+    "publish": "node lib/publish.js --b",
     "zip": "node scripts/package-extension-zips.mjs"
   },
   "keywords": [],

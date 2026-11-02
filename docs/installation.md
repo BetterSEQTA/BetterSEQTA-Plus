@@ -8,7 +8,7 @@ This guide will walk you through the process of installing and setting up Better
 
 Before you begin, make sure you have the following installed:
 
-- [Node.js](https://nodejs.org/) v22.12 or higher
+- [Node.js](https://nodejs.org/) v26 or higher
 - A modern web browser (Chrome, Firefox, Edge, etc.)
 
 ## Installation Methods

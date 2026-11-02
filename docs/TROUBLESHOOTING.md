@@ -38,7 +38,7 @@ npm install
 
 2. **Check Node.js version**:
    ```bash
-   node --version  # Should be v22.12 or higher
+   node --version  # Should be v26 or higher
    ```
 
 3. **Try with npm cache clean**:
