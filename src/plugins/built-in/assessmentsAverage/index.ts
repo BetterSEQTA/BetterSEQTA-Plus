@@ -1,4 +1,4 @@
-import { type Plugin } from "@/plugins/core/types";
+import type { AssessmentsAverageApi } from "./pluginApi";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import {
@@ -17,7 +17,7 @@ let wrapperColourObserver: MutationObserver | null = null;
 let wrapperColourObserverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const assessmentsAveragePlugin = {
-  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
+  run: async (api: AssessmentsAverageApi) => {
     await initStorage(api);
     clearStuck(api);
 
@@ -97,7 +97,7 @@ const assessmentsAveragePlugin = {
 
 let renderInFlight = false;
 let renderQueued = false;
-async function renderSubjectAverage(api: any) {
+async function renderSubjectAverage(api: AssessmentsAverageApi) {
   if (renderInFlight) {
     // Coalesce: remember that fresh data arrived during this render and
     // re-run once the current pass finishes, so the UI catches up to the

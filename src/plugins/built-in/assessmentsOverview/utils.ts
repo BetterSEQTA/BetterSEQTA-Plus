@@ -186,7 +186,21 @@ export function readStoredList(key: string): unknown[] {
   }
 }
 
-export function determineStatus(item: any, completed: readonly unknown[]): string {
+export type OverviewAssessment = Record<string, unknown>;
+
+function readNumber(value: unknown): number | null {
+  if (value === undefined || value === null) return null;
+  const n = Number(value);
+  return Number.isNaN(n) ? null : n;
+}
+
+function readNestedRecord(
+  value: unknown,
+): Record<string, unknown> | undefined {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : undefined;
+}
+
+export function determineStatus(item: OverviewAssessment, completed: readonly unknown[]): string {
   if (
     item.status === "MARKS_RELEASED" ||
     item.grade ||
@@ -205,7 +219,7 @@ export function determineStatus(item: any, completed: readonly unknown[]): strin
   }
 
   const now = new Date();
-  const due = new Date(item.due);
+  const due = new Date(String(item.due ?? ""));
 
   const diffTime = due.getTime() - now.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -221,43 +235,37 @@ export function determineStatus(item: any, completed: readonly unknown[]): strin
   return "UPCOMING";
 }
 
-export function getGradeValue(assessment: any): number | null {
-  if (assessment.results?.percentage !== undefined && assessment.results.percentage !== null) {
-    return assessment.results.percentage;
+export function getGradeValue(assessment: OverviewAssessment): number | null {
+  const results = readNestedRecord(assessment.results);
+
+  const fromResultsPct = readNumber(results?.percentage);
+  if (fromResultsPct !== null) return fromResultsPct;
+
+  const fromPct = readNumber(assessment.percentage);
+  if (fromPct !== null) return fromPct;
+
+  const achieved = readNumber(assessment.achieved);
+  const outOf = readNumber(assessment.outOf);
+  if (achieved !== null && outOf !== null && outOf > 0) {
+    return (achieved / outOf) * 100;
   }
 
-  if (assessment.percentage !== undefined && assessment.percentage !== null) {
-    return assessment.percentage;
-  }
-
-  if (
-    assessment.achieved !== undefined &&
-    assessment.outOf !== undefined &&
-    assessment.achieved !== null &&
-    assessment.outOf !== null &&
-    assessment.outOf > 0
-  ) {
-    return (assessment.achieved / assessment.outOf) * 100;
-  }
-
-  if (
-    assessment.results?.achieved !== undefined &&
-    assessment.results?.outOf !== undefined &&
-    assessment.results.achieved !== null &&
-    assessment.results.outOf !== null &&
-    assessment.results.outOf > 0
-  ) {
-    return (assessment.results.achieved / assessment.results.outOf) * 100;
+  const resAchieved = readNumber(results?.achieved);
+  const resOutOf = readNumber(results?.outOf);
+  if (resAchieved !== null && resOutOf !== null && resOutOf > 0) {
+    return (resAchieved / resOutOf) * 100;
   }
 
   return null;
 }
 
-export function extractAssessmentLetterGrade(assessment: any): string | undefined {
+export function extractAssessmentLetterGrade(assessment: OverviewAssessment): string | undefined {
   if (assessment?.grade != null && String(assessment.grade).trim() !== "") {
     return String(assessment.grade).trim();
   }
-  return extractLetterGradeStringFromPayload(assessment);
+  return extractLetterGradeStringFromPayload(assessment as Parameters<
+    typeof extractLetterGradeStringFromPayload
+  >[0]);
 }
 
 export function percentageToLetterGrade(percentage: number): string {
@@ -284,7 +292,7 @@ export function percentageToLetterGrade(percentage: number): string {
   return letterMap[rounded] || "F";
 }
 
-export function getThermoscorePercent(assessment: any): number | null {
+export function getThermoscorePercent(assessment: OverviewAssessment): number | null {
   const numeric = getGradeValue(assessment);
   if (numeric !== null) return numeric;
 
@@ -297,7 +305,7 @@ export function getThermoscorePercent(assessment: any): number | null {
   return null;
 }
 
-export function getDisplayGrade(assessment: any, letterGradeMode: boolean): string {
+export function getDisplayGrade(assessment: OverviewAssessment, letterGradeMode: boolean): string {
   if (letterGradeMode) {
     const letter = extractAssessmentLetterGrade(assessment);
     if (letter) return letter;
@@ -317,7 +325,7 @@ export function getDisplayGrade(assessment: any, letterGradeMode: boolean): stri
   return "No grade";
 }
 
-export function assessmentHasGradeDisplay(assessment: any): boolean {
+export function assessmentHasGradeDisplay(assessment: OverviewAssessment): boolean {
   if (extractAssessmentLetterGrade(assessment)) return true;
   if (getGradeValue(assessment) !== null) return true;
   return false;

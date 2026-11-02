@@ -11,19 +11,17 @@ import { ensurePdfjsWorker, getPdfjsPageContextUrls } from "@/lib/pdfjsExtension
 import * as pdfjs from "pdfjs-dist";
 import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetText";
 import { delay } from "@/seqta/utils/delay";
+import type {
+  AssessmentMark,
+  AssessmentsAverageApi,
+  WeightingEntry,
+  WeightingsMap,
+} from "./pluginApi";
 
 export { extractWeightFromCoversheetText };
+export type { WeightingEntry, WeightingsMap } from "./pluginApi";
 
 export const WEIGHTING_SCHEMA_VERSION = 1;
-
-export interface WeightingEntry {
-  weight: string;
-  fingerprint: string;
-  pluginVersion: number;
-  refreshing?: boolean;
-}
-
-export type WeightingsMap = Record<string, WeightingEntry>;
 
 /** Primary storage key for weightings / overrides. */
 export function assessmentIdKey(mark: { id: string | number }): string {
@@ -44,7 +42,7 @@ export function assessmentTitleLookupKey(mark: {
   return title;
 }
 
-function registerAssessmentLookup(api: any, mark: any) {
+function registerAssessmentLookup(api: AssessmentsAverageApi, mark: AssessmentMark) {
   const assessmentID = assessmentIdKey(mark);
   const next: Record<string, string> = {
     ...api.storage.assessments,
@@ -71,7 +69,7 @@ function collectMarksFromFiberState(state: Record<string, unknown>): MarkLike[] 
 }
 
 async function resolveAssessmentId(
-  api: any,
+  api: AssessmentsAverageApi,
   title: string,
   marks?: MarkLike[],
 ): Promise<string | undefined> {
@@ -109,7 +107,7 @@ async function resolveAssessmentId(
   return undefined;
 }
 
-export function computeFingerprint(mark: any): string {
+export function computeFingerprint(mark: AssessmentMark): string {
   const score = mark?.results?.percentage ?? mark?.results?.score ?? null;
   return JSON.stringify([
     mark?.status ?? "",
@@ -121,7 +119,7 @@ export function computeFingerprint(mark: any): string {
   ]);
 }
 
-function migrateWeightings(api: any) {
+function migrateWeightings(api: AssessmentsAverageApi) {
   const w = api.storage.weightings ?? {};
   let dirty = false;
   const out: WeightingsMap = {};
@@ -150,7 +148,7 @@ function migrateWeightings(api: any) {
   if (dirty) api.storage.weightings = out;
 }
 
-export async function initStorage(api: any) {
+export async function initStorage(api: AssessmentsAverageApi) {
   await api.storage.loaded;
 
   if (!api.storage.weightings) {
@@ -166,7 +164,7 @@ export async function initStorage(api: any) {
   migrateWeightings(api);
 }
 
-export function clearStuck(api: any) {
+export function clearStuck(api: AssessmentsAverageApi) {
   const map = (api.storage.weightings ?? {}) as WeightingsMap;
   let dirty = false;
   const out: WeightingsMap = {};
@@ -237,14 +235,15 @@ function formatWeightDisplay(weighting: string): string {
 }
 
 function saveWeightingOverride(
-  api: any,
+  api: AssessmentsAverageApi,
   assessmentID: string,
   raw: string,
 ): { ok: boolean; error?: string } {
   const trimmed = raw.trim();
   if (trimmed === "") {
-    const { [assessmentID]: _, ...rest } = api.storage.weightingOverrides;
-    api.storage.weightingOverrides = rest;
+    const overrides = { ...api.storage.weightingOverrides };
+    delete overrides[assessmentID];
+    api.storage.weightingOverrides = overrides;
     document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
     return { ok: true };
   }
@@ -262,7 +261,11 @@ function saveWeightingOverride(
   return { ok: true };
 }
 
-function attachWeightInputListeners(input: HTMLInputElement, api: any, assessmentID: string) {
+function attachWeightInputListeners(
+  input: HTMLInputElement,
+  api: AssessmentsAverageApi,
+  assessmentID: string,
+) {
   const save = () => {
     const result = saveWeightingOverride(api, assessmentID, input.value);
     input.style.borderColor = result.ok ? "rgba(128,128,128,0.35)" : "rgba(255,80,80,0.6)";
@@ -278,7 +281,7 @@ function updateWeightLabelContent(
   weightLabel: HTMLElement,
   weighting: string | undefined,
   assessmentID: string | undefined,
-  api: any,
+  api: AssessmentsAverageApi,
   refreshing = false,
 ) {
   const existingInput = weightLabel.querySelector(
@@ -333,7 +336,7 @@ function updateWeightLabelContent(
 function createWeightLabel(
   assessmentItem: HTMLElement,
   weighting: string | undefined,
-  api: any,
+  api: AssessmentsAverageApi,
   refreshing = false,
   assessmentID?: string,
 ) {
@@ -496,11 +499,12 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     }
 
     return await response.arrayBuffer();
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
     if (
-      error?.message?.includes("blob") ||
-      error?.message?.includes("Security") ||
-      error?.message?.includes("CSP")
+      message.includes("blob") ||
+      message.includes("Security") ||
+      message.includes("CSP")
     ) {
       return await fetchPDFAsArrayBuffer(url);
     }
@@ -631,7 +635,7 @@ export async function extractPDFText(url: string): Promise<string> {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      text += content.items.map((item: any) => item.str).join(" ") + "\n";
+      text += content.items.map((item) => ("str" in item ? String(item.str) : "")).join(" ") + "\n";
     }
 
     return text;
@@ -706,9 +710,21 @@ async function extractPDFTextWithRetry(url: string, attempts = 3, delayMs = 1500
   throw lastError;
 }
 
-async function handleWeightings(mark: any, api: any) {
+async function handleWeightings(mark: AssessmentMark, api: AssessmentsAverageApi) {
   const assessmentID = assessmentIdKey(mark);
   const metaclassID = mark.metaclassID;
+  if (metaclassID == null || metaclassID === "") {
+    api.storage.weightings = {
+      ...api.storage.weightings,
+      [assessmentID]: {
+        weight: "N/A",
+        fingerprint: computeFingerprint(mark),
+        pluginVersion: WEIGHTING_SCHEMA_VERSION,
+      },
+    };
+    document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
+    return;
+  }
 
   const fingerprint = computeFingerprint(mark);
   const existing = api.storage.weightings[assessmentID] as WeightingEntry | undefined;
@@ -799,18 +815,19 @@ async function handleWeightings(mark: any, api: any) {
     let text: string;
     try {
       text = await extractPDFTextWithRetry(pdfUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       if (
         isFirefox &&
-        (error?.message?.includes("blob") ||
-          error?.message?.includes("Security") ||
-          error?.message?.includes("CSP") ||
-          error?.message?.includes("empty"))
+        (message.includes("blob") ||
+          message.includes("Security") ||
+          message.includes("CSP") ||
+          message.includes("empty"))
       ) {
         await delay(2000);
         text = await extractPDFTextWithRetry(pdfUrl, 2, 2000);
       } else {
-        throw new Error(`PDF extraction failed: ${error.message}`, { cause: error });
+        throw new Error(`PDF extraction failed: ${message}`, { cause: error });
       }
     }
 
@@ -824,8 +841,8 @@ async function handleWeightings(mark: any, api: any) {
         pluginVersion: WEIGHTING_SCHEMA_VERSION,
       },
     };
-  } catch (error: any) {
-    console.error("[BetterSEQTA+] Weighting fetch failed for assessment %s:", assessmentID, error);
+  } catch (error: unknown) {
+    console.error("[BetterSEQTA+] Weighting fetch failed for assessment:", assessmentID, error);
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: {
@@ -839,7 +856,7 @@ async function handleWeightings(mark: any, api: any) {
   document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
 }
 
-export async function parseAssessments(api: any) {
+export async function parseAssessments(api: AssessmentsAverageApi) {
   const state = await ReactFiber.find("[class*='AssessmentList__items___']").getState();
 
   const marks = [
@@ -850,10 +867,10 @@ export async function parseAssessments(api: any) {
   ];
   if (!marks) return;
 
-  await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
+  await Promise.all(marks.map((mark: AssessmentMark) => handleWeightings(mark, api)));
 }
 
-export async function processAssessments(api: any, assessmentItems: HTMLElement[]) {
+export async function processAssessments(api: AssessmentsAverageApi, assessmentItems: HTMLElement[]) {
   let weightedTotal = 0;
   let totalWeight = 0;
   let hasInaccurateWeighting = false;
@@ -992,7 +1009,7 @@ interface WeightingTabContext {
   statusNote: string;
 }
 
-async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext> {
+async function resolveWeightingTabContext(api: AssessmentsAverageApi): Promise<WeightingTabContext> {
   const selectedItem = document.querySelector(
     "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
   ) as HTMLElement | null;
@@ -1077,7 +1094,11 @@ function renderWeightingTabHtml(sheet: HTMLElement, context: WeightingTabContext
   `;
 }
 
-function attachWeightingInputHandlers(sheet: HTMLElement, api: any, assessmentID: string) {
+function attachWeightingInputHandlers(
+  sheet: HTMLElement,
+  api: AssessmentsAverageApi,
+  assessmentID: string,
+) {
   const input = sheet.querySelector("#betterseqta-weight-override") as HTMLInputElement;
   const statusEl = sheet.querySelector(".betterseqta-save-status") as HTMLElement;
 
@@ -1112,14 +1133,14 @@ function attachWeightingInputHandlers(sheet: HTMLElement, api: any, assessmentID
   });
 }
 
-async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+async function buildWeightingsTabContent(api: AssessmentsAverageApi, sheet: HTMLElement) {
   const context = await resolveWeightingTabContext(api);
   renderWeightingTabHtml(sheet, context);
   if (!context.assessmentID) return;
   attachWeightingInputHandlers(sheet, api, context.assessmentID);
 }
 
-export function injectWeightingsTab(api: any) {
+export function injectWeightingsTab(api: AssessmentsAverageApi) {
   const tabList = document.querySelector('[class*="TabSet__tabs___"]') as HTMLElement;
   const container = document.querySelector('[class*="TabSet__tabContainer___"]') as HTMLElement;
   if (!tabList || !container) return;

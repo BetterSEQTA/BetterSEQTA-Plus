@@ -116,7 +116,7 @@ async function loadSubmissions(student: number, assessments: any[]) {
 
         submissionMap[assessment.id] = res.payload && res.payload.length > 0;
       } catch (error) {
-        console.warn(`Failed to fetch submission for assessment ${assessment.id}:`, error);
+        console.warn("Failed to fetch submission for assessment:", assessment.id, error);
         submissionMap[assessment.id] = false;
       }
     }),

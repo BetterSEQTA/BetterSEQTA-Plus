@@ -208,7 +208,7 @@ export const notificationsJob: Job = {
         ]);
         return inAssessments || inMessages;
       } catch (error) {
-        console.warn(`[Notifications job] Error checking if notification ${id} is indexed:`, error);
+        console.warn("[Notifications job] Error checking if notification is indexed:", id, error);
         return false;
       }
     };
@@ -292,7 +292,7 @@ export const notificationsJob: Job = {
           }
         }
       } catch (error) {
-        console.error(`[Notifications job] Failed to process notification ${id}:`, error);
+        console.error("[Notifications job] Failed to process notification:", id, error);
 
         if (progress.retryQueue.length < 10) {
           progress.retryQueue.push(notif.notificationID);
@@ -443,7 +443,7 @@ async function processNotification(
 
     return { success: false };
   } catch (error) {
-    console.error(`[Notifications job] Error processing notification ${id}:`, error);
+    console.error("[Notifications job] Error processing notification:", id, error);
     return { success: false };
   }
 }

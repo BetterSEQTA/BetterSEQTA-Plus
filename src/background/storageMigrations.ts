@@ -4,9 +4,7 @@ import browser from "@/lib/browser";
 function crossedUpgrade(previousVersion: string, boundary: string): boolean {
   const prev = semver.coerce(previousVersion);
   const curr = semver.coerce(browser.runtime.getManifest().version);
-  return (
-    prev != null && curr != null && !semver.lt(curr, boundary) && semver.lt(prev, boundary)
-  );
+  return prev != null && curr != null && !semver.lt(curr, boundary) && semver.lt(prev, boundary);
 }
 
 /** One-time storage patches when crossing 3.6.5 / 3.6.6 / 3.7.0 (see git history on main). */

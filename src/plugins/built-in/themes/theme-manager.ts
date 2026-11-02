@@ -555,7 +555,7 @@ export class ThemeManager {
   /**
    * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
    */
-  private async fetchFromUrl(url: string, options?: { auth?: boolean }): Promise<any> {
+  private async fetchFromUrl(url: string, options?: { auth?: boolean }): Promise<unknown> {
     const result = (await browser.runtime.sendMessage({
       type: "fetchFromUrl",
       url,

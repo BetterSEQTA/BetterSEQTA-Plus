@@ -1,25 +1,18 @@
 import browser from "@/lib/browser";
-import {
-  isSeqta404Page,
-  mountErrorPageKitten,
-} from "@/plugins/built-in/errorPageKitten";
+import { isSeqta404Page, mountErrorPageKitten } from "@/plugins/built-in/errorPageKitten";
 
 /** Hide the rebranded 404 before the kitten card mounts (removed after boot). */
 function inject404FlashHide(): void {
   if (document.getElementById("bsplus-404-flash-hide")) return;
   const style = document.createElement("style");
   style.id = "bsplus-404-flash-hide";
-  style.textContent =
-    "html,body{background:#333!important}.message{display:none!important}";
+  style.textContent = "html,body{background:#333!important}.message{display:none!important}";
   (document.head ?? document.documentElement).appendChild(style);
 }
 
 /** Loaded on demand by SEQTA.ts for pages that aren't the SEQTA app. */
 export async function bootErrorPage() {
-  const storagePromise = browser.storage.local.get([
-    "onoff",
-    "plugin.error-page-kitten.settings",
-  ]);
+  const storagePromise = browser.storage.local.get(["onoff", "plugin.error-page-kitten.settings"]);
 
   const watchTitle = () => {
     if (isSeqta404Page()) inject404FlashHide();

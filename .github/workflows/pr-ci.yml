@@ -15,6 +15,8 @@ concurrency:
 
 jobs:
   lint:
+    permissions:
+      contents: read
     # The layerchart Svelte build fails on Linux, so CI runs on Windows.
     runs-on: windows-latest
     defaults:
@@ -30,6 +32,8 @@ jobs:
         uses: ./.github/actions/run-lint
 
   unit-tests:
+    permissions:
+      contents: read
     runs-on: windows-latest
     defaults:
       run:
@@ -44,6 +48,8 @@ jobs:
         uses: ./.github/actions/run-unit-tests
 
   build-and-smoke:
+    permissions:
+      contents: read
     needs: [lint, unit-tests]
     runs-on: windows-latest
     defaults:

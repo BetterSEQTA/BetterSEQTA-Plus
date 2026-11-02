@@ -13,10 +13,11 @@ import {
 } from "./background/cloudSettingsAutoSync";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
-import { initCalendarBackground } from "./background/calendarBackground";
 import {
+  initCalendarBackground,
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
+  type CalendarMessageHandlerMap,
 } from "./background/calendarBackground";
 import { createCustomThemesHandlers } from "./background/customThemesHandlers";
 import {
@@ -50,7 +51,7 @@ function apiBase(): string {
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
-  function open(tabs: any) {
+  function open(tabs: chrome.tabs.Tab[]) {
     for (const tab of tabs) {
       if (tab.title?.includes("SEQTA Learn") || tab.title?.includes("SEQTA Engage")) {
         browser.tabs.reload(tab.id);
@@ -62,6 +63,14 @@ function reloadSeqtaPages() {
 
 /** Callback for sending a response back to the message sender */
 type MessageSender = { (response?: unknown): void };
+
+/** Runtime message payloads from extension pages / content scripts */
+type BackgroundRequest = Record<string, unknown>;
+
+function reqString(req: BackgroundRequest, key: string): string | undefined {
+  const value = req[key];
+  return typeof value === "string" ? value : undefined;
+}
 
 async function getAccessTokenFromStorage(): Promise<string | null> {
   const { bsplus_token } = await browser.storage.local.get("bsplus_token");
@@ -147,7 +156,7 @@ function handleFetchThemes(_request: unknown, sendResponse: MessageSender): bool
   return true;
 }
 
-function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boolean {
+function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { themeId } = request;
   if (!themeId || typeof themeId !== "string") {
     sendResponse({ success: false, error: "Missing themeId" });
@@ -188,7 +197,7 @@ function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
 }
 
 function handleFetchFromUrl(
-  request: any,
+  request: BackgroundRequest,
   sendResponse: MessageSender,
   sender?: chrome.runtime.MessageSender,
 ): boolean {
@@ -238,7 +247,7 @@ function handleFetchFromUrl(
   return true;
 }
 
-async function parseJsonResponse(r: Response): Promise<any> {
+async function parseJsonResponse(r: Response): Promise<unknown> {
   const text = await r.text();
   try {
     return text ? JSON.parse(text) : {};
@@ -247,7 +256,7 @@ async function parseJsonResponse(r: Response): Promise<any> {
   }
 }
 
-function handleCloudReserveClient(request: any, sendResponse: MessageSender): boolean {
+function handleCloudReserveClient(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const redirect_uri =
     request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
   fetch("https://accounts.betterseqta.org/api/bsplus/client/reserve", {
@@ -257,7 +266,11 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
   })
     .then(async (r) => {
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? `Reserve failed (${r.status})` });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? `Reserve failed (${r.status})` });
       else sendResponse(data);
     })
     .catch((err) => {
@@ -268,7 +281,7 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
 }
 
 function handleCloudLogin(
-  request: any,
+  request: BackgroundRequest,
   sendResponse: MessageSender,
   sender?: chrome.runtime.MessageSender,
 ): boolean {
@@ -276,7 +289,11 @@ function handleCloudLogin(
     sendResponse({ error: "Unauthorized sender" });
     return false;
   }
-  const { client_id, redirect_uri, login, password, device_name } = request;
+  const client_id = reqString(request, "client_id");
+  const redirect_uri = reqString(request, "redirect_uri");
+  const login = reqString(request, "login");
+  const password = reqString(request, "password");
+  const device_name = reqString(request, "device_name");
   if (!client_id || !redirect_uri || !login || !password) {
     sendResponse({ error: "Missing client_id, redirect_uri, login, or password" });
     return false;
@@ -296,7 +313,11 @@ function handleCloudLogin(
         body: JSON.stringify(loginBody),
       });
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? "Login failed" });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? "Login failed" });
       else sendResponse(data);
     } catch (err) {
       console.error("[Background] cloudLogin error:", err);
@@ -306,8 +327,9 @@ function handleCloudLogin(
   return true;
 }
 
-function handleCloudStartLogin(request: any, sendResponse: MessageSender): boolean {
-  const { client_id, redirect_uri } = request;
+function handleCloudStartLogin(request: BackgroundRequest, sendResponse: MessageSender): boolean {
+  const client_id = reqString(request, "client_id");
+  const redirect_uri = reqString(request, "redirect_uri");
   if (!client_id || !redirect_uri) {
     sendResponse({ error: "Missing client_id or redirect_uri" });
     return true;
@@ -373,7 +395,7 @@ function initCloudLoginCallbackListener() {
 
 initCloudLoginCallbackListener();
 
-function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean {
+function handleCloudRefresh(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { refresh_token, client_id } = request;
   if (!refresh_token || !client_id) {
     sendResponse({ error: "Missing refresh_token or client_id" });
@@ -386,7 +408,11 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
   })
     .then(async (r) => {
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? "Refresh failed" });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? "Refresh failed" });
       else sendResponse(data);
     })
     .catch((err) => {
@@ -463,7 +489,7 @@ function handleCloudSettingsDownload(
   return true;
 }
 
-function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean {
+function handleCloudFavorite(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { themeId, action } = request;
   if (!themeId) {
     sendResponse({ success: false, error: "Theme ID required" });
@@ -493,7 +519,7 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
 /** Handler for a message type; receives request, sendResponse, and optional sender (for tab routing) */
 type MessageHandler = {
   (
-    request: any,
+    request: BackgroundRequest,
     sendResponse: MessageSender,
     sender?: chrome.runtime.MessageSender,
   ): boolean | void;
@@ -509,7 +535,7 @@ function isSeqtaOrigin(origin: string): boolean {
 }
 
 function handleSetDevApiBase(
-  request: any,
+  request: BackgroundRequest,
   _sendResponse: MessageSender,
   sender?: chrome.runtime.MessageSender,
 ): boolean {
@@ -571,7 +597,8 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       sendResponse({ error: "Unauthorized sender" });
       return false;
     }
-    void fetchNews(req.source).then((news) => sendResponse({ news }));
+    const source = typeof req.source === "string" ? req.source : undefined;
+    void fetchNews(source).then((news) => sendResponse({ news }));
     return true;
   },
   fetchThemes: handleFetchThemes,
@@ -635,13 +662,16 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   },
 };
 
-registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
-registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
+registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS as CalendarMessageHandlerMap, isTrustedSender);
+registerOutlookCalendarMessageHandlers(
+  MESSAGE_HANDLERS as CalendarMessageHandlerMap,
+  isTrustedSender,
+);
 initCalendarBackground();
 
 browser.runtime.onMessage.addListener(
-  (request: any, sender: chrome.runtime.MessageSender, sendResponse: MessageSender) => {
-    const handler = MESSAGE_HANDLERS[request.type];
+  (request: BackgroundRequest, sender: chrome.runtime.MessageSender, sendResponse: MessageSender) => {
+    const handler = MESSAGE_HANDLERS[request.type as string];
     if (handler) {
       const result = handler(request, sendResponse, sender);
       return result === true;
@@ -681,11 +711,13 @@ browser.runtime.onInstalled.addListener(function (event) {
   if (event.reason === "install") {
     void refreshRemoteConfig(apiBase);
     void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
-    void defaultsReady.catch(() => undefined).then(async () => {
-      const key = "plugin.animated-background.settings";
-      const { [key]: settings } = await browser.storage.local.get(key);
-      await browser.storage.local.set({ [key]: { ...(settings as object), enabled: false } });
-    });
+    void defaultsReady
+      .catch(() => undefined)
+      .then(async () => {
+        const key = "plugin.animated-background.settings";
+        const { [key]: settings } = await browser.storage.local.get(key);
+        await browser.storage.local.set({ [key]: { ...(settings as object), enabled: false } });
+      });
   }
 });
 

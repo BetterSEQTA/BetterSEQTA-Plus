@@ -120,7 +120,7 @@ async function vectorizeItem(
     const embedding = await getEmbedding(textToEmbed);
     return { ...item, embedding };
   } catch (error) {
-    console.error(`Error vectorizing item ${item.id}:`, error);
+    console.error("Error vectorizing item:", item.id, error);
     return null;
   }
 }

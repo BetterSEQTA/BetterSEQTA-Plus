@@ -143,7 +143,7 @@ export class PluginManager {
     }
 
     if (this.runningPlugins.get(pluginId)) {
-      console.warn(`Plugin "${pluginId}" is already running`);
+      console.warn("Plugin is already running:", pluginId);
       return;
     }
 
@@ -184,7 +184,7 @@ export class PluginManager {
     } catch (error) {
       this.removePluginStyles(pluginId);
       this.disposePluginAPI(pluginId);
-      console.error(`[BetterSEQTA+] Failed to start plugin ${pluginId}:`, error);
+      console.error("[BetterSEQTA+] Failed to start plugin:", pluginId, error);
       throw error;
     }
   }
@@ -227,7 +227,7 @@ export class PluginManager {
 
     const startPromises = idsToStart.map((id) =>
       this.startPlugin(id).catch((error) => {
-        console.error(`Failed to start plugin "${id}":`, error);
+        console.error("Failed to start plugin:", id, error);
         return Promise.reject(error);
       }),
     );

@@ -1,7 +1,4 @@
-import {
-  initializeSettingsState,
-  settingsState,
-} from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/SettingsState";
 import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "@/lib/browser";
@@ -57,13 +54,10 @@ export function boot() {
 
 async function init() {
   const hasSEQTAText =
-    document.childNodes[1]?.textContent?.includes(
-      "Copyright (c) SEQTA Software",
-    ) ?? false;
+    document.childNodes[1]?.textContent?.includes("Copyright (c) SEQTA Software") ?? false;
   if (
     hasSEQTAText &&
-    (document.title.includes("SEQTA Learn") ||
-      document.title.includes("SEQTA Engage")) &&
+    (document.title.includes("SEQTA Learn") || document.title.includes("SEQTA Engage")) &&
     !IsSEQTAPage
   ) {
     IsSEQTAPage = true;
@@ -79,7 +73,6 @@ async function init() {
 
     const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-
         if (
           mutation.type === "attributes" &&
           mutation.target instanceof HTMLLinkElement &&
@@ -97,8 +90,6 @@ async function init() {
       attributes: true,
       attributeFilter: ["href"],
     });
-
-
 
     try {
       await initializeSettingsState();
@@ -141,9 +132,7 @@ async function init() {
         sessionStorage.removeItem("bsplus-dev-export-recovery");
       }
 
-      verboseInfo(
-        "[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.",
-      );
+      verboseInfo("[BetterSEQTA+] Successfully initialised BetterSEQTA+, starting to load assets.");
     } catch (error) {
       console.error(error);
       recoverFromStaleDevModuleGraph(error);
@@ -152,11 +141,9 @@ async function init() {
 }
 
 function replaceIcons() {
-  document
-    .querySelectorAll<HTMLLinkElement>('link[rel*="icon"]')
-    .forEach((link) => {
-      if (link.href !== icon48) {
-        link.href = icon48;
-      }
-    });
+  document.querySelectorAll<HTMLLinkElement>('link[rel*="icon"]').forEach((link) => {
+    if (link.href !== icon48) {
+      link.href = icon48;
+    }
+  });
 }

@@ -47,7 +47,7 @@ function isAutoCloudSyncEnabled(all: Record<string, unknown>): boolean {
   return all.autoCloudSettingsSync !== false;
 }
 
-async function parseJsonResponse(r: Response): Promise<any> {
+async function parseJsonResponse(r: Response): Promise<unknown> {
   const text = await r.text();
   try {
     return text ? JSON.parse(text) : {};

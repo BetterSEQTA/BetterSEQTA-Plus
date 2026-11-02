@@ -18,12 +18,13 @@ function stripPlaceholders(html: string): string {
   return html.replace(PLACEHOLDER_RE, "");
 }
 
+function htmlToPlainText(html: string): string {
+  return new DOMParser().parseFromString(html, "text/html").body.textContent ?? "";
+}
+
 function noticePreview(contents: string): string {
-  const text = stripPlaceholders(contents)
-    .replace(/<[^>]*>/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-  return text.substring(0, 150) + (contents.length > 150 ? "..." : "");
+  const text = htmlToPlainText(stripPlaceholders(contents)).replace(/\s+/g, " ").trim();
+  return text.substring(0, 150) + (text.length > 150 ? "..." : "");
 }
 
 function noticeBody(contents: string): string {

@@ -79,7 +79,7 @@ export async function fetchNews(source?: string): Promise<NewsPayload> {
   const results = await Promise.allSettled(feedUrls.map(fetchFeed));
   const feeds = results.flatMap((result, i) => {
     if (result.status === "fulfilled") return [result.value];
-    console.error(`[BetterSEQTA+] Failed to fetch RSS feed: ${feedUrls[i]}`, result.reason);
+    console.error("[BetterSEQTA+] Failed to fetch RSS feed:", feedUrls[i], result.reason);
     return [];
   });
   return { feeds };
