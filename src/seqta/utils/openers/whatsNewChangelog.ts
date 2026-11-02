@@ -5,6 +5,12 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
+    title: "3.7.7 - Startup performance & reliability",
+    items: [
+      "Lazy-loads plugin code on first use for faster SEQTA startup, plus background and stability fixes from the latest maintenance release.",
+    ],
+  },
+  {
     title:
       "3.7.6 - Timetable Sharing Fixes, Better Update resilience & Community Theme Submitter Badges,",
     items: [
