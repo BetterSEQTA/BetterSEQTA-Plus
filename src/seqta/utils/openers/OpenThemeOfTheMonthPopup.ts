@@ -12,6 +12,7 @@ import {
 } from "@/interface/utils/themeStoreFlavours";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
+import { delay } from "@/seqta/utils/delay";
 
 export interface ThemeOfTheMonthEntry {
   id: string;
@@ -252,10 +253,6 @@ function themeOfTheMonthExpandedShellHeight(): number {
   return Math.min(TOTM_EXPANDED_SHELL_MAX_PX, themeOfTheMonthMaxCardHeight());
 }
 
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
 // ---------------------------------------------------------------------------
 // Pure-transform positioning
 //
@@ -476,12 +473,12 @@ async function runThemeOfTheMonthExpand(
 
   applyThemeOfTheMonthCardPosition(card, true, true, toH);
 
-  await sleep(TOTM_LAYOUT_SWAP_MS);
+  await delay(TOTM_LAYOUT_SWAP_MS);
   if (gen !== themeOfTheMonthAnimGen) return;
   applyExpandedLayout(card, descriptionHtml);
   applyExpandedCardShell(card);
 
-  await sleep(TOTM_LAYOUT_SWAP_MS);
+  await delay(TOTM_LAYOUT_SWAP_MS);
   if (gen !== themeOfTheMonthAnimGen) return;
 
   card.classList.remove("themeOfTheMonthCardExpanding");
@@ -516,11 +513,11 @@ async function runThemeOfTheMonthCollapse(
 
   applyThemeOfTheMonthCardPosition(card, false, true, toH);
 
-  await sleep(TOTM_LAYOUT_SWAP_MS);
+  await delay(TOTM_LAYOUT_SWAP_MS);
   if (gen !== themeOfTheMonthAnimGen) return;
   applyCollapsedLayout(card, descriptionHtml);
 
-  await sleep(TOTM_LAYOUT_SWAP_MS);
+  await delay(TOTM_LAYOUT_SWAP_MS);
   if (gen !== themeOfTheMonthAnimGen) return;
 
   card.classList.remove(
@@ -894,7 +891,7 @@ export async function showThemeOfTheMonthPopupNow(): Promise<void> {
 
   if (document.getElementById("whatsnewbk")) {
     await closePopup();
-    await new Promise((resolve) => setTimeout(resolve, 150));
+    await delay(150);
   }
 
   await OpenThemeOfTheMonthPopup(entry);

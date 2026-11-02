@@ -30,7 +30,7 @@
     initialFeedbackId?: string | null;
   }>();
 
-  let tab = $state<"send" | "status">(
+  let tab = $derived<"send" | "status">(
     typeof initialFeedbackId === "string" && initialFeedbackId ? "status" : "send",
   );
   let category = $state<FeedbackCategory>("bug");

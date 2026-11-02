@@ -3,8 +3,9 @@ import { refreshCloudUserFromServer } from "@/seqta/utils/cloudPfpSync";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import {
+  badgeBlobStyle,
   badgesForTitlebar,
-  founderBadgeChipHtml,
+  badgeVisualForKey,
   type BadgeItem,
 } from "@/seqta/utils/founderBadges";
 import { openFounderBadgeModal } from "@/seqta/ui/founderBadge/openFounderBadgeModal";
@@ -18,56 +19,28 @@ const BADGE_CYCLE_MS = 4500;
 const carouselTimers = new WeakMap<HTMLElement, ReturnType<typeof setInterval>>();
 
 function stopBadgeCarousel(slot: HTMLElement): void {
-  const timer = carouselTimers.get(slot);
-  if (timer != null) {
-    clearInterval(timer);
-    carouselTimers.delete(slot);
-  }
+  clearInterval(carouselTimers.get(slot));
+  carouselTimers.delete(slot);
 }
 
-function wireBadgeChip(
-  chip: HTMLButtonElement,
-  badge: BadgeItem,
-  signupNumber?: number | null,
-): void {
-  chip.setAttribute("aria-label", `${badge.label}, click for details`);
-  chip.addEventListener("click", () => openFounderBadgeModal(badge, signupNumber));
+function createBadgeButton(badge: BadgeItem, signupNumber?: number | null): HTMLButtonElement | null {
+  const visual = badgeVisualForKey(badge.key, badge.label);
+  if (!visual) return null;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "bsplus-titlebar-badge";
+  button.style.cssText = badgeBlobStyle(visual);
+  button.textContent = badge.label || visual.label;
+  button.addEventListener("click", () => openFounderBadgeModal(badge, signupNumber));
+  return button;
 }
 
-function setActiveBadgeChip(chips: HTMLButtonElement[], index: number): void {
-  chips.forEach((chip, i) => {
+function showBadge(buttons: HTMLButtonElement[], index: number): void {
+  buttons.forEach((button, i) => {
     const active = i === index;
-    chip.classList.toggle("bsplus-founder-badge--active", active);
-    chip.setAttribute("aria-hidden", active ? "false" : "true");
-    chip.tabIndex = active ? 0 : -1;
+    button.toggleAttribute("inert", !active);
+    button.setAttribute("aria-hidden", String(!active));
   });
-}
-
-function startBadgeCarousel(
-  slot: HTMLElement,
-  chips: HTMLButtonElement[],
-  badges: BadgeItem[],
-  signupNumber?: number | null,
-): void {
-  stopBadgeCarousel(slot);
-  if (chips.length <= 1) return;
-
-  let index = 0;
-  setActiveBadgeChip(chips, index);
-  slot.setAttribute(
-    "aria-label",
-    `${badges[index]?.label ?? "Cloud badge"}. Cycles through ${badges.length} badges.`,
-  );
-
-  carouselTimers.set(
-    slot,
-    setInterval(() => {
-      index = (index + 1) % chips.length;
-      setActiveBadgeChip(chips, index);
-      const label = badges[index]?.label;
-      if (label) slot.setAttribute("aria-label", `${label}. Badge ${index + 1} of ${badges.length}.`);
-    }, BADGE_CYCLE_MS),
-  );
 }
 
 function renderTitlebarBadges(
@@ -77,52 +50,21 @@ function renderTitlebarBadges(
 ): void {
   stopBadgeCarousel(slot);
 
-  const house = slot
-    .closest(".userInfoHouseWrap")
-    ?.querySelector<HTMLElement>(".userInfohouse");
-  if (house?.style.display === "none") {
-    slot.replaceChildren();
-    slot.hidden = true;
-    return;
-  }
+  const buttons = badges.flatMap((badge) => createBadgeButton(badge, signupNumber) ?? []);
 
-  const rendered = badges
-    .map((b) => ({ badge: b, html: founderBadgeChipHtml(b, { titlebar: true }) }))
-    .filter((entry) => entry.html.length > 0);
+  slot.replaceChildren(...buttons);
+  slot.hidden = buttons.length === 0;
+  slot.classList.toggle("bsplus-founder-badge-slot--static", !fullMotionEffectsEnabled());
+  if (buttons.length <= 1) return;
 
-  if (rendered.length === 0) {
-    slot.replaceChildren();
-    slot.hidden = true;
-    return;
-  }
-
-  slot.hidden = false;
-  slot.removeAttribute("aria-label");
-
-  if (rendered.length === 1) {
-    slot.innerHTML = rendered[0].html;
-    const chip = slot.querySelector<HTMLButtonElement>(".bsplus-founder-badge");
-    if (chip) wireBadgeChip(chip, rendered[0].badge, signupNumber);
-    return;
-  }
-
-  const motionClass = fullMotionEffectsEnabled()
-    ? "bsplus-founder-badge-carousel"
-    : "bsplus-founder-badge-carousel bsplus-founder-badge-carousel--static";
-  slot.innerHTML = `<div class="${motionClass}">${rendered.map((r) => r.html).join("")}</div>`;
-
-  const chips = [...slot.querySelectorAll<HTMLButtonElement>(".bsplus-founder-badge")];
-  chips.forEach((chip, i) => {
-    const entry = rendered[i];
-    if (!entry) return;
-    wireBadgeChip(chip, entry.badge, signupNumber);
-  });
-
-  startBadgeCarousel(
+  let index = 0;
+  showBadge(buttons, index);
+  carouselTimers.set(
     slot,
-    chips,
-    rendered.map((r) => r.badge),
-    signupNumber,
+    setInterval(() => {
+      index = (index + 1) % buttons.length;
+      showBadge(buttons, index);
+    }, BADGE_CYCLE_MS),
   );
 }
 

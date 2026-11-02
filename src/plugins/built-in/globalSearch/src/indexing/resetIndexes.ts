@@ -2,6 +2,7 @@ import { SCHEMA_VERSION_KEY } from "./schemaVersion";
 import { pauseIndexingUntilReload } from "./indexingPause";
 import { pausePassiveObserver } from "./passiveObserver";
 import browser from "webextension-polyfill";
+import { delay } from "@/seqta/utils/delay";
 
 export const RESET_INDEX_MESSAGE = "global-search-reset-index";
 
@@ -45,10 +46,6 @@ export function installResetIndexMessageListener(): void {
 const STRUCTURED_DB = "betterseqta-index";
 const VECTOR_DB = "embeddiaDB";
 const STRUCTURED_VERSION_KEY = "betterseqta-index-version";
-
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function tryDeleteDatabase(
   name: string,

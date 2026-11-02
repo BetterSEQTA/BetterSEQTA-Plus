@@ -191,7 +191,16 @@ export function formatDate(dateStr: string, submitted?: boolean): string {
   });
 }
 
-export function determineStatus(item: any): string {
+export function readStoredList(key: string): unknown[] {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(key) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+export function determineStatus(item: any, completed: readonly unknown[]): string {
   if (
     item.status === "MARKS_RELEASED" ||
     item.grade ||
@@ -201,15 +210,6 @@ export function determineStatus(item: any): string {
     return "MARKS_RELEASED";
   }
 
-  const completedKey = "betterseqta-completed-assessments";
-  let completed: unknown[];
-  try {
-    const raw = localStorage.getItem(completedKey);
-    const parsed = raw ? JSON.parse(raw) : [];
-    completed = Array.isArray(parsed) ? parsed : [];
-  } catch {
-    completed = [];
-  }
   if (completed.includes(item.id)) {
     return "MARKS_RELEASED";
   }

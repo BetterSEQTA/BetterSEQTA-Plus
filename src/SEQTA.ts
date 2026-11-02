@@ -45,7 +45,7 @@ function registerFetchSeqtaAppLinkListener() {
   });
 }
 
-var IsSEQTAPage = false;
+let IsSEQTAPage = false;
 let hasSEQTAText = false;
 
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)

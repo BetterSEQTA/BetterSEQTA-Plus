@@ -1,5 +1,5 @@
 import { defineConfig, loadEnv } from "vite";
-import { join, resolve } from "path";
+import { join, resolve } from "node:path";
 
 import touchGlobalCSSPlugin from "./lib/touchGlobalCSS.ts";
 import InlineWorkerPlugin from "./lib/inlineWorker.ts";

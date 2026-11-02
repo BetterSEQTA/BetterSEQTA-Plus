@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { delay } from "@/seqta/utils/delay";
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -151,7 +152,7 @@
             settingsState.privacyStatementShown = false;
             settingsState.privacyStatementLastUpdated = undefined;
             closeExtensionPopup();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await delay(100);
             await openTermsOfServicePopup(undefined, { force: true });
           }}
           text="Show Now"
@@ -169,7 +170,7 @@
         <Button
           onClick={async () => {
             closeExtensionPopup();
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            await delay(100);
             await showThemeOfTheMonthPopupNow();
           }}
           text="Show Now"

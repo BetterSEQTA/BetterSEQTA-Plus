@@ -2,6 +2,7 @@ import { EmbeddingIndex, getEmbedding, initializeModel } from "embeddia";
 import type { IndexItem } from "../types";
 
 import { verboseDebug } from "./workerVerboseLog";
+import { delay } from "@/seqta/utils/delay";
 
 let ortWasmBase: string | null = null;
 
@@ -258,7 +259,7 @@ async function processStreamingItems() {
       },
     });
 
-    await new Promise((resolve) => setTimeout(resolve, 10));
+    await delay(10);
   }
 
   streamingSession.processingPromise = null;

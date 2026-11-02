@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { Component } from "svelte";
 
 export interface IndexItem {
   id: string;
@@ -9,7 +9,7 @@ export interface IndexItem {
   metadata: Record<string, any>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: typeof SvelteComponent;
+  renderComponent?: Component<any>;
 }
 
 export type Frequency =

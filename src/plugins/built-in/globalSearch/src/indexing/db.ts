@@ -1,3 +1,4 @@
+import { delay } from "@/seqta/utils/delay";
 const DB_NAME = "betterseqta-index";
 const META_STORE = "meta";
 const VERSION_KEY = "betterseqta-index-version";
@@ -449,7 +450,7 @@ export async function resetDatabase(): Promise<void> {
     window.dispatchEvent(new CustomEvent("betterseqta-reset-search-index"));
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 200));
+  await delay(200);
 
   localStorage.removeItem(VERSION_KEY);
   await deleteDatabaseWithRetries(DB_NAME);

@@ -271,48 +271,17 @@ async function copyRubricTable(rubric: Element, button: HTMLButtonElement) {
   if (!table) return;
 
   const plain = rubricToPlainText(table);
-  const htmlTable = rubricToHtmlTable(table);
   const htmlDocument = rubricToHtmlDocument(table);
 
-  let copied = false;
-
-  if (navigator.clipboard?.write && typeof ClipboardItem !== "undefined") {
-    try {
-      await navigator.clipboard.write([
-        new ClipboardItem({
-          "text/plain": new Blob([plain], { type: "text/plain" }),
-          "text/html": new Blob([htmlDocument], { type: "text/html" }),
-        }),
-      ]);
-      copied = true;
-    } catch {
-      // Fall through to legacy rich-text copy.
-    }
-  }
-
-  if (!copied) {
-    const host = document.createElement("div");
-    host.contentEditable = "true";
-    host.innerHTML = htmlTable;
-    host.style.position = "fixed";
-    host.style.left = "-9999px";
-    host.style.top = "0";
-    document.body.appendChild(host);
-
-    const selection = window.getSelection();
-    const range = document.createRange();
-    range.selectNodeContents(host);
-    selection?.removeAllRanges();
-    selection?.addRange(range);
-
-    copied = document.execCommand("copy");
-
-    selection?.removeAllRanges();
-    host.remove();
-
-    if (!copied) {
-      await navigator.clipboard.writeText(plain);
-    }
+  try {
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/plain": new Blob([plain], { type: "text/plain" }),
+        "text/html": new Blob([htmlDocument], { type: "text/html" }),
+      }),
+    ]);
+  } catch {
+    await navigator.clipboard.writeText(plain);
   }
 
   const label = button.querySelector(".betterseqta-rubric-copy-label");

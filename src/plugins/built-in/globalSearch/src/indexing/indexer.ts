@@ -12,6 +12,7 @@ import { setIndexingActive } from "./indexingState";
 import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 
 import { verboseDebug } from '@/utils/verboseLog';
+import { delay } from "@/seqta/utils/delay";
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
@@ -147,7 +148,7 @@ async function updateLastRunMeta(jobId: string): Promise<void> {
 
 async function tryClaimLock(lockId: string): Promise<boolean> {
   localStorage.setItem(LOCK_KEY, lockId);
-  await new Promise((resolve) => setTimeout(resolve, 50));
+  await delay(50);
   if (localStorage.getItem(LOCK_KEY) === lockId) {
     isIndexingActive = true;
     return true;
@@ -182,7 +183,7 @@ async function acquireLock(): Promise<boolean> {
       }
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await delay(100);
   }
 
   return false;

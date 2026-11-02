@@ -5,7 +5,7 @@
     options: Array<{ value: string, label: string }>
   }>();
 
-  const listboxId = `select-listbox-${Math.random().toString(36).slice(2, 9)}`;
+  const listboxId = $props.id();
 
   let isOpen = $state(false);
   let activeIndex = $state(0);

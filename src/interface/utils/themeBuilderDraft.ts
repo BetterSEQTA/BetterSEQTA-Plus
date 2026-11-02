@@ -1,4 +1,3 @@
-import { generateImageId } from "@/interface/utils/themeImageHandlers";
 import { DEFAULT_FONT_ID, getFontPreset, type FontPreset } from "@/seqta/ui/fonts/presets";
 import type { LoadedCustomTheme } from "@/types/CustomThemes";
 
@@ -115,7 +114,7 @@ export function buildThemeFromDraft(draft: ThemeBuilderDraft): LoadedCustomTheme
   const font = getFontPreset(draft.fontId ?? DEFAULT_FONT_ID);
   const photoBlobs = draft.photoBlobs.filter((blob) => blob.size > 0);
   const CustomImages = photoBlobs.map((blob, index) => ({
-    id: generateImageId(),
+    id: crypto.randomUUID(),
     blob,
     variableName: `theme-bg-${index}`,
   }));

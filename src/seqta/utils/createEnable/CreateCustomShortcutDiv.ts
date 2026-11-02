@@ -11,11 +11,10 @@ function isSafeShortcutHref(url: string): boolean {
 }
 
 export function CreateCustomShortcutDiv(element: any) {
-  // Creates the stucture and element information for each seperate shortcut
   const container = document.getElementById("shortcuts");
   if (!container) return;
 
-  var shortcut = document.createElement("a");
+  const shortcut = document.createElement("a");
   if (isSafeShortcutHref(element.url)) {
     shortcut.setAttribute("href", element.url);
     shortcut.setAttribute("target", "_blank");
@@ -23,9 +22,8 @@ export function CreateCustomShortcutDiv(element: any) {
     shortcut.setAttribute("href", "#");
     shortcut.setAttribute("aria-disabled", "true");
   }
-  var shortcutdiv = document.createElement("div");
-  shortcutdiv.classList.add("shortcut");
-  shortcutdiv.classList.add("customshortcut");
+  const shortcutdiv = document.createElement("div");
+  shortcutdiv.classList.add("shortcut", "customshortcut");
 
   let image: ChildNode | null;
 
@@ -57,10 +55,9 @@ export function CreateCustomShortcutDiv(element: any) {
     ).firstChild;
   }
   (image as HTMLElement).classList.add("shortcuticondiv");
-  var text = document.createElement("p");
+  const text = document.createElement("p");
   text.textContent = element.name;
-  shortcutdiv.append(image!);
-  shortcutdiv.append(text);
+  shortcutdiv.append(image!, text);
   shortcut.append(shortcutdiv);
 
   container.append(shortcut);

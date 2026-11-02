@@ -312,109 +312,93 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function callHomeTimetable(date: string, change?: any) {
-  var xhr = new XMLHttpRequest();
-  xhr.open("POST", `${location.origin}/seqta/student/load/timetable?`, true);
+async function callHomeTimetable(date: string, change?: any) {
+  const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    body: JSON.stringify({ from: date, until: date, student: 69 }),
+  });
+  const serverResponse = await response.json();
 
-  xhr.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+  if (loadingTimeout) {
+    clearTimeout(loadingTimeout);
+    loadingTimeout = null;
+  }
 
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState !== 4) return;
+  const DayContainer = document.getElementById("day-container")!;
 
-    if (loadingTimeout) {
-      clearTimeout(loadingTimeout);
-      loadingTimeout = null;
-    }
+  if (serverResponse.payload.items.length > 0) {
+    if (DayContainer.innerText || change) {
+      const lessonArray: Array<any> = [...serverResponse.payload.items].sort(
+        (a, b) => a.from.localeCompare(b.from),
+      );
 
-    const DayContainer = document.getElementById("day-container")!;
+      GetLessonColours().then((colours) => {
+        for (let i = 0; i < lessonArray.length; i++) {
+          let subjectname =
+            lessonArray[i].type == "tutorial"
+              ? `timetable.tutor.${lessonArray[i].tutorID}`
+              : `timetable.subject.colour.${lessonArray[i].code}`;
+          let subject = colours.find(
+            (element: any) => element.name === subjectname,
+          );
 
-    var serverResponse = JSON.parse(xhr.response);
-    let lessonArray: Array<any> = [];
+          if (!subject) {
+            lessonArray[i].colour = "--item-colour: #8e8e8e;";
+          } else {
+            lessonArray[i].colour = `--item-colour: ${subject.value};`;
+            if (GetThresholdOfColor(subject.value) > 300) {
+              lessonArray[i].invert = true;
+            }
+          }
 
-    if (serverResponse.payload.items.length > 0) {
-      if (DayContainer.innerText || change) {
-        for (let i = 0; i < serverResponse.payload.items.length; i++) {
-          lessonArray.push(serverResponse.payload.items[i]);
+          lessonArray[i].from = lessonArray[i].from.substring(0, 5);
+          lessonArray[i].until = lessonArray[i].until.substring(0, 5);
+
+          if (settingsState.timeFormat === "12") {
+            lessonArray[i].from = convertTo12HourFormat(lessonArray[i].from);
+            lessonArray[i].until = convertTo12HourFormat(
+              lessonArray[i].until,
+            );
+          }
+
+          lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
+            lessonArray[i].attendance,
+          );
         }
-        lessonArray.sort(function (a, b) {
-          return a.from.localeCompare(b.from);
-        });
 
-        GetLessonColours().then((colours) => {
+        DayContainer.innerText = "";
+        for (let i = 0; i < lessonArray.length; i++) {
+          const div = makeLessonDiv(lessonArray[i], i + 1);
+          if (lessonArray[i].invert) {
+            (div.firstChild! as HTMLElement).classList.add("day-inverted");
+          }
+          DayContainer.append(div.firstChild as HTMLElement);
+        }
+
+        DayContainer.classList.remove("loading");
+
+        const today = new Date();
+        if (currentSelectedDate.getDate() == today.getDate()) {
           for (let i = 0; i < lessonArray.length; i++) {
-            let subjectname =
-              lessonArray[i].type == "tutorial"
-                ? `timetable.tutor.${lessonArray[i].tutorID}`
-                : `timetable.subject.colour.${lessonArray[i].code}`;
-            let subject = colours.find(
-              (element: any) => element.name === subjectname,
-            );
-
-            if (!subject) {
-              lessonArray[i].colour = "--item-colour: #8e8e8e;";
-            } else {
-              lessonArray[i].colour = `--item-colour: ${subject.value};`;
-              if (GetThresholdOfColor(subject.value) > 300) {
-                lessonArray[i].invert = true;
-              }
-            }
-
-            lessonArray[i].from = lessonArray[i].from.substring(0, 5);
-            lessonArray[i].until = lessonArray[i].until.substring(0, 5);
-
-            if (settingsState.timeFormat === "12") {
-              lessonArray[i].from = convertTo12HourFormat(lessonArray[i].from);
-              lessonArray[i].until = convertTo12HourFormat(
-                lessonArray[i].until,
-              );
-            }
-
-            lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(
-              lessonArray[i].attendance,
-            );
+            CheckCurrentLesson(lessonArray[i], i + 1);
           }
-
-          DayContainer.innerText = "";
-          for (let i = 0; i < lessonArray.length; i++) {
-            const div = makeLessonDiv(lessonArray[i], i + 1);
-            if (lessonArray[i].invert) {
-              (div.firstChild! as HTMLElement).classList.add("day-inverted");
-            }
-            DayContainer.append(div.firstChild as HTMLElement);
-          }
-
-          DayContainer.classList.remove("loading");
-
-          const today = new Date();
-          if (currentSelectedDate.getDate() == today.getDate()) {
-            for (let i = 0; i < lessonArray.length; i++) {
-              CheckCurrentLesson(lessonArray[i], i + 1);
-            }
-            CheckCurrentLessonAll(lessonArray);
-          }
-        });
-      }
-    } else {
-      DayContainer.innerHTML = "";
-      const dummyDay = document.createElement("div");
-      dummyDay.classList.add("day-empty");
-      const img = document.createElement("img");
-      img.src = resolveExtensionAssetUrl(LogoLight);
-      const text = document.createElement("p");
-      text.innerText = "No lessons available.";
-      dummyDay.append(img, text);
-      DayContainer.append(dummyDay);
-      DayContainer.classList.remove("loading");
+          CheckCurrentLessonAll(lessonArray);
+        }
+      });
     }
-  };
-  xhr.send(
-    JSON.stringify({
-      from: date,
-      until: date,
-
-      student: 69,
-    }),
-  );
+  } else {
+    DayContainer.innerHTML = "";
+    const dummyDay = document.createElement("div");
+    dummyDay.classList.add("day-empty");
+    const img = document.createElement("img");
+    img.src = resolveExtensionAssetUrl(LogoLight);
+    const text = document.createElement("p");
+    text.innerText = "No lessons available.";
+    dummyDay.append(img, text);
+    DayContainer.append(dummyDay);
+    DayContainer.classList.remove("loading");
+  }
 }
 
 function CheckCurrentLessonAll(lessons: any) {
@@ -686,7 +670,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  for (var date in upcomingDates) {
+  for (const date in upcomingDates) {
     const assessmentdue = new Date(
       (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0]
         .due,
@@ -770,7 +754,7 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
     const subject = document.createElement("p");
     subject.innerText = element.title;
     subject.classList.add("upcoming-assessment-title");
-    subject.onclick = function () {
+    subject.onclick = () => {
       location.href = `../#?page=/assessments/${element.programmeID}:${element.metaclassID}&item=${element.id}`;
     };
     detailsdiv.append(detailstitle, subject);
@@ -858,7 +842,7 @@ function CreateFilters(subjects: { code: string }[]) {
 
   for (let i = 0; i < subjects.length; i++) {
     const element = subjects[i];
-    if (!Object.prototype.hasOwnProperty.call(filteroptions, element.code)) {
+    if (!Object.hasOwn(filteroptions, element.code)) {
       filteroptions[element.code] = true;
     }
     filterdiv!.append(

@@ -35,7 +35,7 @@ function syncDefaultMenuOrder(menu: HTMLElement) {
 
   for (let i = 0; i < childnodes.length; i++) {
     const key = (childnodes[i] as HTMLElement).dataset.key;
-    if (key && settingsState.defaultmenuorder.indexOf(key) === -1) {
+    if (key && !settingsState.defaultmenuorder.includes(key)) {
       settingsState.defaultmenuorder = [...settingsState.defaultmenuorder, key];
     }
   }
@@ -264,8 +264,7 @@ export function OpenMenuOptions() {
 }
 
 function saveNewOrder(sortable: Sortable) {
-  var order = sortable.toArray();
-  settingsState.menuorder = order;
+  settingsState.menuorder = sortable.toArray();
 }
 
 function cloneAttributes(target: any, source: any) {

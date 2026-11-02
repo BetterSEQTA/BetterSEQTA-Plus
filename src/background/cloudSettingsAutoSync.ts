@@ -449,7 +449,7 @@ function onStorageChanged(
 ): void {
   if (area !== "local") return;
 
-  if (Object.prototype.hasOwnProperty.call(changes, "autoCloudSettingsSync")) {
+  if (Object.hasOwn(changes, "autoCloudSettingsSync")) {
     void syncAutoUploadWithStorage();
   }
 

@@ -25,7 +25,7 @@
     searchHotkey: string
   }>();
 
-  let currentSearchHotkey = $state(initialSearchHotkey);
+  let currentSearchHotkey = $derived(initialSearchHotkey);
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
   let dynamicContentFuse = $state<Fuse<IndexItem>>();
@@ -50,9 +50,6 @@
   // the `world w` pass and clobbers the more relevant matches.
   let searchRequestId = 0;
 
-  const updateCalculatorState = (hasResult: string | null) => {
-    calculatorResult = hasResult;
-  };
 
   let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
@@ -364,7 +361,7 @@
           <Calculator 
             searchTerm={searchTerm} 
             isSelected={selectedIndex === 0} 
-            on:hasResult={(e) => updateCalculatorState(e.detail)}
+            onresult={(result) => (calculatorResult = result)}
           />
           
           {#if combinedResults.length > 0}

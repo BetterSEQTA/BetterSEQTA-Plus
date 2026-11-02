@@ -12,6 +12,7 @@ import {
 } from "@/lib/pdfjsExtension.ts";
 import * as pdfjs from "pdfjs-dist";
 import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetText";
+import { delay } from "@/seqta/utils/delay";
 
 export { extractWeightFromCoversheetText };
 
@@ -434,7 +435,7 @@ function createWeightLabel(
 }
 
 export const isFirefox =
-  navigator.userAgent.toLowerCase().indexOf("firefox") > -1 &&
+  navigator.userAgent.toLowerCase().includes("firefox") &&
   !navigator.userAgent.toLowerCase().includes("seamonkey") &&
   !navigator.userAgent.toLowerCase().includes("waterfox");
 
@@ -751,7 +752,7 @@ async function extractPDFTextWithRetry(
         message.includes("empty") ||
         message.includes("Failed to fetch PDF");
       if (!retryable || attempt === attempts - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      await delay(delayMs);
     }
   }
   throw lastError;
@@ -830,7 +831,7 @@ async function handleWeightings(mark: any, api: any) {
         metaclassID,
         studentID,
       });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await delay(1000);
       pdfUrl = getEngageAssessmentReportUrl(reportFile);
     } else {
       const userInfo = await getUserInfo();
@@ -841,7 +842,7 @@ async function handleWeightings(mark: any, api: any) {
         metaclassID,
         studentID: userID,
       });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await delay(1000);
       pdfUrl = getStudentAssessmentReportUrl(reportFile);
     }
 
@@ -860,7 +861,7 @@ async function handleWeightings(mark: any, api: any) {
           error?.message?.includes("CSP") ||
           error?.message?.includes("empty"))
       ) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await delay(2000);
         text = await extractPDFTextWithRetry(pdfUrl, 2, 2000);
       } else {
         throw new Error(`PDF extraction failed: ${error.message}`, { cause: error });

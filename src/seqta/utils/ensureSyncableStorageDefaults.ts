@@ -95,7 +95,7 @@ export async function ensureSyncableStorageDefaults(): Promise<void> {
   const patch: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(defaults)) {
     if (!isKeyIncludedInCloudUploadPayload(key)) continue;
-    if (Object.prototype.hasOwnProperty.call(existing, key)) continue;
+    if (Object.hasOwn(existing, key)) continue;
 
     if (key.startsWith("plugin.") && key.endsWith(".settings")) {
       patch[key] = mergePluginSettingsDefaults(

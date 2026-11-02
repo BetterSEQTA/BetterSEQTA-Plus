@@ -46,7 +46,7 @@ class EventManager {
     options: EventListenerOptions,
     callback: (element: Element) => void,
   ): { unregister: () => void } {
-    const id = this.generateUniqueId();
+    const id = crypto.randomUUID();
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
@@ -229,10 +229,6 @@ class EventManager {
     if (options.id && element.id !== options.id) return false;
     if (options.customCheck && !options.customCheck(element)) return false;
     return true;
-  }
-
-  private generateUniqueId(): string {
-    return "_" + Math.random().toString(36).substr(2, 9);
   }
 }
 

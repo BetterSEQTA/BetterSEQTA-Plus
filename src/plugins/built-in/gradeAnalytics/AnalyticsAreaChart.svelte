@@ -35,7 +35,7 @@
   let showPrediction = $state(false);
   let predictionMonths = $state(3);
 
-  const chartUid = `area-${Math.random().toString(36).slice(2, 9)}`;
+  const chartUid = $props.id();
 
   const chartResult = $derived.by(() =>
     buildGradeTrendChart(data, timeRange, {

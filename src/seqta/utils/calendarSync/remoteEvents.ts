@@ -8,6 +8,7 @@ import {
   parseOutlookSeqtaKey,
 } from "@/seqta/utils/calendarSync/eventFingerprint";
 import type { SyncDateRange } from "@/seqta/utils/googleCalendar/syncDateRange";
+import { delay } from "@/seqta/utils/delay";
 
 export type RemoteSyncedEvent = {
   seqtaKey: string;
@@ -22,10 +23,6 @@ export type ListSyncedEventsOptions = {
 };
 
 const MAX_RETRIES = 4;
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function isRetryableStatus(status: number): boolean {
   return status === 429 || status === 500 || status === 502 || status === 503 || status === 403;
@@ -48,7 +45,7 @@ async function authorizedFetch(
       continue;
     }
     if (isRetryableStatus(res.status) && attempt < MAX_RETRIES - 1) {
-      await sleep(250 * 2 ** attempt + Math.floor(Math.random() * 100));
+      await delay(250 * 2 ** attempt + Math.floor(Math.random() * 100));
       continue;
     }
     return res;

@@ -189,15 +189,14 @@ function badgeBlobStyle(visual: Pick<BadgeVisual, "base" | "blobs">): string {
 
 export function founderBadgeChipHtml(
   badge: BadgeItem,
-  options?: { hero?: boolean; titlebar?: boolean },
+  options?: { hero?: boolean },
 ): string {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return "";
 
   const hero = options?.hero ?? false;
-  const titlebar = options?.titlebar ?? false;
-  const mods = `${hero ? " bsplus-founder-badge--hero" : ""}${titlebar ? " bsplus-founder-badge--titlebar" : ""}`;
-  const icon = titlebar ? "" : badgeIconSvg(visual.icon, hero ? 20 : 15);
+  const mods = hero ? " bsplus-founder-badge--hero" : "";
+  const icon = badgeIconSvg(visual.icon, hero ? 20 : 15);
 
   return `<button type="button" class="bsplus-founder-badge${mods}" data-tier="${badge.key}" style="${badgeBlobStyle(visual)}"><span class="bsplus-founder-badge__glass"><span class="bsplus-founder-badge__blobs" aria-hidden="true"></span><span class="bsplus-founder-badge__content">${icon}<span class="bsplus-founder-badge__label">${badge.label || visual.label}</span></span></span></button>`;
 }

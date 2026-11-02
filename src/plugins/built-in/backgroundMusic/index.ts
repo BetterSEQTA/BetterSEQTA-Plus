@@ -9,6 +9,7 @@ import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
 import localforage from "localforage";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { delay } from "@/seqta/utils/delay";
 
 const settings = defineSettings({
   uploader: componentSetting({
@@ -225,7 +226,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       // Retry after load — some browsers allow autoplay once the page settles
       // or Media Engagement Index applies from prior visits.
       for (const delayMs of [500, 1500, 3000]) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await delay(delayMs);
         if (!audio || !audio.paused) return;
         if (await attemptPlay(vol())) return;
       }

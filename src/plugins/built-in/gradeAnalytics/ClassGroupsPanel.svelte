@@ -173,7 +173,6 @@
       aria-modal="true"
       aria-labelledby="bsplus-class-group-modal-title"
       transition:scale={{ duration: fadeDuration, start: 0.96 }}
-      onclick={(e) => e.stopPropagation()}
     >
       <header class="bsplus-analytics-class-groups-dialog-head">
         <div>

@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { Component } from "svelte";
 import type { IndexItem } from "../indexing/types";
 
 export interface DynamicContentItem {
@@ -10,7 +10,7 @@ export interface DynamicContentItem {
   metadata: Record<string, any>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: typeof SvelteComponent;
+  renderComponent?: Component<any>;
 }
 
 let dynamicItems: IndexItem[] = [];

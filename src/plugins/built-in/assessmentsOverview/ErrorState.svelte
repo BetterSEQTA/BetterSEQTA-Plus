@@ -1,7 +1,7 @@
 <script lang="ts">
   import OverviewIcon from "./OverviewIcon.svelte";
 
-  export let error: string;
+  let { error }: { error: string } = $props();
 </script>
 
 <div class="error-container bsplus-overview-animate">

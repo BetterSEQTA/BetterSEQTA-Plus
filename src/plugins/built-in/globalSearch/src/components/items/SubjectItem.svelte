@@ -1,15 +1,21 @@
 <script lang="ts">
   import HighlightedText from '../../utils/HighlightedText.svelte';
-import type { IndexItem } from '../../indexing/types';
+  import type { IndexItem } from '../../indexing/types';
   import type { FuseResultMatch } from '../../core/types';
 
-  export let item: IndexItem;
-  export let isSelected: boolean;
-  export let searchTerm: string;
-  export let matches: readonly FuseResultMatch[] | undefined;
-  export let onclick: (() => void) | undefined;
-
-
+  let {
+    item,
+    isSelected,
+    searchTerm,
+    matches,
+    onclick,
+  }: {
+    item: IndexItem;
+    isSelected: boolean;
+    searchTerm: string;
+    matches: readonly FuseResultMatch[] | undefined;
+    onclick: (() => void) | undefined;
+  } = $props();
 </script>
 
 <button

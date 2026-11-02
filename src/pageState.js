@@ -555,11 +555,7 @@ function sanitizeResponseForPostMessage(response) {
   }
 
   try {
-    if (typeof structuredClone === "function") {
-      structuredClone(response);
-    } else {
-      JSON.parse(JSON.stringify(response));
-    }
+    structuredClone(response);
   } catch (cloneError) {
     console.warn("[pageState] Response not cloneable, fallback:", cloneError.message);
     return `[Uncloneable Response: ${cloneError.message}]`;

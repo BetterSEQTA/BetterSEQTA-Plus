@@ -251,6 +251,8 @@ html:not(.dark) .legacy-root {
   color: var(--theme-primary) !important;
   height: 35px;
   width: 35px !important;
+  padding: 0;
+  box-shadow: none;
 }
 
 /* Engage toolbar: keep settings/theme buttons above React chrome */
@@ -3870,129 +3872,77 @@ div.day-empty {
   display: grid;
   grid-template-areas:
     "house name"
-    "badge code";
+    ". code";
   align-items: center;
   justify-items: end;
   column-gap: 10px;
   row-gap: 2px;
 }
-.userInfoHouseWrap,
 .userInfoDetails {
   display: contents;
 }
 .userInfoDetails > .userInfoCode {
   grid-area: code;
 }
-.userInfoNameRow .userInfohouse {
+.userInfoHouseWrap,
+.userInfoNameRow > .bsplus-founder-badge-slot {
   grid-area: house;
-  justify-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-.userInfoNameRow .bsplus-founder-badge-slot {
-  grid-area: badge;
-  justify-self: stretch;
-  box-sizing: border-box;
-}
-.bsplus-founder-badge-carousel {
+.bsplus-founder-badge-slot {
   display: grid;
-  width: 100%;
-  max-width: 100%;
-  box-sizing: border-box;
+  justify-items: end;
+  order: -1;
 }
-.bsplus-founder-badge-carousel > .bsplus-founder-badge {
+.bsplus-founder-badge-slot[hidden] {
+  display: none !important;
+}
+.titlebar .bsplus-titlebar-badge {
   grid-area: 1 / 1;
-  width: 100%;
-  min-width: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  padding: 2px 8px;
+  border: none;
+  border-radius: 6px;
+  box-shadow: none;
+  background:
+    radial-gradient(ellipse 72% 68% at 18% 42%, var(--badge-blob-a), transparent 72%),
+    radial-gradient(ellipse 68% 62% at 82% 58%, var(--badge-blob-b), transparent 70%),
+    radial-gradient(ellipse 64% 56% at 50% 88%, var(--badge-blob-c), transparent 68%),
+    var(--badge-base);
+  color: #fff;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    opacity 0.45s ease,
+    visibility 0s;
+}
+.titlebar .bsplus-titlebar-badge[aria-hidden="true"] {
   opacity: 0;
   visibility: hidden;
-  transform: translateY(5px);
   transition:
     opacity 0.45s ease,
-    transform 0.45s ease,
     visibility 0s linear 0.45s;
-  pointer-events: none;
 }
-.bsplus-founder-badge-carousel > .bsplus-founder-badge--active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
-  transition:
-    opacity 0.45s ease,
-    transform 0.45s ease,
-    visibility 0s;
-  pointer-events: auto;
-  z-index: 1;
+.titlebar .bsplus-titlebar-badge:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 2px;
 }
-.bsplus-founder-badge-carousel--static > .bsplus-founder-badge {
-  transition: none;
-  transform: none;
-  visibility: hidden;
-}
-.bsplus-founder-badge-carousel--static > .bsplus-founder-badge--active {
-  visibility: visible;
+.bsplus-founder-badge-slot--static .bsplus-titlebar-badge {
+  transition: none !important;
 }
 @media (prefers-reduced-motion: reduce) {
-  .bsplus-founder-badge-carousel > .bsplus-founder-badge {
+  .titlebar .bsplus-titlebar-badge {
     transition: none;
-    transform: none;
   }
-}
-.userInfoHouseWrap .bsplus-founder-badge-slot[hidden],
-.bsplus-founder-badge-slot[hidden] {
-  display: none;
-}
-.bsplus-founder-badge--titlebar {
-  display: block;
-  width: 100%;
-  border-radius: 5px;
-  overflow: hidden;
-}
-.bsplus-founder-badge--titlebar .bsplus-founder-badge__glass {
-  display: flex;
-  width: 100%;
-  border-radius: 5px;
-  box-sizing: border-box;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12);
-}
-.bsplus-founder-badge--titlebar .bsplus-founder-badge__content {
-  display: flex;
-  flex: 1 1 auto;
-  width: 100%;
-  justify-content: center;
-  padding: 0 6px;
-  gap: 0;
-  min-height: 0;
-  min-width: 0;
-  height: auto;
-  font-size: 15px;
-  line-height: normal;
-  border-radius: 5px;
-  box-sizing: border-box;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: none;
-}
-.bsplus-founder-badge--titlebar .bsplus-founder-badge__label {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: center;
-}
-.bsplus-founder-badge--titlebar:hover {
-  transform: none;
-}
-.bsplus-founder-badge--titlebar:focus-visible {
-  outline: none;
-}
-.bsplus-founder-badge--titlebar:focus-visible .bsplus-founder-badge__glass {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.12),
-    0 0 0 2px var(--theme-primary, #f97316),
-    0 0 0 4px rgba(249, 115, 22, 0.35);
 }
 .legacy-root .bsplus-founder-badge,
 .legacy-root .bsplus-founder-badge-actions .bsplus-cal-btn {

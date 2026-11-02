@@ -1,7 +1,7 @@
 import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 
 export function FilterUpcomingAssessments(subjectoptions: any) {
-  for (var item in subjectoptions) {
+  for (const item in subjectoptions) {
     let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
     for (let i = 0; i < subjectdivs.length; i++) {

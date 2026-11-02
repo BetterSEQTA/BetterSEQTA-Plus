@@ -12,10 +12,6 @@ class BackgroundUpdates {
 
   private constructor() {}
 
-  /**
-   * Gets the singleton instance of the BackgroundUpdates class.
-   * @returns {BackgroundUpdates} The singleton instance.
-   */
   public static getInstance(): BackgroundUpdates {
     if (!BackgroundUpdates.instance) {
       BackgroundUpdates.instance = new BackgroundUpdates();
@@ -23,22 +19,10 @@ class BackgroundUpdates {
     return BackgroundUpdates.instance;
   }
 
-  /**
-   * Registers a callback function to be invoked when a background update is triggered.
-   *
-   * @param {BackgroundUpdateCallback} callback The function to call when a background update occurs.
-   *                                            This callback takes no arguments and returns void.
-   */
   public addListener(callback: BackgroundUpdateCallback): void {
     this.listeners.add(callback);
   }
 
-  /**
-   * Unregisters a previously added callback function.
-   * After calling this method, the provided callback will no longer be invoked when a background update is triggered.
-   *
-   * @param {BackgroundUpdateCallback} callback The callback function to remove from the listeners.
-   */
   public removeListener(callback: BackgroundUpdateCallback): void {
     this.listeners.delete(callback);
   }

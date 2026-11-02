@@ -5,6 +5,7 @@ import { getOrtWasmBaseUrl } from "@/lib/transformersExtension";
 import vectorWorker from "./vectorWorker.ts?inlineWorker";
 
 import { verboseDebug, verboseLog } from '@/utils/verboseLog';
+import { delay } from "@/seqta/utils/delay";
 export type ProgressCallback = (data: {
   status: "started" | "processing" | "complete" | "error" | "cancelled";
   total?: number;
@@ -242,7 +243,7 @@ export class VectorWorkerManager {
   private async ensureReady() {
     if (this.initializationMutex) {
       while (this.initializationMutex) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await delay(50);
       }
 
       if (this.isInitialized && this.worker) {
@@ -420,7 +421,7 @@ export class VectorWorkerManager {
         );
         await this.endStreamingSession();
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await delay(100);
       } else {
         verboseDebug(`Streaming session for job ${jobId} already active`);
         return true;

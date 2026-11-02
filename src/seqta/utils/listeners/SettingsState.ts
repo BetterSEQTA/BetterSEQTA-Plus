@@ -319,11 +319,6 @@ class StorageManager {
     });
   }
 
-  /**
-   * Register a listener for a setting.
-   * @param prop The setting to listen to.
-   * @param listener The listener to call when the setting changes -> takes two arguments, (newValue, oldValue)
-   */
   public register(prop: keyof SettingsState, listener: ChangeListener): void {
     const key = prop as string;
     if (!this.listeners.has(key)) {
@@ -332,35 +327,18 @@ class StorageManager {
     this.listeners.get(key)!.add(listener);
   }
   
-  /**
-   * Unregister a listener for a setting.
-   * @param prop The setting to stop listening to.
-   * @param listener The listener to remove.
-   */
   public unregister(prop: keyof SettingsState, listener: ChangeListener): void {
     this.listeners.get(prop as string)?.delete(listener);
   }
 
-  /**
-   * Register a listener for any setting.
-   * @param listener The listener to call when any setting changes -> takes three arguments, (newValue, oldValue, key)
-   */
   public registerGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.add(listener);
   }
   
-  /**
-   * Unregister a global listener.
-   * @param listener The listener to remove.
-   */
   public unregisterGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.delete(listener);
   }
 
-  /**
-   * Get all settings.
-   * @returns All settings.
-   */
   public getAll(): SettingsState {
     return this.data;
   }

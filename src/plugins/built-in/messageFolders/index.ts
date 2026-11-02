@@ -44,9 +44,6 @@ const TRASH_SVG = `<svg style="width:12px;height:12px;flex-shrink:0" viewBox="0 
 const CHEVRON_SVG = `<svg style="width:12px;height:12px;flex-shrink:0;transition:transform .2s" viewBox="0 0 24 24"><path fill="#888" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
 const DRAG_SVG = `<svg style="width:14px;height:14px;flex-shrink:0;cursor:grab" viewBox="0 0 24 24"><path fill="#888" d="M6.5 12.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`;
 
-function generateId(): string {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-}
 
 function isAllowedFolderColor(color: unknown): color is string {
   return typeof color === "string" && FOLDER_COLORS.includes(color);
@@ -58,7 +55,7 @@ function isAllowedFolderIcon(icon: unknown): icon is string {
 
 function normalizeFolder(folder: Folder): Folder {
   return {
-    id: typeof folder.id === "string" && folder.id ? folder.id : generateId(),
+    id: typeof folder.id === "string" && folder.id ? folder.id : crypto.randomUUID(),
     name: typeof folder.name === "string" ? folder.name.trim().slice(0, 30) : "Folder",
     color: isAllowedFolderColor(folder.color) ? folder.color : FOLDER_COLORS[0],
     emoji: isAllowedFolderIcon(folder.emoji) ? folder.emoji : FOLDER_HEROICONS[0],
@@ -549,7 +546,7 @@ const messageFoldersPlugin = {
           );
           saveFolders(folders);
         } else {
-          const folder: Folder = { id: generateId(), name, color: selectedColor, emoji: selectedIcon };
+          const folder: Folder = { id: crypto.randomUUID(), name, color: selectedColor, emoji: selectedIcon };
           saveFolders([...getFolders(), folder]);
         }
         applyBadges();

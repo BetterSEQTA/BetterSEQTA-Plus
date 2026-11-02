@@ -1,6 +1,7 @@
 import type { IndexItem, Job } from "../types";
 
 import { verboseDebug } from '@/utils/verboseLog';
+import { delay } from "@/seqta/utils/delay";
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",
@@ -345,7 +346,7 @@ export const assignmentsJob: Job = {
       
       // Small delay between batches to avoid rate limiting
       if (i + batchSize < assessmentArray.length) {
-        await new Promise(resolve => setTimeout(resolve, 50)); // Reduced delay
+        await delay(50); // Reduced delay
       }
     }
 

@@ -152,13 +152,7 @@
   }
 
   async function prepareThemeClone() {
-    const themeClone = JSON.parse(JSON.stringify(theme)) as LoadedCustomTheme;
-
-    themeClone.CustomImages = theme.CustomImages.map((image) => ({
-      ...image,
-      blob: image.blob,
-    }));
-    themeClone.coverImage = theme.coverImage;
+    const themeClone = $state.snapshot(theme) as LoadedCustomTheme;
     themeClone.userEdited = true;
 
     if (shouldForceThemeAppearance(themeClone)) {
@@ -223,10 +217,10 @@
     };
   });
 
-  async function onImageUpload(event: Event) {
-    const updated = await handleImageUpload(event, theme);
+  function onImageUpload(event: Event) {
+    const updated = handleImageUpload(event, theme);
     if (updated === theme) return;
-    theme = updated as LoadedCustomTheme;
+    theme = updated;
     if (!creatorMeta.pageBackgroundImageId && theme.CustomImages.length === 1) {
       creatorMeta = { ...creatorMeta, pageBackgroundImageId: theme.CustomImages[0].id };
     }

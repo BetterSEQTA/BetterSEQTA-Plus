@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { Component } from "svelte";
 import AssessmentItem from "../components/items/AssessmentItem.svelte";
 import ForumItem from "../components/items/ForumItem.svelte";
 import SubjectItem from "../components/items/SubjectItem.svelte";
@@ -7,26 +7,26 @@ import type { IndexItem } from "./types";
 import { jobs } from "./jobs";
 import { loadDynamicItems } from "../utils/dynamicItems";
 
-export const renderComponentMap: Record<string, typeof SvelteComponent> = {
-  assessment: AssessmentItem as unknown as typeof SvelteComponent,
-  message: AssessmentItem as unknown as typeof SvelteComponent,
-  forum: ForumItem as unknown as typeof SvelteComponent,
-  subject: SubjectItem as unknown as typeof SvelteComponent,
+export const renderComponentMap: Record<string, Component<any>> = {
+  assessment: AssessmentItem,
+  message: AssessmentItem,
+  forum: ForumItem,
+  subject: SubjectItem,
   // New categories share a generic, category-aware row component to keep
   // the palette consistent without bespoke layouts for every job. The
   // component reads `item.metadata.icon` and the `category` to pick a
   // sensible default visual treatment.
-  course: GenericItem as unknown as typeof SvelteComponent,
-  notice: GenericItem as unknown as typeof SvelteComponent,
-  document: GenericItem as unknown as typeof SvelteComponent,
-  folio: GenericItem as unknown as typeof SvelteComponent,
-  portal: GenericItem as unknown as typeof SvelteComponent,
-  report: GenericItem as unknown as typeof SvelteComponent,
-  goal: GenericItem as unknown as typeof SvelteComponent,
-  passive: GenericItem as unknown as typeof SvelteComponent,
+  course: GenericItem,
+  notice: GenericItem,
+  document: GenericItem,
+  folio: GenericItem,
+  portal: GenericItem,
+  report: GenericItem,
+  goal: GenericItem,
+  passive: GenericItem,
 };
 
-function resolveRenderComponent(item: IndexItem): typeof SvelteComponent | undefined {
+function resolveRenderComponent(item: IndexItem): Component<any> | undefined {
   const jobDef =
     jobs[item.category] ||
     Object.values(jobs).find((j) => j.id === item.category) ||

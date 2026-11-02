@@ -1151,10 +1151,6 @@ export class ThemeManager {
     }
   }
 
-  /**
-   * Update the preview of a theme (debounced)
-   * @param theme - The theme to update the preview of
-   */
   public updatePreviewDebounced = debounce(
     (theme: Partial<LoadedCustomTheme>): void => {
       this.updatePreview(theme);
