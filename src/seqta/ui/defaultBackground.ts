@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import defaultBackgroundUrl from "@/resources/backgrounds/default-background.webp";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { writeData } from "@/interface/hooks/BackgroundDataLoader";

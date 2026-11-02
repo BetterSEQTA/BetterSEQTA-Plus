@@ -15,7 +15,7 @@
   import HighlightedText from '../utils/HighlightedText.svelte';
   import { matchesHotkey } from '../utils/hotkeyUtils';
   import { warmUpVectorSearchOnInteraction } from '../search/vector/vectorSearch';
-  import browser from 'webextension-polyfill';
+  import browser from '@/lib/browser';
 
   const { 
     transparencyEffects, 

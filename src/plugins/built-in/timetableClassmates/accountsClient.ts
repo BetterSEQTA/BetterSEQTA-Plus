@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
 import { ACCOUNTS_BASE } from "./constants";
 import type {

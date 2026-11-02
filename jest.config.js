@@ -16,9 +16,9 @@ export default {
   moduleNameMapper: {
     '^@/(.*)\\?script(?:&(?:iife|module))?$':
       '<rootDir>/src/test/mocks/crxjsScriptPath.ts',
+    '^@/lib/browser$': '<rootDir>/src/test/mocks/browser.ts',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^color$': '<rootDir>/src/test/mocks/color.ts',
-    '^webextension-polyfill$': '<rootDir>/src/test/mocks/webextension-polyfill.ts',
   },
   setupFilesAfterEnv: ['<rootDir>/src/test/jest.setup.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],

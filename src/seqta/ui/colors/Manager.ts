@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import Color from "color";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { lightenAndPaleColor } from "./lightenAndPaleColor";

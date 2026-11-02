@@ -6,7 +6,7 @@
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
   import type { Theme } from '../types/Theme'
   import { visibleStoreThemes, buildCoverSlidesForThemes, normalizeStoreTheme } from '@/interface/utils/themeStoreFlavours'
-  import browser from 'webextension-polyfill'
+  import browser from '@/lib/browser'
   import ThemeModal from '../components/store/ThemeModal.svelte'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'

@@ -6,7 +6,7 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
 import styles from "./styles.css?inline";
@@ -108,7 +108,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
 
     const onStorageRevision = (
-      changes: Record<string, browser.Storage.StorageChange>,
+      changes: Record<string, chrome.storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName === "local" && changes.profile_picture_revision) {

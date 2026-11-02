@@ -137,7 +137,7 @@ The extension may call **`GET /api/user/cloud-summary`** (same host, `Authorizat
 - **Auto-sync flow:** compare `bsplus.updated_at` to a **client-only** watermark stored in extension storage as **`bsplus_cloud_settings_known_remote_updated_at`** (never uploaded, never applied from the server payload; preserved on restore).
 - If the server timestamp is newer (and `schemaVersion` is not ahead of the client), the client then calls **`GET /api/bsplus/settings/sync`** and applies the full envelope as usual.
 
-This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, `storage`) and works on **Chromium and Firefox** builds (see `webextension-polyfill`).
+This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, `storage`) and works on **Chromium and Firefox** builds.
 
 ## Client reference (extension)
 

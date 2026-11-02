@@ -1,5 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 import { timetableClassmatesSettings } from "./settings";

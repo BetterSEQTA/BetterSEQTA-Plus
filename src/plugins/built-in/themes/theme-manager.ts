@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   type CustomTheme,
   getForcedDarkMode,

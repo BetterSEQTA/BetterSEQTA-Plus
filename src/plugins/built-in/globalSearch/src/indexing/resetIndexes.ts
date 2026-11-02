@@ -1,7 +1,7 @@
 import { SCHEMA_VERSION_KEY } from "./schemaVersion";
 import { pauseIndexingUntilReload } from "./indexingPause";
 import { pausePassiveObserver } from "./passiveObserver";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { delay } from "@/seqta/utils/delay";
 
 export const RESET_INDEX_MESSAGE = "global-search-reset-index";

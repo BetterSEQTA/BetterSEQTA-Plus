@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   GOOGLE_CALENDAR_SYNC_WEEKS,
   GOOGLE_CALENDAR_SYNC_WEEKS_MAX,

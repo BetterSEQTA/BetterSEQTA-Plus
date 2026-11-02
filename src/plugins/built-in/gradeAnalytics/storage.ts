@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { DistributionMode } from "./gradeDistribution";
 import {
   DEFAULT_ANALYTICS_GRADE_INFERENCE,

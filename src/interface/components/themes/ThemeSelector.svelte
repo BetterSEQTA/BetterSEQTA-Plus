@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
-  import browser from 'webextension-polyfill'
+  import browser from '@/lib/browser'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'

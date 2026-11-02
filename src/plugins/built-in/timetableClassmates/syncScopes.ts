@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 const SYNC_SCOPES_KEY = "plugin.timetable-classmates.storage.syncScopes";
 

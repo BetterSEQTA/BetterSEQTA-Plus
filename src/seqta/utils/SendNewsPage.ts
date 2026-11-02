@@ -2,7 +2,7 @@ import { AppendLoadingSymbol } from "@/seqta/ui/Loading";
 import stringToHTML from "./stringToHTML";
 import { delay } from "./delay";
 import { settingsState } from "./listeners/SettingsState";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";

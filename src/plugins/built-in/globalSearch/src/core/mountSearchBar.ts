@@ -4,7 +4,7 @@ import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { transparencyEnabled } from "@/seqta/utils/performanceMode";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 type AppRef = {
   current: any;

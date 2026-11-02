@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 function detectOsNameFromNavigator(): string {
   const ua = navigator.userAgent;

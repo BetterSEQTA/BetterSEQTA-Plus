@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { clearCloudPfpCache } from "@/seqta/utils/cloudPfpCache";
 import { clearLastUploadedSnapshot } from "@/seqta/utils/cloudSettingsSync";

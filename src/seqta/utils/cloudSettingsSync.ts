@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import isEqual from "@/seqta/utils/isEqual";
 import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
 import {

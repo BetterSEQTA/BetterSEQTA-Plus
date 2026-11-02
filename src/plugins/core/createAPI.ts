@@ -10,7 +10,7 @@ import type {
 } from "./types";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import type { SettingsState } from "@/types/storage";
 

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import localforage from "localforage";
 import type { CustomTheme } from "@/types/CustomThemes";
 import {

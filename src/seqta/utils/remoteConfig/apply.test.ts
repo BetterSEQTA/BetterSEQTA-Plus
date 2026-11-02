@@ -101,7 +101,7 @@ describe("SEQTA boot decision", () => {
 describe("hydrateRemoteConfigFromStorage", () => {
   it("requests cached snapshot before background refresh when storage is empty", async () => {
     jest.resetModules();
-    jest.doMock("webextension-polyfill", () => ({
+    jest.doMock("@/lib/browser", () => ({
       storage: {
         local: {
           get: jest.fn(async () => ({})),
@@ -132,7 +132,7 @@ describe("hydrateRemoteConfigFromStorage", () => {
     const { hydrateRemoteConfigFromStorage, notifyRemoteConfigPageContext } = await import("./runtime");
     await hydrateRemoteConfigFromStorage();
     notifyRemoteConfigPageContext("learn.example.edu.au");
-    const browser = jest.requireMock("webextension-polyfill");
+    const browser = jest.requireMock("@/lib/browser");
     const types = browser.runtime.sendMessage.mock.calls.map(
       (c: [{ type?: string }]) => c[0]?.type,
     );

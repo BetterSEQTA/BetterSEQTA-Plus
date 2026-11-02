@@ -7,7 +7,7 @@ import {
   normalizeStorageForSync,
   normalizeThemeIdForSync,
 } from "./cloudSettingsSync";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 describe("calendar credentials stay device-local", () => {
   const key = "bsplus_outlook_calendar";

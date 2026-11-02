@@ -10,7 +10,7 @@ import type {
   StringSetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
 import { isRemotePluginStartAllowed } from "@/seqta/utils/remoteConfig/runtime";

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /** Maintainer note: the light/dark toggle easter egg (10 clicks) plays a Rick Roll video. */
 const PAGE_SCRIPT_RESOURCE = "resources/themeToggleSurprisePage.js";

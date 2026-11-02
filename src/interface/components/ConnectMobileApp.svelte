@@ -1,6 +1,6 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
-  import browser from "webextension-polyfill";
+  import browser from "@/lib/browser";
   import QRCode from "qrcode";
   import Button from "./Button.svelte";
   import { portal } from "../utils/portal";

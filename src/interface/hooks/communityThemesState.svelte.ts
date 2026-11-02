@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { Theme } from "@/interface/types/Theme";
 import { getCommunityInstalledThemeIds, getStoreInstalledThemeIds } from "@/interface/utils/themeListFilters";
 import { normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";

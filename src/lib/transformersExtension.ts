@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 const ORT_RESOURCE_DIR = "resources/ort/";
 

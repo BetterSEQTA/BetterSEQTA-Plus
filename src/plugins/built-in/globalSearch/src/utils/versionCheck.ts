@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { resetSearchIndexes } from "../indexing/resetIndexes";
 import { clearSearchCache } from "../search/searchUtils";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";

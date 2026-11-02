@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import localforage from "localforage";
 import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
 import { clearCloudPfpCache, pfpUrlWithHash } from "@/seqta/utils/cloudPfpCache";

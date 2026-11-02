@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { PRODUCTION_API_BASE, resolveApiBase } from "@/seqta/utils/apiBasePolicy";
 
 export { PRODUCTION_API_BASE } from "@/seqta/utils/apiBasePolicy";

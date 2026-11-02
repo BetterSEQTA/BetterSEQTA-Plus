@@ -4,7 +4,7 @@ import {
 } from "@/seqta/utils/listeners/SettingsState";
 import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 import { main } from "@/seqta/main";
 import { delay } from "./seqta/utils/delay";

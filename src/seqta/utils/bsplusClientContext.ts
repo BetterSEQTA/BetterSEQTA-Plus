@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getOrCreateInstallId } from "@/seqta/utils/feedback/installId";
 
 function manifestVersion(): string {

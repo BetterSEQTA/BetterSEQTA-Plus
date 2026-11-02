@@ -1,3 +1,4 @@
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { removeAnimatedBackgroundLayers } from "@/plugins/built-in/animatedBackground/backgroundLayers";
 import { applySidebarLook } from "@/seqta/ui/sidebar/sidebarStyles";
@@ -110,7 +111,6 @@ async function syncPerformanceModePlugins(): Promise<void> {
       removeAnimatedBackgroundLayers();
       window.dispatchEvent(new CustomEvent("betterseqta-background-music-stop"));
     } else {
-      const browser = (await import("webextension-polyfill")).default;
       const searchSettings = await browser.storage.local.get(
         "plugin.global-search.settings",
       );

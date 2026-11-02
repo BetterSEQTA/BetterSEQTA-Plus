@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { closePopup } from "./PopupManager";

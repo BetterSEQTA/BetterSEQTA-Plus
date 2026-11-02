@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 import { hasAnySyncOptInScope } from "@/plugins/built-in/timetableClassmates/syncScopes";
 import { isSeqtaTab } from "@/seqta/utils/seqtaTabMatch";

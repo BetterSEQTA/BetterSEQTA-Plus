@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";

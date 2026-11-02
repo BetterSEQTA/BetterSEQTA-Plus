@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /** Resolve Vite asset imports to a usable extension URL. */
 export function resolveExtensionAssetUrl(url: string): string {

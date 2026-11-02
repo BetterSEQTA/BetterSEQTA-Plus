@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import semver from "semver";
 import type { SettingsState } from "@/types/storage";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
@@ -171,7 +171,7 @@ function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boo
   return true;
 }
 
-function isTrustedSender(sender?: browser.Runtime.MessageSender): boolean {
+function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
   if (!sender) return false;
   if (sender.id && sender.id !== browser.runtime.id) return false;
 
@@ -191,7 +191,7 @@ function isTrustedSender(sender?: browser.Runtime.MessageSender): boolean {
 function handleFetchFromUrl(
   request: any,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ error: "Unauthorized sender" });
@@ -270,7 +270,7 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
 function handleCloudLogin(
   request: any,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ error: "Unauthorized sender" });
@@ -396,7 +396,7 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
 function handleCloudSettingsUpload(
   request: any,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ success: false, error: "Unauthorized sender" });
@@ -429,7 +429,7 @@ function handleCloudSettingsUpload(
 function handleCloudSettingsDownload(
   request: any,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ success: false, error: "Unauthorized sender" });
@@ -489,7 +489,7 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
 
 /** Handler for a message type; receives request, sendResponse, and optional sender (for tab routing) */
 type MessageHandler = {
-  (request: any, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender): boolean | void;
+  (request: any, sendResponse: MessageSender, sender?: chrome.runtime.MessageSender): boolean | void;
 };
 
 function isSeqtaOrigin(origin: string): boolean {
@@ -504,7 +504,7 @@ function isSeqtaOrigin(origin: string): boolean {
 function handleSetDevApiBase(
   request: any,
   _sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) return false;
   if (import.meta.env.DEV) {
@@ -585,7 +585,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     requestCloudSettingsDebouncedUpload();
     return false;
   },
-  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender) => {
+  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: chrome.runtime.MessageSender) => {
     (async () => {
       try {
         let tabId = sender?.tab?.id;
@@ -628,13 +628,11 @@ registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
 initCalendarBackground();
 
 browser.runtime.onMessage.addListener(
-  // @ts-ignore - OnMessageListener expects literal true for async, we return boolean
-  (request: any, sender: browser.Runtime.MessageSender, sendResponse: MessageSender) => {
+  (request: any, sender: chrome.runtime.MessageSender, sendResponse: MessageSender) => {
     const handler = MESSAGE_HANDLERS[request.type];
-    if (handler) {
-      const result = handler(request, sendResponse, sender);
-      return result === true;
-    }
+    if (!handler) return false;
+    if (handler(request, sendResponse, sender) === true) return true;
+    sendResponse();
     return false;
   },
 );

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import type {
   BooleanSetting,

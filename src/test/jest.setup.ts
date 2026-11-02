@@ -1,4 +1,4 @@
-import { __resetBrowserStorageMock } from "./mocks/webextension-polyfill";
+import { __resetBrowserStorageMock } from "./mocks/browser";
 
 if (typeof globalThis.CSS === "undefined") {
   Object.defineProperty(globalThis, "CSS", {

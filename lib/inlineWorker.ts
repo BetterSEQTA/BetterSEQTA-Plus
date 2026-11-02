@@ -24,7 +24,7 @@ export default function InlineWorkerDevPlugin(): Plugin {
             "node_modules/@huggingface/transformers/dist/transformers.web.js",
           ),
         },
-        external: ["webextension-polyfill"],
+        external: ["@/lib/browser"],
       });
 
       const workerCode = result.outputFiles[0].text;

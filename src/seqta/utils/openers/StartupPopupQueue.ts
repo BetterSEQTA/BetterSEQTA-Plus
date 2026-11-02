@@ -1,5 +1,5 @@
 import semver from "semver";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "../listeners/SettingsState";
 import { OpenWhatsNewPopup } from "./OpenWhatsNewPopup";
 import {

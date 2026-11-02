@@ -1,5 +1,3 @@
-import browser from "webextension-polyfill";
-
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";

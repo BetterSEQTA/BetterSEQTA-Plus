@@ -1,5 +1,5 @@
 <script lang="ts">
-  import browser from "webextension-polyfill";
+  import browser from "@/lib/browser";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import Button from "./Button.svelte";

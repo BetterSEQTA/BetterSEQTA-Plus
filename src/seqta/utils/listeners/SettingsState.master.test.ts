@@ -10,7 +10,7 @@ describe("master extension setting", () => {
     let browser: any;
     let settings: typeof import("./SettingsState");
     jest.isolateModules(() => {
-      browser = require("webextension-polyfill").default;
+      browser = require("@/lib/browser").default;
       settings = require("./SettingsState");
     });
     await browser.storage.local.set({ onoff: !enabled });

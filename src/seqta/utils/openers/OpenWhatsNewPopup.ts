@@ -1,5 +1,5 @@
 import stringToHTML from "../stringToHTML";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { openPopup } from "./PopupManager";
 import { createPopupHeroVideo } from "./attachPopupMediaFullscreen";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";

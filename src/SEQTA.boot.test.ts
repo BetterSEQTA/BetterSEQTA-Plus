@@ -35,7 +35,7 @@ test.each([
       window,
       console,
       require: (module: string) => {
-        if (module === "webextension-polyfill") {
+        if (module === "@/lib/browser") {
           return { storage: { local: { get: async () => stored } } };
         }
         if (module.includes("errorPageKitten")) {

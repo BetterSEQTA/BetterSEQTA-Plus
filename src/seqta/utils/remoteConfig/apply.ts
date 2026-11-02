@@ -1,7 +1,7 @@
 import type { FeatureMode, RemoteConfigSnapshot, RemoteFeatureGate } from "./types";
 import { DEFAULT_REMOTE_CONFIG } from "./normalize";
 import semver from "semver";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 function normalizeHostname(hostname: string): string {
   return hostname.trim().toLowerCase().replace(/\.$/, "");

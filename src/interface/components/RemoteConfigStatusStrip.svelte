@@ -10,7 +10,7 @@
   import { getRemoteStatusMessage } from "@/seqta/utils/remoteConfig/apply";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { requestSettingsDestination } from "@/seqta/utils/settingsNavigation";
-  import browser from "webextension-polyfill";
+  import browser from "@/lib/browser";
   import { onMount } from "svelte";
 
   let localOverride = $state(false);

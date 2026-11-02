@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   ensureSyncableStorageDefaults,
   getSyncableStorageDefaults,
@@ -444,7 +444,7 @@ async function syncAutoUploadWithStorage(): Promise<void> {
 }
 
 function onStorageChanged(
-  changes: Record<string, browser.storage.StorageChange>,
+  changes: Record<string, chrome.storage.StorageChange>,
   area: string,
 ): void {
   if (area !== "local") return;

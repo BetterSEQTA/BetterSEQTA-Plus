@@ -52,7 +52,7 @@ import {
   writeOutlookCalendarState,
   type OutlookCalendarStatus,
 } from "@/seqta/utils/calendarSync/providerStorage";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { isSeqtaTab } from "@/seqta/utils/seqtaTabMatch";
 
 const WEEKLY_PERIOD_MINUTES = 7 * 24 * 60;
@@ -60,7 +60,7 @@ const WEEKLY_PERIOD_MINUTES = 7 * 24 * 60;
 export type CalendarMessageHandler = (
   request: unknown,
   sendResponse: (response?: unknown) => void,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ) => boolean | void;
 
 export type CalendarMessageHandlerMap = Record<string, CalendarMessageHandler>;
@@ -250,8 +250,8 @@ function waitForOAuthCallback(authTabId: number, opts: OAuthTabFlowOptions): Pro
 
     const onUpdated = (
       tabId: number,
-      changeInfo: browser.Tabs.OnUpdatedChangeInfoType,
-      tab: browser.Tabs.Tab,
+      changeInfo: chrome.tabs.OnUpdatedInfo,
+      tab: chrome.tabs.Tab,
     ) => {
       if (tabId !== authTabId) return;
       const url =
@@ -301,7 +301,7 @@ async function getValidStoredAccessToken(
 
 export function registerTrustedAsyncHandler(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
   key: string,
   fn: (request: unknown) => Promise<unknown>,
   onError?: (err: unknown) => unknown,
@@ -424,7 +424,7 @@ async function connectCalendar(provider: CalendarProviderBackend): Promise<Googl
 
 function registerProviderHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
   provider: CalendarProviderBackend,
   getStatus: () => Promise<unknown>,
 ): void {
@@ -471,7 +471,7 @@ function registerProviderHandlers(
 
 export function registerGoogleCalendarMessageHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
 ): void {
   registerProviderHandlers(handlers, isTrustedSender, GOOGLE_BACKEND, getGoogleCalendarStatus);
 
@@ -506,7 +506,7 @@ export function registerGoogleCalendarMessageHandlers(
 
 export function registerOutlookCalendarMessageHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
 ): void {
   registerProviderHandlers(handlers, isTrustedSender, OUTLOOK_BACKEND, getOutlookCalendarStatus);
 }

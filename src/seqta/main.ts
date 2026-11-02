@@ -1,5 +1,3 @@
-import browser from "webextension-polyfill";
-
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 import pageState from "@/pageState.js?script&iife";

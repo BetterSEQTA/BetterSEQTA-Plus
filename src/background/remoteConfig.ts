@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import {
   bsplusApiQueryParams,

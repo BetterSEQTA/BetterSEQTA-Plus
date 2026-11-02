@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { CustomThemeStatus } from "./constants";
 import { formatThemeDate } from "./formatThemeDate";
 import { normalizeCustomTheme } from "./normalizeCustomTheme";

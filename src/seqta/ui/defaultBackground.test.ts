@@ -1,7 +1,7 @@
 /**
  * @jest-environment jsdom
  */
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { writeData } from "@/interface/hooks/BackgroundDataLoader";
 import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "./defaultBackgroundKey";

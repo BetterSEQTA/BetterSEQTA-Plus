@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
 import { OpenMenuOptions } from "@/seqta/utils/openers/OpenMenuOptions";

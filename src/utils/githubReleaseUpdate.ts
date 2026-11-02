@@ -1,5 +1,5 @@
 import semver from "semver";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
 const CHECK_THROTTLE_MS = 6 * 60 * 60 * 1000;

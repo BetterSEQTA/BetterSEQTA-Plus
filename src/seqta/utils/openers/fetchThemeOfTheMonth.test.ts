@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { fetchThemeOfTheMonth } from "./OpenThemeOfTheMonthPopup";
 
 jest.mock("../DevApiBase", () => ({

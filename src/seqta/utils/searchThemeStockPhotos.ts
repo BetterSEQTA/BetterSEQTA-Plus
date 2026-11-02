@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 export type StockPhotoResult = { title: string; thumbUrl: string; imageUrl: string };
 
