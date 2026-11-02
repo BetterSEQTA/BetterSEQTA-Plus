@@ -9,7 +9,6 @@
     "128": "resources/icons/icon-128.png"
   },
   "action": {
-    "browser_style": true,
     "default_popup": "interface/index.html#settings",
     "default_icon": {
       "16": "resources/icons/icon-16.png",

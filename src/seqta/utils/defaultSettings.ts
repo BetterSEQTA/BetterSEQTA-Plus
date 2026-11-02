@@ -45,7 +45,7 @@ export function getDefaultSettingsState(): SettingsState {
     subjectfilters: {},
     selectedTheme: "",
     selectedColor:
-      "linear-gradient(45deg, rgba(18,106,98,1) 0%, rgba(17,88,131,1) 100%)",
+      "linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)",
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
