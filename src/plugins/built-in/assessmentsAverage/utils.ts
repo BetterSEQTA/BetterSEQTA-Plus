@@ -4,6 +4,7 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";
 import {
   getEngageAssessmentReportUrl,
+  randomPdfFileName,
   requestEngageAssessmentPdf,
 } from "./engage.ts";
 import {
@@ -679,17 +680,13 @@ export async function extractPDFText(url: string): Promise<string> {
   }
 }
 
-function randomStudentPdfFileName(): string {
-  // Matches SEQTA Learn coversheet tokens, e.g. "mrr158ct.pdf".
-  return `${Math.random().toString(36).slice(2, 10)}.pdf`;
-}
 
 async function requestStudentAssessmentPdf(params: {
   assessmentID: string | number;
   metaclassID: string | number;
   studentID: string | number;
 }): Promise<string> {
-  const fileName = randomStudentPdfFileName();
+  const fileName = randomPdfFileName();
 
   const printResponse = await fetch(
     `${location.origin}/seqta/student/print/assessment`,

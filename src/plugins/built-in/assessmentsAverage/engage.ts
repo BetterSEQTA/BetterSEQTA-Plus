@@ -1,8 +1,5 @@
-import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";
-
-function randomEngagePdfFileName(): string {
-  const token = Math.random().toString(36).slice(2, 10);
-  return `${token}.pdf`;
+export function randomPdfFileName(): string {
+  return `${Math.random().toString(36).slice(2, 10)}.pdf`;
 }
 
 export async function requestEngageAssessmentPdf(params: {
@@ -10,11 +7,10 @@ export async function requestEngageAssessmentPdf(params: {
   metaclassID: string | number;
   studentID: string | number;
 }): Promise<string> {
-  const fileName = randomEngagePdfFileName();
-  const cacheBuster = Math.random().toString(36).slice(2, 10);
+  const fileName = randomPdfFileName();
 
   const response = await fetch(
-    `${location.origin}/seqta/parent/print/assessment?${cacheBuster}`,
+    `${location.origin}/seqta/parent/print/assessment?${Date.now()}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=utf-8" },

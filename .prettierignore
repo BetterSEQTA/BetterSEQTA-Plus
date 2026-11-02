@@ -1,1 +1,5 @@
-build
+betterseqtaplus-safari/
+coverage/
+dist/
+package-lock.json
+src/public/

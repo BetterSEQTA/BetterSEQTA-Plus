@@ -216,7 +216,7 @@
     try {
       confetti({ disableForReducedMotion: true, ...options });
     } catch (e) {
-      console.log("Confetti celebration failed:", e);
+      console.warn("Confetti celebration failed:", e);
     }
   }
 

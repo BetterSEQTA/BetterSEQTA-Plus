@@ -4,7 +4,6 @@ node_modules/
 # Build output
 betterseqtaplus-safari/
 coverage/
-dependency-graph.svg
 dist/
 
 # Copied in by postinstall

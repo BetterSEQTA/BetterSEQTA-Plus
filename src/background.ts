@@ -640,7 +640,6 @@ browser.runtime.onMessage.addListener(
       const result = handler(request, sendResponse, sender);
       return result === true;
     }
-    console.log("Unknown request type");
     return false;
   },
 );
