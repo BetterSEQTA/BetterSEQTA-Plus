@@ -1,7 +1,9 @@
+import type { Component } from "svelte";
+
 export interface SettingsList {
   title: string;
   id: number;
   description: string;
-  Component: any /* TODO: Give this a type */;
-  props?: any;
+  Component: Component<any>;
+  props?: Record<string, unknown>;
 }
