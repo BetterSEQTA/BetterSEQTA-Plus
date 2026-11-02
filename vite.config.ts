@@ -1,24 +1,24 @@
 import { defineConfig, loadEnv } from "vite";
 import { join, resolve } from "path";
 
-import touchGlobalCSSPlugin from "./lib/touchGlobalCSS";
-import InlineWorkerPlugin from "./lib/inlineWorker";
-import { base64Loader } from "./lib/base64loader";
-import type { BuildTarget, Manifest } from "./lib/types";
-import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
-import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr";
-import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
-import { extensionChunkUrls } from "./lib/extensionChunkUrls";
-import dedupePublicAssets from "./lib/dedupePublicAssets";
+import touchGlobalCSSPlugin from "./lib/touchGlobalCSS.ts";
+import InlineWorkerPlugin from "./lib/inlineWorker.ts";
+import { base64Loader } from "./lib/base64loader.ts";
+import type { BuildTarget, Manifest } from "./lib/types.ts";
+import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload.ts";
+import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr.ts";
+import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe.ts";
+import { extensionChunkUrls } from "./lib/extensionChunkUrls.ts";
+import dedupePublicAssets from "./lib/dedupePublicAssets.ts";
 
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
-import { chrome } from "./src/manifests/chrome";
-import { brave } from "./src/manifests/brave";
-import { edge } from "./src/manifests/edge";
-import { firefox } from "./src/manifests/firefox";
-import { opera } from "./src/manifests/opera";
-import { safari } from "./src/manifests/safari";
+import { chrome } from "./src/manifests/chrome.ts";
+import { brave } from "./src/manifests/brave.ts";
+import { edge } from "./src/manifests/edge.ts";
+import { firefox } from "./src/manifests/firefox.ts";
+import { opera } from "./src/manifests/opera.ts";
+import { safari } from "./src/manifests/safari.ts";
 import { crx } from "@crxjs/vite-plugin";
 
 const targets: BuildTarget[] = [chrome, brave, edge, firefox, opera, safari];
@@ -56,7 +56,7 @@ function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
 
 const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
 //const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
-const repoRoot = __dirname;
+const repoRoot = import.meta.dirname;
 
 export default defineConfig(({ command, mode: viteMode }) => {
   // `.env` lives at repo root (not `src/`). Required for `npm run dev` and builds.
@@ -80,7 +80,7 @@ export default defineConfig(({ command, mode: viteMode }) => {
   plugins: [
     svelte({
       emitCss: false,
-      configFile: join(__dirname, "src", "svelte.config.js"),
+      configFile: join(repoRoot, "src", "svelte.config.js"),
     }),
     extensionChunkUrls(),
     base64Loader,
@@ -103,10 +103,10 @@ export default defineConfig(({ command, mode: viteMode }) => {
         ]
       : []),
   ],
-  root: resolve(__dirname, "./src"),
+  root: resolve(repoRoot, "./src"),
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src"),
+      "@": resolve(repoRoot, "./src"),
     },
     dedupe: [
       "@huggingface/transformers",
@@ -145,15 +145,15 @@ export default defineConfig(({ command, mode: viteMode }) => {
     format: "es",
   },
   build: {
-    outDir: resolve(__dirname, "dist", mode),
+    outDir: resolve(repoRoot, "dist", mode),
     emptyOutDir: true,
     minify: true,
     //sourcemap: sourcemap,
     chunkSizeWarningLimit: 4000,
     rollupOptions: {
       input: {
-        settings: join(__dirname, "src", "interface", "index.html"),
-        pageState: join(__dirname, "src", "pageState.js"),
+        settings: join(repoRoot, "src", "interface", "index.html"),
+        pageState: join(repoRoot, "src", "pageState.js"),
       },
       output: {
         assetFileNames: "assets/[name]-[hash][extname]",

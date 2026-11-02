@@ -1,5 +1,5 @@
 import type { ManifestV3Export } from "@crxjs/vite-plugin";
-import { type AnyCase, createEnum, ObjectValues } from "./utils";
+import { type AnyCase, createEnum, ObjectValues } from "./utils.ts";
 
 /**
  * Enumerates supported JavaScript frameworks for project generation or configuration.

@@ -1,5 +1,5 @@
-import type { Browser, BuildTarget, Manifest } from "./types";
-import type { AnyCase } from "./utils";
+import type { Browser, BuildTarget, Manifest } from "./types.ts";
+import type { AnyCase } from "./utils.ts";
 
 /**
  * Packages a given manifest object with a specific target browser identifier.
