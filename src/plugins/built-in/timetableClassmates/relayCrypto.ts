@@ -3,25 +3,28 @@ import { classBundlePlaintext } from "./relayPayload";
 
 const IV_BYTES = 12;
 
-function base64FromBytes(bytes: Uint8Array): string {
+function base64FromBytes(bytes: Uint8Array<ArrayBuffer>): string {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary);
 }
 
-export function decodeBundleKey(bundleKeyB64: string): Uint8Array {
+export function decodeBundleKey(bundleKeyB64: string): Uint8Array<ArrayBuffer> {
   const binary = atob(bundleKeyB64);
   const out = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i);
   return out;
 }
 
-async function sha256(data: Uint8Array): Promise<Uint8Array> {
+async function sha256(data: Uint8Array<ArrayBuffer>): Promise<Uint8Array<ArrayBuffer>> {
   const hash = await crypto.subtle.digest("SHA-256", data);
   return new Uint8Array(hash);
 }
 
-async function classAesKey(bundleKey: Uint8Array, classKey: string): Promise<CryptoKey> {
+async function classAesKey(
+  bundleKey: Uint8Array<ArrayBuffer>,
+  classKey: string,
+): Promise<CryptoKey> {
   const prefix = new TextEncoder().encode(`tq-v1:${classKey}`);
   const material = new Uint8Array(bundleKey.length + 1 + prefix.length);
   material.set(bundleKey, 0);
@@ -31,7 +34,7 @@ async function classAesKey(bundleKey: Uint8Array, classKey: string): Promise<Cry
   return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]);
 }
 
-async function compressUtf8(json: string): Promise<Uint8Array> {
+async function compressUtf8(json: string): Promise<Uint8Array<ArrayBuffer>> {
   const input = new TextEncoder().encode(json);
   if (typeof CompressionStream === "undefined") return input;
   const stream = new Blob([input]).stream().pipeThrough(new CompressionStream("deflate"));
@@ -39,7 +42,7 @@ async function compressUtf8(json: string): Promise<Uint8Array> {
   return new Uint8Array(buf);
 }
 
-async function decompressUtf8(bytes: Uint8Array): Promise<string> {
+async function decompressUtf8(bytes: Uint8Array<ArrayBuffer>): Promise<string> {
   if (typeof DecompressionStream === "undefined") {
     return new TextDecoder().decode(bytes);
   }
@@ -55,16 +58,14 @@ export type RelayWireBundle = {
 };
 
 export async function encryptClassBundle(
-  bundleKey: Uint8Array,
+  bundleKey: Uint8Array<ArrayBuffer>,
   classKey: string,
   plaintext: Record<string, unknown>,
 ): Promise<RelayWireBundle> {
   const key = await classAesKey(bundleKey, classKey);
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
   const compressed = await compressUtf8(JSON.stringify(plaintext));
-  const ct = new Uint8Array(
-    await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, compressed),
-  );
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, compressed));
   return {
     class_key: classKey,
     iv_b64: base64FromBytes(iv),
@@ -73,16 +74,14 @@ export async function encryptClassBundle(
 }
 
 export async function decryptClassBundle(
-  bundleKey: Uint8Array,
+  bundleKey: Uint8Array<ArrayBuffer>,
   bundle: RelayWireBundle,
 ): Promise<Record<string, unknown> | null> {
   try {
     const key = await classAesKey(bundleKey, bundle.class_key);
     const iv = Uint8Array.from(atob(bundle.iv_b64), (c) => c.charCodeAt(0));
     const ct = Uint8Array.from(atob(bundle.ct_b64), (c) => c.charCodeAt(0));
-    const plain = new Uint8Array(
-      await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct),
-    );
+    const plain = new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv }, key, ct));
     const json = await decompressUtf8(plain);
     return JSON.parse(json) as Record<string, unknown>;
   } catch {
@@ -91,7 +90,7 @@ export async function decryptClassBundle(
 }
 
 export async function buildEncryptedBundlesForClasses(input: {
-  bundleKey: Uint8Array;
+  bundleKey: Uint8Array<ArrayBuffer>;
   seqtaStudentId: number;
   personUuid: string;
   cloudUserId: string | null;

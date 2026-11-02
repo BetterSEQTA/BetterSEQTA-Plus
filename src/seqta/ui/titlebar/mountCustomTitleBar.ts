@@ -35,9 +35,7 @@ function syncPageTitle() {
 function needsSearchChip() {
   if (!isPluginAllowedInPerformanceMode("global-search")) return false;
   const all = settingsState.getAll() as unknown as Record<string, unknown>;
-  const plugin = all["plugin.global-search.settings"] as
-    | { enabled?: boolean }
-    | undefined;
+  const plugin = all["plugin.global-search.settings"] as { enabled?: boolean } | undefined;
   return plugin?.enabled === true || titleBarState.showSearch;
 }
 
@@ -75,12 +73,15 @@ function observeHost(host: HTMLElement) {
   hostObserver = new MutationObserver((mutations) => {
     if (!document.getElementById(ROOT_ID)) {
       if (remountTimer) clearTimeout(remountTimer);
-      remountTimer = setTimeout(() => {
-        remountTimer = null;
-        if (!settingsState.onoff || isSeqtaEngageExperience()) return;
-        app = null;
-        void mountCustomTitleBar();
-      }, isPerformanceMode() ? 120 : 50);
+      remountTimer = setTimeout(
+        () => {
+          remountTimer = null;
+          if (!settingsState.onoff || isSeqtaEngageExperience()) return;
+          app = null;
+          void mountCustomTitleBar();
+        },
+        isPerformanceMode() ? 120 : 50,
+      );
       return;
     }
     const titleChanged = mutations.some(
@@ -104,7 +105,12 @@ function observeHost(host: HTMLElement) {
 }
 
 export function prepareCustomTitleBarEarly() {
-  if (isSeqtaEngageExperience() || isSeqtaLoginPage() || !settingsState.onoff || earlyPrepareStarted) {
+  if (
+    isSeqtaEngageExperience() ||
+    isSeqtaLoginPage() ||
+    !settingsState.onoff ||
+    earlyPrepareStarted
+  ) {
     return;
   }
   earlyPrepareStarted = true;

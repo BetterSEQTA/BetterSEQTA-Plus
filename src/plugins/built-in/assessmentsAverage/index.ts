@@ -1,4 +1,4 @@
-import { type Plugin } from "@/plugins/core/types";
+import type { AssessmentsAverageApi } from "./pluginApi";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import {
@@ -9,83 +9,74 @@ import {
   letterToNumber,
   parseAssessments,
   processAssessments,
-  type WeightingEntry,
 } from "./utils.ts";
 import { injectRubricCopyButtons, teardownRubricCopyButtons } from "./rubricCopy.ts";
-
-interface weightingsStorage {
-  weightings: Record<string, WeightingEntry>;
-  assessments: Record<string, string>;
-  weightingOverrides: Record<string, string>;
-}
 
 let overrideListenerController: AbortController | null = null;
 let wrapperColourObserver: MutationObserver | null = null;
 let wrapperColourObserverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 const assessmentsAveragePlugin = {
-  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
+  run: async (api: AssessmentsAverageApi) => {
     await initStorage(api);
     clearStuck(api);
 
     const { unregister: unregisterWrapperMount } = api.seqta.onMount(
       ".assessmentsWrapper",
       async () => {
-      await waitForElm(
-        "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
-        true,
-        10,
-        1000,
-      );
+        await waitForElm(
+          "#main > .assessmentsWrapper .assessments [class*='AssessmentItem__AssessmentItem___']",
+          true,
+          10,
+          1000,
+        );
 
-      // Wire listeners first so the very first re-render triggered by a
-      // background handleWeightings completion can find them.
-      overrideListenerController?.abort();
-      overrideListenerController = new AbortController();
-      document.addEventListener(
-        "betterseqta:overrideChanged",
-        () => renderSubjectAverage(api),
-        { signal: overrideListenerController.signal },
-      );
-      document.addEventListener(
-        "betterseqta:weightingsChanged",
-        () => renderSubjectAverage(api),
-        { signal: overrideListenerController.signal },
-      );
-
-      // Render immediately with whatever is already cached. Fresh entries
-      // and stale-with-previous-value entries both contribute their numeric
-      // weights, so the subject average appears without waiting on any
-      // background PDF refetches.
-      await renderSubjectAverage(api);
-
-      // Kick off indexing in the background. Each completion dispatches
-      // betterseqta:weightingsChanged, which triggers a fresh render.
-      void parseAssessments(api);
-      const wrapper = document.querySelector(".assessmentsWrapper");
-      if (wrapper) {
-        wrapperColourObserver?.disconnect();
-        if (wrapperColourObserverTimeout) {
-          clearTimeout(wrapperColourObserverTimeout);
-        }
-        wrapperColourObserver = new MutationObserver(() => {
-          applySubjectColourToOverallResult();
+        // Wire listeners first so the very first re-render triggered by a
+        // background handleWeightings completion can find them.
+        overrideListenerController?.abort();
+        overrideListenerController = new AbortController();
+        document.addEventListener("betterseqta:overrideChanged", () => renderSubjectAverage(api), {
+          signal: overrideListenerController.signal,
         });
-        wrapperColourObserver.observe(wrapper, { childList: true, subtree: true });
-        wrapperColourObserverTimeout = setTimeout(() => {
+        document.addEventListener(
+          "betterseqta:weightingsChanged",
+          () => renderSubjectAverage(api),
+          { signal: overrideListenerController.signal },
+        );
+
+        // Render immediately with whatever is already cached. Fresh entries
+        // and stale-with-previous-value entries both contribute their numeric
+        // weights, so the subject average appears without waiting on any
+        // background PDF refetches.
+        await renderSubjectAverage(api);
+
+        // Kick off indexing in the background. Each completion dispatches
+        // betterseqta:weightingsChanged, which triggers a fresh render.
+        void parseAssessments(api);
+        const wrapper = document.querySelector(".assessmentsWrapper");
+        if (wrapper) {
           wrapperColourObserver?.disconnect();
-          wrapperColourObserver = null;
-          wrapperColourObserverTimeout = null;
-        }, 10000);
-      }
-    },
+          if (wrapperColourObserverTimeout) {
+            clearTimeout(wrapperColourObserverTimeout);
+          }
+          wrapperColourObserver = new MutationObserver(() => {
+            applySubjectColourToOverallResult();
+          });
+          wrapperColourObserver.observe(wrapper, { childList: true, subtree: true });
+          wrapperColourObserverTimeout = setTimeout(() => {
+            wrapperColourObserver?.disconnect();
+            wrapperColourObserver = null;
+            wrapperColourObserverTimeout = null;
+          }, 10000);
+        }
+      },
     );
     const { unregister: unregisterSelectedMount } = api.seqta.onMount(
       "[class*='SelectedAssessment__']",
       () => {
-      injectWeightingsTab(api);
-      injectRubricCopyButtons();
-    },
+        injectWeightingsTab(api);
+        injectRubricCopyButtons();
+      },
     );
 
     return () => {
@@ -106,7 +97,7 @@ const assessmentsAveragePlugin = {
 
 let renderInFlight = false;
 let renderQueued = false;
-async function renderSubjectAverage(api: any) {
+async function renderSubjectAverage(api: AssessmentsAverageApi) {
   if (renderInFlight) {
     // Coalesce: remember that fresh data arrived during this render and
     // re-run once the current pass finishes, so the UI catches up to the
@@ -123,9 +114,7 @@ async function renderSubjectAverage(api: any) {
     if (!assessmentsList) return;
 
     // Remove existing subject average before re-rendering
-    Array.from(
-      assessmentsList.querySelectorAll(`[class*='AssessmentItem__title___']`),
-    )
+    Array.from(assessmentsList.querySelectorAll(`[class*='AssessmentItem__title___']`))
       .find((el) => el.textContent === "Subject Average")
       ?.closest("[class*='AssessmentItem__AssessmentItem___']")
       ?.remove();
@@ -142,23 +131,15 @@ async function renderSubjectAverage(api: any) {
       sampleAssessmentItem,
       "AssessmentItem__metaContainer___",
     );
-    const metaClass = getClassByPattern(
-      sampleAssessmentItem,
-      "AssessmentItem__meta___",
-    );
+    const metaClass = getClassByPattern(sampleAssessmentItem, "AssessmentItem__meta___");
     const simpleResultClass = getClassByPattern(
       sampleAssessmentItem,
       "AssessmentItem__simpleResult___",
     );
-    const titleClass = getClassByPattern(
-      sampleAssessmentItem,
-      "AssessmentItem__title___",
-    );
+    const titleClass = getClassByPattern(sampleAssessmentItem, "AssessmentItem__title___");
 
     const assessmentItems = Array.from(
-      assessmentsList.querySelectorAll(
-        `[class*='AssessmentItem__AssessmentItem___']`,
-      ),
+      assessmentsList.querySelectorAll<HTMLElement>(`[class*='AssessmentItem__AssessmentItem___']`),
     ).filter(
       (item) =>
         !item
@@ -166,31 +147,18 @@ async function renderSubjectAverage(api: any) {
           ?.textContent?.includes("Subject Average"),
     );
 
-    const {
-      weightedTotal,
-      totalWeight,
-      hasInaccurateWeighting,
-      hasRefreshingWeighting,
-      count,
-    } = await processAssessments(api, assessmentItems);
+    const { weightedTotal, totalWeight, hasInaccurateWeighting, hasRefreshingWeighting, count } =
+      await processAssessments(api, assessmentItems);
     if (!count || totalWeight === 0) return;
 
-    const thermoscoreElement = document.querySelector(
-      "[class*='Thermoscore__Thermoscore___']",
-    );
+    const thermoscoreElement = document.querySelector("[class*='Thermoscore__Thermoscore___']");
     if (!thermoscoreElement) return;
     const thermoscoreClass =
       Array.from(thermoscoreElement.classList).find((c) =>
         c.startsWith("Thermoscore__Thermoscore___"),
       ) || "";
-    const fillClass = getClassByPattern(
-      thermoscoreElement,
-      "Thermoscore__fill___",
-    );
-    const textClass = getClassByPattern(
-      thermoscoreElement,
-      "Thermoscore__text___",
-    );
+    const fillClass = getClassByPattern(thermoscoreElement, "Thermoscore__fill___");
+    const textClass = getClassByPattern(thermoscoreElement, "Thermoscore__text___");
 
     const avg = weightedTotal / totalWeight;
     const rounded = Math.ceil(avg / 5) * 5;
@@ -252,11 +220,11 @@ async function renderSubjectAverage(api: any) {
   }
 }
 function applySubjectColourToOverallResult() {
-  const selectedAssessmentItem = document.querySelector(
-    "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
-  ) || document.querySelector(
-    "[class*='Collapsible__content___'] [class*='AssessmentItem__AssessmentItem___']",
-  );
+  const selectedAssessmentItem =
+    document.querySelector("[class*='AssessmentItem__AssessmentItem___'][class*='selected___']") ||
+    document.querySelector(
+      "[class*='Collapsible__content___'] [class*='AssessmentItem__AssessmentItem___']",
+    );
   const assessmentThermoscore = selectedAssessmentItem?.querySelector(
     "[class*='Thermoscore__Thermoscore___']",
   ) as HTMLElement | null;
@@ -269,10 +237,22 @@ function applySubjectColourToOverallResult() {
 
   if (assessmentThermoscore && (overallResult || assessableCriterionHeaders.length > 0)) {
     const accentColour =
-      getComputedStyle(assessmentThermoscore).getPropertyValue("--assessment-accent-colour").trim() ||
+      getComputedStyle(assessmentThermoscore)
+        .getPropertyValue("--assessment-accent-colour")
+        .trim() ||
       getComputedStyle(assessmentThermoscore).getPropertyValue("--fill-colour").trim() ||
-      getComputedStyle(assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") || assessmentThermoscore).getPropertyValue("--assessment-accent-colour").trim() ||
-      getComputedStyle(assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") || assessmentThermoscore).getPropertyValue("--item-colour").trim();
+      getComputedStyle(
+        assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") ||
+          assessmentThermoscore,
+      )
+        .getPropertyValue("--assessment-accent-colour")
+        .trim() ||
+      getComputedStyle(
+        assessmentThermoscore.closest("[class*='Collapsible__Collapsible___']") ||
+          assessmentThermoscore,
+      )
+        .getPropertyValue("--item-colour")
+        .trim();
     if (accentColour) {
       overallResult?.style.setProperty("--assessment-accent-colour", accentColour);
       overallResult?.style.setProperty("--fill-colour", accentColour);

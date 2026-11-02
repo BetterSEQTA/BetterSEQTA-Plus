@@ -1,5 +1,6 @@
 import { normalizeCustomThemeApiResponse } from "@/seqta/utils/customThemes/parseApiEnvelope";
 import { bsplusApiQueryParams } from "@/seqta/utils/bsplusClientContext";
+import { base64ToBlob } from "@/seqta/utils/base64";
 
 type MessageSender = { (response?: unknown): void };
 
@@ -16,29 +17,14 @@ type UploadPayload = {
   submissionNotes?: string;
 };
 
-function base64ToBlob(base64: string, mimeType: string): Blob {
-  const binary = atob(base64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-  return new Blob([bytes], { type: mimeType });
-}
-
 function buildFormDataFromPayload(payload: UploadPayload): FormData {
   const form = new FormData();
   if (payload.themeZip) {
     const part = payload.themeZip;
-    form.append(
-      part.fieldName,
-      base64ToBlob(part.dataBase64, part.mimeType),
-      part.filename,
-    );
+    form.append(part.fieldName, base64ToBlob(part.dataBase64, part.mimeType), part.filename);
   }
   for (const part of payload.looseFiles ?? []) {
-    form.append(
-      part.fieldName,
-      base64ToBlob(part.dataBase64, part.mimeType),
-      part.filename,
-    );
+    form.append(part.fieldName, base64ToBlob(part.dataBase64, part.mimeType), part.filename);
   }
   if (payload.submissionNotes?.trim()) {
     form.append("submission_notes", payload.submissionNotes.trim());
@@ -49,10 +35,10 @@ function buildFormDataFromPayload(payload: UploadPayload): FormData {
 export function createCustomThemesHandlers(deps: {
   apiBase: () => string;
   getAccessTokenFromStorage: () => Promise<string | null>;
-}): Record<string, (request: any, sendResponse: MessageSender) => boolean> {
+}): Record<string, (request: Record<string, unknown>, sendResponse: MessageSender) => boolean> {
   async function readCustomThemesResponse(r: Response): Promise<Record<string, unknown>> {
     const text = await r.text();
-    let body: unknown = {};
+    let body: unknown;
     try {
       body = text ? JSON.parse(text) : {};
     } catch {
@@ -109,7 +95,10 @@ export function createCustomThemesHandlers(deps: {
     return await readCustomThemesResponse(r);
   }
 
-  function handleFetchCustomThemes(request: any, sendResponse: MessageSender): boolean {
+  function handleFetchCustomThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();
@@ -118,7 +107,8 @@ export function createCustomThemesHandlers(deps: {
         params.set("limit", String(request.limit ?? 20));
         (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.sort) params.set("sort", String(request.sort));
-        const search = request.search?.trim();
+        const searchRaw = request.search;
+        const search = typeof searchRaw === "string" ? searchRaw.trim() : "";
         const path = search
           ? `/api/custom-themes/search?${params}&q=${encodeURIComponent(search)}`
           : `/api/custom-themes?${params}`;
@@ -134,7 +124,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchMyCustomThemes(request: any, sendResponse: MessageSender): boolean {
+  function handleFetchMyCustomThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();
@@ -143,9 +136,7 @@ export function createCustomThemesHandlers(deps: {
         params.set("type", "betterseqta");
         (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.status) params.set("status", String(request.status));
-        sendResponse(
-          await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true),
-        );
+        sendResponse(await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true));
       } catch (err) {
         console.error("[Background] fetchMyCustomThemes error:", err);
         sendResponse({
@@ -157,7 +148,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchMyCustomThemeDetail(request: any, sendResponse: MessageSender): boolean {
+  function handleFetchMyCustomThemeDetail(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -183,7 +177,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleSubmitCustomTheme(request: any, sendResponse: MessageSender): boolean {
+  function handleSubmitCustomTheme(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const payload = request.payload as UploadPayload | undefined;
     if (!payload?.themeZip && (!payload?.looseFiles || payload.looseFiles.length === 0)) {
       sendResponse({ success: false, error: "Missing upload files" });
@@ -204,12 +201,17 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleReplaceCustomThemeFiles(request: any, sendResponse: MessageSender): boolean {
-    const { themeId, payload } = request;
+  function handleReplaceCustomThemeFiles(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
+    const { themeId, payload: payloadRaw } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
       return false;
     }
+    const payload =
+      payloadRaw && typeof payloadRaw === "object" ? (payloadRaw as UploadPayload) : undefined;
     if (!payload?.themeZip && (!payload?.looseFiles || payload.looseFiles.length === 0)) {
       sendResponse({ success: false, error: "Missing upload files" });
       return false;
@@ -219,7 +221,7 @@ export function createCustomThemesHandlers(deps: {
         sendResponse(
           await customThemesMultipartPost(
             `/api/custom-themes/mine/${encodeURIComponent(themeId)}/files`,
-            payload,
+            payload as UploadPayload,
           ),
         );
       } catch (err) {
@@ -233,7 +235,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleUpdateCustomThemeMetadata(request: any, sendResponse: MessageSender): boolean {
+  function handleUpdateCustomThemeMetadata(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId, body } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -263,7 +268,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleDeleteCustomTheme(request: any, sendResponse: MessageSender): boolean {
+  function handleDeleteCustomTheme(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -303,7 +311,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchBsplusAdminThemes(request: any, sendResponse: MessageSender): boolean {
+  function handleFetchBsplusAdminThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();
@@ -311,7 +322,8 @@ export function createCustomThemesHandlers(deps: {
         params.set("limit", String(Math.min(Number(request.limit ?? 20) || 20, 100)));
         if (request.status) params.set("status", String(request.status));
         if (request.source) params.set("source", String(request.source));
-        const search = request.search?.trim();
+        const searchRaw = request.search;
+        const search = typeof searchRaw === "string" ? searchRaw.trim() : "";
         if (search) params.set("search", search);
         sendResponse(await customThemesJsonFetch(`/api/bsplus/admin/themes?${params}`, {}, true));
       } catch (err) {

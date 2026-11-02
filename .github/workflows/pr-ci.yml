@@ -6,15 +6,24 @@ on:
   push:
     branches: ["main"]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
-    # windows-latest: Vite/Svelte build fails on Linux CI for layerchart vendor .svelte (see nightly.yml).
+    permissions:
+      contents: read
+    # The layerchart Svelte build fails on Linux, so CI runs on Windows.
     runs-on: windows-latest
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and dependencies
         uses: ./.github/actions/setup-node-deps
@@ -23,12 +32,14 @@ jobs:
         uses: ./.github/actions/run-lint
 
   unit-tests:
+    permissions:
+      contents: read
     runs-on: windows-latest
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Setup Node and dependencies
         uses: ./.github/actions/setup-node-deps
@@ -37,13 +48,15 @@ jobs:
         uses: ./.github/actions/run-unit-tests
 
   build-and-smoke:
+    permissions:
+      contents: read
     needs: [lint, unit-tests]
     runs-on: windows-latest
     defaults:
       run:
         shell: bash
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build extension
         id: build
@@ -52,7 +65,7 @@ jobs:
           gh_release_update_check: "false"
 
       - name: Upload extension zips
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: extension-zips
           path: |

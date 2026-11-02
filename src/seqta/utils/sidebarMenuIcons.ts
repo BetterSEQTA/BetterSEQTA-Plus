@@ -1,6 +1,6 @@
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
@@ -33,11 +33,7 @@ export function isTopLevelSidebarItem(node: HTMLElement): boolean {
 
 function wrapMenuLabelText(label: HTMLElement) {
   const textNode = label.lastChild;
-  if (
-    textNode?.nodeType === 3 &&
-    textNode.parentNode &&
-    textNode.parentNode.nodeName !== "SPAN"
-  ) {
+  if (textNode?.nodeType === 3 && textNode.parentNode && textNode.parentNode.nodeName !== "SPAN") {
     const span = document.createElement("span");
     span.textContent = textNode.nodeValue;
     label.replaceChild(span, textNode);
@@ -139,12 +135,12 @@ export async function observeMenuItemPosition() {
       const node = element as HTMLElement;
 
       if (!isTopLevelSidebarItem(node)) return;
-      if ((element as any)[processedSymbol]) return;
+      if ((element as Element & Record<symbol, boolean>)[processedSymbol]) return;
 
       if (!isMenuOptionsOpen()) {
         processMenuItemNode(node);
         ChangeMenuItemPositions(settingsState.menuorder);
-        (element as any)[processedSymbol] = true;
+        (element as Element & Record<symbol, boolean>)[processedSymbol] = true;
       }
     },
   );

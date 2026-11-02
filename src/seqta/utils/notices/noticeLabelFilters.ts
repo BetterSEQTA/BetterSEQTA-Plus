@@ -43,8 +43,7 @@ export async function resolveNoticeFilterTokens(
 export function normalizeNoticeLabelId(label: unknown): string | null {
   if (typeof label === "number" && !Number.isNaN(label)) return String(label);
   if (typeof label === "string" && label.trim()) return label.trim();
-  const id =
-    label && typeof label === "object" ? (label as { id?: unknown }).id : undefined;
+  const id = label && typeof label === "object" ? (label as { id?: unknown }).id : undefined;
   if (typeof id === "number" && !Number.isNaN(id)) return String(id);
   if (typeof id === "string" && id.trim()) return id.trim();
   return null;
@@ -56,6 +55,8 @@ export function noticeMatchesLabelFilter(
 ): boolean {
   if (filterTokens.length === 0) return true;
   const id = normalizeNoticeLabelId(notice?.label);
-  return (id !== null && filterTokens.includes(id)) ||
-    filterTokens.includes(JSON.stringify(notice?.label));
+  return (
+    (id !== null && filterTokens.includes(id)) ||
+    filterTokens.includes(JSON.stringify(notice?.label))
+  );
 }

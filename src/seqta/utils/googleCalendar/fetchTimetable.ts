@@ -1,4 +1,5 @@
-import { toISODate } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
+import { getStudentId, tryGetUserInfo } from "@/seqta/utils/userInfo";
 import type { CalendarSyncAssessment } from "./eventMapper";
 import type { SyncDateRange } from "./syncDateRange";
 import { isDateInRange, syncWindowRange } from "./syncDateRange";
@@ -71,30 +72,6 @@ function withSubjectColours(
   });
 }
 
-type SeqtaLoginPayload = {
-  id?: number;
-  student?: number;
-  type?: string;
-};
-
-let cachedLogin: SeqtaLoginPayload | null = null;
-
-async function resolveLoginPayload(): Promise<SeqtaLoginPayload | undefined> {
-  if (cachedLogin?.id != null) return cachedLogin;
-  try {
-    const json = await postSeqtaJson<{ payload?: SeqtaLoginPayload }>(
-      "/seqta/student/login",
-      { mode: "normal", query: null, redirect_url: location.href },
-    );
-    const payload = json?.payload;
-    if (!payload) return undefined;
-    cachedLogin = payload;
-    return payload;
-  } catch {
-    return undefined;
-  }
-}
-
 export async function resolveStudentId(): Promise<number | undefined> {
   if (isEngageParentContext()) {
     const data = await postSeqtaJson<{ payload?: { id?: string | number }[] }>(
@@ -104,13 +81,11 @@ export async function resolveStudentId(): Promise<number | undefined> {
     const id = Array.isArray(data?.payload) ? Number(data.payload[0]?.id) : NaN;
     return Number.isFinite(id) && id > 0 ? id : undefined;
   }
-  const payload = await resolveLoginPayload();
-  const id = payload?.id ?? payload?.student;
-  return typeof id === "number" && Number.isFinite(id) ? id : undefined;
+  return getStudentId();
 }
 
 async function resolvePersonType(): Promise<string> {
-  const payload = await resolveLoginPayload();
+  const payload = await tryGetUserInfo();
   const type = payload?.type?.trim().toLowerCase();
   return type || "student";
 }
@@ -137,7 +112,9 @@ type SeqtaAppointmentPayload = {
 };
 
 /** Parse SEQTA datetimes like `2026-07-20 09:30:00.0` into lesson date/time fields. */
-export function parseSeqtaDateTime(value: string | undefined): { date: string; time: string } | null {
+export function parseSeqtaDateTime(
+  value: string | undefined,
+): { date: string; time: string } | null {
   if (!value) return null;
   const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2})/);
   if (!match) return null;
@@ -168,8 +145,7 @@ export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTime
   if (isEngageParentContext()) return [];
 
   const person = await resolveStudentId();
-  if (person == null)
-    throw new Error("Could not resolve student for calendar sync.");
+  if (person == null) throw new Error("Could not resolve student for calendar sync.");
 
   const personType = await resolvePersonType();
   const data = await postSeqtaJson<{ payload?: SeqtaAppointmentPayload[] }>(
@@ -194,13 +170,11 @@ export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTime
   return lessons;
 }
 
-export async function fetchTimetableLessons(
-  range: SyncDateRange,
-): Promise<SeqtaTimetableLesson[]> {
+export async function fetchTimetableLessons(range: SyncDateRange): Promise<SeqtaTimetableLesson[]> {
   const { from, until } = range;
   const coloursPromise = fetchSubjectColours();
 
-  let lessons: SeqtaTimetableLesson[] = [];
+  let lessons: SeqtaTimetableLesson[];
 
   if (isEngageParentContext()) {
     const studentId = await resolveStudentId();
@@ -260,8 +234,7 @@ export async function fetchAssessmentsForCalendarSync(
   range: SyncDateRange,
 ): Promise<CalendarSyncAssessment[]> {
   const studentId = await resolveStudentId();
-  if (studentId == null)
-    throw new Error("Could not resolve student for calendar sync.");
+  if (studentId == null) throw new Error("Could not resolve student for calendar sync.");
 
   const path = isEngageParentContext()
     ? "/seqta/parent/assessment/list/upcoming?"

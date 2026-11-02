@@ -11,6 +11,8 @@ const settings = defineSettings({
   }),
 });
 
+export type MessageFoldersSettings = typeof settings;
+
 export default defineLazyPlugin({
   id: "messageFolders",
   name: "Message Folders",

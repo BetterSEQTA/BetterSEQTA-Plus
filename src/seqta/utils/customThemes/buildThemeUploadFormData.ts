@@ -1,5 +1,5 @@
 import type { LoadedCustomTheme } from "@/types/CustomThemes";
-import { blobToBase64Data } from "@/plugins/built-in/themes/themeImageUrl";
+import { blobToBase64Data } from "@/seqta/utils/base64";
 import type { CustomThemeUploadFilePart, CustomThemeUploadPayload } from "./types";
 
 /** Build serializable upload parts from a local custom theme (loose files, not ZIP). */
@@ -66,7 +66,7 @@ export async function buildUploadPartsFromLocalTheme(
 
 /** Build upload payload from a user-selected ZIP file. */
 export async function buildUploadPartsFromZipFile(file: File): Promise<CustomThemeUploadPayload> {
-  const dataBase64 = await readFileAsBase64(file);
+  const dataBase64 = await blobToBase64Data(file);
   return {
     themeZip: {
       fieldName: "theme_zip",
@@ -82,23 +82,6 @@ function base64FromUtf8(text: string): string {
   let binary = "";
   for (const b of bytes) binary += String.fromCharCode(b);
   return btoa(binary);
-}
-
-function readFileAsBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = reader.result;
-      if (typeof result !== "string") {
-        reject(new Error("Failed to read file"));
-        return;
-      }
-      const comma = result.indexOf(",");
-      resolve(comma >= 0 ? result.slice(comma + 1) : result);
-    };
-    reader.onerror = () => reject(reader.error ?? new Error("Failed to read file"));
-    reader.readAsDataURL(file);
-  });
 }
 
 export function mergeUploadPayload(

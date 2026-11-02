@@ -1,4 +1,4 @@
-import type { PluginAPI } from "@/plugins/core/types";
+import type { NumberSetting, PluginAPI } from "@/plugins/core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { waitForSeqtaMenu } from "@/seqta/utils/waitForSeqtaShell";
 
@@ -47,7 +47,7 @@ export function removeAnimatedBackgroundLayers(): void {
 }
 
 export async function syncAnimatedBackground(
-  api: PluginAPI<{ speed: number }>,
+  api: PluginAPI<{ speed: NumberSetting }>,
 ): Promise<void> {
   try {
     const [container, menu] = await Promise.all([

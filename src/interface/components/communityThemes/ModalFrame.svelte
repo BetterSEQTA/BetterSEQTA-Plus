@@ -20,7 +20,7 @@
 
 {#if open}
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs"
     role="presentation"
     onclick={(e) => {
       if (e.target === e.currentTarget && !busy) onClose();

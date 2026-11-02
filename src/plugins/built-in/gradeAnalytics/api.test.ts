@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, expect, it, jest } from "@jest/globals";
 
-jest.mock("@/seqta/ui/AddBetterSEQTAElements", () => ({
+jest.mock("@/seqta/utils/userInfo", () => ({
   getUserInfo: async () => ({ id: 12 }),
 }));
 jest.mock("@/seqta/utils/listeners/SettingsState", () => ({
@@ -22,7 +22,9 @@ beforeEach(() => {
     value: { origin },
   });
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 it("removes cached custom rubric percentages when inference is disabled", async () => {
   jest.spyOn(globalThis, "fetch").mockImplementation(async (url) =>
@@ -51,15 +53,9 @@ it("removes cached custom rubric percentages when inference is disabled", async 
     gradeSource: "customBand",
   });
 
-  await saveGradeInferenceSettings(
-    origin,
-    12,
-    DEFAULT_ANALYTICS_GRADE_INFERENCE,
-  );
+  await saveGradeInferenceSettings(origin, 12, DEFAULT_ANALYTICS_GRADE_INFERENCE);
   const refreshed = await syncGradeAnalytics();
   expect(refreshed.assessments[0].finalGrade).toBeUndefined();
   expect(refreshed.assessments[0].gradeSource).toBeUndefined();
-  expect(
-    (await loadAnalyticsCache(origin, 12))?.assessments[0].finalGrade,
-  ).toBeUndefined();
+  expect((await loadAnalyticsCache(origin, 12))?.assessments[0].finalGrade).toBeUndefined();
 });

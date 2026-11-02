@@ -1,4 +1,4 @@
-import { resolveLoginPayload } from "./seqtaClient";
+import { tryGetUserInfo } from "@/seqta/utils/userInfo";
 
 /** Must match `buildIdentityBindingCanonical` in betterseqta-accounts worker. */
 export function buildIdentityBindingCanonical(input: {
@@ -61,7 +61,7 @@ async function bindingFieldsFromSession(
   instanceHost: string,
   cloudUserId: string,
 ): Promise<TimetableClassmatesBindingFields | null> {
-  const login = await resolveLoginPayload();
+  const login = await tryGetUserInfo();
   const seqtaStudentId = login?.id ?? login?.student;
   const personUuidRaw = login?.personUUID;
   if (

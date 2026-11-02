@@ -7,7 +7,7 @@
   import { isStoreThemeInstalled } from '@/interface/utils/themeListFilters'
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
-  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' } = $props<{
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' }: {
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
@@ -17,7 +17,7 @@
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
     variant?: 'official' | 'community';
-  }>();
+  } = $props();
 
   const displayDownloadCount = $derived(
     allStoreThemeRows != null
@@ -77,12 +77,12 @@
   onclick={handleCardClick}
 >
   <div
-    class="theme-card isolate bg-gray-50 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1] h-auto"
+    class="theme-card isolate bg-gray-50 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative group flex flex-col rounded-xl overflow-clip border hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/10 h-auto"
   >
     {#if isCommunity}
       <div class="absolute top-2 left-2 z-20 pointer-events-none">
         <span
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100 shadow-sm"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100 shadow-xs"
           aria-label="Community theme"
         >
           Community
@@ -90,9 +90,9 @@
       </div>
     {/if}
     {#if theme.featured === true}
-      <div class="absolute top-2 z-20 pointer-events-none {isCommunity ? 'left-[5.75rem]' : 'left-2'}">
+      <div class="absolute top-2 z-20 pointer-events-none {isCommunity ? 'left-23' : 'left-2'}">
         <span
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-sm"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-xs"
           aria-label="Featured theme"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
@@ -103,9 +103,9 @@
       </div>
     {/if}
     {#if isInstalled}
-      <div class="absolute top-2 z-20 pointer-events-none {theme.featured === true ? (isCommunity ? 'left-[11rem]' : 'left-[5.5rem]') : isCommunity ? 'left-[5.75rem]' : 'left-2'}">
+      <div class="absolute top-2 z-20 pointer-events-none {theme.featured === true ? (isCommunity ? 'left-44' : 'left-22') : isCommunity ? 'left-23' : 'left-2'}">
         <span
-          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100 shadow-sm"
+          class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100 shadow-xs"
           aria-label="Installed"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
@@ -119,7 +119,7 @@
     <button
       type="button"
       data-theme-favorite
-      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scAle-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-[4px] transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
       onclick={handleFavoriteClick}
       aria-label={isLoggedIn
         ? theme.is_favorited
@@ -150,7 +150,7 @@
       {#if theme.author}
         <span class="text-xs text-white/85 drop-shadow-md line-clamp-1">By {theme.author}</span>
       {/if}
-      <div class="flex gap-3 text-xs font-medium text-white/90 drop-shadow-sm">
+      <div class="flex gap-3 text-xs font-medium text-white/90 drop-shadow-xs">
         <span class="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />

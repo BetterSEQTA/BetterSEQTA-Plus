@@ -1,0 +1,10 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "ignorePatterns": [
+    "betterseqtaplus-safari/",
+    "coverage/",
+    "dist/",
+    "package-lock.json",
+    "src/public/"
+  ]
+}

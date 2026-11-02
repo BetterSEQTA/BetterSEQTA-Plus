@@ -2,17 +2,20 @@
   "manifest_version": 3,
   "name": "BetterSEQTA+",
   "icons": {
+    "16": "resources/icons/icon-16.png",
     "32": "resources/icons/icon-32.png",
     "48": "resources/icons/icon-48.png",
-    "64": "resources/icons/icon-64.png"
+    "64": "resources/icons/icon-64.png",
+    "128": "resources/icons/icon-128.png"
   },
   "action": {
-    "browser_style": true,
     "default_popup": "interface/index.html#settings",
     "default_icon": {
+      "16": "resources/icons/icon-16.png",
       "32": "resources/icons/icon-32.png",
       "48": "resources/icons/icon-48.png",
-      "64": "resources/icons/icon-64.png"
+      "64": "resources/icons/icon-64.png",
+      "128": "resources/icons/icon-128.png"
     }
   },
   "permissions": ["tabs", "notifications", "storage", "alarms"],
@@ -43,14 +46,10 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "resources/error-page/*",
-        "resources/icons/*",
-        "resources/update-image.webp",
         "resources/pdfjs/pdf.worker.min.mjs",
         "resources/pdfjs/pdf.legacy.min.mjs",
         "resources/themeToggleSurprisePage.js",
         "resources/ort/*",
-        "assets/*.css",
         "assets/*"
       ],
       "matches": ["*://*/*"]

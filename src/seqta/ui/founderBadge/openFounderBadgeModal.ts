@@ -1,5 +1,5 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { closePopup, openPopup } from "@/seqta/utils/Openers/PopupManager";
+import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
 import { openFounderBadgeSettings } from "@/seqta/ui/founderBadge/openFounderBadgeSettings";
 import {
   badgeBlobStyle,
@@ -18,10 +18,7 @@ function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function openFounderBadgeModal(
-  badge: BadgeItem,
-  signupNumber?: number | null,
-): void {
+export function openFounderBadgeModal(badge: BadgeItem, signupNumber?: number | null): void {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return;
 

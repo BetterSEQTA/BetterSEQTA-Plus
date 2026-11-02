@@ -5,8 +5,7 @@ import appstorelight from "@/resources/icons/dlappstore-light.svg";
 import gplayicon from "@/resources/icons/googleplay.svg";
 import styles from "./styles.css?inline";
 
-const APPSTORE =
-  'a[href="https://itunes.apple.com/au/app/seqta-learn/id1143069793"]>img';
+const APPSTORE = 'a[href="https://itunes.apple.com/au/app/seqta-learn/id1143069793"]>img';
 const GOOGLEPLAY =
   'a[href="https://play.google.com/store/apps/details?id=com.seqta.android.learn"]>img';
 

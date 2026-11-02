@@ -10,13 +10,10 @@ let isSeqtaPage = false;
 // This check is placed outside of the document load event due to issues with EP (https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/84)
 if (document.childNodes[1]) {
   hasSEQTAText =
-    document.childNodes[1].textContent?.includes(
-      "Copyright (c) SEQTA Software",
-    ) ?? false;
+    document.childNodes[1].textContent?.includes("Copyright (c) SEQTA Software") ?? false;
   isSeqtaPage =
     hasSEQTAText &&
-    (document.title.includes("SEQTA Learn") ||
-      document.title.includes("SEQTA Engage"));
+    (document.title.includes("SEQTA Learn") || document.title.includes("SEQTA Engage"));
 }
 
 if (hasSEQTAText) {
@@ -25,9 +22,7 @@ if (hasSEQTAText) {
 
 // Standalone 404 documents never pass the SEQTA SPA gate above.
 if (!isSeqtaPage) {
-  void import("@/seqta/bootErrorPage").then(({ bootErrorPage }) =>
-    bootErrorPage(),
-  );
+  void import("@/seqta/bootErrorPage").then(({ bootErrorPage }) => bootErrorPage());
 }
 
 if (import.meta.env.DEV) {

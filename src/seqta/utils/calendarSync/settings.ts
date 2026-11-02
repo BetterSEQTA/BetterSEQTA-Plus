@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   GOOGLE_CALENDAR_SYNC_WEEKS,
   GOOGLE_CALENDAR_SYNC_WEEKS_MAX,
@@ -126,12 +126,7 @@ export async function readResumableCalendarSync(): Promise<PendingCalendarSync |
   const validMode = pending.mode === "full" || pending.mode === "incremental";
   const fresh = Date.now() - pending.startedAt < 24 * 60 * 60 * 1000;
 
-  if (
-    !validProvider ||
-    !validMode ||
-    pending.origin !== location.origin ||
-    !fresh
-  ) {
+  if (!validProvider || !validMode || pending.origin !== location.origin || !fresh) {
     await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
     return null;
   }

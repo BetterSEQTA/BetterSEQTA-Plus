@@ -1,5 +1,5 @@
 import type { Plugin } from "@/plugins/core/types";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 import { timetableClassmatesSettings } from "./settings";
@@ -21,18 +21,12 @@ import {
   loadSession,
 } from "./rosterStore";
 import { refreshPeopleCacheIfStale } from "./peopleCache";
-import { resolveStudentId } from "./seqtaClient";
+import { getStudentId } from "@/seqta/utils/userInfo";
 import { peerCloudIdsForPaint } from "./accountsClient";
 import { fetchSchoolYearEnrollmentSnapshot } from "./timetableYearSnapshot";
 import { CLASSMATES_TIMETABLE_POLL_MS } from "./constants";
-import {
-  bindClassmatesOptInActivated,
-  scheduleClassmatesSyncIfNeeded,
-} from "./syncOrchestrator";
-import {
-  mountClassmatesToolbarChip,
-  unmountClassmatesToolbarChip,
-} from "./classmatesToolbarUi";
+import { bindClassmatesOptInActivated, scheduleClassmatesSyncIfNeeded } from "./syncOrchestrator";
+import { mountClassmatesToolbarChip, unmountClassmatesToolbarChip } from "./classmatesToolbarUi";
 import { maybeResumeTimetableClassmatesOptInPopup } from "./openTimetableClassmatesPopup";
 
 const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
@@ -101,7 +95,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
           return;
         }
 
-        const selfId = await resolveStudentId();
+        const selfId = await getStudentId();
         if (selfId == null) return;
 
         const [roster, peopleCache, archived, ciMap, cloudIds] = await Promise.all([
@@ -141,11 +135,15 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
             const title = quickbar.querySelector(".title")?.textContent?.trim() ?? "";
             const host =
               (quickbar.querySelector(".meta") as HTMLElement | null) ?? (quickbar as HTMLElement);
-            paints.push(paintHost(host, ciOf(findClassEntryByTitle(page, title))));
+            paints.push(
+              paintHost(host, classKeyFromCi(ciOf(findClassEntryByTitle(page, title)), ciMap)),
+            );
           }
         }
 
-        const homeDays = document.querySelectorAll<HTMLElement>("#day-container .day[data-bsplus-meta-id]");
+        const homeDays = document.querySelectorAll<HTMLElement>(
+          "#day-container .day[data-bsplus-meta-id]",
+        );
         for (const day of homeDays) {
           paints.push(paintHost(day, classKeyForHomeDay(day)));
         }
@@ -191,18 +189,17 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
     window.addEventListener(CLASSMATES_UPDATED_EVENT, onUpdated);
 
     const onRepaintClick = (e: Event) => {
-      if (
-        (e.target as HTMLElement).closest?.(
-          ".timetablepage .entry.class, #day-container .day",
-        )
-      ) {
+      if ((e.target as HTMLElement).closest?.(".timetablepage .entry.class, #day-container .day")) {
         schedulePaint();
       }
     };
     document.addEventListener("click", onRepaintClick, true);
 
     const { unregister: unregisterEnabled } = api.settings.onChange("enabled", schedulePaint);
-    const { unregister: unregisterTimetable } = api.seqta.onMount(".timetablepage", handleTimetablePage);
+    const { unregister: unregisterTimetable } = api.seqta.onMount(
+      ".timetablepage",
+      handleTimetablePage,
+    );
     const { unregister: unregisterHome } = api.seqta.onMount("#home-container", handleHomePage);
 
     if ((await loadSession()).syncOptIn) {

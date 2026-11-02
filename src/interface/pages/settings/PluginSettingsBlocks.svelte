@@ -23,12 +23,15 @@
     pluginSettingsStore,
     type PluginSettingsEntry,
   } from "./pluginSettingsState.svelte";
+  import { toMountableComponent } from "@/types/mountableComponent";
 
   let {
     section,
     showDisclaimer,
     searchQuery = "",
-  }: SettingsSectionSharedProps & { section: SettingsSectionId } = $props();
+  }: Pick<SettingsSectionSharedProps, "showDisclaimer" | "searchQuery"> & {
+    section: SettingsSectionId;
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   $effect(() => {
@@ -185,7 +188,7 @@
         title="Theme of the Month"
         description="Show the monthly featured theme popup when a new entry is available"
         id={15}
-        Component={Switch}
+        Component={toMountableComponent(Switch)}
         {searchQuery}
         props={{
           state: !($settingsState.themeOfTheMonthDisabled ?? false),

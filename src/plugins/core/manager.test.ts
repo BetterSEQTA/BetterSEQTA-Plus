@@ -48,7 +48,7 @@ test.each(["plugin", "master", "performance"])(
   async (disable) => {
     const manager = PluginManager.getInstance();
     const id = `pending-${disable}`;
-    const storageKey = `plugin.${id}.settings`;
+    const storageKey = `plugin.${id}.settings` as const;
     let release!: () => void;
     let enter!: () => void;
     const ready = new Promise<void>((resolve) => {
@@ -77,8 +77,7 @@ test.each(["plugin", "master", "performance"])(
 
     const startup = manager.startPlugin(id);
     await entered;
-    if (disable === "plugin")
-      settingsState.setKey(storageKey, { enabled: false });
+    if (disable === "plugin") settingsState.setKey(storageKey, { enabled: false });
     if (disable === "master") settingsState.onoff = false;
     if (disable === "performance")
       jest.mocked(isPluginAllowedInPerformanceMode).mockReturnValue(false);

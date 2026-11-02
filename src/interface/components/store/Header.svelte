@@ -18,7 +18,7 @@
     onLogoClick,
     onClose,
     onToggleSize,
-  } = $props<{
+  }: {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
     activePage: SettingsPage;
@@ -27,7 +27,7 @@
     onLogoClick: () => void;
     onClose: () => void;
     onToggleSize?: () => void;
-  }>();
+  } = $props();
 
   const tabs: { id: SettingsPage; title: string }[] = [
     { id: "settings", title: "Settings" },
@@ -46,12 +46,12 @@
   <button type="button" class="shrink-0" onclick={onLogoClick} aria-label="BetterSEQTA+">
     <img
       src={resolveExtensionAssetUrl(darkLogo)}
-      class="h-9 max-w-[10.5rem] object-contain object-left dark:hidden sm:h-10"
+      class="h-9 max-w-42 object-contain object-left dark:hidden sm:h-10"
       alt=""
     />
     <img
       src={resolveExtensionAssetUrl(lightLogo)}
-      class="hidden h-9 max-w-[10.5rem] object-contain object-left dark:block sm:h-10"
+      class="hidden h-9 max-w-42 object-contain object-left dark:block sm:h-10"
       alt=""
     />
   </button>
@@ -63,7 +63,7 @@
   >
     <div class="relative flex">
       <MotionDiv
-        class="absolute inset-y-0 left-0 z-0 w-1/3 rounded-full bg-white shadow-sm dark:bg-zinc-700"
+        class="absolute inset-y-0 left-0 z-0 w-1/3 rounded-full bg-white shadow-xs dark:bg-zinc-700"
         animate={{ x: `${activeIndex * 100}%` }}
         transition={{ type: "spring", stiffness: 250, damping: 25 }}
       />
@@ -119,7 +119,7 @@
 
     {#if onToggleSize}
       <button type="button" onclick={onToggleSize}
-        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-none dark:text-zinc-400 dark:hover:text-white"
+        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
         aria-label="Collapse settings" title="Collapse settings" aria-expanded="true">
         <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uec06"}</span>
       </button>

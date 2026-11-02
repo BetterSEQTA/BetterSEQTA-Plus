@@ -10,8 +10,9 @@
     PERFORMANCE_HEAVY_PLUGINS,
     setPerformanceModePluginOverride,
   } from "@/seqta/utils/performanceMode";
-  import browser from "webextension-polyfill";
+  import browser from "@/lib/browser";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
+  import type { SettingsList } from "@/interface/types/SettingsProps";
   import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 
   let { searchQuery = "" }: SettingsSectionSharedProps = $props();
@@ -142,7 +143,7 @@
           },
         ]
       : []),
-  ]);
+  ] as unknown as SettingsList[]);
 </script>
 
 {#if generalOptions.some((option) => matchesSearch(searchQuery, option.title, option.description))}

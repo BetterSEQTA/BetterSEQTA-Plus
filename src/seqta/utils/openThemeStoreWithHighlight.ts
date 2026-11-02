@@ -13,7 +13,5 @@ export async function openThemeStoreWithHighlight(themeId: string): Promise<void
   pendingHighlightThemeId = themeId;
   const { OpenStorePage } = await import("@/seqta/ui/renderStore");
   await OpenStorePage();
-  window.dispatchEvent(
-    new CustomEvent("bsplus:highlight-theme", { detail: { themeId } }),
-  );
+  window.dispatchEvent(new CustomEvent("bsplus:highlight-theme", { detail: { themeId } }));
 }

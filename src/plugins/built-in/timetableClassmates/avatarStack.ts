@@ -35,7 +35,12 @@ export function isClassmatesPluginMutation(record: MutationRecord): boolean {
   return false;
 }
 
-function stackSignature(classKey: string, maxVisible: number, overflow: number, peerIds: number[]): string {
+function stackSignature(
+  classKey: string,
+  maxVisible: number,
+  overflow: number,
+  peerIds: number[],
+): string {
   return `${classKey}|${maxVisible}|${overflow}|${peerIds.join(",")}`;
 }
 
@@ -127,7 +132,11 @@ async function hydrateAvatarFromCloud(wrap: HTMLElement, cloudUserId: string): P
   }
 }
 
-function openRosterPopup(classTitle: string, allSorted: AvatarListInput[], peopleCache: PeopleCache): void {
+function openRosterPopup(
+  classTitle: string,
+  allSorted: AvatarListInput[],
+  peopleCache: PeopleCache,
+): void {
   openClassmatesRosterPopup(
     classTitle || "Classmates",
     allSorted.map((p) => {

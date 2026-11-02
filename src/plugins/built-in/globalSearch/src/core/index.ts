@@ -1,6 +1,6 @@
 import type { Plugin } from "@/plugins/core/types";
+import type { GlobalSearchSettings } from "../../lazy";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";
-import styles from "./styles.css?inline";
 import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
 import { installResetIndexMessageListener } from "../indexing/resetIndexes";
@@ -8,10 +8,7 @@ import { isIndexingPaused } from "../indexing/indexingPause";
 import { cleanupSearchBar, mountSearchBar } from "./mountSearchBar";
 import { IndexedDbManager } from "embeddia";
 import { checkAndHandleUpdate } from "../utils/versionCheck";
-import {
-  getStoredPassiveItems,
-  installPassiveObserver,
-} from "../indexing/passiveObserver";
+import { getStoredPassiveItems, installPassiveObserver } from "../indexing/passiveObserver";
 import { globalSearchIndexingEnabled } from "@/seqta/utils/performanceMode";
 
 function scheduleIdleIndexing(run: () => void): void {
@@ -22,16 +19,7 @@ function scheduleIdleIndexing(run: () => void): void {
   setTimeout(run, 2000);
 }
 
-const globalSearchPlugin: Plugin<{}> = {
-  id: "global-search",
-  name: "Global Search",
-  description: "Quick search for everything in SEQTA",
-  version: "1.0.0",
-  settings: {},
-  disableToggle: true,
-  defaultEnabled: false,
-  styles,
-
+const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
   run: async (api) => {
     const appRef = { current: null };
 
@@ -44,8 +32,8 @@ const globalSearchPlugin: Plugin<{}> = {
           "[Global Search] Extension updated — search index reset; the next indexing pass will repopulate.",
         );
       }
-    } catch (error: any) {
-      const msg = error?.message ?? "";
+    } catch (error: unknown) {
+      const msg = error instanceof Error ? error.message : "";
       if (
         msg.includes("preload CSS") ||
         msg.includes("MIME type") ||
@@ -75,13 +63,14 @@ const globalSearchPlugin: Plugin<{}> = {
       console.error("Failed to create IndexedDB:", error);
     }
 
-    // @ts-ignore
+    // @ts-expect-error debug hook attached for support tooling
     window.globalSearchDebug = {
       resetWorker: async () =>
-        (await import("../indexing/worker/vectorWorkerManager")).VectorWorkerManager.getInstance().resetWorker(),
+        (
+          await import("../indexing/worker/vectorWorkerManager")
+        ).VectorWorkerManager.getInstance().resetWorker(),
       passiveItems: getStoredPassiveItems,
-      runSelfTests: async () =>
-        (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),
+      runSelfTests: async () => (await import("../indexing/selfTests")).runGlobalSearchSelfTests(),
     };
 
     if (globalSearchIndexingEnabled(!!api.settings.passiveIndexing)) {
@@ -92,10 +81,7 @@ const globalSearchPlugin: Plugin<{}> = {
       }
     }
 
-    if (
-      globalSearchIndexingEnabled(!!api.settings.runIndexingOnLoad) &&
-      !isIndexingPaused()
-    ) {
+    if (globalSearchIndexingEnabled(!!api.settings.runIndexingOnLoad) && !isIndexingPaused()) {
       scheduleIdleIndexing(() => {
         if (!isIndexingPaused()) void runIndexing();
       });

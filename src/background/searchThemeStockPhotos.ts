@@ -29,7 +29,12 @@ export function handleSearchThemeStockPhotos(
       });
       const res = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`);
       const json = (await res.json()) as {
-        query?: { pages?: Record<string, { title?: string; imageinfo?: { thumburl?: string; url?: string }[] }> };
+        query?: {
+          pages?: Record<
+            string,
+            { title?: string; imageinfo?: { thumburl?: string; url?: string }[] }
+          >;
+        };
       };
       const pages = json.query?.pages ?? {};
       const results: StockPhotoResult[] = Object.values(pages)

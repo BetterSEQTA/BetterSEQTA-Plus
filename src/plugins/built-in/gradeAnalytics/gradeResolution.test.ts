@@ -1,9 +1,6 @@
 import { describe, expect, it } from "@jest/globals";
 import { DEFAULT_ANALYTICS_GRADE_INFERENCE } from "./gradeInferenceSettings";
-import {
-  resolveGradeFromAssessmentPayload,
-  rollupPercentFromCriteria,
-} from "./gradeResolution";
+import { resolveGradeFromAssessmentPayload, rollupPercentFromCriteria } from "./gradeResolution";
 
 describe("rollupPercentFromCriteria", () => {
   it("returns undefined when no criterion marks exist", () => {
@@ -12,10 +9,7 @@ describe("rollupPercentFromCriteria", () => {
 
   it("averages criterion percentages when weights are missing", () => {
     const result = rollupPercentFromCriteria(
-      [
-        { results: { percentage: 80 } },
-        { results: { percentage: 60 } },
-      ],
+      [{ results: { percentage: 80 } }, { results: { percentage: 60 } }],
       DEFAULT_ANALYTICS_GRADE_INFERENCE,
     );
     expect(result).toBe(70);
@@ -62,26 +56,18 @@ describe("resolveGradeFromAssessmentPayload", () => {
   it("does not rollup criteria unless the option is enabled", () => {
     const payload = {
       status: "MARKS_RELEASED",
-      criteria: [
-        { results: { percentage: 70 } },
-        { results: { percentage: 90 } },
-      ],
+      criteria: [{ results: { percentage: 70 } }, { results: { percentage: 90 } }],
     };
     expect(
-      resolveGradeFromAssessmentPayload(payload, DEFAULT_ANALYTICS_GRADE_INFERENCE)
-        .finalGrade,
+      resolveGradeFromAssessmentPayload(payload, DEFAULT_ANALYTICS_GRADE_INFERENCE).finalGrade,
     ).toBe(70);
 
     const withRollup = {
       ...DEFAULT_ANALYTICS_GRADE_INFERENCE,
       rollupCriteriaGrades: true,
     };
-    expect(
-      resolveGradeFromAssessmentPayload(payload, withRollup).finalGrade,
-    ).toBe(80);
-    expect(resolveGradeFromAssessmentPayload(payload, withRollup).source).toBe(
-      "criteriaRollup",
-    );
+    expect(resolveGradeFromAssessmentPayload(payload, withRollup).finalGrade).toBe(80);
+    expect(resolveGradeFromAssessmentPayload(payload, withRollup).source).toBe("criteriaRollup");
   });
 
   it("uses custom bands for letter-only marks", () => {

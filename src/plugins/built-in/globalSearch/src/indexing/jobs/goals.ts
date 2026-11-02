@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { extractTextFromValue } from "../extract";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes student goals from `/seqta/student/load/goals`.
  *
@@ -37,7 +37,7 @@ export const goalsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const years = await seqtaFetchPayload<Array<string | number> | null>(
       "/seqta/student/load/goals",
       { mode: "years" },
@@ -52,10 +52,10 @@ export const goalsJob: Job = {
 
     for (const year of years) {
       try {
-        const yearGoals = await seqtaFetchPayload<GoalEntry[] | null>(
-          "/seqta/student/load/goals",
-          { mode: "list", year },
-        );
+        const yearGoals = await seqtaFetchPayload<GoalEntry[] | null>("/seqta/student/load/goals", {
+          mode: "list",
+          year,
+        });
         if (!Array.isArray(yearGoals)) continue;
 
         for (const goal of yearGoals) {
@@ -66,11 +66,11 @@ export const goalsJob: Job = {
           if (seen.has(id)) continue;
           seen.add(id);
 
-          const title =
-            goal.title?.trim() || goal.description?.slice(0, 80) || `Goal ${stableId}`;
-          const dateAdded = goal.updated || goal.created
-            ? new Date(goal.updated ?? goal.created!).getTime() || Date.now()
-            : Date.now();
+          const title = goal.title?.trim() || goal.description?.slice(0, 80) || `Goal ${stableId}`;
+          const dateAdded =
+            goal.updated || goal.created
+              ? new Date(goal.updated ?? goal.created!).getTime() || Date.now()
+              : Date.now();
 
           items.push({
             id,

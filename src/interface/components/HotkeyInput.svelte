@@ -1,10 +1,10 @@
 <script lang="ts">
   import { isValidHotkey, parseHotkey } from '@/plugins/built-in/globalSearch/src/utils/hotkeyUtils';
 
-  let { value, onChange } = $props<{ 
+  let { value, onChange }: { 
     value: string, 
     onChange: (newValue: string) => void 
-  }>();
+  } = $props();
 
   let isRecording = $state(false);
   let recordedKeys = $state<Set<string>>(new Set());
@@ -33,7 +33,6 @@
   };
 
   const formatKeyForDisplay = (key: string): string => {
-    // Map keys to their display format
     const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
     const keyMap: Record<string, string> = {
       'ctrl': isMac ? '⌃' : 'Ctrl',
@@ -70,7 +69,6 @@
     if (parsed.alt) parts.push('alt');
     if (parsed.shift) parts.push('shift');
     
-    // Add the main key
     if (parsed.key) parts.push(parsed.key);
     
     return parts;
@@ -92,7 +90,6 @@
         return;
       }
 
-      // Build the hotkey string
       const modifiers: string[] = [];
       let mainKey = '';
 
@@ -131,7 +128,6 @@
 
     const key = formatKeyForHotkey(e.key);
     
-    // Add modifiers
     if (e.ctrlKey) addRecordedKey('ctrl');
     if (e.metaKey) addRecordedKey('cmd');
     if (e.altKey) addRecordedKey('alt');
@@ -166,7 +162,6 @@
     }
   });
 
-  // Get the parts to display
   const hotkeyParts = $derived(isRecording 
     ? Array.from(recordedKeys).map(formatKeyForDisplay)
     : getHotkeyParts(value).map(formatKeyForDisplay));

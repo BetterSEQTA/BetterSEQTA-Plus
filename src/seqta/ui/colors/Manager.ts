@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import Color from "color";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { lightenAndPaleColor } from "./lightenAndPaleColor";
@@ -19,10 +18,9 @@ const LOGO_STYLE_ID = "bsplus-logo-style";
 let colorTransitionRafId: number | null = null;
 let lastInterpolatedHex: string | null = null;
 
-// Helper functions
-const setCSSVar = (varName: any, value: any) =>
+const setCSSVar = (varName: string, value: string) =>
   document.documentElement.style.setProperty(varName, value);
-const applyProperties = (props: any) =>
+const applyProperties = (props: Record<string, string>) =>
   Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
 function easeInOutCubic(t: number): number {
@@ -61,11 +59,7 @@ function parseRepresentativeHex(s: string): string | null {
   const rgbaMatch = trimmed.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
   if (rgbaMatch) {
     try {
-      return Color.rgb(
-        Number(rgbaMatch[1]),
-        Number(rgbaMatch[2]),
-        Number(rgbaMatch[3]),
-      ).hex();
+      return Color.rgb(Number(rgbaMatch[1]), Number(rgbaMatch[2]), Number(rgbaMatch[3])).hex();
     } catch {
       // continue
     }
@@ -140,8 +134,7 @@ function applyColorsWith(selectedColor: string) {
   };
 
   // Mode-based properties, applied if storedSetting is provided
-  let modeProps = {};
-  modeProps = settingsState.DarkMode
+  const modeProps = settingsState.DarkMode
     ? {
         "--betterseqta-logo": `url(${resolveExtensionAssetUrl(darkLogo)})`,
       }
@@ -164,14 +157,14 @@ function applyColorsWith(selectedColor: string) {
   const isBright = rgbThreshold > 210;
   const dynamicProps = {
     "--text-color": isBright ? "black" : "white",
-    "--better-light":
-      selectedColor === "#ffffff"
-        ? "#b7b7b7"
-        : ColorLuminance(selectedColor, 0.95),
+    "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(selectedColor, 0.95),
   };
 
-  // Apply all the properties
-  applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
+  const cssVars: Record<string, string> = { ...commonProps, ...dynamicProps };
+  for (const [key, value] of Object.entries(modeProps)) {
+    if (value != null) cssVars[key] = value;
+  }
+  applyProperties(cssVars);
 
   if (settingsState.selectedTheme) {
     const channels = getRepresentativeRgbChannels(selectedColor);
@@ -206,7 +199,7 @@ function applyColorsWith(selectedColor: string) {
     }
   }
 
-  let alliframes = document.getElementsByTagName("iframe");
+  const alliframes = document.getElementsByTagName("iframe");
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];
@@ -231,10 +224,7 @@ function toSoftGradient(hex: string): string {
 }
 
 export async function updateAllColors() {
-  let effectiveColor =
-    settingsState.selectedColor !== ""
-      ? settingsState.selectedColor
-      : "#007bff";
+  let effectiveColor = settingsState.selectedColor !== "" ? settingsState.selectedColor : "#007bff";
 
   let adaptiveHex: string | null = null;
 
@@ -248,15 +238,11 @@ export async function updateAllColors() {
     }
   }
 
-  const baseSelected =
-    settingsState.selectedColor !== "" ? settingsState.selectedColor : "#007bff";
-  const toHex =
-    adaptiveHex ?? parseRepresentativeHex(baseSelected);
+  const baseSelected = settingsState.selectedColor !== "" ? settingsState.selectedColor : "#007bff";
+  const toHex = adaptiveHex ?? parseRepresentativeHex(baseSelected);
 
   const shouldAnimate =
-    settingsState.adaptiveThemeColour &&
-    adaptiveThemeTransitionEnabled() &&
-    !!toHex;
+    settingsState.adaptiveThemeColour && adaptiveThemeTransitionEnabled() && !!toHex;
 
   const applyImmediate = () => {
     cancelColorTransition();
@@ -276,8 +262,7 @@ export async function updateAllColors() {
     return;
   }
 
-  const useSoftGradientOnFrames =
-    !!adaptiveHex && !!settingsState.adaptiveThemeGradient;
+  const useSoftGradientOnFrames = !!adaptiveHex && !!settingsState.adaptiveThemeGradient;
 
   cancelColorTransition();
 
@@ -288,9 +273,7 @@ export async function updateAllColors() {
     const t = Math.min(1, elapsed / ADAPTIVE_THEME_TRANSITION_MS);
     const eased = easeInOutCubic(t);
     const interpolatedHex = Color(fromHex).mix(Color(toHex), eased).hex();
-    const display = useSoftGradientOnFrames
-      ? toSoftGradient(interpolatedHex)
-      : interpolatedHex;
+    const display = useSoftGradientOnFrames ? toSoftGradient(interpolatedHex) : interpolatedHex;
     applyColorsWith(display);
 
     if (t < 1) {

@@ -1,7 +1,4 @@
-import {
-  isIndexingActive,
-  setIndexingActive,
-} from "./indexingState";
+import { isIndexingActive, setIndexingActive } from "./indexingState";
 
 describe("indexingState", () => {
   afterEach(() => {

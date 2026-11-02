@@ -1,4 +1,3 @@
-import { generateImageId } from "@/interface/utils/themeImageHandlers";
 import { DEFAULT_FONT_ID, getFontPreset, type FontPreset } from "@/seqta/ui/fonts/presets";
 import type { LoadedCustomTheme } from "@/types/CustomThemes";
 
@@ -16,7 +15,7 @@ export type ThemeBuilderDraft = {
   themeId?: string;
 };
 
-/** Keep the BetterSEQTA title bar opaque (generated themes must not use the old transparent #title hack). */
+/** Keeps the BetterSEQTA title bar opaque in generated themes. */
 const TITLEBAR_SOLID = `#title {
   background: var(--background-primary) !important;
 }`;
@@ -30,7 +29,12 @@ export function buildThemeBuilderCss(
   imageVariables: string[],
   draft: Pick<
     ThemeBuilderDraft,
-    "accentColor" | "gradientEnd" | "gradientAngle" | "backgroundBlurPx" | "overlayOpacity" | "customCssExtra"
+    | "accentColor"
+    | "gradientEnd"
+    | "gradientAngle"
+    | "backgroundBlurPx"
+    | "overlayOpacity"
+    | "customCssExtra"
   >,
 ): string {
   const importLine = font.googleUrl ? `@import url("${font.googleUrl}");\n` : "";
@@ -46,9 +50,7 @@ export function buildThemeBuilderCss(
   ];
 
   const imageLayer =
-    imageVariables.length > 0
-      ? imageVariables.map((name) => `var(--${name})`).join(", ")
-      : "";
+    imageVariables.length > 0 ? imageVariables.map((name) => `var(--${name})`).join(", ") : "";
   const gradientLayer = `linear-gradient(${angle}deg, color-mix(in srgb, ${draft.accentColor} ${Math.round(overlay * 100)}%, transparent), color-mix(in srgb, ${endColor} ${Math.round(overlay * 100)}%, transparent))`;
 
   rules.push(`#container {
@@ -115,7 +117,7 @@ export function buildThemeFromDraft(draft: ThemeBuilderDraft): LoadedCustomTheme
   const font = getFontPreset(draft.fontId ?? DEFAULT_FONT_ID);
   const photoBlobs = draft.photoBlobs.filter((blob) => blob.size > 0);
   const CustomImages = photoBlobs.map((blob, index) => ({
-    id: generateImageId(),
+    id: crypto.randomUUID(),
     blob,
     variableName: `theme-bg-${index}`,
   }));
@@ -127,7 +129,11 @@ export function buildThemeFromDraft(draft: ThemeBuilderDraft): LoadedCustomTheme
     defaultColour: draft.accentColor.trim() || "rgba(0, 123, 255, 1)",
     CanChangeColour: true,
     allowBackgrounds: true,
-    CustomCSS: buildThemeBuilderCss(font, CustomImages.map((i) => i.variableName), draft),
+    CustomCSS: buildThemeBuilderCss(
+      font,
+      CustomImages.map((i) => i.variableName),
+      draft,
+    ),
     CustomImages,
     coverImage: photoBlobs[0] ?? null,
     isEditable: true,

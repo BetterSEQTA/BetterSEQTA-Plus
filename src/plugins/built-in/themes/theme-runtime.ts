@@ -145,10 +145,6 @@ function getMinutesOfDay(now: Date = new Date()): number {
   return now.getHours() * 60 + now.getMinutes();
 }
 
-function getTimeState(now: Date = new Date()): TimeState {
-  return timeStateForMinutes(getMinutesOfDay(now));
-}
-
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
@@ -180,10 +176,10 @@ function darknessForMinutes(minutes: number): number {
  * to anything.
  */
 const LIT_OPACITIES: Record<TimeState, [number, number, number]> = {
-  night:   [1.0, 1.0, 1.0],
-  dawn:    [1.0, 0.0, 0.0],
-  day:     [0.0, 0.0, 0.0],
-  dusk:    [1.0, 0.6, 0.0],
+  night: [1.0, 1.0, 1.0],
+  dawn: [1.0, 0.0, 0.0],
+  day: [0.0, 0.0, 0.0],
+  dusk: [1.0, 0.6, 0.0],
   evening: [1.0, 1.0, 0.5],
 };
 
@@ -273,9 +269,7 @@ export function validateThemeScript(script: unknown): script is ThemeScriptSpec 
   if (s.onInterval !== undefined && !isAllowedCall(s.onInterval)) return false;
   if (
     s.interval !== undefined &&
-    (typeof s.interval !== "number" ||
-      !Number.isFinite(s.interval) ||
-      s.interval < MIN_INTERVAL_MS)
+    (typeof s.interval !== "number" || !Number.isFinite(s.interval) || s.interval < MIN_INTERVAL_MS)
   ) {
     return false;
   }
@@ -302,10 +296,7 @@ export function validateThemeDom(dom: unknown): dom is ThemeDomSpec {
   if (d.roadStrip !== undefined && typeof d.roadStrip !== "boolean") return false;
   if (
     d.cars !== undefined &&
-    (typeof d.cars !== "number" ||
-      !Number.isInteger(d.cars) ||
-      d.cars < 0 ||
-      d.cars > MAX_CARS)
+    (typeof d.cars !== "number" || !Number.isInteger(d.cars) || d.cars < 0 || d.cars > MAX_CARS)
   ) {
     return false;
   }
@@ -597,8 +588,7 @@ function mountDevTimePicker(): void {
   if (document.getElementById(DEV_PICKER_ID)) return;
 
   const initialOverride = readDevOverride();
-  const startMinutes =
-    initialOverride ?? new Date().getHours() * 60 + new Date().getMinutes();
+  const startMinutes = initialOverride ?? new Date().getHours() * 60 + new Date().getMinutes();
   const useReal = initialOverride === null;
 
   const panel = document.createElement("div");

@@ -1,7 +1,4 @@
-import {
-  calculateExpression,
-  isLikelyMathExpression,
-} from "./calculator";
+import { calculateExpression, isLikelyMathExpression } from "./calculator";
 
 describe("calculator", () => {
   it("rejects non-math text without needing mathjs for validity", () => {

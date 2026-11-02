@@ -9,7 +9,7 @@ const fetchForums = async () => {
   });
 
   return res.json() as Promise<{
-    payload: { forums: any[] };
+    payload: { forums: Record<string, unknown>[] };
     status: string;
   }>;
 };
@@ -21,9 +21,7 @@ export const forumsJob: Job = {
   frequency: { type: "expiry", afterMs: 30 * 24 * 60 * 60 * 1000 }, // 30 days
 
   run: async (ctx) => {
-    const existingIds = new Set(
-      (await ctx.getStoredItems("forums")).map((i) => i.id),
-    );
+    const existingIds = new Set((await ctx.getStoredItems("forums")).map((i) => i.id));
 
     let list;
     try {
@@ -38,12 +36,12 @@ export const forumsJob: Job = {
     const items: IndexItem[] = [];
 
     for (const forum of list.payload.forums) {
-      const id = forum.id.toString();
+      const id = String(forum.id);
       if (existingIds.has(id)) continue;
 
       items.push({
         id,
-        text: forum.title,
+        text: String(forum.title ?? ""),
         category: "forums",
         content: `${forum.title}`,
         dateAdded: Date.now(),
@@ -61,7 +59,7 @@ export const forumsJob: Job = {
     return items;
   },
 
-  /** Keep only forums from the last year. */
+  /** Keep only forums from the last year. */
   purge: (items) => {
     const oneYearAgo = Date.now() - 365 * 24 * 60 * 60 * 1000;
     return items.filter((i) => i.dateAdded >= oneYearAgo);

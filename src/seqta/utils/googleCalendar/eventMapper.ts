@@ -1,7 +1,7 @@
 import { BSPLUS_GOOGLE_CALENDAR_EVENT_PROP } from "@/config/googleCalendar";
 import { BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY } from "@/config/outlookCalendar";
 import { outlookDescriptionWithKey } from "@/seqta/utils/calendarSync/eventFingerprint";
-import { toISODate } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
 import { nearestGoogleEventColorId } from "./eventColor";
 import type { GoogleCalendarEventInput, SeqtaTimetableLesson } from "./types";
 

@@ -3,14 +3,14 @@
   import { animate as motionAnimate } from 'motion';
   import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
 
-  let { initial, animate, exit, transition, children, class: className } = $props<{ 
+  let { initial, animate, exit, transition, children, class: className }: { 
     initial?: any, 
     animate?: any, 
     exit?: any, 
     transition?: any, 
     children?: any, 
     class?: string 
-  }>();
+  } = $props();
 
   let divElement: HTMLElement;
 

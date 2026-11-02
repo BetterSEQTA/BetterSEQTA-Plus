@@ -1,8 +1,4 @@
-import {
-  buildAvatarDisplayList,
-  classRefsFromTimetableItems,
-  classRosterKey,
-} from "./classKeys";
+import { buildAvatarDisplayList, classRefsFromTimetableItems, classRosterKey } from "./classKeys";
 import { buildSharePayload } from "./relayPayload";
 import { buildIdentityBindingCanonical } from "./identityBinding";
 import {
@@ -43,9 +39,7 @@ describe("classRosterKey", () => {
   });
 
   it("falls back to code and programmeID", () => {
-    expect(classRosterKey({ code: "AEMAA1", programmeID: 6865 })).toBe(
-      "cr:v1:AEMAA1:6865",
-    );
+    expect(classRosterKey({ code: "AEMAA1", programmeID: 6865 })).toBe("cr:v1:AEMAA1:6865");
   });
 });
 
@@ -145,11 +139,7 @@ describe("buildAvatarDisplayList", () => {
   });
 
   it("excludes self", () => {
-    const { visible } = buildAvatarDisplayList(
-      [{ seqtaStudentId: 3, updatedAt: 1 }],
-      3,
-      4,
-    );
+    const { visible } = buildAvatarDisplayList([{ seqtaStudentId: 3, updatedAt: 1 }], 3, 4);
     expect(visible).toHaveLength(0);
   });
 });

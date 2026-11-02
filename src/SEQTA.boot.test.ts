@@ -25,10 +25,7 @@ const [bootScript, errorPageScript]: string[] = JSON.parse(
   ),
 );
 
-test.each([
-  { onoff: false },
-  { "plugin.error-page-kitten.settings": { enabled: false } },
-])(
+test.each([{ onoff: false }, { "plugin.error-page-kitten.settings": { enabled: false } }])(
   "disabled 404 customization preserves the native error message: %j",
   async (stored) => {
     document.head.innerHTML = "";
@@ -47,7 +44,7 @@ test.each([
         });
         return loaded.exports;
       }
-      if (module === "webextension-polyfill") {
+      if (module === "@/lib/browser") {
         return { storage: { local: { get: async () => stored } } };
       }
       if (module.includes("errorPageKitten")) {
@@ -64,8 +61,6 @@ test.each([
     for (let i = 0; i < 10; i++) await Promise.resolve();
 
     expect(mount).not.toHaveBeenCalled();
-    expect(
-      window.getComputedStyle(document.querySelector(".message")!).display,
-    ).not.toBe("none");
+    expect(window.getComputedStyle(document.querySelector(".message")!).display).not.toBe("none");
   },
 );

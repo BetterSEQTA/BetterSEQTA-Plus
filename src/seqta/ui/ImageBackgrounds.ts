@@ -1,7 +1,4 @@
-import {
-  getDataById,
-  isIndexedDBSupported,
-} from "@/interface/hooks/BackgroundDataLoader";
+import { getDataById, isIndexedDBSupported } from "@/interface/hooks/BackgroundDataLoader";
 
 export async function appendBackgroundToUI() {
   const parent = document.getElementById("container");
@@ -84,9 +81,7 @@ export async function loadBackground() {
     }
 
     const mediaElement =
-      background.type === "video"
-        ? document.createElement("video")
-        : document.createElement("img");
+      background.type === "video" ? document.createElement("video") : document.createElement("img");
 
     const blobUrl = URL.createObjectURL(background.blob);
     lastBlobUrl = blobUrl;

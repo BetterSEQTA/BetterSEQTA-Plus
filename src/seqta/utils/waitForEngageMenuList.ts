@@ -32,8 +32,6 @@ export async function waitForEngageMenuList(): Promise<HTMLElement | null> {
     }
   }
 
-  console.warn(
-    "[BetterSEQTA+] Engage: could not find a menu list to inject the home button",
-  );
+  console.warn("[BetterSEQTA+] Engage: could not find a menu list to inject the home button");
   return null;
 }

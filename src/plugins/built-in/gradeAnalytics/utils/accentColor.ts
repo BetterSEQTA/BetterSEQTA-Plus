@@ -35,11 +35,7 @@ function adjustLightnessForContrast(
       return candidate;
     }
     const { l } = candidate.hsl().object();
-    candidate = Color.hsl(
-      hue,
-      saturation,
-      isDark ? Math.min(l + 5, 82) : Math.max(l - 5, 18),
-    );
+    candidate = Color.hsl(hue, saturation, isDark ? Math.min(l + 5, 82) : Math.max(l - 5, 18));
   }
 
   return candidate;
@@ -61,13 +57,7 @@ export function buildContrastAccentPalette(
   const saturation = Math.min(Math.max(s, 42), 88);
   const baseLightness = isDark ? 64 : 40;
 
-  const foreground = adjustLightnessForContrast(
-    h,
-    saturation,
-    baseLightness,
-    background,
-    isDark,
-  );
+  const foreground = adjustLightnessForContrast(h, saturation, baseLightness, background, isDark);
 
   const accentHex = foreground.hex();
   const subtleLightness = isDark ? 28 : 94;
@@ -75,7 +65,10 @@ export function buildContrastAccentPalette(
 
   return {
     accent: accentHex,
-    accentSubtle: subtle.alpha(isDark ? 0.22 : 0.14).rgb().string(),
+    accentSubtle: subtle
+      .alpha(isDark ? 0.22 : 0.14)
+      .rgb()
+      .string(),
     onAccent: foreground.isLight() ? "#141414" : "#ffffff",
   };
 }

@@ -1,16 +1,13 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { createPopupHeroVideo } from "@/seqta/utils/Openers/attachPopupMediaFullscreen";
-import { closePopup, openPopup } from "@/seqta/utils/Openers/PopupManager";
-import { mount, unmount } from "svelte";
+import { createPopupHeroVideo } from "@/seqta/utils/openers/attachPopupMediaFullscreen";
+import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
+import { mount, unmount, type Component } from "svelte";
 import TimetableClassmatesOptInPopup from "./TimetableClassmatesOptInPopup.svelte";
 import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.svelte";
 import popupStyles from "./consentPopup.css?inline";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { loadSession } from "./rosterStore";
-import {
-  clearResumeOptInAfterCloudLogin,
-  shouldResumeOptInAfterCloudLogin,
-} from "./optInResume";
+import { clearResumeOptInAfterCloudLogin, shouldResumeOptInAfterCloudLogin } from "./optInResume";
 
 const STYLE_ID = "bsplus-timetable-classmates-popup-styles";
 const CLASSMATES_VIDEO_URL =
@@ -31,11 +28,16 @@ type ConsentPopupOptions = {
   heroVideo?: boolean;
 };
 
-function openConsentPopup(
+type ConsentPopupControls = {
+  onCancel: () => void;
+  onComplete: () => void;
+};
+
+function openConsentPopup<P extends Record<string, unknown>>(
   title: string,
   subtitle: string,
-  component: typeof TimetableClassmatesOptInPopup | typeof TimetableClassmatesOptOutPopup,
-  props: Record<string, unknown>,
+  component: Component<P & ConsentPopupControls>,
+  props: P,
   options?: ConsentPopupOptions,
 ): void {
   if (document.getElementById("whatsnewbk")) return;

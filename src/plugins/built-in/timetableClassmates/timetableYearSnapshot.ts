@@ -10,7 +10,9 @@ export type EnrollmentSnapshot = {
 };
 
 /** Stable hash for “did my enrollments change?” checks. */
-export function fingerprintEnrollment(snapshot: Pick<EnrollmentSnapshot, "classes" | "ciToClassKey">): string {
+export function fingerprintEnrollment(
+  snapshot: Pick<EnrollmentSnapshot, "classes" | "ciToClassKey">,
+): string {
   const classKeys = snapshot.classes
     .map((c) => classRosterKey(c))
     .filter((k): k is string => Boolean(k))

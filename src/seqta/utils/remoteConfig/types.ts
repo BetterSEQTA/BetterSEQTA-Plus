@@ -1,10 +1,4 @@
-export type FeatureMode =
-  | "allow"
-  | "hide"
-  | "banner"
-  | "block"
-  | "greyout"
-  | "temp_hide";
+export type FeatureMode = "allow" | "hide" | "banner" | "block" | "greyout" | "temp_hide";
 
 export type RemoteFeatureGate = {
   mode?: FeatureMode;
@@ -73,7 +67,4 @@ export type RemoteConfigSnapshot = {
   remoteTheme?: RemoteThemeDirective | null;
 };
 
-export type CampaignSeenRecord = Record<
-  string,
-  { seenAt: string; ack?: boolean }
->;
+export type CampaignSeenRecord = Record<string, { seenAt: string; ack?: boolean }>;

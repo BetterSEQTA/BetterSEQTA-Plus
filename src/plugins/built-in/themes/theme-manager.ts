@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   type CustomTheme,
   getForcedDarkMode,
@@ -35,11 +35,7 @@ import {
   validateThemeDom,
   validateThemeScript,
 } from "./theme-runtime";
-import {
-  base64ToBlob,
-  blobToBase64Data,
-  stripBase64Prefix,
-} from "./themeImageUrl";
+import { base64ToBlob, blobToBase64Data, stripBase64Prefix } from "@/seqta/utils/base64";
 
 type ThemeContent = {
   id: string;
@@ -131,43 +127,37 @@ export class ThemeManager {
    */
   private async applyViewTransition(callback: () => void): Promise<void> {
     if (
-      !document.startViewTransition || 
-      !fullMotionEffectsEnabled() || 
+      !document.startViewTransition ||
+      !fullMotionEffectsEnabled() ||
       window.matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
       // Just run the callback without animation if transitions not supported
       callback();
       return;
     }
-    
+
     // Use last known transition point or fallback to center
     const x = this.lastTransitionPoint.x || window.innerWidth / 2;
     const y = this.lastTransitionPoint.y || window.innerHeight / 2;
     const right = window.innerWidth - x;
     const bottom = window.innerHeight - y;
-    
-    const maxRadius = Math.hypot(
-      Math.max(x, right),
-      Math.max(y, bottom),
-    );
-    
+
+    const maxRadius = Math.hypot(Math.max(x, right), Math.max(y, bottom));
+
     await document.startViewTransition(() => {
       callback();
     }).ready;
-    
+
     try {
       document.documentElement.animate(
         {
-          clipPath: [
-            `circle(0px at ${x}px ${y}px)`,
-            `circle(${maxRadius}px at ${x}px ${y}px)`,
-          ],
+          clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${maxRadius}px at ${x}px ${y}px)`],
         },
         {
           duration: 400,
-          easing: 'ease-in-out',
-          pseudoElement: '::view-transition-new(root)',
-        }
+          easing: "ease-in-out",
+          pseudoElement: "::view-transition-new(root)",
+        },
       );
     } catch (error) {
       console.error("[ThemeManager] View Transition animation error:", error);
@@ -233,23 +223,20 @@ export class ThemeManager {
     verboseDebug("[ThemeManager] Starting initialization");
     try {
       const neumorphicThemeId = "9a9786d1-b5fc-4a91-8c7a-f8bf7f7679ad";
-      const migrationCSS = "#title {\nbackground: transparent !important;\n}";
-      
+      const titlePatch = "#title {\nbackground: transparent !important;\n}";
       const theme = (await localforage.getItem(neumorphicThemeId)) as CustomTheme | null;
-      if (theme && theme.CustomCSS && !theme.CustomCSS.includes("#title {\nbackground: transparent !important;\n}")) {
-        theme.CustomCSS = theme.CustomCSS + "\n" + migrationCSS;
+      if (theme?.CustomCSS && !theme.CustomCSS.includes(titlePatch)) {
+        theme.CustomCSS += `\n${titlePatch}`;
         await localforage.setItem(neumorphicThemeId, theme);
       }
 
-      const { readThemeCreatorSession } = await import(
-        "@/plugins/built-in/themes/themeCreatorPersistence"
-      );
+      const { readThemeCreatorSession } =
+        await import("@/plugins/built-in/themes/themeCreatorPersistence");
       const creatorSession = readThemeCreatorSession();
       if (creatorSession.open) {
         verboseDebug("[ThemeManager] Restoring theme creator after navigation");
-        const { OpenThemeCreator, isThemeCreatorOpen } = await import(
-          "@/plugins/built-in/themes/ThemeCreator"
-        );
+        const { OpenThemeCreator, isThemeCreatorOpen } =
+          await import("@/plugins/built-in/themes/ThemeCreator");
         if (!isThemeCreatorOpen()) {
           void OpenThemeCreator(creatorSession.editingThemeId);
         }
@@ -308,25 +295,21 @@ export class ThemeManager {
       // Use view transition for the theme change
       if (applyViewTransition) {
         await this.applyViewTransition(async () => {
-          // Remove current theme if exists
           if (this.currentTheme) {
             verboseDebug("[ThemeManager] Removing current theme");
             await this.removeThemeWithoutTransition(this.currentTheme);
           }
 
-          // Apply new theme
           await this.applyTheme(theme);
           this.currentTheme = theme;
           settingsState.selectedTheme = themeId;
         });
       } else {
-        // Remove current theme if exists
         if (this.currentTheme) {
           verboseDebug("[ThemeManager] Removing current theme");
           await this.removeThemeWithoutTransition(this.currentTheme);
         }
 
-        // Apply new theme
         await this.applyTheme(theme);
         this.currentTheme = theme;
         settingsState.selectedTheme = themeId;
@@ -362,7 +345,6 @@ export class ThemeManager {
         this.lastSyncedImageKey = null;
       }
 
-      // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
         const dark = getForcedDarkMode(theme);
         verboseDebug("[ThemeManager] Setting dark mode:", dark);
@@ -371,24 +353,17 @@ export class ThemeManager {
 
       // Use the stored selected color if available, otherwise use the default
       if (theme.selectedColor) {
-        verboseDebug(
-          "[ThemeManager] Restoring saved color:",
-          theme.selectedColor,
-        );
+        verboseDebug("[ThemeManager] Restoring saved color:", theme.selectedColor);
         settingsState.selectedColor = theme.selectedColor;
       } else if (theme.defaultColour) {
-        verboseDebug(
-          "[ThemeManager] Using default color:",
-          theme.defaultColour,
-        );
+        verboseDebug("[ThemeManager] Using default color:", theme.defaultColour);
         settingsState.selectedColor = theme.defaultColour;
       }
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
 
-      const { applyThemeCreatorMetaToSettings } = await import(
-        "@/interface/utils/themeCreatorMeta"
-      );
+      const { applyThemeCreatorMetaToSettings } =
+        await import("@/interface/utils/themeCreatorMeta");
       applyThemeCreatorMetaToSettings(theme.creatorMeta);
 
       injectThemeDom(theme.themeDom);
@@ -400,10 +375,7 @@ export class ThemeManager {
   /**
    * Remove theme and restore original settings with view transition
    */
-  private async removeTheme(
-    theme: CustomTheme,
-    clearSelectedTheme: boolean = true,
-  ): Promise<void> {
+  private async removeTheme(theme: CustomTheme, clearSelectedTheme: boolean = true): Promise<void> {
     verboseDebug("[ThemeManager] Removing theme with transition:", theme.name);
     try {
       await this.applyViewTransition(async () => {
@@ -413,7 +385,7 @@ export class ThemeManager {
       console.error("[ThemeManager] Error removing theme with transition:", error);
     }
   }
-  
+
   /**
    * Remove theme without applying view transition animation
    */
@@ -446,7 +418,6 @@ export class ThemeManager {
         });
       }
 
-      // Restore original settings
       if (settingsState.originalSelectedColor) {
         verboseDebug(
           "[ThemeManager] Restoring original color:",
@@ -494,12 +465,8 @@ export class ThemeManager {
     return [...merged.values()];
   }
 
-  private imageSyncKey(
-    images: Array<{ id: string; variableName: string; blob: Blob }>,
-  ): string {
-    return images
-      .map((image) => `${image.id}:${image.variableName}:${image.blob.size}`)
-      .join("|");
+  private imageSyncKey(images: Array<{ id: string; variableName: string; blob: Blob }>): string {
+    return images.map((image) => `${image.id}:${image.variableName}:${image.blob.size}`).join("|");
   }
 
   /**
@@ -508,9 +475,7 @@ export class ThemeManager {
   public async getAvailableThemes(): Promise<CustomTheme[]> {
     verboseDebug("[ThemeManager] Getting available themes");
     try {
-      const themeIds = (await localforage.getItem("customThemes")) as
-        | string[]
-        | null;
+      const themeIds = (await localforage.getItem("customThemes")) as string[] | null;
       if (!themeIds) {
         return [];
       }
@@ -541,9 +506,7 @@ export class ThemeManager {
       }
 
       await localforage.setItem(toSave.id, toSave);
-      const themeIds = (await localforage.getItem("customThemes")) as
-        | string[]
-        | null;
+      const themeIds = (await localforage.getItem("customThemes")) as string[] | null;
 
       if (themeIds) {
         if (!themeIds.includes(toSave.id)) {
@@ -571,9 +534,7 @@ export class ThemeManager {
         }
         await localforage.removeItem(themeId);
 
-        const themeIds = (await localforage.getItem("customThemes")) as
-          | string[]
-          | null;
+        const themeIds = (await localforage.getItem("customThemes")) as string[] | null;
         if (themeIds) {
           const updatedThemeIds = themeIds.filter((id) => id !== themeId);
           await localforage.setItem("customThemes", updatedThemeIds);
@@ -588,14 +549,15 @@ export class ThemeManager {
   private get THEME_API_BASE(): string {
     return `${getApiBase()}/api`;
   }
-  private readonly GITHUB_THEMES_BASE = 'https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes';
+  private readonly GITHUB_THEMES_BASE =
+    "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes";
 
   /**
    * Fetch JSON from a URL via background script (avoids CORS when running inside SEQTA page)
    */
-  private async fetchFromUrl(url: string, options?: { auth?: boolean }): Promise<any> {
+  private async fetchFromUrl(url: string, options?: { auth?: boolean }): Promise<unknown> {
     const result = (await browser.runtime.sendMessage({
-      type: 'fetchFromUrl',
+      type: "fetchFromUrl",
       url,
       auth: options?.auth === true,
     })) as { data?: unknown; error?: string };
@@ -757,9 +719,7 @@ export class ThemeManager {
       if (!isAllowedFetchUrl(themeJsonUrl)) {
         throw new Error("Theme download URL not allowed");
       }
-      themeData = (await this.fetchFromUrl(
-        themeJsonUrl,
-      )) as ThemeContent;
+      themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
     } catch (apiError) {
       console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
       const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
@@ -775,13 +735,9 @@ export class ThemeManager {
   /**
    * Install a theme from theme data
    */
-  public async installTheme(
-    themeData: ThemeContent,
-    meta?: InstallThemeMeta,
-  ): Promise<void> {
+  public async installTheme(themeData: ThemeContent, meta?: InstallThemeMeta): Promise<void> {
     verboseDebug("[ThemeManager] Installing theme:", themeData.name);
     try {
-      // Validate required fields
       if (!themeData.id || !themeData.name) {
         throw new Error("Theme is missing required fields (id or name)");
       }
@@ -812,13 +768,9 @@ export class ThemeManager {
       let coverImageBlob = null;
       if (themeData.coverImage) {
         try {
-          coverImageBlob = base64ToBlob(
-            stripBase64Prefix(themeData.coverImage),
-            "image/png",
-          );
+          coverImageBlob = base64ToBlob(stripBase64Prefix(themeData.coverImage), "image/png");
         } catch (e) {
           console.warn("[ThemeManager] Failed to process cover image:", e);
-          // Continue without cover image
         }
       }
 
@@ -859,10 +811,7 @@ export class ThemeManager {
         installedFromStore: fromStore,
         installedFromCommunity: fromCommunity || undefined,
         userEdited: fromStore ? false : undefined,
-        storeSyncedAtSec:
-          fromStore && serverUpdatedAtSec != null
-            ? serverUpdatedAtSec
-            : undefined,
+        storeSyncedAtSec: fromStore && serverUpdatedAtSec != null ? serverUpdatedAtSec : undefined,
         forceTheme:
           themeData.forceTheme !== undefined
             ? themeData.forceTheme
@@ -908,18 +857,13 @@ export class ThemeManager {
 
       const serverById = new Map<string, number>();
       for (const t of res.data.themes) {
-        if (
-          typeof t.id === "string" &&
-          typeof t.updated_at === "number"
-        ) {
+        if (typeof t.id === "string" && typeof t.updated_at === "number") {
           serverById.set(t.id, t.updated_at);
         }
       }
       if (serverById.size === 0) return;
 
-      const themeIds = (await localforage.getItem("customThemes")) as
-        | string[]
-        | null;
+      const themeIds = (await localforage.getItem("customThemes")) as string[] | null;
       if (!themeIds?.length) return;
 
       for (const id of themeIds) {
@@ -938,10 +882,7 @@ export class ThemeManager {
           continue;
         }
 
-        if (
-          theme.installedFromStore === true &&
-          theme.storeSyncedAtSec != null
-        ) {
+        if (theme.installedFromStore === true && theme.storeSyncedAtSec != null) {
           if (serverUpdated <= theme.storeSyncedAtSec) {
             continue;
           }
@@ -959,10 +900,7 @@ export class ThemeManager {
             name: theme.name,
             updated_at: serverUpdated,
           });
-          verboseInfo(
-            "[ThemeManager] Theme auto-updated from store:",
-            theme.name,
-          );
+          verboseInfo("[ThemeManager] Theme auto-updated from store:", theme.name);
           if (wasSelected) {
             await this.setTheme(id, false);
           }
@@ -1014,7 +952,6 @@ export class ThemeManager {
         ...themeBasics
       } = theme;
 
-      // Convert images to base64
       const finalImages = await Promise.all(
         CustomImages.map(async (image) => ({
           id: image.id,
@@ -1023,10 +960,7 @@ export class ThemeManager {
         })),
       );
 
-      // Convert cover image to base64
-      const coverImageBase64 = coverImage
-        ? await blobToBase64Data(coverImage)
-        : null;
+      const coverImageBase64 = coverImage ? await blobToBase64Data(coverImage) : null;
 
       // Create shareable theme data with only necessary fields
       const shareableTheme = {
@@ -1035,7 +969,6 @@ export class ThemeManager {
         coverImage: coverImageBase64,
       };
 
-      // Save theme file
       this.saveThemeFile(shareableTheme, theme.name || "Unnamed_Theme");
     } catch (error) {
       console.error("[ThemeManager] Error sharing theme:", error);
@@ -1054,10 +987,7 @@ export class ThemeManager {
       if (!theme.webURL) {
         if (this.originalPreviewColor === null) {
           this.originalPreviewColor = settingsState.selectedColor;
-          localStorage.setItem(
-            "originalPreviewColor",
-            settingsState.selectedColor,
-          );
+          localStorage.setItem("originalPreviewColor", settingsState.selectedColor);
         }
         if (this.originalPreviewTheme === null) {
           this.originalPreviewTheme = settingsState.DarkMode;
@@ -1071,7 +1001,6 @@ export class ThemeManager {
       });
       this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
 
-      // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
         settingsState.DarkMode = getForcedDarkMode(theme);
       }
@@ -1115,9 +1044,7 @@ export class ThemeManager {
       if (previewImages.length > 0) {
         const imageKey = this.imageSyncKey(previewImages);
         const shouldSyncImages =
-          inCreatorSession ||
-          imageKey !== this.lastSyncedImageKey ||
-          theme.CustomCSS !== undefined;
+          inCreatorSession || imageKey !== this.lastSyncedImageKey || theme.CustomCSS !== undefined;
         if (shouldSyncImages) {
           syncInput.images = previewImages;
           this.lastSyncedImageKey = imageKey;
@@ -1140,9 +1067,8 @@ export class ThemeManager {
 
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
 
-      const { applyThemeCreatorMetaToSettings } = await import(
-        "@/interface/utils/themeCreatorMeta"
-      );
+      const { applyThemeCreatorMetaToSettings } =
+        await import("@/interface/utils/themeCreatorMeta");
       applyThemeCreatorMetaToSettings(theme.creatorMeta);
 
       void updateAllColors();
@@ -1151,16 +1077,9 @@ export class ThemeManager {
     }
   }
 
-  /**
-   * Update the preview of a theme (debounced)
-   * @param theme - The theme to update the preview of
-   */
-  public updatePreviewDebounced = debounce(
-    (theme: Partial<LoadedCustomTheme>): void => {
-      this.updatePreview(theme);
-    },
-    2,
-  );
+  public updatePreviewDebounced = debounce((theme: Partial<LoadedCustomTheme>): void => {
+    this.updatePreview(theme);
+  }, 2);
 
   /**
    * Start Theme Creator: keep the current theme on SEQTA; preview layers on top only.
@@ -1209,32 +1128,22 @@ export class ThemeManager {
 
       clearCustomThemeAdaptiveCssVariables();
 
-      // Restore original settings
       const storedColor = localStorage.getItem("originalPreviewColor");
 
       if (storedColor) {
         settingsState.selectedColor = storedColor;
         localStorage.removeItem("originalPreviewColor");
       } else if (this.originalPreviewColor !== null) {
-        verboseDebug(
-          "[ThemeManager] Restoring color from memory:",
-          this.originalPreviewColor,
-        );
+        verboseDebug("[ThemeManager] Restoring color from memory:", this.originalPreviewColor);
         settingsState.selectedColor = this.originalPreviewColor;
-        verboseDebug(
-          "[ThemeManager] Color after restore:",
-          settingsState.selectedColor,
-        );
+        verboseDebug("[ThemeManager] Color after restore:", settingsState.selectedColor);
       } else {
         verboseDebug("[ThemeManager] No color to restore found");
       }
       this.originalPreviewColor = null;
 
       if (this.originalPreviewTheme !== null) {
-        verboseDebug(
-          "[ThemeManager] Restoring dark mode:",
-          this.originalPreviewTheme,
-        );
+        verboseDebug("[ThemeManager] Restoring dark mode:", this.originalPreviewTheme);
         settingsState.DarkMode = this.originalPreviewTheme;
         this.originalPreviewTheme = null;
       }

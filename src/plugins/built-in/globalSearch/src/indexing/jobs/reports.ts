@@ -1,7 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes report metadata from `/seqta/student/load/reports`.
  *
@@ -36,7 +36,7 @@ export const reportsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const payload = await seqtaFetchPayload<ReportEntry[] | null>(
       "/seqta/student/load/reports",
       {},

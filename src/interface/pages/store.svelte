@@ -1,13 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   
-  // Import existing components
   import CoverSwiper from '../components/store/CoverSwiper.svelte';
   import ThemeGrid from '../components/store/ThemeGrid.svelte';
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
   import type { Theme } from '../types/Theme'
   import { visibleStoreThemes, buildCoverSlidesForThemes, normalizeStoreTheme } from '@/interface/utils/themeStoreFlavours'
-  import browser from 'webextension-polyfill'
+  import browser from '@/lib/browser'
   import ThemeModal from '../components/store/ThemeModal.svelte'
   import { themeUpdates } from '../hooks/ThemeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
@@ -28,14 +27,14 @@
     setActiveTab,
     setSearchTerm,
     setBackgroundCategories,
-  } = $props<{
+  }: {
     activeTab: StoreTab;
     searchTerm: string;
     selectedBackgroundCategory: string;
     setActiveTab: (tab: StoreTab) => void;
     setSearchTerm: (term: string) => void;
     setBackgroundCategories: (categories: string[]) => void;
-  }>();
+  } = $props();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
   $effect(() => {
@@ -43,7 +42,6 @@
     return unsub;
   });
 
-  // State variables
   let themes = $state<Theme[]>([]);
 
   /** Grid/search/cover: hides flat-listed slaves when API sends them */
@@ -180,8 +178,7 @@
     }
   }
 
-  // On mount
-  onMount(async () => {
+  onMount(() => {
     window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
     themeUpdates.addListener(fetchCurrentThemes);
 
@@ -246,7 +243,7 @@
 
   $effect(() => {
     loadBackground();
-    selectedBackground
+    void selectedBackground;
   });
 
   $effect(() => {

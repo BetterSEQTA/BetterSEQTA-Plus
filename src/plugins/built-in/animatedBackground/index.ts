@@ -1,10 +1,6 @@
 import { BasePlugin } from "../../core/settings";
 import { type Plugin } from "@/plugins/core/types";
-import {
-  defineSettings,
-  numberSetting,
-  Setting,
-} from "@/plugins/core/settingsHelpers";
+import { defineSettings, numberSetting, Setting } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import {
   removeAnimatedBackgroundLayers,

@@ -5,17 +5,12 @@ import { renderErrorState, renderGrid, renderSkeletonLoader, teardownOverviewUi 
 import styles from "./styles.css?inline";
 import { delay } from "@/seqta/utils/delay";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import {
-  isEngageAssessmentOverviewRoute,
-} from "@/seqta/utils/engageAssessmentStudent";
+import { isEngageAssessmentOverviewRoute } from "@/seqta/utils/engageAssessmentStudent";
 import { resolveEngageStudentId } from "./engageApi";
 
 const OVERVIEW_MENU_CLASS = "betterseqta-assessments-overview-item";
 
-function ensureOverviewMenuPosition(
-  menu: HTMLElement,
-  gridItem: HTMLElement,
-) {
+function ensureOverviewMenuPosition(menu: HTMLElement, gridItem: HTMLElement) {
   if (menu.firstElementChild !== gridItem) {
     menu.insertBefore(gridItem, menu.firstChild);
   }
@@ -30,12 +25,7 @@ function isOverviewRoute() {
 
 async function waitForAssessmentsSubmenu(): Promise<HTMLElement> {
   if (!isSeqtaEngageExperience()) {
-    return (await waitForElm(
-      '[data-key="assessments"] > .sub > ul',
-      true,
-      100,
-      60,
-    )) as HTMLElement;
+    return (await waitForElm('[data-key="assessments"] > .sub > ul', true, 100, 60)) as HTMLElement;
   }
 
   return (await waitForElm(
@@ -107,11 +97,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
 
       if (isSeqtaEngageExperience()) {
         const studentId = await resolveEngageStudentId();
-        window.history.pushState(
-          {},
-          "",
-          `/#?page=/assessments/${studentId}/overview`,
-        );
+        window.history.pushState({}, "", `/#?page=/assessments/${studentId}/overview`);
         document.title = "Overview ― SEQTA Engage";
       } else {
         window.history.pushState({}, "", "/#?page=/assessments/overview");
@@ -121,21 +107,14 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
       const main = document.getElementById("main");
       if (!main || requestId !== loadRequestId) return;
 
-      document
-        .querySelectorAll('[data-key="assessments"] .item')
-        .forEach((item) => {
-          item.classList.remove("active");
-        });
+      document.querySelectorAll('[data-key="assessments"] .item').forEach((item) => {
+        item.classList.remove("active");
+      });
       gridItem.classList.add("active");
-      document
-        .querySelector('[data-key="assessments"]')
-        ?.classList.add("active");
+      document.querySelector('[data-key="assessments"]')?.classList.add("active");
 
-      main.innerHTML =
-        '<div id="grid-view-container" class="bsplus-overview-host"></div>';
-      const container = document.getElementById(
-        "grid-view-container",
-      ) as HTMLElement;
+      main.innerHTML = '<div id="grid-view-container" class="bsplus-overview-host"></div>';
+      const container = document.getElementById("grid-view-container") as HTMLElement;
 
       if (requestId !== loadRequestId) return;
 
@@ -148,10 +127,7 @@ const assessmentsOverviewPlugin: Plugin<{}> = {
       } catch (err) {
         if (requestId !== loadRequestId) return;
         console.error("Failed to load assessments:", err);
-        renderErrorState(
-          container,
-          err instanceof Error ? err.message : "Unknown error",
-        );
+        renderErrorState(container, err instanceof Error ? err.message : "Unknown error");
       }
     }
 

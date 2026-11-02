@@ -1,32 +1,28 @@
-# npm
+# Dependencies
 node_modules/
-package-lock.json
-bun.lockb
 pnpm-lock.yaml
-yarn.lock
-bun.lock
 
-# PDF.js extension assets (copied by postinstall from pdfjs-dist)
-src/public/resources/pdfjs/pdf.worker.min.mjs
-src/public/resources/pdfjs/pdf.legacy.min.mjs
-# ONNX Runtime WASM assets (copied by postinstall from @huggingface/transformers)
+# Build output
+betterseqtaplus-safari/
+coverage/
+dist/
+
+# Copied in by postinstall
 src/public/resources/ort/ort-wasm-simd-threaded.jsep.mjs
 src/public/resources/ort/ort-wasm-simd-threaded.jsep.wasm
+src/public/resources/pdfjs/pdf.legacy.min.mjs
+src/public/resources/pdfjs/pdf.worker.min.mjs
 
-# Build
-extension.zip
-build/
-dist/
-betterseqtaplus-safari/
-
-.million/
-.vscode/
-.cursor/
-**/.DS_Store
-.parcel-cache
+# Environment
 .env
 .env.submit
-dependency-graph.svg
 
-update-videos/
+# Editors and OS
+.cursor/
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 
+# Logs
+*.log

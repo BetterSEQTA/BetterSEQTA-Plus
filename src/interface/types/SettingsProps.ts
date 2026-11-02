@@ -1,7 +1,9 @@
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
+
 export interface SettingsList {
   title: string;
   id: number;
   description: string;
-  Component: any /* TODO: Give this a type */;
-  props?: any;
+  Component: MountableSvelteComponent;
+  props?: Record<string, unknown>;
 }

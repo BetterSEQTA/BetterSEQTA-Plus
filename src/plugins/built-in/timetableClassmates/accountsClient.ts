@@ -1,10 +1,7 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
 import { ACCOUNTS_BASE } from "./constants";
-import type {
-  OptInBindingBody,
-  TimetableClassmatesBindingFields,
-} from "./identityBinding";
+import type { OptInBindingBody, TimetableClassmatesBindingFields } from "./identityBinding";
 
 export type PeersResponse = {
   self: { seqta_student_id: number; cloud_user_id?: string };
@@ -67,7 +64,7 @@ async function accountsFetch<T>(
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
-      ...(init?.headers ?? {}),
+      ...init?.headers,
     },
   });
 

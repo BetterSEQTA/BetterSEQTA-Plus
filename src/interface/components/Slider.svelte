@@ -1,11 +1,11 @@
 <script lang="ts">
-  let { state = $bindable(), onChange, min = 0, max = 100, step = 1 } = $props<{ 
+  let { state = $bindable(), onChange, min = 0, max = 100, step = 1 }: { 
     state: number, 
     onChange: (value: number) => void,
     min?: number,
     max?: number,
     step?: number
-  }>();
+  } = $props();
   let percentage = $derived(((state - min) / (max - min)) * 100);
 </script>
 

@@ -3,7 +3,7 @@
   import { standalone } from '../utils/standalone.svelte';
   import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
 
-  let { state: checked, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
+  let { state: checked, onChange }: { state: boolean, onChange: (newState: boolean) => void } = $props();
 
   let motionReady = $state(false);
   onMount(() => {
@@ -18,7 +18,7 @@
 </script>
 
 <div
-  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-gradient-to-tr select-none shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30 {checked ? 'to-[#30D259]/80 from-[#30D259] dark:from-[#30D259]/40 dark:to-[#30D259]' : 'dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD]'}"
+  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-linear-to-tr select-none shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30 {checked ? 'to-[#30D259]/80 from-[#30D259] dark:from-[#30D259]/40 dark:to-[#30D259]' : 'dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD]'}"
   onclick={() => onChange(!checked)}
   onkeydown={(e) => e.key === "Enter" && onChange(!checked)}
   role="switch"

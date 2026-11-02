@@ -27,13 +27,14 @@ class ReactFiber {
   }
 
   private isTrustedMessage(event: MessageEvent): boolean {
-    return (
-      event.source === window && event.origin === this.getTargetOrigin()
-    );
+    return event.source === window && event.origin === this.getTargetOrigin();
   }
 
-  private async sendMessage(action: string, payload: any = {}): Promise<any> {
-    return new Promise((resolve, _) => {
+  private async sendMessage(
+    action: string,
+    payload: Record<string, unknown> = {},
+  ): Promise<unknown> {
+    return new Promise((resolve) => {
       const messageId = this.messageIdCounter++;
       const message = {
         type: "reactFiberRequest",
@@ -62,7 +63,7 @@ class ReactFiber {
     });
   }
 
-  async getState(key?: string | string[]): Promise<any> {
+  async getState(key?: string | string[]): Promise<unknown> {
     return this.sendMessage("getState", {
       key,
     });
@@ -70,22 +71,20 @@ class ReactFiber {
 
   async setState(update: Record<string, unknown>): Promise<ReactFiber> {
     if (typeof update !== "object" || update === null || Array.isArray(update)) {
-      throw new TypeError(
-        "ReactFiber.setState only accepts plain JSON-serializable objects",
-      );
+      throw new TypeError("ReactFiber.setState only accepts plain JSON-serializable objects");
     }
 
     await this.sendMessage("setState", { updateObject: update });
     return this;
   }
 
-  async getProps(propName?: string): Promise<any> {
+  async getProps(propName?: string): Promise<unknown> {
     return this.sendMessage("getProp", {
       propName,
     });
   }
 
-  async setProp(propName: string, value: any): Promise<ReactFiber> {
+  async setProp(propName: string, value: unknown): Promise<ReactFiber> {
     await this.sendMessage("setProp", {
       propName,
       value,

@@ -88,8 +88,7 @@ export const ACHIEVEMENT_BADGES = [
     key: "theme_submitter",
     label: "Theme Submitter",
     rankLabel: "Community",
-    description:
-      "Submitted a custom theme that was accepted into the BetterSEQTA theme gallery.",
+    description: "Submitted a custom theme that was accepted into the BetterSEQTA theme gallery.",
     base: "#5b21b6",
     blobs: ["rgba(139,92,246,0.52)", "rgba(124,58,237,0.46)", "rgba(196,181,253,0.4)"],
     icon: "swatch",
@@ -104,7 +103,15 @@ export type BadgeItem = {
   awarded_at?: number;
 };
 
-type BadgeVisual = (typeof BADGE_TIERS)[number] | (typeof ACHIEVEMENT_BADGES)[number];
+type BadgeVisual = {
+  key: string;
+  label: string;
+  rankLabel: string;
+  description: string;
+  base: string;
+  blobs: readonly string[];
+  icon: string;
+};
 
 const TIER_BY_KEY = new Map(BADGE_TIERS.map((t) => [t.key, t]));
 const VISUAL_BY_KEY = new Map<string, BadgeVisual>([
@@ -120,10 +127,7 @@ const UNKNOWN_ACHIEVEMENT_VISUAL = {
   icon: "sparkles",
 } as const;
 
-function primaryFounderBadge(
-  badges: BadgeItem[],
-  signupNumber?: number | null,
-): BadgeItem | null {
+function primaryFounderBadge(badges: BadgeItem[], signupNumber?: number | null): BadgeItem | null {
   const fromApi = badges.find((b) => b.key.startsWith("founder_"));
   if (fromApi) return fromApi;
 
@@ -146,10 +150,7 @@ function primaryFounderBadge(
 }
 
 /** Founder pill (at most one) then achievement pills — matches Accounts display rules. */
-export function badgesForTitlebar(
-  badges: BadgeItem[],
-  signupNumber?: number | null,
-): BadgeItem[] {
+export function badgesForTitlebar(badges: BadgeItem[], signupNumber?: number | null): BadgeItem[] {
   const founder = primaryFounderBadge(badges, signupNumber);
   const achievements = badges.filter((b) => !b.key.startsWith("founder_"));
   return founder ? [founder, ...achievements] : achievements;
@@ -187,17 +188,13 @@ function badgeBlobStyle(visual: Pick<BadgeVisual, "base" | "blobs">): string {
   ].join(";");
 }
 
-export function founderBadgeChipHtml(
-  badge: BadgeItem,
-  options?: { hero?: boolean; titlebar?: boolean },
-): string {
+export function founderBadgeChipHtml(badge: BadgeItem, options?: { hero?: boolean }): string {
   const visual = badgeVisualForKey(badge.key, badge.label);
   if (!visual) return "";
 
   const hero = options?.hero ?? false;
-  const titlebar = options?.titlebar ?? false;
-  const mods = `${hero ? " bsplus-founder-badge--hero" : ""}${titlebar ? " bsplus-founder-badge--titlebar" : ""}`;
-  const icon = titlebar ? "" : badgeIconSvg(visual.icon, hero ? 20 : 15);
+  const mods = hero ? " bsplus-founder-badge--hero" : "";
+  const icon = badgeIconSvg(visual.icon, hero ? 20 : 15);
 
   return `<button type="button" class="bsplus-founder-badge${mods}" data-tier="${badge.key}" style="${badgeBlobStyle(visual)}"><span class="bsplus-founder-badge__glass"><span class="bsplus-founder-badge__blobs" aria-hidden="true"></span><span class="bsplus-founder-badge__content">${icon}<span class="bsplus-founder-badge__label">${badge.label || visual.label}</span></span></span></button>`;
 }

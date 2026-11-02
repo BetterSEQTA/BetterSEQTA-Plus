@@ -1,11 +1,11 @@
 <script lang="ts">
-  let { value, onChange, options } = $props<{
+  let { value, onChange, options }: {
     value: string,
     onChange: (newValue: string) => void,
     options: Array<{ value: string, label: string }>
-  }>();
+  } = $props();
 
-  const listboxId = `select-listbox-${Math.random().toString(36).slice(2, 9)}`;
+  const listboxId = $props.id();
 
   let isOpen = $state(false);
   let activeIndex = $state(0);

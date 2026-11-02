@@ -1,8 +1,8 @@
-import type { CustomTheme } from '@/types/CustomThemes';
-import type { Theme } from '@/interface/types/Theme';
-import { parseCssColor } from '@/seqta/ui/colors/parseCssColor';
+import type { CustomTheme } from "@/types/CustomThemes";
+import type { Theme } from "@/interface/types/Theme";
+import { parseCssColor } from "@/seqta/ui/colors/parseCssColor";
 
-const DEFAULT_THEME_ACCENT = 'rgba(0, 123, 255, 1)';
+const DEFAULT_THEME_ACCENT = "rgba(0, 123, 255, 1)";
 
 /** Local themes: created in the editor or imported from a file (not store/community). */
 export function isLocalCustomTheme(theme: CustomTheme): boolean {
@@ -15,7 +15,7 @@ export function isLocalCustomTheme(theme: CustomTheme): boolean {
  */
 export function resolveLocalThemeInstallId(
   themeId: string,
-  existing: Pick<CustomTheme, 'installedFromStore' | 'installedFromCommunity'> | null,
+  existing: Pick<CustomTheme, "installedFromStore" | "installedFromCommunity"> | null,
   fromStore: boolean,
   fromCommunity: boolean,
 ): string {
@@ -36,9 +36,7 @@ export function getStoreInstalledThemeIds(themes: CustomTheme[]): string[] {
 
 /** Installed theme ids from the community API only (excludes file imports / custom copies). */
 export function getCommunityInstalledThemeIds(themes: CustomTheme[]): string[] {
-  return themes
-    .filter((theme) => theme.installedFromCommunity === true)
-    .map((theme) => theme.id);
+  return themes.filter((theme) => theme.installedFromCommunity === true).map((theme) => theme.id);
 }
 
 export function isStoreThemeInstalled(theme: Theme, installedIds: string[]): boolean {
@@ -59,7 +57,9 @@ export function resolveStoreVariantAccentColor(
   if (flavour?.accent_color?.trim()) return flavour.accent_color.trim();
 
   if (variantId === theme.id) {
-    const firstFlavourAccent = theme.flavours?.find((entry) => entry.accent_color?.trim())?.accent_color?.trim();
+    const firstFlavourAccent = theme.flavours
+      ?.find((entry) => entry.accent_color?.trim())
+      ?.accent_color?.trim();
     if (firstFlavourAccent) return firstFlavourAccent;
   }
 
@@ -73,7 +73,7 @@ export type ThemeApplyButtonStyles = {
 
 export function getThemeApplyButtonStyles(accentColor: string | undefined): ThemeApplyButtonStyles {
   const parsed = parseCssColor(accentColor?.trim() || DEFAULT_THEME_ACCENT, DEFAULT_THEME_ACCENT);
-  const onAccent = parsed.lightness() >= 60 ? '#18181b' : '#ffffff';
+  const onAccent = parsed.lightness() >= 60 ? "#18181b" : "#ffffff";
 
   return {
     apply: `background-color: ${parsed.hex()}; color: ${onAccent};`,

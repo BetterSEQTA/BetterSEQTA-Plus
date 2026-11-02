@@ -1,15 +1,15 @@
 <script lang="ts">
   import type { FuseResultMatch } from '../core/types';
 
-  const { text, term, matches } = $props<{
+  const { text, term, matches }: {
     text: string;
     term: string;
     matches?: readonly FuseResultMatch[];
-  }>();
+  } = $props();
 
   const segments = $derived(buildSegments(text, term, matches));
 
-  function buildSegments(text: string, term: string, matches = undefined) {
+  function buildSegments(text: string, term: string, matches?: readonly FuseResultMatch[]) {
     if (!term.trim() || !matches?.length) return [{ text, highlight: false }];
 
     try {
@@ -20,7 +20,7 @@
       );
       if (!fieldMatches?.indices?.length) return [{ text, highlight: false }];
 
-      const highlightMap = new Array<boolean>(text.length).fill(false);
+      const highlightMap = Array.from({ length: text.length }, () => false);
       for (const [start, end] of fieldMatches.indices) {
         if (fieldMatches.key === 'allContent') {
           const textPos = fieldMatches.value?.indexOf(text) ?? -1;

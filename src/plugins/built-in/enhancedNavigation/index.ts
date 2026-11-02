@@ -1,10 +1,6 @@
 import type { Plugin } from "@/plugins/core/types";
 import { BasePlugin } from "@/plugins/core/settings";
-import {
-  booleanSetting,
-  defineSettings,
-  Setting,
-} from "@/plugins/core/settingsHelpers";
+import { booleanSetting, defineSettings, Setting } from "@/plugins/core/settingsHelpers";
 
 const settings = defineSettings({
   autoScrollOnClick: booleanSetting({
@@ -94,9 +90,7 @@ const getOrderedItems = (navigator: Element): HTMLElement[] => {
   const items: HTMLElement[] = [];
   const cover = navigator.querySelector<HTMLElement>("li.cover");
   if (cover) items.push(cover);
-  const lessons = Array.from(
-    navigator.querySelectorAll<HTMLElement>("li.lesson"),
-  );
+  const lessons = Array.from(navigator.querySelectorAll<HTMLElement>("li.lesson"));
   lessons.sort((a, b) => {
     const wa = parseInt(a.dataset.week ?? "0", 10);
     const wb = parseInt(b.dataset.week ?? "0", 10);
@@ -132,33 +126,24 @@ const scrollSelectedIntoView = (navigator: Element) => {
   const selected = getSelected(navigator);
   if (!selected) return;
 
-  const scroller =
-    findScrollableAncestor(selected) ?? (navigator as HTMLElement);
+  const scroller = findScrollableAncestor(selected) ?? (navigator as HTMLElement);
   if (!scroller) return;
 
   const scrollerRect = scroller.getBoundingClientRect();
   const selectedRect = selected.getBoundingClientRect();
   const offset =
-    selectedRect.top -
-    scrollerRect.top -
-    scroller.clientHeight / 2 +
-    selectedRect.height / 2;
+    selectedRect.top - scrollerRect.top - scroller.clientHeight / 2 + selectedRect.height / 2;
 
   scroller.scrollTop = Math.max(
     0,
-    Math.min(
-      scroller.scrollTop + offset,
-      scroller.scrollHeight - scroller.clientHeight,
-    ),
+    Math.min(scroller.scrollTop + offset, scroller.scrollHeight - scroller.clientHeight),
   );
 };
 
 const positionArrows = () => {
   const container = document.getElementById(ARROW_CONTAINER_ID);
   if (!container) return;
-  const ref =
-    document.getElementById("toolbar") ??
-    document.querySelector<HTMLElement>(".course");
+  const ref = document.getElementById("toolbar") ?? document.querySelector<HTMLElement>(".course");
   if (!ref) return;
   const rect = ref.getBoundingClientRect();
   const arrowH = container.offsetHeight || 32;
@@ -189,12 +174,8 @@ const updateArrowState = (course: HTMLElement) => {
   const selected = getSelected(nav);
   const idx = selected ? items.indexOf(selected) : -1;
 
-  const prev = container.querySelector<HTMLButtonElement>(
-    'button[data-en-action="prev"]',
-  );
-  const next = container.querySelector<HTMLButtonElement>(
-    'button[data-en-action="next"]',
-  );
+  const prev = container.querySelector<HTMLButtonElement>('button[data-en-action="prev"]');
+  const next = container.querySelector<HTMLButtonElement>('button[data-en-action="next"]');
   if (prev) prev.disabled = idx <= 0;
   if (next) next.disabled = idx === -1 || idx >= items.length - 1;
 };
@@ -223,13 +204,10 @@ const ensureArrows = (course: HTMLElement) => {
     container.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      const btn = (e.target as Element).closest<HTMLButtonElement>(
-        "button[data-en-action]",
-      );
+      const btn = (e.target as Element).closest<HTMLButtonElement>("button[data-en-action]");
       if (!btn) return;
       const liveCourse = document.querySelector<HTMLElement>(".course");
-      if (liveCourse)
-        navigate(liveCourse, btn.dataset.enAction as "prev" | "next");
+      if (liveCourse) navigate(liveCourse, btn.dataset.enAction as "prev" | "next");
     });
   }
 
@@ -242,9 +220,7 @@ const watchNavigator = (navigator: Element, onChange: () => void) => {
   const observer = new MutationObserver((muts) => {
     if (
       muts.some(
-        (m) =>
-          (m.type === "attributes" && m.attributeName === "class") ||
-          m.type === "childList",
+        (m) => (m.type === "attributes" && m.attributeName === "class") || m.type === "childList",
       )
     ) {
       onChange();
@@ -266,9 +242,7 @@ const handleSlidePane = (pane: Element): (() => void) => {
   requestAnimationFrame(() => scrollSelectedIntoView(navigator));
   setTimeout(() => scrollSelectedIntoView(navigator), 50);
 
-  const observer = new MutationObserver(() =>
-    scrollSelectedIntoView(navigator),
-  );
+  const observer = new MutationObserver(() => scrollSelectedIntoView(navigator));
   observer.observe(navigator, {
     subtree: true,
     attributes: true,

@@ -1,7 +1,4 @@
-import {
-  createDefaultThemeCoverSvg,
-  defaultThemeCoverDataUrl,
-} from "./themePlaceholderCover";
+import { createDefaultThemeCoverSvg, defaultThemeCoverDataUrl } from "./themePlaceholderCover";
 
 describe("themePlaceholderCover", () => {
   it("builds an svg cover placeholder", () => {

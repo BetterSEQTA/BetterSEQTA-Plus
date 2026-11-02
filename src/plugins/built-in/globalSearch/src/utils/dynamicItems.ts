@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { Component } from "svelte";
 import type { IndexItem } from "../indexing/types";
 
 export interface DynamicContentItem {
@@ -7,10 +7,10 @@ export interface DynamicContentItem {
   category: string;
   content: string;
   dateAdded: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: typeof SvelteComponent;
+  renderComponent?: Component<Record<string, unknown>>;
 }
 
 let dynamicItems: IndexItem[] = [];
@@ -25,17 +25,12 @@ export function loadDynamicItems(items: IndexItem[]) {
 /**
  * Merge changed items and remove deleted ids without reloading the full corpus.
  */
-export function mergeDynamicItems(
-  changedItems: IndexItem[],
-  removedIds: string[] = [],
-): void {
+export function mergeDynamicItems(changedItems: IndexItem[], removedIds: string[] = []): void {
   if (changedItems.length === 0 && removedIds.length === 0) return;
 
   const removeSet = new Set(removedIds);
   const changeMap = new Map(changedItems.map((item) => [item.id, item]));
-  const kept = dynamicItems.filter(
-    (item) => !removeSet.has(item.id) && !changeMap.has(item.id),
-  );
+  const kept = dynamicItems.filter((item) => !removeSet.has(item.id) && !changeMap.has(item.id));
   dynamicItems = [...kept, ...changedItems];
 }
 

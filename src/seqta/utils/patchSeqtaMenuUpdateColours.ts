@@ -112,10 +112,7 @@ export function attachTimetableColorisRecovery(): void {
       if (!pickerOpen) {
         const result = dismissTimetableUiBlockers();
         if (result.slideRemoved > 0 || result.modalRemoved > 0) {
-          verboseInfo(
-            "[BetterSEQTA+] timetable colour: content-script cleanup",
-            result,
-          );
+          verboseInfo("[BetterSEQTA+] timetable colour: content-script cleanup", result);
         }
       }
     },

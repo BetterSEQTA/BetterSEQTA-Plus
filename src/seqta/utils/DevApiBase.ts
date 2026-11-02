@@ -1,5 +1,5 @@
-import browser from "webextension-polyfill";
-import { PRODUCTION_API_BASE, resolveApiBase } from "@/seqta/utils/apiBasePolicy";
+import browser from "@/lib/browser";
+import { resolveApiBase } from "@/seqta/utils/apiBasePolicy";
 
 export { PRODUCTION_API_BASE } from "@/seqta/utils/apiBasePolicy";
 
@@ -43,9 +43,7 @@ export function setApiBase(url: string | null): void {
     } catch {
       // ignore
     }
-    void browser.runtime
-      .sendMessage({ type: "setDevApiBase", url: null })
-      .catch(() => {});
+    void browser.runtime.sendMessage({ type: "setDevApiBase", url: null }).catch(() => {});
     return;
   }
 
@@ -58,9 +56,7 @@ export function setApiBase(url: string | null): void {
   } catch {
     // ignore
   }
-  void browser.runtime
-    .sendMessage({ type: "setDevApiBase", url: url || null })
-    .catch(() => {});
+  void browser.runtime.sendMessage({ type: "setDevApiBase", url: url || null }).catch(() => {});
 }
 
 /** Returns the override URL if one is currently active (production builds only). */
@@ -76,7 +72,5 @@ export function getStoredOverride(): string | null {
  */
 export function syncApiBaseToBackground(): void {
   const override = import.meta.env.DEV ? null : readSessionOverride();
-  void browser.runtime
-    .sendMessage({ type: "setDevApiBase", url: override })
-    .catch(() => {});
+  void browser.runtime.sendMessage({ type: "setDevApiBase", url: override }).catch(() => {});
 }

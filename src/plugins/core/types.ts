@@ -1,5 +1,7 @@
 import ReactFiber from "@/seqta/utils/ReactFiber";
 
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
+
 export interface BooleanSetting {
   type: "boolean";
   default: boolean;
@@ -52,7 +54,7 @@ export interface ComponentSetting {
   type: "component";
   title: string;
   description?: string;
-  component: any;
+  component: MountableSvelteComponent;
 }
 
 export type PluginSetting =
@@ -90,18 +92,12 @@ export type SettingsAPI<T extends PluginSettings> = {
     key: K,
     callback: (value: SettingValue<T[K]>) => void,
   ) => { unregister: () => void };
-  offChange: <K extends keyof T>(
-    key: K,
-    callback: (value: SettingValue<T[K]>) => void,
-  ) => void;
+  offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => void;
   loaded: Promise<void>;
 };
 
 export interface SEQTAAPI {
-  onMount: (
-    selector: string,
-    callback: (element: Element) => void,
-  ) => { unregister: () => void };
+  onMount: (selector: string, callback: (element: Element) => void) => { unregister: () => void };
   getFiber: (selector: string) => ReactFiber;
   getCurrentPage: () => string;
   onPageChange: (callback: (page: string) => void) => {
@@ -109,7 +105,7 @@ export interface SEQTAAPI {
   };
 }
 
-export interface StorageAPI<T = any> {
+export interface StorageAPI<T = unknown> {
   /**
    * Register a callback to be called when a storage value changes
    */
@@ -129,14 +125,11 @@ export type TypedStorageAPI<T> = StorageAPI<T> & {
 };
 
 export interface EventsAPI {
-  on: (
-    event: string,
-    callback: (...args: any[]) => void,
-  ) => { unregister: () => void };
-  emit: (event: string, ...args: any[]) => void;
+  on: (event: string, callback: (...args: unknown[]) => void) => { unregister: () => void };
+  emit: (event: string, ...args: unknown[]) => void;
 }
 
-export interface PluginAPI<T extends PluginSettings, S = any> {
+export interface PluginAPI<T extends PluginSettings, S = unknown> {
   seqta: SEQTAAPI;
   settings: SettingsAPI<T>;
   storage: TypedStorageAPI<S>;
@@ -144,7 +137,9 @@ export interface PluginAPI<T extends PluginSettings, S = any> {
   dispose: () => void;
 }
 
-export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
+export type PluginRunResult = void | (() => void);
+
+export interface Plugin<T extends PluginSettings = PluginSettings, S = Record<string, unknown>> {
   id: string;
   name: string;
   description: string;
@@ -154,7 +149,5 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   disableToggle?: boolean; // Optional flag to show/hide the plugin's enable/disable toggle in settings
   defaultEnabled?: boolean; // Optional flag to set the plugin's default enabled state
   beta?: boolean; // Optional flag to mark the plugin as beta
-  run: (
-    api: PluginAPI<T, S>,
-  ) => void | Promise<void> | (() => void) | Promise<() => void>;
+  run: (api: PluginAPI<T, S>) => PluginRunResult | Promise<PluginRunResult>;
 }

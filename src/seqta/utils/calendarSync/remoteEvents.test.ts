@@ -1,10 +1,9 @@
 import { afterEach, expect, it, jest } from "@jest/globals";
-import {
-  listGoogleSyncedEvents,
-  listOutlookSyncedEvents,
-} from "./remoteEvents";
+import { listGoogleSyncedEvents, listOutlookSyncedEvents } from "./remoteEvents";
 
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 it.each([
   { provider: "google", body: "invalid JSON" },
@@ -14,18 +13,15 @@ it.each([
     body: JSON.stringify({ error: { message: "Invalid response" } }),
   },
   { provider: "outlook", body: "{}" },
-])(
-  "rejects malformed successful $provider listings ($body)",
-  async ({ provider, body }) => {
-    jest.spyOn(globalThis, "fetch").mockResolvedValue(new Response(body));
-    const range = { from: "2026-10-04", until: "2026-10-04" };
-    const listing =
-      provider === "google"
-        ? listGoogleSyncedEvents("token", "calendar", range)
-        : listOutlookSyncedEvents("token", range);
-    await expect(listing).rejects.toThrow();
-  },
-);
+])("rejects malformed successful $provider listings ($body)", async ({ provider, body }) => {
+  jest.spyOn(globalThis, "fetch").mockResolvedValue(new Response(body));
+  const range = { from: "2026-10-04", until: "2026-10-04" };
+  const listing =
+    provider === "google"
+      ? listGoogleSyncedEvents("token", "calendar", range)
+      : listOutlookSyncedEvents("token", range);
+  await expect(listing).rejects.toThrow();
+});
 
 it.each(["google", "outlook"])(
   "queries %s over complete local days across Sydney DST",
@@ -47,18 +43,14 @@ it.each(["google", "outlook"])(
       return Response.json(provider === "google" ? {} : { value: [] });
     });
     const range = { from: "2026-10-04", until: "2026-10-04" };
-    if (provider === "google")
-      await listGoogleSyncedEvents("token", "calendar", range);
+    if (provider === "google") await listGoogleSyncedEvents("token", "calendar", range);
     else await listOutlookSyncedEvents("token", range);
     if (expected) expect(requestedBounds).toEqual(expected);
     else {
       const [start, end] = requestedBounds.map((value) => new Date(value));
-      expect([
-        start.getDate(),
-        start.getHours(),
-        end.getDate(),
-        end.getHours(),
-      ]).toEqual([4, 0, 5, 0]);
+      expect([start.getDate(), start.getHours(), end.getDate(), end.getHours()]).toEqual([
+        4, 0, 5, 0,
+      ]);
     }
   },
 );
@@ -66,14 +58,9 @@ it.each(["google", "outlook"])(
 it("rejects an incomplete paginated listing rather than authorizing reconciliation", async () => {
   jest
     .spyOn(globalThis, "fetch")
+    .mockResolvedValueOnce(Response.json({ items: [], nextPageToken: "second-page" }))
     .mockResolvedValueOnce(
-      Response.json({ items: [], nextPageToken: "second-page" }),
-    )
-    .mockResolvedValueOnce(
-      Response.json(
-        { error: { message: "Page unavailable" } },
-        { status: 400 },
-      ),
+      Response.json({ error: { message: "Page unavailable" } }, { status: 400 }),
     );
   await expect(
     listGoogleSyncedEvents("token", "calendar", {

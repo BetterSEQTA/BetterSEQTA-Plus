@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Chart from "./chart/index";
   import { scaleLinear } from "d3-scale";
-  import { Area, AreaChart, ChartClipPath, Spline } from "layerchart";
+  import { Area, AreaChart, ChartClipPath, Spline, type ChartState } from "layerchart";
   import { curveMonotoneX } from "d3-shape";
   import { cubicInOut } from "svelte/easing";
   import type { Assessment } from "./types";
@@ -35,7 +35,10 @@
   let showPrediction = $state(false);
   let predictionMonths = $state(3);
 
-  const chartUid = `area-${Math.random().toString(36).slice(2, 9)}`;
+  const chartUid = $props.id();
+
+  const hasAverage = (p: TrendPoint): p is TrendPoint & { average: number } =>
+    p.average != null && !Number.isNaN(p.average);
 
   const chartResult = $derived.by(() =>
     buildGradeTrendChart(data, timeRange, {
@@ -55,7 +58,7 @@
     if (!showPrediction) return null;
     const points = aggregateToMonthlyPoints(
       historicalData
-        .filter((p) => !Number.isNaN(p.average))
+        .filter(hasAverage)
         .map((p) => ({ date: p.date, average: p.average })),
     );
     return computeGradeForecast(points, predictionMonths);
@@ -134,11 +137,11 @@
   });
 
   const trend = $derived.by(() => {
-    if (historicalData.length < 2) {
+    const recent = historicalData.filter(hasAverage).slice(-2);
+    if (recent.length < 2) {
       return { percentage: "0", direction: "neutral" as const };
     }
 
-    const recent = historicalData.slice(-2);
     const change = recent[1].average - recent[0].average;
 
     return {
@@ -169,7 +172,7 @@
   const canForecast = $derived.by(() => {
     const monthly = aggregateToMonthlyPoints(
       historicalData
-        .filter((p) => !Number.isNaN(p.average))
+        .filter(hasAverage)
         .map((p) => ({ date: p.date, average: p.average })),
     );
     return monthly.length >= 3;
@@ -184,7 +187,7 @@
     }
 
     const points = historicalData.map((p) => ({ ...p }));
-    const validHist = points.filter((p) => !Number.isNaN(p.average));
+    const validHist = points.filter(hasAverage);
     const last = validHist[validHist.length - 1];
 
     if (last) {
@@ -251,13 +254,8 @@
           {xDomain}
           yScale={yScale}
           series={areaSeries}
+          seriesLayout="overlap"
           props={{
-            area: {
-              curve: curveMonotoneX,
-              "fill-opacity": showSubjectTrends ? 0.12 : 0.35,
-              line: { class: "stroke-2" },
-              motion: animationsOn ? "tween" : false,
-            },
             xAxis: {
               ticks: timeRange === "7d" ? 7 : undefined,
               format: (v: Date) =>
@@ -271,7 +269,7 @@
             },
           }}
         >
-          {#snippet marks({ series, getAreaProps })}
+          {#snippet marks({ context }: { context: ChartState<TrendPoint> })}
             <defs>
               <linearGradient id={chartUid} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color={accentColor} stop-opacity="0.55" />
@@ -287,22 +285,23 @@
                   }
                 : undefined}
             >
-              {#each series as s, i (s.key)}
+              {#each context.series.visibleSeries as s (s.key)}
                 {@const meta = chartSeries.find((c) => c.key === s.key)}
                 {@const isOverall = meta?.isOverall ?? s.key === "average"}
-                {@const isForecast = s.key === "forecast"}
+                {@const color = meta?.color ?? s.color}
 
-                {#if !isForecast}
+                {#if s.key !== "forecast"}
                   <Area
-                    {...getAreaProps(s, i)}
+                    seriesKey={s.key}
+                    curve={curveMonotoneX}
+                    motion={animationsOn ? "tween" : false}
+                    line={{ class: "stroke-2", stroke: color }}
                     fill={isOverall && !showSubjectTrends
                       ? `url(#${chartUid})`
                       : isOverall
                         ? accentColor
                         : "transparent"}
-                    fill-opacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
-                    stroke={meta?.color ?? s.color}
-                    style={`stroke: ${meta?.color ?? s.color}`}
+                    fillOpacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
                   />
                 {/if}
               {/each}

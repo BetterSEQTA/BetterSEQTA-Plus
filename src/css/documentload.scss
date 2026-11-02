@@ -110,9 +110,7 @@ html {
   transform-origin: top;
   transition: transform 0.2s;
 }
-body:has(.outside-container:not(.hide))
-  #AddedSettings.tooltip:hover
-  > .tooltiptext {
+body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltiptext {
   transform: scale(0);
 }
 .assessmenttooltip svg {

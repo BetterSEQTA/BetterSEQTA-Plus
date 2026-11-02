@@ -60,17 +60,11 @@ export function getTimeRangeBounds(
   return { start, end: null };
 }
 
-export function getTimeRangeCutoff(
-  timeRange: TimeRange,
-  custom?: CustomTimeRange,
-): Date | null {
+export function getTimeRangeCutoff(timeRange: TimeRange, custom?: CustomTimeRange): Date | null {
   return getTimeRangeBounds(timeRange, custom).start;
 }
 
-export function getTimeRangeLabel(
-  timeRange: TimeRange,
-  custom?: CustomTimeRange,
-): string {
+export function getTimeRangeLabel(timeRange: TimeRange, custom?: CustomTimeRange): string {
   if (timeRange === "custom" && custom?.from && custom?.to) {
     const fmt = (iso: string) =>
       parseDateOnly(iso).toLocaleDateString(undefined, {
@@ -83,10 +77,7 @@ export function getTimeRangeLabel(
   return TIME_RANGE_OPTIONS.find((o) => o.value === timeRange)?.label ?? "All time";
 }
 
-function assessmentInRange(
-  due: string,
-  bounds: { start: Date | null; end: Date | null },
-): boolean {
+function assessmentInRange(due: string, bounds: { start: Date | null; end: Date | null }): boolean {
   const date = new Date(due);
   if (bounds.start && date < bounds.start) return false;
   if (bounds.end && date > bounds.end) return false;
@@ -103,10 +94,7 @@ export function filterAssessmentsByTimeRange(
   return assessments.filter((a) => assessmentInRange(a.due, bounds));
 }
 
-function usesMonthlyGrouping(
-  timeRange: TimeRange,
-  custom?: CustomTimeRange,
-): boolean {
+function usesMonthlyGrouping(timeRange: TimeRange, custom?: CustomTimeRange): boolean {
   if (timeRange === "365d" || timeRange === "all" || timeRange === "ytd") return true;
   if (timeRange !== "custom" || !custom?.from || !custom?.to) return false;
   const { start, end } = getTimeRangeBounds(timeRange, custom);
@@ -148,10 +136,7 @@ export function subjectChartColor(index: number): string {
   return SUBJECT_CHART_COLORS[index % SUBJECT_CHART_COLORS.length];
 }
 
-function periodKeyForAssessment(
-  assessment: Assessment,
-  useMonthlyGrouping: boolean,
-): string {
+function periodKeyForAssessment(assessment: Assessment, useMonthlyGrouping: boolean): string {
   const date = new Date(assessment.due);
   if (useMonthlyGrouping) {
     return date.toISOString().slice(0, 7);
@@ -173,7 +158,7 @@ function average(nums: number[]): number {
 
 function slugSubjectKey(name: string, keyBySubject: Map<string, string>): string {
   if (keyBySubject.has(name)) return keyBySubject.get(name)!;
-  let base =
+  const base =
     name
       .trim()
       .replace(/[^\w]+/g, "_")
@@ -199,12 +184,9 @@ export function buildGradeTrendChart(
     combinedLabel?: string;
   } = {},
 ): { points: TrendPoint[]; series: TrendSeries[]; accentColor: string } {
-  const accentColor =
-    "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
+  const accentColor = "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
 
-  const graded = data.filter(
-    (a) => a.finalGrade !== undefined && a.finalGrade !== null,
-  );
+  const graded = data.filter((a) => a.finalGrade !== undefined && a.finalGrade !== null);
   if (!graded.length) {
     return { points: [], series: [], accentColor };
   }

@@ -97,8 +97,9 @@ function weightedLinearRegression(values: number[]): {
   }
 
   const rSquared = ssTot === 0 ? 1 : Math.max(0, 1 - ssRes / ssTot);
-  const forecasts = Array.from({ length: MAX_MONTHS }, (_, i) =>
-    intercept + slope * (n - 1 + (i + 1)),
+  const forecasts = Array.from(
+    { length: MAX_MONTHS },
+    (_, i) => intercept + slope * (n - 1 + (i + 1)),
   );
 
   return { forecasts, slope, rSquared };

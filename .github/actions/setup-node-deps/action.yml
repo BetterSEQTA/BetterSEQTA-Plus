@@ -1,14 +1,15 @@
 name: Setup Node and dependencies
-description: Install Node.js 22.x and npm dependencies.
+description: Install Node.js 26.x and npm dependencies.
 
 runs:
   using: composite
   steps:
-    - name: Use Node.js 22.x
-      uses: actions/setup-node@v4
+    - name: Use Node.js 26.x
+      uses: actions/setup-node@v7
       with:
-        node-version: 22.x
+        node-version: 26.x
+        cache: npm
 
     - name: Install dependencies
       shell: bash
-      run: npm install --legacy-peer-deps
+      run: npm ci

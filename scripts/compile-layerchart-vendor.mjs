@@ -33,7 +33,9 @@ const layerchartVersion = JSON.parse(
 const stampContent = `${layerchartVersion}\n${COMPILE_ALGO_VERSION}`;
 
 if (exists(stampPath) && readFileSync(stampPath, "utf8").trim() === stampContent) {
-  console.log(`compile-layerchart-vendor: layerchart@${layerchartVersion} already compiled, skipping`);
+  console.log(
+    `compile-layerchart-vendor: layerchart@${layerchartVersion} already compiled, skipping`,
+  );
   process.exit(0);
 }
 
@@ -49,9 +51,7 @@ const walkFiles = (dir, files = []) => {
 
 const patchSvelteImports = (content) => content.replace(importSuffixPattern, ".js");
 const stripRollupBreakingSyntax = (code) =>
-  code
-    .replace(/(\w+)\?(?=\s*[,)\]])/g, "$1")
-    .replace(/(\w+)\?(?=\s*:)/g, "$1");
+  code.replace(/(\w+)\?(?=\s*[,)\]])/g, "$1").replace(/(\w+)\?(?=\s*:)/g, "$1");
 
 const svelteFiles = walkFiles(layerchartDist).filter((f) => f.endsWith(".svelte"));
 

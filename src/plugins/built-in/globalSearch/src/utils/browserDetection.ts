@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /**
  * Detects if the current browser is Firefox
@@ -6,7 +6,10 @@ import browser from "webextension-polyfill";
 export function isFirefox(): boolean {
   try {
     // Firefox-specific API
-    if (typeof (browser.runtime as any).getBrowserInfo === "function") {
+    if (
+      typeof (browser.runtime as typeof browser.runtime & { getBrowserInfo?: () => unknown })
+        .getBrowserInfo === "function"
+    ) {
       return true;
     }
     // Fallback: check user agent
@@ -27,4 +30,3 @@ export function isFirefox(): boolean {
 export function isVectorSearchSupported(): boolean {
   return !isFirefox();
 }
-

@@ -13,32 +13,28 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "rubik",
     name: "Rubik",
     stack: "Rubik, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "inter",
     name: "Inter",
     stack: "Inter, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "poppins",
     name: "Poppins",
     stack: "Poppins, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "nunito",
     name: "Nunito",
     stack: "Nunito, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -61,8 +57,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "lato",
     name: "Lato",
     stack: "Lato, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -77,16 +72,14 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "raleway",
     name: "Raleway",
     stack: "Raleway, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "dm-sans",
     name: "DM Sans",
     stack: '"DM Sans", sans-serif',
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -101,16 +94,14 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "outfit",
     name: "Outfit",
     stack: "Outfit, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "roboto",
     name: "Roboto",
     stack: "Roboto, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -125,40 +116,35 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "manrope",
     name: "Manrope",
     stack: "Manrope, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "figtree",
     name: "Figtree",
     stack: "Figtree, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "lexend",
     name: "Lexend",
     stack: "Lexend, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "ubuntu",
     name: "Ubuntu",
     stack: "Ubuntu, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;500;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "karla",
     name: "Karla",
     stack: "Karla, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Karla:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -189,32 +175,28 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "mulish",
     name: "Mulish",
     stack: "Mulish, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "cabin",
     name: "Cabin",
     stack: "Cabin, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "oswald",
     name: "Oswald",
     stack: "Oswald, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
     id: "merriweather",
     name: "Merriweather",
     stack: "Merriweather, serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
@@ -229,8 +211,7 @@ export const FONT_PRESETS: FontPreset[] = [
     id: "lora",
     name: "Lora",
     stack: "Lora, serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap",
+    googleUrl: "https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {

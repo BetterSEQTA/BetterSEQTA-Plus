@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import localforage from "localforage";
 import type { CustomTheme } from "@/types/CustomThemes";
 import {
@@ -173,6 +173,7 @@ async function applyRemoteTheme(
   snapshot: RemoteConfigSnapshot,
   directive: RemoteThemeDirective,
 ): Promise<void> {
+  if (directive.mode === "off") return;
   const key = directiveKey(snapshot, directive);
   const prior = await loadActiveState();
   if (prior?.directiveKey === key) return;
@@ -201,9 +202,10 @@ async function applyRemoteTheme(
     for (const layer of layers) {
       if (typeof layer.id === "string") layerIds.push(layer.id);
       if (typeof layer.CustomCSS === "string") css.push(layer.CustomCSS);
-      const stored = typeof layer.id === "string"
-        ? ((await localforage.getItem(layer.id)) as CustomTheme | null)
-        : null;
+      const stored =
+        typeof layer.id === "string"
+          ? ((await localforage.getItem(layer.id)) as CustomTheme | null)
+          : null;
       for (const img of stored?.CustomImages ?? []) {
         if (img.variableName && img.blob) images.set(img.variableName, img);
       }

@@ -1,5 +1,3 @@
-import type { Tabs } from "webextension-polyfill";
-
 /** Same rules as background `isSeqtaOrigin` / ConnectMobileApp `isSeqtaUrl`. */
 export function isSeqtaHostname(hostname: string): boolean {
   return hostname.includes("seqta") || hostname.endsWith(".edu.au");
@@ -19,7 +17,7 @@ export function isSeqtaPageUrl(url: string): boolean {
  * Whether a browser tab is likely SEQTA Learn/Engage (for background `tabs.sendMessage`).
  * URL check covers custom school hosts; title covers cases where URL is not yet available.
  */
-export function isSeqtaTab(tab: Tabs.Tab): boolean {
+export function isSeqtaTab(tab: chrome.tabs.Tab): boolean {
   if (tab.url && isSeqtaPageUrl(tab.url)) return true;
   const title = tab.title ?? "";
   return title.includes("SEQTA Learn") || title.includes("SEQTA Engage");

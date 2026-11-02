@@ -1,14 +1,7 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
-export type SidebarStyleId =
-  | "classic"
-  | "soft"
-  | "pill"
-  | "glass"
-  | "sharp"
-  | "strip"
-  | "neon";
+export type SidebarStyleId = "classic" | "soft" | "pill" | "glass" | "sharp" | "strip" | "neon";
 
 export type SidebarDensity = "compact" | "comfortable" | "large";
 export type SidebarActiveIndicator = "fill" | "bar" | "outline" | "underline";
@@ -64,18 +57,13 @@ function clampInt(value: unknown, min: number, max: number, fallback: number): n
   return Math.min(max, Math.max(min, Math.round(n)));
 }
 
-export const normalizeSidebarStyleId = (v: unknown) =>
-  oneOf(v, STYLE_IDS, DEFAULT_SIDEBAR_STYLE);
+export const normalizeSidebarStyleId = (v: unknown) => oneOf(v, STYLE_IDS, DEFAULT_SIDEBAR_STYLE);
 
 export const normalizeSidebarDensity = (v: unknown) =>
   oneOf(v, ["compact", "comfortable", "large"] as const, DEFAULT_SIDEBAR_DENSITY);
 
 export const normalizeSidebarIndicator = (v: unknown) =>
-  oneOf(
-    v,
-    ["fill", "bar", "outline", "underline"] as const,
-    DEFAULT_SIDEBAR_INDICATOR,
-  );
+  oneOf(v, ["fill", "bar", "outline", "underline"] as const, DEFAULT_SIDEBAR_INDICATOR);
 
 export const normalizeSidebarWidth = (v: unknown) =>
   oneOf(v, ["narrow", "default", "wide"] as const, DEFAULT_SIDEBAR_WIDTH);
@@ -83,11 +71,9 @@ export const normalizeSidebarWidth = (v: unknown) =>
 export const normalizeSidebarPosition = (v: unknown) =>
   oneOf(v, ["left", "right"] as const, DEFAULT_SIDEBAR_POSITION);
 
-export const normalizeSidebarRadius = (v: unknown) =>
-  clampInt(v, 0, 24, DEFAULT_SIDEBAR_RADIUS);
+export const normalizeSidebarRadius = (v: unknown) => clampInt(v, 0, 24, DEFAULT_SIDEBAR_RADIUS);
 
-export const normalizeSidebarBlur = (v: unknown) =>
-  clampInt(v, 0, 80, DEFAULT_SIDEBAR_BLUR);
+export const normalizeSidebarBlur = (v: unknown) => clampInt(v, 0, 80, DEFAULT_SIDEBAR_BLUR);
 
 export function getSidebarStyle(id: unknown): SidebarStyleDef {
   const normalized = normalizeSidebarStyleId(id);
@@ -95,26 +81,18 @@ export function getSidebarStyle(id: unknown): SidebarStyleDef {
 }
 
 function clearPrefixed(el: HTMLElement, prefix: string) {
-  for (const cls of [...el.classList]) {
+  for (const cls of Array.from(el.classList)) {
     if (cls.startsWith(prefix)) el.classList.remove(cls);
   }
 }
 
-function setExclusiveClass(
-  el: HTMLElement,
-  prefix: string,
-  value: string,
-  skipDefault?: string,
-) {
+function setExclusiveClass(el: HTMLElement, prefix: string, value: string, skipDefault?: string) {
   clearPrefixed(el, prefix);
   if (value !== skipDefault) el.classList.add(`${prefix}${value}`);
 }
 
 /** Apply style preset class on `#menu` (classic = no class). */
-export function applySidebarStyleClass(
-  menu: HTMLElement | null | undefined,
-  styleId: unknown,
-) {
+export function applySidebarStyleClass(menu: HTMLElement | null | undefined, styleId: unknown) {
   if (!menu) return;
   setExclusiveClass(
     menu,
@@ -168,9 +146,7 @@ export function applySidebarLook(
   const indicator = normalizeSidebarIndicator(settingsState.sidebarActiveIndicator);
   const width = normalizeSidebarWidth(settingsState.sidebarWidth);
   const radius = normalizeSidebarRadius(settingsState.sidebarCornerRadius);
-  const blur = isPerformanceMode()
-    ? 0
-    : normalizeSidebarBlur(settingsState.sidebarBlur);
+  const blur = isPerformanceMode() ? 0 : normalizeSidebarBlur(settingsState.sidebarBlur);
 
   applySidebarPosition();
 
@@ -187,12 +163,7 @@ export function applySidebarLook(
   lastSidebarLookMenu = menu;
 
   setExclusiveClass(menu, DENSITY_CLASS_PREFIX, density, DEFAULT_SIDEBAR_DENSITY);
-  setExclusiveClass(
-    menu,
-    INDICATOR_CLASS_PREFIX,
-    indicator,
-    DEFAULT_SIDEBAR_INDICATOR,
-  );
+  setExclusiveClass(menu, INDICATOR_CLASS_PREFIX, indicator, DEFAULT_SIDEBAR_INDICATOR);
 }
 
 export function clearSidebarAppearance(menu: HTMLElement | null | undefined) {

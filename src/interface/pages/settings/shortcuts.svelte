@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import Shortcuts from "@/seqta/content/links.json"
 
-  let { searchQuery = "" } = $props<{ searchQuery?: string }>();
+  let { searchQuery = "" }: { searchQuery?: string } = $props();
   const q = $derived(searchQuery.trim().toLowerCase());
 
   let isLoaded = $state(false);
@@ -163,13 +163,13 @@
                 >
                   {#if newIcon}
                     <div class="flex overflow-hidden items-center">
-                      <div class="flex-shrink-0 mr-2 w-6 h-6">
+                      <div class="shrink-0 mr-2 w-6 h-6">
                         <img src={`data:image/svg+xml;base64,${btoa(newIcon)}`} alt="Selected Icon" class="object-contain w-full h-full" />
                       </div>
                       <span class="truncate">Selected Icon</span>
                     </div>
                     <span
-                      class="p-1 ml-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+                      class="p-1 ml-2 rounded-sm hover:bg-zinc-200 dark:hover:bg-zinc-600"
                       aria-label="Clear icon"
                       role="button"
                       tabindex="0"

@@ -33,9 +33,7 @@ function isSeqtaRebranded404Message(message: Element): boolean {
   const body = normalizePageText(message.textContent ?? "");
   return (
     body.includes("We can't find the page you're looking for") &&
-    body.includes(
-      "It may have been moved, deleted or the link might be out of date.",
-    ) &&
+    body.includes("It may have been moved, deleted or the link might be out of date.") &&
     body.includes("Ref: 404")
   );
 }

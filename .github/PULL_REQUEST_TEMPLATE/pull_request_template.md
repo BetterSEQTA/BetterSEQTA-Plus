@@ -1,14 +1,17 @@
-## Description
+## What does this change?
 
-Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
+<!-- A short summary, and why it's needed. -->
 
-Fixes # (issue)
+Fixes #
 
 ## Type of change
 
-Please delete options that are not relevant.
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Breaking change
+- [ ] Docs or tooling only
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] This change requires a documentation update
+## Checklist
+
+- [ ] `npm run lint`, `npm test` and `npm run build` pass
+- [ ] Tested on a SEQTA page

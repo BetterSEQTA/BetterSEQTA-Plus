@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import isEqual from "@/seqta/utils/isEqual";
 import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
 import {
@@ -245,9 +245,7 @@ export async function getLastUploadedSnapshot(): Promise<Record<string, unknown>
   return snapshot as Record<string, unknown>;
 }
 
-export async function saveLastUploadedSnapshot(
-  snapshot: Record<string, unknown>,
-): Promise<void> {
+export async function saveLastUploadedSnapshot(snapshot: Record<string, unknown>): Promise<void> {
   await browser.storage.local.set({ [BSPLUS_CLOUD_LAST_UPLOADED_SNAPSHOT_KEY]: snapshot });
 }
 
@@ -266,9 +264,7 @@ export async function getSnapshotForUpload(): Promise<CloudSettingsUploadEnvelop
  */
 export function resolveThemeIdForPostSyncDownload(envelope: unknown): string | undefined {
   if (envelope && typeof envelope === "object" && "themeId" in envelope) {
-    const top = normalizeThemeIdForSync(
-      (envelope as Record<string, unknown>).themeId,
-    );
+    const top = normalizeThemeIdForSync((envelope as Record<string, unknown>).themeId);
     if (top) return top;
   }
 
@@ -304,7 +300,9 @@ export async function setKnownRemoteUpdatedAt(iso: string | undefined): Promise<
  * Only applies migrations for keys present in the data; does not overwrite
  * existing plugin settings if the legacy key is absent.
  */
-export function migrateLegacyToPluginSettings(data: Record<string, unknown>): Record<string, unknown> {
+export function migrateLegacyToPluginSettings(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
   const result = { ...data };
 
   function ensurePluginSettings(pluginId: string): Record<string, unknown> {

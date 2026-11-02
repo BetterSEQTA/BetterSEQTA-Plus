@@ -53,7 +53,10 @@ export async function runRelayRoundTrip(
 
     const url = wsConnectUrl(session, instanceHost);
     const ws = new WebSocket(url);
-    const timer = setTimeout(() => finish({ ok: false, error: "Relay connection timed out" }), RELAY_TIMEOUT_MS);
+    const timer = setTimeout(
+      () => finish({ ok: false, error: "Relay connection timed out" }),
+      RELAY_TIMEOUT_MS,
+    );
 
     ws.addEventListener("message", (event) => {
       void (async () => {

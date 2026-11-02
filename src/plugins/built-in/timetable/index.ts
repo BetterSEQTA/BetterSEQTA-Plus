@@ -40,10 +40,7 @@ const timetablePlugin: Plugin<{}, {}> = {
 };
 
 // Store event handlers globally for cleanup
-const zoomHandlers = new WeakMap<
-  Element,
-  { zoomIn: () => void; zoomOut: () => void }
->();
+const zoomHandlers = new WeakMap<Element, { zoomIn: () => void; zoomOut: () => void }>();
 
 function resetTimetableStyles(): void {
   // Reset entry opacity (for assessment hide feature)
@@ -59,9 +56,7 @@ function resetTimetableStyles(): void {
     const handlers = zoomHandlers.get(zoomControls);
     if (handlers) {
       const zoomIn = zoomControls.querySelector(".timetable-zoom:nth-child(2)");
-      const zoomOut = zoomControls.querySelector(
-        ".timetable-zoom:nth-child(1)",
-      );
+      const zoomOut = zoomControls.querySelector(".timetable-zoom:nth-child(1)");
       if (zoomIn) zoomIn.removeEventListener("click", handlers.zoomIn);
       if (zoomOut) zoomOut.removeEventListener("click", handlers.zoomOut);
       zoomHandlers.delete(zoomControls);
@@ -79,9 +74,10 @@ async function handleTimetable(): Promise<void> {
     /* timetable body may render after the shell */
   }
 
-  // Convert time format if needed
   if (settingsState.timeFormat == "12") {
-    const times = document.querySelectorAll(".timetablepage .times .time, .timetablepage .entry.new");
+    const times = document.querySelectorAll(
+      ".timetablepage .times .time, .timetablepage .entry.new",
+    );
     for (const time of times) {
       if (!time.textContent) continue;
       time.textContent = convertTo12HourFormat(time.textContent, true);
@@ -98,7 +94,6 @@ function handleTimetableZoom(): void {
 
   verboseLog("Initializing timetable zoom controls");
 
-  // Create zoom controls
   const zoomControls = document.createElement("div");
   zoomControls.className = "timetable-zoom-controls";
 
@@ -118,16 +113,15 @@ function handleTimetableZoom(): void {
   const toolbar = document.getElementById("toolbar");
   toolbar?.appendChild(zoomControls);
 
-  // Store event listener references
   const zoomInHandler = () => {
-    const seqtaZoomIn = document.querySelector('.uiButton.zoom.in') as HTMLElement;
+    const seqtaZoomIn = document.querySelector(".uiButton.zoom.in") as HTMLElement;
     if (seqtaZoomIn) {
       seqtaZoomIn.click();
     }
   };
 
   const zoomOutHandler = () => {
-    const seqtaZoomOut = document.querySelector('.uiButton.zoom.out') as HTMLElement;
+    const seqtaZoomOut = document.querySelector(".uiButton.zoom.out") as HTMLElement;
     if (seqtaZoomOut) {
       seqtaZoomOut.click();
     }
@@ -136,7 +130,6 @@ function handleTimetableZoom(): void {
   zoomIn.addEventListener("click", zoomInHandler);
   zoomOut.addEventListener("click", zoomOutHandler);
 
-  // Store references for cleanup
   zoomHandlers.set(zoomControls, {
     zoomIn: zoomInHandler,
     zoomOut: zoomOutHandler,

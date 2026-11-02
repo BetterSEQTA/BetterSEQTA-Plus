@@ -1,8 +1,8 @@
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
-import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
+import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { loadEngageHomePage } from "@/seqta/utils/Loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { loadEngageHomePage } from "@/seqta/utils/loaders/LoadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
@@ -10,18 +10,21 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
+import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
-import { delay } from "@/seqta/utils/delay";
 import {
   ensureThemeToggleSurprisePageScript,
   openThemeToggleSurprise,
   THEME_TOGGLE_SURPRISE_TRIGGER_AT,
-} from "@/seqta/utils/Openers/openThemeToggleSurprise";
+} from "@/seqta/utils/openers/openThemeToggleSurprise";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
-import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
+import {
+  ensureTitlebarFounderBadgeMounted,
+  refreshTitlebarFounderBadge,
+} from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 import { remoteChromeGateAllowed } from "@/seqta/utils/remoteConfig/routeGate";
@@ -31,28 +34,7 @@ import {
   runSidebarDrillReturn,
   getSidebarDrillDepth,
 } from "@/seqta/ui/sidebar/sidebarDrillReturn";
-
-let cachedUserInfo: any = null;
-let userInfoFetchPromise: Promise<any> | null = null;
-let userInfoCacheListenersAttached = false;
-
-export function invalidateCachedUserInfo(): void {
-  cachedUserInfo = null;
-  userInfoFetchPromise = null;
-}
-
-function attachUserInfoCacheInvalidation(): void {
-  if (userInfoCacheListenersAttached || typeof window === "undefined") return;
-  userInfoCacheListenersAttached = true;
-
-  window.addEventListener("pageshow", (event) => {
-    if (event.persisted) {
-      invalidateCachedUserInfo();
-    }
-  });
-}
-
-attachUserInfoCacheInvalidation();
+import { getUserInfo } from "@/seqta/utils/userInfo";
 
 let lightDarkToggleStreak = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
@@ -61,68 +43,6 @@ let sidebarAccessibilityListenersAttached = false;
 
 /** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
 const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
-
-export async function getUserInfo(options?: { validateSession?: boolean }) {
-  if (cachedUserInfo && !options?.validateSession) {
-    return cachedUserInfo;
-  }
-
-  if (userInfoFetchPromise && !options?.validateSession) {
-    return userInfoFetchPromise;
-  }
-
-  const fetchUserInfo = async () => {
-    try {
-      const response = await fetch(`${location.origin}/seqta/student/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-        },
-        body: JSON.stringify({
-          mode: "normal",
-          query: null,
-          redirect_url: location.origin,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to get user info: HTTP ${response.status}`);
-      }
-
-      const payload = (await response.json()).payload;
-
-      if (
-        cachedUserInfo &&
-        options?.validateSession &&
-        payload?.id != null &&
-        cachedUserInfo.id != null &&
-        payload.id !== cachedUserInfo.id
-      ) {
-        console.warn(
-          "[BetterSEQTA+] Session user changed; invalidating cached user info",
-        );
-        invalidateCachedUserInfo();
-      }
-
-      cachedUserInfo = payload;
-      return cachedUserInfo;
-    } catch (error) {
-      console.error("[BetterSEQTA+] Failed to get user info:", error);
-      throw error;
-    } finally {
-      if (!options?.validateSession) {
-        userInfoFetchPromise = null;
-      }
-    }
-  };
-
-  if (options?.validateSession) {
-    return fetchUserInfo();
-  }
-
-  userInfoFetchPromise = fetchUserInfo();
-  return userInfoFetchPromise;
-}
 
 export async function AddBetterSEQTAElements() {
   if (isSeqtaEngageExperience()) {
@@ -146,7 +66,7 @@ export async function AddBetterSEQTAElements() {
     const menuList = menu.firstChild as HTMLElement;
 
     if (!checkRemoteFeature("page.home").hide) {
-      createHomeButton(fragment, menuList);
+      createHomeButton(fragment);
     }
     if (!checkRemoteFeature("page.news").hide) {
       createNewsButton(fragment, menu);
@@ -155,7 +75,12 @@ export async function AddBetterSEQTAElements() {
     menuList.insertBefore(fragment, menuList.firstChild);
 
     try {
-      await Promise.all([appendBackgroundToUI(), handleUserInfoAndStudentData()]);
+      await Promise.all([
+        applyDefaultBackgroundOnce()
+          .catch((error) => console.warn("[BetterSEQTA+] Default background failed:", error))
+          .then(appendBackgroundToUI),
+        handleUserInfoAndStudentData(),
+      ]);
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to initialize UI elements:", error);
     }
@@ -174,7 +99,15 @@ export async function AddBetterSEQTAElements() {
   attachNotificationsPanelAnimation();
 }
 
-function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
+type StudentPerson = {
+  firstname?: string;
+  surname?: string;
+  house?: string;
+  year?: string | number;
+  house_colour?: string;
+};
+
+function createHomeButton(fragment: DocumentFragment) {
   const container = document.getElementById("content")!;
   const div = document.createElement("div");
   div.classList.add("titlebar");
@@ -202,35 +135,16 @@ async function handleUserInfoAndStudentData() {
 
     updateUserInfo(userInfo);
     ensureTitlebarFounderBadgeMounted();
-    await updateStudentInfo((await studentResponse.json()).payload, userInfo);
+    await updateStudentInfo((await studentResponse.json()).payload as StudentPerson[], userInfo);
   } catch (error) {
-    console.error(
-      "[BetterSEQTA+] Failed to handle user info and student data:",
-      error,
-    );
+    console.error("[BetterSEQTA+] Failed to handle user info and student data:", error);
   }
 }
 
-function updateUserInfo(info: {
-  basic: boolean;
-  clientIP: string[] | null;
-  email: string | null;
-  id: number | null;
-  lastAccessedTime: number | null;
-  meta: {
-    code: string | null;
-    governmentID: string | null;
-  };
-  personUUID: string | null;
-  status: number | null;
-  synergeticCommunityUrl: string | null;
-  type: string | null;
-  userCode: string | null;
-  userDesc: string | null;
-  userName: string | null;
-}) {
+function updateUserInfo(info: Awaited<ReturnType<typeof getUserInfo>>) {
   const titlebar = document.getElementsByClassName("titlebar")[0];
-  const metadata = [info.meta.code, info.meta.governmentID]
+  const meta = info.meta as { code?: string | null; governmentID?: string | null } | undefined;
+  const metadata = [meta?.code, meta?.governmentID]
     .filter((value): value is string => Boolean(value))
     .join(" // ");
   const displayName = info.userDesc || info.userName || "";
@@ -268,16 +182,19 @@ function updateUserInfo(info: {
     .appendChild(document.getElementsByClassName("logout")[0]);
 }
 
-async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof getUserInfo>>) {
+async function updateStudentInfo(
+  students: StudentPerson[],
+  info: Awaited<ReturnType<typeof getUserInfo>>,
+) {
+  const userDesc = info.userDesc ?? "";
   const index = students.findIndex(
-    (person: any) =>
-      person.firstname == info.userDesc.split(" ")[0] &&
-      person.surname == info.userDesc.split(" ")[1],
+    (person) =>
+      person.firstname == userDesc.split(" ")[0] && person.surname == userDesc.split(" ")[1],
   );
 
-  const houseelement = document.getElementsByClassName(
-    "userInfohouse",
-  )[0] as HTMLElement | undefined;
+  const houseelement = document.getElementsByClassName("userInfohouse")[0] as
+    | HTMLElement
+    | undefined;
 
   if (!houseelement) return;
 
@@ -291,14 +208,13 @@ async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof 
       houseelement.style.background = student.house_colour;
       try {
         const colorresult = GetThresholdOfColor(student.house_colour);
-        houseelement.style.color =
-          colorresult && colorresult > 300 ? "black" : "white";
+        houseelement.style.color = colorresult && colorresult > 300 ? "black" : "white";
       } catch {
         // Invalid color format, leave text color as default
       }
     }
-  } else if (student.year) {
-    text = student.year;
+  } else if (student.year != null && student.year !== "") {
+    text = String(student.year);
   }
 
   houseelement.innerText = text;
@@ -325,34 +241,25 @@ function setupEventListeners() {
   const newsbutton = document.getElementById("newsbutton");
 
   const activateMenuAction = (button: HTMLElement, action: () => void) => {
-    if (
-      button.classList.contains("draggable") ||
-      button.classList.contains("active")
-    ) {
+    if (button.classList.contains("draggable") || button.classList.contains("active")) {
       return;
     }
 
     action();
   };
 
-  homebutton?.addEventListener("click", function () {
-    activateMenuAction(homebutton, () => {
-      loadHomePage();
-    });
+  homebutton?.addEventListener("click", () => {
+    activateMenuAction(homebutton, loadHomePage);
   });
 
-  newsbutton?.addEventListener("click", function () {
-    activateMenuAction(newsbutton, () => {
-      SendNewsPage();
-    });
+  newsbutton?.addEventListener("click", () => {
+    activateMenuAction(newsbutton, SendNewsPage);
   });
 
-  menuCover?.addEventListener("click", function () {
+  menuCover?.addEventListener("click", () => {
     location.href = "../#?page=/home";
     loadHomePage();
-    (
-      document.getElementById("menu")!.firstChild! as HTMLElement
-    ).classList.remove("noscroll");
+    (document.getElementById("menu")!.firstChild! as HTMLElement).classList.remove("noscroll");
   });
 }
 
@@ -366,11 +273,10 @@ async function createSettingsButton(parent?: Element) {
     document.body;
   target.append(
     stringToHTML(/* html */ `
-      <button class="addedButton tooltip" id="AddedSettings">
+      <button class="addedButton" id="AddedSettings" type="button" aria-label="BetterSEQTA+ settings">
         <svg width="24" height="24" viewBox="0 0 24 24">
           <g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g>
         </svg>
-        ${settingsState.onoff ? '<div class="tooltiptext topmenutooltip">BetterSEQTA+ Settings</div>' : ""}
       </button>
     `).firstChild!,
   );
@@ -389,10 +295,7 @@ async function injectEngageHomeButton() {
 
   document.getElementById("homebutton")?.addEventListener("click", () => {
     const btn = document.getElementById("homebutton") as HTMLElement;
-    if (
-      btn.classList.contains("draggable") ||
-      btn.classList.contains("active")
-    ) {
+    if (btn.classList.contains("draggable") || btn.classList.contains("active")) {
       return;
     }
     window.location.replace(`${location.origin}/#?page=/home`);
@@ -420,7 +323,7 @@ async function getEngageUserInfo() {
 }
 
 async function addEngageUserInfo() {
-  const content = await waitForElm("#content") as HTMLElement;
+  const content = (await waitForElm("#content")) as HTMLElement;
 
   let info: Awaited<ReturnType<typeof getEngageUserInfo>>;
   try {
@@ -522,11 +425,14 @@ async function setupEngageSettingsButton() {
   let engageRemountTimer: ReturnType<typeof setTimeout> | null = null;
   const debouncedTryMount = () => {
     if (engageRemountTimer) clearTimeout(engageRemountTimer);
-    engageRemountTimer = setTimeout(() => {
-      engageRemountTimer = null;
-      if (document.getElementById("AddedSettings")) return;
-      void tryMount();
-    }, isPerformanceMode() ? 300 : 80);
+    engageRemountTimer = setTimeout(
+      () => {
+        engageRemountTimer = null;
+        if (document.getElementById("AddedSettings")) return;
+        void tryMount();
+      },
+      isPerformanceMode() ? 300 : 80,
+    );
   };
 
   const observer = new MutationObserver(debouncedTryMount);
@@ -534,33 +440,26 @@ async function setupEngageSettingsButton() {
 }
 
 function GetLightDarkModeString() {
-  return settingsState.DarkMode
-    ? "Switch to light theme"
-    : "Switch to dark theme";
+  return settingsState.DarkMode ? "Switch to light theme" : "Switch to dark theme";
 }
 
 async function addDarkLightToggle(parent?: Element) {
   const toggleTarget = parent ?? document.getElementById("content")!;
   toggleTarget.append(
     stringToHTML(/* html */ `
-      <button class="addedButton DarkLightButton tooltip" id="LightDarkModeButton">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
-        <div class="tooltiptext topmenutooltip" id="darklighttooliptext">${GetLightDarkModeString()}</div>
+      <button class="addedButton DarkLightButton" id="LightDarkModeButton" type="button" aria-label="${GetLightDarkModeString()}">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
       </button>
     `).firstChild!,
   );
 
   updateAllColors();
 
-  const lightDarkModeButtonElement = document.getElementById(
-    "LightDarkModeButton",
-  )!;
+  const lightDarkModeButtonElement = document.getElementById("LightDarkModeButton")!;
 
   ensureThemeToggleSurprisePageScript();
 
-  lightDarkModeButtonElement.addEventListener("click", async () => {
-    const darklightText = document.getElementById("darklighttooliptext");
-
+  lightDarkModeButtonElement.addEventListener("click", () => {
     lightDarkToggleStreak += 1;
 
     if (lightDarkToggleStreak >= THEME_TOGGLE_SURPRISE_TRIGGER_AT) {
@@ -569,13 +468,7 @@ async function addDarkLightToggle(parent?: Element) {
       return;
     }
 
-    if (
-      settingsState.originalDarkMode !== undefined &&
-      settingsState.selectedTheme
-    ) {
-      darklightText!.innerText = "Locked by current theme";
-      await delay(1000);
-      darklightText!.innerText = GetLightDarkModeString();
+    if (settingsState.originalDarkMode !== undefined && settingsState.selectedTheme) {
       return;
     }
 
@@ -583,10 +476,8 @@ async function addDarkLightToggle(parent?: Element) {
     updateAllColors();
 
     const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
-    svgElement.innerHTML = settingsState.DarkMode
-      ? LUCIDE_SUN_ICON_SVG
-      : LUCIDE_MOON_ICON_SVG;
-    darklightText!.innerText = GetLightDarkModeString();
+    svgElement.innerHTML = settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG;
+    lightDarkModeButtonElement.setAttribute("aria-label", GetLightDarkModeString());
   });
 }
 
@@ -649,9 +540,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
   const target = event.target;
   if (!(target instanceof HTMLElement)) return;
 
-  const menuItem = target.closest("#menu li, #menu section") as
-    | HTMLElement
-    | null;
+  const menuItem = target.closest("#menu li, #menu section") as HTMLElement | null;
   if (!menuItem) return;
 
   if (event.key === "Tab") {
@@ -691,9 +580,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
 
   event.preventDefault();
 
-  const childSubmenu = menuItem.querySelector(":scope > .sub > ul") as
-    | HTMLElement
-    | null;
+  const childSubmenu = menuItem.querySelector(":scope > .sub > ul") as HTMLElement | null;
 
   menuItem.click();
   scheduleSidebarAccessibilityUpdate();
@@ -704,10 +591,7 @@ function handleSidebarKeyboardActivation(event: KeyboardEvent) {
 }
 
 /** Folder rows on the path to the currently open sidebar list. */
-function getDrillFolderChain(
-  menu: HTMLElement,
-  visibleList: HTMLElement | null,
-): Set<HTMLElement> {
+function getDrillFolderChain(menu: HTMLElement, visibleList: HTMLElement | null): Set<HTMLElement> {
   const chain = new Set<HTMLElement>();
   let list: HTMLElement | null = visibleList;
 
@@ -725,10 +609,7 @@ function getDrillFolderChain(
       break;
     }
     chain.add(parentFolder);
-    list =
-      parentFolder.parentElement instanceof HTMLElement
-        ? parentFolder.parentElement
-        : null;
+    list = parentFolder.parentElement instanceof HTMLElement ? parentFolder.parentElement : null;
   }
 
   return chain;
@@ -763,9 +644,7 @@ function updateSidebarAccessibility() {
   if (!menu) return;
 
   const visibleList = getVisibleSidebarList(menu);
-  const visibleEntries = new Set(
-    visibleList ? getDirectSidebarEntries(visibleList) : [],
-  );
+  const visibleEntries = new Set(visibleList ? getDirectSidebarEntries(visibleList) : []);
   if (document.body?.classList.contains("icon-only-sidebar")) {
     const rootList = menu.querySelector(":scope > ul") as HTMLElement | null;
     if (rootList) getDirectSidebarEntries(rootList).forEach((entry) => visibleEntries.add(entry));
@@ -779,8 +658,7 @@ function updateSidebarAccessibility() {
     const label = entry.querySelector(":scope > label") as HTMLLabelElement | null;
     if (!label) continue;
 
-    const interactive =
-      visibleEntries.has(entry) || drillFolders.has(entry);
+    const interactive = visibleEntries.has(entry) || drillFolders.has(entry);
 
     if (!interactive) {
       // Keep rows in normal layout — offscreen position/opacity snaps cause a
@@ -825,9 +703,7 @@ function getVisibleSidebarList(menu: HTMLElement) {
       return currentList;
     }
 
-    const nextList = activeSubmenuParent.querySelector(
-      ":scope > .sub > ul",
-    ) as HTMLElement | null;
+    const nextList = activeSubmenuParent.querySelector(":scope > .sub > ul") as HTMLElement | null;
 
     if (!nextList) {
       return currentList;
@@ -858,9 +734,7 @@ function focusFirstSidebarSubmenuEntry(parentEntry: HTMLElement) {
       }
 
       const firstEntry = getDirectSidebarEntries(visibleList).find(
-        (entry) =>
-          entry.offsetParent !== null &&
-          window.getComputedStyle(entry).display !== "none",
+        (entry) => entry.offsetParent !== null && window.getComputedStyle(entry).display !== "none",
       );
 
       firstEntry?.focus({ preventScroll: true });

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { CustomThemeStatus } from "./constants";
 import { formatThemeDate } from "./formatThemeDate";
 import { normalizeCustomTheme } from "./normalizeCustomTheme";
@@ -34,8 +34,12 @@ async function sendRuntimeMessage<T>(message: object): Promise<T> {
     return (await browser.runtime.sendMessage(message)) as T;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
-    if (/disconnected port|context invalidated|receiving end does not exist|message port closed/i.test(msg)) {
-      throw new Error(EXTENSION_RELOAD_HINT);
+    if (
+      /disconnected port|context invalidated|receiving end does not exist|message port closed/i.test(
+        msg,
+      )
+    ) {
+      throw new Error(EXTENSION_RELOAD_HINT, { cause: err });
     }
     throw err;
   }
@@ -61,8 +65,7 @@ function sendMessageWithTimeout<T>(message: object): Promise<T> {
 function throwFromEnvelope<T>(
   envelope: CustomThemeApiEnvelope<T> & { httpStatus?: number },
 ): never {
-  const errObj =
-    envelope.error && typeof envelope.error === "object" ? envelope.error : undefined;
+  const errObj = envelope.error && typeof envelope.error === "object" ? envelope.error : undefined;
   throw new CustomThemeApiError(
     formatEnvelopeErrorMessage(envelope),
     envelope.httpStatus ?? 0,
@@ -102,7 +105,10 @@ export async function fetchCommunityThemes(options?: {
   search?: string;
 }): Promise<CustomThemeListResponse> {
   const res = await sendMessageWithTimeout<
-    CustomThemeApiEnvelope<{ themes?: unknown[]; pagination?: CustomThemeListResponse["pagination"] }>
+    CustomThemeApiEnvelope<{
+      themes?: unknown[];
+      pagination?: CustomThemeListResponse["pagination"];
+    }>
   >({
     type: "fetchCustomThemes",
     page: options?.page ?? 1,
@@ -125,7 +131,10 @@ export async function fetchMyCustomThemes(options?: {
   status?: CustomThemeStatus;
 }): Promise<CustomThemeListResponse> {
   const res = await sendMessageWithTimeout<
-    CustomThemeApiEnvelope<{ themes?: unknown[]; pagination?: CustomThemeListResponse["pagination"] }>
+    CustomThemeApiEnvelope<{
+      themes?: unknown[];
+      pagination?: CustomThemeListResponse["pagination"];
+    }>
   >({
     type: "fetchMyCustomThemes",
     page: options?.page ?? 1,

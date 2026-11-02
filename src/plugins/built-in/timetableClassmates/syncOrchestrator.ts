@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import {
@@ -9,11 +9,7 @@ import {
   putOptIn,
   rememberPeerCloudIds,
 } from "./accountsClient";
-import {
-  archiveMember,
-  mergePayloadIntoRoster,
-  removeMemberFromRoster,
-} from "./rosterMerge";
+import { archiveMember, mergePayloadIntoRoster, removeMemberFromRoster } from "./rosterMerge";
 import {
   loadArchivedMembers,
   loadRosterIndex,
@@ -32,13 +28,18 @@ import {
   heartbeatIdentityFields,
   optInIdentityDigest,
 } from "./identityBinding";
-import { resolvePersonUuid, resolveStudentId } from "./seqtaClient";
+import { resolvePersonUuid } from "./seqtaClient";
+import { getStudentId } from "@/seqta/utils/userInfo";
 import {
   fetchSchoolYearEnrollmentSnapshot,
   fingerprintEnrollment,
   type EnrollmentSnapshot,
 } from "./timetableYearSnapshot";
-import { buildEncryptedBundlesForClasses, decodeBundleKey, decryptClassBundle } from "./relayCrypto";
+import {
+  buildEncryptedBundlesForClasses,
+  decodeBundleKey,
+  decryptClassBundle,
+} from "./relayCrypto";
 import { buildSharePayload } from "./relayPayload";
 import { runRelayRoundTrip, sendRelayRevoke, type RelaySnapshotShare } from "./relayClient";
 import type { ClassRef } from "./classKeys";
@@ -58,9 +59,7 @@ export function bindClassmatesOptInActivated(fn: (() => void) | null): void {
 }
 
 export function scheduleClassmatesSyncIfNeeded(force = false): void {
-  syncChain = syncChain
-    .then(() => runClassmatesSyncIfNeeded(force))
-    .catch(() => {});
+  syncChain = syncChain.then(() => runClassmatesSyncIfNeeded(force)).catch(() => {});
 }
 
 async function runClassmatesSyncIfNeeded(force = false): Promise<void> {
@@ -134,7 +133,7 @@ export async function revokeOptIn(): Promise<{ ok: boolean; error?: string }> {
     if (!res.ok) return res;
   }
 
-  const seqtaId = await resolveStudentId();
+  const seqtaId = await getStudentId();
   if (seqtaId != null) {
     const [index, archived] = await Promise.all([loadRosterIndex(), loadArchivedMembers()]);
     await Promise.all([
@@ -172,7 +171,7 @@ async function maybeHeartbeat(instanceHost: string): Promise<void> {
 async function applyRelaySnapshot(
   instanceHost: string,
   shares: RelaySnapshotShare[],
-  bundleKey: Uint8Array,
+  bundleKey: Uint8Array<ArrayBuffer>,
   allowedSeqtaIds: ReadonlySet<number>,
 ): Promise<void> {
   let index = await loadRosterIndex();
@@ -221,7 +220,7 @@ export async function runTimetableClassmatesSync(
   if (!instanceHost) return { ok: false, error: "Not on a SEQTA page" };
   if (!cloudAuth.state.isLoggedIn) return { ok: false, error: "Cloud login required" };
 
-  const seqtaId = await resolveStudentId();
+  const seqtaId = await getStudentId();
   const personUuid = await resolvePersonUuid();
   if (seqtaId == null || !personUuid) return { ok: false, error: "SEQTA login required" };
 

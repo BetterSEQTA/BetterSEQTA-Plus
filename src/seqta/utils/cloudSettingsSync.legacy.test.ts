@@ -32,9 +32,7 @@ describe("isKeyIncludedInCloudUploadPayload", () => {
     expect(isKeyIncludedInCloudUploadPayload("bsplus_token")).toBe(false);
     expect(isKeyIncludedInCloudUploadPayload("bsplus_install_id")).toBe(false);
     expect(isKeyIncludedInCloudUploadPayload(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY)).toBe(false);
-    expect(isKeyIncludedInCloudUploadPayload("plugin.global-search.storage.index")).toBe(
-      false,
-    );
+    expect(isKeyIncludedInCloudUploadPayload("plugin.global-search.storage.index")).toBe(false);
     expect(isKeyIncludedInCloudUploadPayload("bsplus.analytics.v2.school.1")).toBe(false);
   });
 

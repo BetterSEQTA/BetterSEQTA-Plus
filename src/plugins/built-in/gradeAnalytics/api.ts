@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockGradeAnalyticsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { resolveGradeFromAssessmentPayload } from "./gradeResolution";
@@ -6,16 +6,11 @@ import {
   extractLetterGradeStringFromPayload,
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
-import {
-  loadAnalyticsCache,
-  loadGradeInferenceSettings,
-  saveAnalyticsCache,
-} from "./storage";
+import { loadAnalyticsCache, loadGradeInferenceSettings, saveAnalyticsCache } from "./storage";
 import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
 const PAST_FETCH_CONCURRENCY = 8;
-const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 interface Subject {
   code: string;
@@ -52,10 +47,7 @@ export function parseAssessment(data: unknown): Assessment | null {
     let finalGrade = resolveNumericGradeFromAssessmentPayload(
       raw as Parameters<typeof resolveNumericGradeFromAssessmentPayload>[0],
     );
-    if (
-      finalGrade !== undefined &&
-      (typeof finalGrade !== "number" || isNaN(finalGrade))
-    ) {
+    if (finalGrade !== undefined && (typeof finalGrade !== "number" || isNaN(finalGrade))) {
       finalGrade = undefined;
     }
 
@@ -102,12 +94,6 @@ export function parseAssessment(data: unknown): Assessment | null {
   }
 }
 
-function jsonGradeToString(grade: unknown): string | undefined {
-  if (typeof grade === "string") return grade.trim() || undefined;
-  if (typeof grade === "number") return String(grade);
-  return undefined;
-}
-
 function applyResolvedGrade(
   raw: Record<string, unknown>,
   inference: AnalyticsGradeInferenceSettings,
@@ -116,27 +102,6 @@ function applyResolvedGrade(
   if (resolved.finalGrade !== undefined) raw.finalGrade = resolved.finalGrade;
   if (resolved.letterGrade !== undefined) raw.letterGrade = resolved.letterGrade;
   if (resolved.source) raw.gradeSource = resolved.source;
-}
-
-function extractLetterGrade(
-  assessment: Record<string, unknown>,
-): string | undefined {
-  if (assessment.status !== "MARKS_RELEASED") return undefined;
-
-  const criteria = assessment.criteria as
-    | { results?: { grade?: unknown } }[]
-    | undefined;
-  const c0 = criteria?.[0]?.results?.grade;
-  const fromCriteria = jsonGradeToString(c0);
-  if (fromCriteria) return fromCriteria;
-
-  const results = assessment.results as { grade?: unknown } | undefined;
-  const fromResults = jsonGradeToString(results?.grade);
-  if (fromResults) return fromResults;
-
-  return extractLetterGradeStringFromPayload(
-    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
-  );
 }
 
 function classKey(programme: number, metaclass: number): string {
@@ -305,10 +270,7 @@ async function loadAllPast(
       if (result.status === "fulfilled") {
         results.push(result.value);
       } else {
-        console.error(
-          "[BetterSEQTA+] Past assessments fetch failed:",
-          result.reason,
-        );
+        console.error("[BetterSEQTA+] Past assessments fetch failed:", result.reason);
       }
     }
   }
@@ -330,9 +292,7 @@ function mergeRawAssessments(
     if (!id) continue;
 
     applyResolvedGrade(raw, inference);
-    const finalGrade =
-      raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
-    const letterGrade = extractLetterGrade(raw);
+    const finalGrade = raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
 
     const existingItem = existingMap.get(id);
     if (

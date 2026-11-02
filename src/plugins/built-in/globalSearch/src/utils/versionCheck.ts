@@ -1,5 +1,6 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { resetSearchIndexes } from "../indexing/resetIndexes";
+import { clearSearchCache } from "../search/searchUtils";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";
 
 const VERSION_STORAGE_KEY = "betterseqta-global-search-version";
@@ -61,7 +62,9 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
 
   try {
     await resetSearchIndexes();
-    verboseLog("[Version Check] Search index reset; next indexing pass will repopulate from scratch.");
+    verboseLog(
+      "[Version Check] Search index reset; next indexing pass will repopulate from scratch.",
+    );
   } catch (e) {
     console.warn("[Version Check] resetSearchIndexes failed:", e);
   }
@@ -79,17 +82,17 @@ export async function clearAllCaches(): Promise<void> {
 
     setTimeout(async () => {
       try {
-        const { clearSearchCache } = await import("../search/searchUtils");
         clearSearchCache();
       } catch (e) {
-        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear search cache:", e);
+        verboseDebug("[Version Check] Could not clear search cache:", e);
       }
 
       try {
         const { clearEmbeddingCache } = await import("../search/vector/vectorSearch");
         clearEmbeddingCache();
       } catch (e) {
-        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear embedding cache:", e);
+        if (!isAssetLoadError(e))
+          verboseDebug("[Version Check] Could not clear embedding cache:", e);
       }
     }, 50);
 

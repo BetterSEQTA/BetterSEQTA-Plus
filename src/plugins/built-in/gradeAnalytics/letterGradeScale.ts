@@ -43,12 +43,10 @@ export function approximatePercentFromLetterGrade(
     if (!isNaN(n) && n >= 0 && n <= 100) return n;
   }
   const key = normalizeLetterKey(t);
-  if (LETTER_TO_APPROX_PERCENT[key] !== undefined)
-    return LETTER_TO_APPROX_PERCENT[key];
+  if (LETTER_TO_APPROX_PERCENT[key] !== undefined) return LETTER_TO_APPROX_PERCENT[key];
   if (t.length === 1 && /^[a-f]$/i.test(t)) {
     const single = t.toLowerCase() as keyof typeof LETTER_TO_APPROX_PERCENT;
-    if (LETTER_TO_APPROX_PERCENT[single] !== undefined)
-      return LETTER_TO_APPROX_PERCENT[single];
+    if (LETTER_TO_APPROX_PERCENT[single] !== undefined) return LETTER_TO_APPROX_PERCENT[single];
   }
   return undefined;
 }
@@ -66,9 +64,7 @@ export function extractLetterGradeStringFromPayload(data: {
   if (merged.letterGrade != null && String(merged.letterGrade).trim() !== "") {
     return String(merged.letterGrade).trim();
   }
-  const criteria = merged.criteria as
-    | { results?: { grade?: unknown } }[]
-    | undefined;
+  const criteria = merged.criteria as { results?: { grade?: unknown } }[] | undefined;
   const c0 = criteria?.[0]?.results?.grade;
   if (c0 != null && String(c0).trim() !== "") return String(c0).trim();
   const r = (merged.results as { grade?: unknown } | undefined)?.grade;
@@ -101,9 +97,7 @@ export function resolveNumericGradeFromAssessmentPayload(data: {
     const n = Number(criteria[0].results!.percentage);
     if (!isNaN(n)) return n;
   }
-  const results = merged.results as
-    | { percentage?: unknown; grade?: unknown }
-    | undefined;
+  const results = merged.results as { percentage?: unknown; grade?: unknown } | undefined;
   if (results?.percentage !== undefined) {
     const n = Number(results.percentage);
     if (!isNaN(n)) return n;

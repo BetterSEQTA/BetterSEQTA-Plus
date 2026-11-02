@@ -1,8 +1,8 @@
-export interface SettingsState {
+export type SettingsState = {
   DarkMode: boolean;
   selectedTheme: string;
   customshortcuts: CustomShortcut[];
-  defaultmenuorder: any[];
+  defaultmenuorder: string[];
   lessonalert: boolean;
   menuitems: {
     assessments: ToggleItem;
@@ -24,22 +24,21 @@ export interface SettingsState {
     welcome: ToggleItem;
     [key: string]: ToggleItem;
   };
-  menuorder: any[];
+  menuorder: string[];
   onoff: boolean;
   /** Last popup size explicitly selected with the expand/collapse control. */
   settingsPopupExpanded?: boolean;
   selectedColor: string;
   originalSelectedColor: string;
   shortcuts: Shortcut[];
-  subjectfilters: Record<string, any>;
+  subjectfilters: Record<string, boolean>;
   transparencyEffects: boolean;
   justupdated?: boolean;
   privacyStatementShown?: boolean;
   privacyStatementLastUpdated?: string;
   /** ISO timestamp from `GET /api/terms` `last_updated` when the user accepted ToS. */
   termsOfServiceLastAccepted?: string;
-  /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
-  bsCloudAutoSyncAnnouncementShown?: boolean;
+
   /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
   coursesAssessmentsFixPopupShown?: boolean;
   /**
@@ -47,8 +46,7 @@ export interface SettingsState {
    * Cleared automatically when a new month's entry is fetched (different `month`).
    */
   themeOfTheMonthDismissedMonth?: string;
-  /** @deprecated Migrated away; no longer read. */
-  themeOfTheMonthLastSeenId?: string;
+
   /** Permanently disables Theme of the Month startup prompts. */
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
@@ -98,7 +96,7 @@ export interface SettingsState {
   /** Google Font preset id for SEQTA interface typography (`rubik` default). */
   selectedFont?: string;
 
-  // depreciated keys
+  // Deprecated keys
   animatedbk: boolean;
   bksliderinput: string;
   lettergrade: boolean;
@@ -110,7 +108,8 @@ export interface SettingsState {
   autoCloudSettingsSync?: boolean;
   /** When not `false`, show Cloud badges in the SEQTA titlebar (default-on). */
   showTitlebarFounderBadge?: boolean;
-}
+  [pluginKey: `plugin.${string}`]: unknown;
+};
 
 interface ToggleItem {
   toggle: boolean;

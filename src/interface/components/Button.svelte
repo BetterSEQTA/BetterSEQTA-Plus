@@ -6,14 +6,14 @@
     variant = "secondary",
     icon,
     class: className = "",
-  } = $props<{
+  }: {
     onClick: () => void;
     text: string;
     disabled?: boolean;
     variant?: "primary" | "secondary" | "ghost";
     icon?: string;
     class?: string;
-  }>();
+  } = $props();
 
   const variants = {
     primary: "bg-zinc-100 text-zinc-900 border-transparent enabled:hover:bg-white",
@@ -26,7 +26,7 @@
   type="button"
   onclick={onClick}
   disabled={disabled}
-  class="inline-flex items-center justify-center gap-1.5 px-5 py-1.5 text-[0.75rem] shadow-2xl border rounded-lg transition enabled:active:scale-[0.96] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50 {variants[variant]} {className}"
+  class="inline-flex items-center justify-center gap-1.5 px-5 py-1.5 text-[0.75rem] shadow-2xl border rounded-lg transition enabled:active:scale-[0.96] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50 {variants[variant]} {className}"
 >
   {#if icon}<span class="font-IconFamily text-base" aria-hidden="true">{icon}</span>{/if}
   {text}

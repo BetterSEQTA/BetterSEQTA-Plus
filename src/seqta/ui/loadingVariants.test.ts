@@ -1,7 +1,4 @@
-import {
-  listLoadingVariants,
-  resolveLoadingTheme,
-} from "./loadingVariants";
+import { listLoadingVariants, resolveLoadingTheme } from "./loadingVariants";
 
 describe("resolveLoadingTheme", () => {
   it("keeps the dark background in dark mode and swaps it for light mode", () => {

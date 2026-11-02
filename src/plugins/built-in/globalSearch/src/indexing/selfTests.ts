@@ -53,17 +53,13 @@ function assertEqual<T>(actual: T, expected: T, label: string) {
 
 function assertContains(haystack: string, needle: string, label: string) {
   if (!haystack.includes(needle)) {
-    throw new AssertionError(
-      `${label}: expected "${haystack}" to contain "${needle}"`,
-    );
+    throw new AssertionError(`${label}: expected "${haystack}" to contain "${needle}"`);
   }
 }
 
 function assertNotContains(haystack: string, needle: string, label: string) {
   if (haystack.includes(needle)) {
-    throw new AssertionError(
-      `${label}: expected "${haystack}" NOT to contain "${needle}"`,
-    );
+    throw new AssertionError(`${label}: expected "${haystack}" NOT to contain "${needle}"`);
   }
 }
 
@@ -77,9 +73,7 @@ const cases: TestCase[] = [
         "trailing token",
       );
       assertEqual(
-        normalizeSeqtaPath(
-          "https://learn.example.com/seqta/student/load/courses?abc123",
-        ),
+        normalizeSeqtaPath("https://learn.example.com/seqta/student/load/courses?abc123"),
         "/seqta/student/load/courses",
         "absolute URL",
       );
@@ -88,34 +82,13 @@ const cases: TestCase[] = [
   {
     name: "isSensitiveSeqtaPath catches credential routes",
     run: () => {
-      assert(
-        isSensitiveSeqtaPath("/seqta/student/login?xyz"),
-        "login is sensitive",
-      );
-      assert(
-        isSensitiveSeqtaPath("/seqta/student/save/message"),
-        "save/* is sensitive",
-      );
-      assert(
-        isSensitiveSeqtaPath("/seqta/student/load/settings"),
-        "settings is sensitive",
-      );
-      assert(
-        isSensitiveSeqtaPath("/seqta/student/load/prefs?z=1"),
-        "prefs is sensitive",
-      );
-      assert(
-        isSensitiveSeqtaPath("/seqta/ta/masquerade"),
-        "masquerade is sensitive",
-      );
-      assert(
-        !isSensitiveSeqtaPath("/seqta/student/load/messages"),
-        "messages is NOT sensitive",
-      );
-      assert(
-        !isSensitiveSeqtaPath("/seqta/student/load/courses"),
-        "courses is NOT sensitive",
-      );
+      assert(isSensitiveSeqtaPath("/seqta/student/login?xyz"), "login is sensitive");
+      assert(isSensitiveSeqtaPath("/seqta/student/save/message"), "save/* is sensitive");
+      assert(isSensitiveSeqtaPath("/seqta/student/load/settings"), "settings is sensitive");
+      assert(isSensitiveSeqtaPath("/seqta/student/load/prefs?z=1"), "prefs is sensitive");
+      assert(isSensitiveSeqtaPath("/seqta/ta/masquerade"), "masquerade is sensitive");
+      assert(!isSensitiveSeqtaPath("/seqta/student/load/messages"), "messages is NOT sensitive");
+      assert(!isSensitiveSeqtaPath("/seqta/student/load/courses"), "courses is NOT sensitive");
     },
   },
   {
@@ -150,14 +123,8 @@ const cases: TestCase[] = [
         looksLikeSecretValue("a".repeat(40) + "b".repeat(40)),
         "long base64-ish string looks secret",
       );
-      assert(
-        !looksLikeSecretValue("Hello world"),
-        "short readable text is safe",
-      );
-      assert(
-        !looksLikeSecretValue("https://example.com/foo/bar"),
-        "URLs are not secrets",
-      );
+      assert(!looksLikeSecretValue("Hello world"), "short readable text is safe");
+      assert(!looksLikeSecretValue("https://example.com/foo/bar"), "URLs are not secrets");
       assert(
         !looksLikeSecretValue("3162189c-2052-4f83-ad83-a66c57460ea2"),
         "UUIDs are useful and not secret",
@@ -191,16 +158,8 @@ const cases: TestCase[] = [
   {
     name: "pickTitle / pickId prefer common SEQTA fields",
     run: () => {
-      assertEqual(
-        pickTitle({ title: "Hello", name: "Other" }),
-        "Hello",
-        "title wins over name",
-      );
-      assertEqual(
-        pickTitle({ filename: "doc.pdf" }),
-        "doc.pdf",
-        "filename fallback",
-      );
+      assertEqual(pickTitle({ title: "Hello", name: "Other" }), "Hello", "title wins over name");
+      assertEqual(pickTitle({ filename: "doc.pdf" }), "doc.pdf", "filename fallback");
       assertEqual(pickId({ id: 42 }), "42", "numeric id stringified");
       assertEqual(pickId({ uuid: "abc" }), "abc", "uuid id");
     },
@@ -224,10 +183,7 @@ const cases: TestCase[] = [
       assertEqual(item.id, "x-1", "id propagated");
       assertContains(item.content, "Hello", "html distilled");
       assertNotContains(item.content, "should-be-stripped", "token stripped");
-      assert(
-        !("apiKey" in (item.metadata as Record<string, unknown>)),
-        "apiKey metadata stripped",
-      );
+      assert(!("apiKey" in (item.metadata as Record<string, unknown>)), "apiKey metadata stripped");
       assertEqual(item.category, "passive", "category passes through");
     },
   },
@@ -246,8 +202,7 @@ const cases: TestCase[] = [
       const subject = subjectsListPayload[0]?.subjects[0];
       assert(subject, "fixture has at least one subject");
       assert(
-        Number.isFinite(subject!.programme) &&
-          Number.isFinite(subject!.metaclass),
+        Number.isFinite(subject!.programme) && Number.isFinite(subject!.metaclass),
         "programme & metaclass numeric",
       );
     },
@@ -262,11 +217,7 @@ const cases: TestCase[] = [
   {
     name: "notices fixture is HTML-bearing",
     run: () => {
-      assertContains(
-        noticesPayload[0]?.contents ?? "",
-        "<p>",
-        "notice html present",
-      );
+      assertContains(noticesPayload[0]?.contents ?? "", "<p>", "notice html present");
     },
   },
   {
@@ -307,8 +258,7 @@ export async function runGlobalSearchSelfTests(): Promise<SelfTestReport> {
       report.passed++;
     } catch (e) {
       report.failed++;
-      const error =
-        e instanceof Error ? `${e.name}: ${e.message}` : String(e);
+      const error = e instanceof Error ? `${e.name}: ${e.message}` : String(e);
       report.failures.push({ name: test.name, error });
     }
   }

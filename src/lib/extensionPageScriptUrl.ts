@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /**
  * Resolve a CRXJS `?script` / `?script&iife` import to a web-accessible

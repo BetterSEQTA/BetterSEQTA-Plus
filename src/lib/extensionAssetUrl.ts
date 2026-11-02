@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /** Resolve Vite asset imports to a usable extension URL. */
 export function resolveExtensionAssetUrl(url: string): string {
@@ -7,4 +7,3 @@ export function resolveExtensionAssetUrl(url: string): string {
   if (/^(?:chrome|moz)-extension:\/\/|https?:|data:/.test(url)) return url;
   return browser.runtime.getURL(url.replace(/^\/+/, ""));
 }
-

@@ -4,7 +4,7 @@ import {
   GOOGLE_CALENDAR_API,
 } from "@/config/googleCalendar";
 
-type GoogleCalendarResource = { id?: string; summary?: string };
+type GoogleCalendarResource = { id?: string; summary?: string } & GoogleApiError;
 type GoogleCalendarListResponse = { items?: GoogleCalendarResource[] };
 type GoogleApiError = { error?: { message?: string } };
 
@@ -60,9 +60,7 @@ async function createAppCalendar(accessToken: string): Promise<string> {
   );
 
   if (!ok || !data.id) {
-    throw new Error(
-      data.error?.message ?? `Could not create BetterSEQTA+ calendar (${status}).`,
-    );
+    throw new Error(data.error?.message ?? `Could not create BetterSEQTA+ calendar (${status}).`);
   }
   return data.id;
 }

@@ -1012,7 +1012,7 @@
     font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
   }
 
-  .bsplus-cal-menu.dark {
+  .bsplus-cal-menu:global(.dark) {
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
   }
 
@@ -1132,7 +1132,7 @@
     backdrop-filter: blur(4px);
   }
 
-  .bsplus-cal-modal-backdrop.dark .bsplus-cal-modal {
+  .bsplus-cal-modal-backdrop:global(.dark) .bsplus-cal-modal {
     box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
   }
 

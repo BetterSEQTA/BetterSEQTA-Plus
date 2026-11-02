@@ -82,7 +82,10 @@
   background: var(--background-secondary);
   color: var(--text-primary);
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
   user-select: text;
   -webkit-user-select: text;
 }

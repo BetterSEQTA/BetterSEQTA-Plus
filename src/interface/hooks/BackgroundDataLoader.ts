@@ -46,11 +46,7 @@ export async function readAllData(): Promise<BackgroundRecord[]> {
   return items;
 }
 
-export async function writeData(
-  id: string,
-  type: string,
-  blob: Blob,
-): Promise<void> {
+export async function writeData(id: string, type: string, blob: Blob): Promise<void> {
   const record = { id, type, blob };
   const db = await openDatabase();
   const tx = db.transaction(STORE, "readwrite");
@@ -61,7 +57,7 @@ export async function writeData(
     await txDone(tx);
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);
-    throw new Error(`Failed to save background: ${detail}`);
+    throw new Error(`Failed to save background: ${detail}`, { cause: e });
   }
 }
 
@@ -79,9 +75,7 @@ export async function clearAllData(): Promise<void> {
   await txDone(tx);
 }
 
-export async function getDataById(
-  id: string,
-): Promise<BackgroundRecord | undefined> {
+export async function getDataById(id: string): Promise<BackgroundRecord | undefined> {
   const db = await openDatabase();
   const tx = db.transaction(STORE, "readonly");
   const item = await req(tx.objectStore(STORE).get(id));
@@ -100,9 +94,7 @@ export function isIndexedDBSupported(): boolean {
   return "indexedDB" in window;
 }
 
-export async function hasEnoughStorageSpace(
-  requiredSpace: number,
-): Promise<boolean> {
+export async function hasEnoughStorageSpace(requiredSpace: number): Promise<boolean> {
   if (!("storage" in navigator) || !navigator.storage.estimate) return true;
   const { quota, usage } = await navigator.storage.estimate();
   return quota == null || usage == null || quota - usage > requiredSpace;

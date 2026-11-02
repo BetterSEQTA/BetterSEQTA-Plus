@@ -12,9 +12,7 @@ export type AdaptiveCssVariableBinding = {
 
 let boundBindings: AdaptiveCssVariableBinding[] = [];
 
-function parseAdaptiveBinding(
-  rawBinding: string,
-): AdaptiveCssVariableBinding | null {
+function parseAdaptiveBinding(rawBinding: string): AdaptiveCssVariableBinding | null {
   const trimmed = rawBinding.trim();
   if (!trimmed) return null;
 
@@ -48,9 +46,7 @@ export function normalizeAdaptiveCssVariableBindings(
   return out;
 }
 
-export function setCustomThemeAdaptiveCssVariables(
-  names: string[] | undefined,
-): void {
+export function setCustomThemeAdaptiveCssVariables(names: string[] | undefined): void {
   for (const binding of boundBindings) {
     document.documentElement.style.removeProperty(binding.cssVarName);
   }

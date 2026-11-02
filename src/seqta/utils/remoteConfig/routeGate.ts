@@ -3,8 +3,7 @@ import { checkRemoteFeature } from "./runtime";
 export const ROUTE_STRIP_KEEP_PLUGINS = new Set(["themes", "animated-background"]);
 
 export function parseSeqtaPageKeyFromHash(hash = location.hash): string | null {
-  const match =
-    hash.match(/[#?]page=\/([^/?&#]+)/i) ?? hash.match(/page=\/([^/?&#]+)/i);
+  const match = hash.match(/[#?]page=\/([^/?&#]+)/i) ?? hash.match(/page=\/([^/?&#]+)/i);
   if (!match?.[1]) return null;
   return match[1].trim().toLowerCase();
 }

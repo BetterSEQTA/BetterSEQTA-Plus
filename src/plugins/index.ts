@@ -19,10 +19,8 @@ import gradeAnalyticsPluginLazy from "./built-in/gradeAnalytics/lazy";
 import errorPageKittenPlugin from "./built-in/errorPageKitten";
 import timetableClassmatesPluginLazy from "./built-in/timetableClassmates/lazy";
 
-// Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
 
-// Register built-in plugins
 pluginManager.registerPlugin(themesPlugin);
 pluginManager.registerPlugin(animatedBackgroundPlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);

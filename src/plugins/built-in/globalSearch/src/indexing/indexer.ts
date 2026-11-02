@@ -11,7 +11,8 @@ import { isIndexingPaused } from "./indexingPause";
 import { setIndexingActive } from "./indexingState";
 import { isPluginBlockedByPerformanceMode } from "@/seqta/utils/performanceMode";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
+import { delay } from "@/seqta/utils/delay";
 const META_STORE = "meta";
 const LOCK_KEY = "bsq-indexer-lock";
 const HEARTBEAT_INTERVAL = 10000;
@@ -23,7 +24,7 @@ let schemaCheckPromise: Promise<void> | null = null;
 async function ensureSchemaCurrent(): Promise<void> {
   if (schemaCheckPromise) return schemaCheckPromise;
   schemaCheckPromise = (async () => {
-    let storedRaw: string | null = null;
+    let storedRaw: string | null;
     try {
       storedRaw = localStorage.getItem(SCHEMA_VERSION_KEY);
     } catch {
@@ -53,12 +54,12 @@ async function ensureSchemaCurrent(): Promise<void> {
 
 export { ensureSchemaCurrent };
 
-async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
-  const rec = await get(META_STORE, `progress:${jobId}`);
-  return rec?.progress as T | undefined;
+async function loadProgress<T = unknown>(jobId: string): Promise<T | undefined> {
+  const rec = (await get(META_STORE, `progress:${jobId}`)) as { progress?: T } | undefined;
+  return rec?.progress;
 }
 
-async function saveProgress<T = any>(jobId: string, progress: T): Promise<void> {
+async function saveProgress<T = unknown>(jobId: string, progress: T): Promise<void> {
   await put(META_STORE, { progress }, `progress:${jobId}`);
 }
 
@@ -83,7 +84,7 @@ function shouldRun(job: Job, lastRun?: number): boolean {
 }
 
 function getLastRunMeta(jobId: string): Promise<number | undefined> {
-  return get(META_STORE, jobId).then((rec) => rec?.lastRun);
+  return get(META_STORE, jobId).then((rec) => (rec as { lastRun?: number } | undefined)?.lastRun);
 }
 
 function indexItemStorageKey(item: IndexItem): string {
@@ -103,10 +104,7 @@ function indexItemsEqual(a: IndexItem, b: IndexItem): boolean {
   return indexItemStorageKey(a) === indexItemStorageKey(b);
 }
 
-async function diffAndStoreItems(
-  targetStore: string,
-  items: IndexItem[],
-): Promise<void> {
+async function diffAndStoreItems(targetStore: string, items: IndexItem[]): Promise<void> {
   const validItems = items.filter((i) => i && i.id);
   if (validItems.length !== items.length) {
     console.warn(
@@ -115,9 +113,7 @@ async function diffAndStoreItems(
   }
 
   const existing = (await getAll(targetStore)) as IndexItem[];
-  const existingMap = new Map(
-    existing.filter((i) => i?.id).map((i) => [i.id, i]),
-  );
+  const existingMap = new Map(existing.filter((i) => i?.id).map((i) => [i.id, i]));
   const newMap = new Map(validItems.map((i) => [i.id, i]));
 
   const puts: Array<{ key: string; value: IndexItem }> = [];
@@ -147,7 +143,7 @@ async function updateLastRunMeta(jobId: string): Promise<void> {
 
 async function tryClaimLock(lockId: string): Promise<boolean> {
   localStorage.setItem(LOCK_KEY, lockId);
-  await new Promise((resolve) => setTimeout(resolve, 50));
+  await delay(50);
   if (localStorage.getItem(LOCK_KEY) === lockId) {
     isIndexingActive = true;
     return true;
@@ -182,7 +178,7 @@ async function acquireLock(): Promise<boolean> {
       }
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 100));
+    await delay(100);
   }
 
   return false;
@@ -191,10 +187,10 @@ async function acquireLock(): Promise<boolean> {
 function startHeartbeat() {
   const lockId = localStorage.getItem(LOCK_KEY);
   if (!lockId) return;
-  
+
   heartbeatTimer = setInterval(() => {
-    if (localStorage.getItem(LOCK_KEY)?.endsWith(lockId.split('-')[1])) {
-      const newLockId = `${Date.now()}-${lockId.split('-')[1]}`;
+    if (localStorage.getItem(LOCK_KEY)?.endsWith(lockId.split("-")[1])) {
+      const newLockId = `${Date.now()}-${lockId.split("-")[1]}`;
       localStorage.setItem(LOCK_KEY, newLockId);
     }
   }, HEARTBEAT_INTERVAL);
@@ -246,9 +242,7 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
       console.error(`Error loading items for job store ${jobId}:`, error);
     }
   }
-  verboseDebug(
-    `[Indexer] Loaded ${all.length} items from all primary stores.`,
-  );
+  verboseDebug(`[Indexer] Loaded ${all.length} items from all primary stores.`);
   return all;
 }
 
@@ -274,15 +268,26 @@ function dispatchVectorProgress(
     dispatchProgress(++completed, totalSteps, false, "Indexing finished", "Vectorization complete");
     return completed;
   } else if (status === "error") {
-    dispatchProgress(completed, totalSteps, false, "Vectorization failed", `Vectorization error: ${message}`);
+    dispatchProgress(
+      completed,
+      totalSteps,
+      false,
+      "Vectorization failed",
+      `Vectorization error: ${message}`,
+    );
     return completed;
   } else if (status === "cancelled") {
-    dispatchProgress(completed, totalSteps, false, "Vectorization cancelled", `Vectorization cancelled: ${message}`);
+    dispatchProgress(
+      completed,
+      totalSteps,
+      false,
+      "Vectorization cancelled",
+      `Vectorization cancelled: ${message}`,
+    );
     return completed;
-  } else {
-    dispatchProgress(completed, totalSteps, true, "Vectorization in progress", detail);
   }
 
+  dispatchProgress(completed, totalSteps, true, "Vectorization in progress", detail);
   return completed;
 }
 
@@ -293,9 +298,7 @@ export async function runIndexing(): Promise<void> {
   }
 
   if (isIndexingPaused()) {
-    verboseDebug(
-      "[Indexer] Skipping indexing — index was reset; reload the page to rebuild.",
-    );
+    verboseDebug("[Indexer] Skipping indexing — index was reset; reload the page to rebuild.");
     return;
   }
 
@@ -315,177 +318,161 @@ export async function runIndexing(): Promise<void> {
   verboseDebug("%c[Indexer] Starting indexing...", "color: green");
 
   try {
-  const jobIds = Object.keys(jobs);
-  await ensureStoresExist([META_STORE, ...jobIds]);
+    const jobIds = Object.keys(jobs);
+    await ensureStoresExist([META_STORE, ...jobIds]);
 
-  let completedJobs = 0;
-  const totalSteps = jobIds.length + 1;
-  dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
+    let completedJobs = 0;
+    const totalSteps = jobIds.length + 1;
+    dispatchProgress(completedJobs, totalSteps, true, "Starting jobs");
 
-  for (const jobId of jobIds) {
-    if (isIndexingPaused()) {
-      verboseDebug(
-        "[Indexer] Indexing stopped — index was reset; reload the page to rebuild.",
-      );
-      dispatchProgress(
-        completedJobs,
-        totalSteps,
-        false,
-        "Indexing paused — reload to rebuild",
-      );
-      return;
-    }
-
-    dispatchProgress(
-      completedJobs,
-      totalSteps,
-      true,
-      `Running job: ${jobs[jobId].label}`,
-    );
-    const job = jobs[jobId];
-    const lastRun = await getLastRunMeta(jobId);
-
-    if (!shouldRun(job, lastRun)) {
-      verboseDebug(
-        `%c[Indexer] Skipping job "${jobId}" (not due)`,
-        "color: gray",
-      );
-      completedJobs++;
-      dispatchProgress(
-        completedJobs,
-        totalSteps,
-        true,
-        `Skipped job: ${job.label}`,
-      );
-      continue;
-    }
-
-    const getStoredItems = async (storeId?: string) =>
-      await getAll(storeId ?? jobId);
-    const setStoredItems = async (items: IndexItem[], storeId?: string) => {
-      const targetStore = storeId ?? jobId;
-      await diffAndStoreItems(targetStore, items);
-    };
-    const addItem = async (item: IndexItem, storeId?: string) => {
-      const targetStore = storeId ?? jobId;
-      if (item && item.id) {
-        await put(targetStore, item, item.id);
-      } else {
-        console.warn(
-          `[Indexer Job ${jobId} -> Store ${targetStore}] Attempted to add invalid item:`,
-          item,
-        );
+    for (const jobId of jobIds) {
+      if (isIndexingPaused()) {
+        verboseDebug("[Indexer] Indexing stopped — index was reset; reload the page to rebuild.");
+        dispatchProgress(completedJobs, totalSteps, false, "Indexing paused — reload to rebuild");
+        return;
       }
-    };
-    const removeItem = async (id: string, storeId?: string) => {
-      const targetStore = storeId ?? jobId;
-      await remove(targetStore, id);
-    };
 
-    const ctx: JobContext = {
-      getStoredItems,
-      setStoredItems,
-      addItem,
-      removeItem,
-      getProgress: () => loadProgress(jobId),
-      setProgress: (p) => saveProgress(jobId, p),
-      reportJobProgress: ({ processed, total, status }) => {
-        const stepProgress = total > 0 ? processed / total : 0;
-        dispatchProgress(
-          completedJobs + stepProgress,
-          totalSteps,
-          true,
-          status ?? `Running job: ${job.label}`,
-        );
-      },
-    };
+      dispatchProgress(completedJobs, totalSteps, true, `Running job: ${jobs[jobId].label}`);
+      const job = jobs[jobId];
+      const lastRun = await getLastRunMeta(jobId);
 
-    verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
+      if (!shouldRun(job, lastRun)) {
+        verboseDebug(`%c[Indexer] Skipping job "${jobId}" (not due)`, "color: gray");
+        completedJobs++;
+        dispatchProgress(completedJobs, totalSteps, true, `Skipped job: ${job.label}`);
+        continue;
+      }
 
-    try {
-      const newItemsRaw = await job.run(ctx);
-      const stored = await getStoredItems();
+      const getStoredItems = async (storeId?: string) =>
+        (await getAll(storeId ?? jobId)) as IndexItem[];
+      const setStoredItems = async (items: IndexItem[], storeId?: string) => {
+        const targetStore = storeId ?? jobId;
+        await diffAndStoreItems(targetStore, items);
+      };
+      const addItem = async (item: IndexItem, storeId?: string) => {
+        const targetStore = storeId ?? jobId;
+        if (item && item.id) {
+          await put(targetStore, item, item.id);
+        } else {
+          console.warn(
+            `[Indexer Job ${jobId} -> Store ${targetStore}] Attempted to add invalid item:`,
+            item,
+          );
+        }
+      };
+      const removeItem = async (id: string, storeId?: string) => {
+        const targetStore = storeId ?? jobId;
+        await remove(targetStore, id);
+      };
 
-      let merged = mergeItems(stored, newItemsRaw);
-      if (job.purge) merged = job.purge(merged);
-      
-      await setStoredItems(merged);
-      await updateLastRunMeta(jobId);
+      const ctx: JobContext = {
+        getStoredItems,
+        setStoredItems,
+        addItem,
+        removeItem,
+        getProgress: () => loadProgress(jobId),
+        setProgress: (p) => saveProgress(jobId, p),
+        reportJobProgress: ({ processed, total, status }) => {
+          const stepProgress = total > 0 ? processed / total : 0;
+          dispatchProgress(
+            completedJobs + stepProgress,
+            totalSteps,
+            true,
+            status ?? `Running job: ${job.label}`,
+          );
+        },
+      };
 
-      verboseDebug(
-        `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items reported by run, ${merged.length} total items now in '${jobId}' store.`,
-        "color: #00c46f",
-      );
-    } catch (err) {
-      verboseDebug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
-      console.error(err);
-    }
-
-    completedJobs++;
-    dispatchProgress(
-      completedJobs,
-      totalSteps,
-      true,
-      `Finished job: ${job.label}`,
-    );
-  }
-
-  let allItemsInPrimaryStores = await loadAllStoredItems();
-
-  const liveItemIds = new Set(allItemsInPrimaryStores.map((item) => item.id));
-  const prunedCount = await pruneOrphanVectorEmbeddings(liveItemIds);
-  if (prunedCount > 0) {
-    try {
-      const { refreshVectorCache } = await import("../search/vector/vectorSearch");
-      await refreshVectorCache();
-    } catch (e) {
-      console.warn("[Indexer] Failed to refresh vector cache after prune:", e);
-    }
-  }
-
-  if (allItemsInPrimaryStores.length > 0) {
-    verboseDebug(
-      `%c[Indexer] Checking ${allItemsInPrimaryStores.length} items for vectorization...`,
-      "color: #4ea1ff",
-    );
-    
-    // Pre-filter items to avoid initializing worker if nothing new
-    const vectorizedItemIds = await getVectorizedItemIds();
-    const newItemsToVectorize = allItemsInPrimaryStores.filter(item => !vectorizedItemIds.has(item.id));
-    
-    if (newItemsToVectorize.length > 0) {
-      verboseDebug(
-        `%c[Indexer] Sending ${newItemsToVectorize.length} new items to worker for vectorization (${allItemsInPrimaryStores.length - newItemsToVectorize.length} already vectorized)`,
-        "color: #4ea1ff",
-      );
-      dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of new items");
+      verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
 
       try {
-        const workerManager = VectorWorkerManager.getInstance();
-        await workerManager.processItems(newItemsToVectorize, (progress) => {
-          completedJobs = dispatchVectorProgress(progress, completedJobs, totalSteps);
-        });
-      verboseDebug(
-        "%c[Indexer] Vectorization task for stored items sent to worker.",
-        "color: green",
-      );
-    } catch (error) {
-      console.error(
-        `%c[Indexer] ❌ Failed to send items to vector worker:`,
-        "color: red",
-        error,
-      );
-      dispatchProgress(
-        completedJobs,
-        totalSteps,
-        false,
-        "Vectorization failed",
-        String(error),
-      );
+        const newItemsRaw = (await job.run(ctx)) as IndexItem[];
+        const stored = await getStoredItems();
+
+        let merged = mergeItems(stored, newItemsRaw);
+        if (job.purge) merged = job.purge(merged);
+
+        await setStoredItems(merged);
+        await updateLastRunMeta(jobId);
+
+        verboseDebug(
+          `%c[Indexer] ${job.label}: ${newItemsRaw.length} new items reported by run, ${merged.length} total items now in '${jobId}' store.`,
+          "color: #00c46f",
+        );
+      } catch (err) {
+        verboseDebug(`%c[Indexer] Job ${job.label} failed:`, "color: red");
+        console.error(err);
+      }
+
+      completedJobs++;
+      dispatchProgress(completedJobs, totalSteps, true, `Finished job: ${job.label}`);
     }
+
+    let allItemsInPrimaryStores = await loadAllStoredItems();
+
+    const liveItemIds = new Set(allItemsInPrimaryStores.map((item) => item.id));
+    const prunedCount = await pruneOrphanVectorEmbeddings(liveItemIds);
+    if (prunedCount > 0) {
+      try {
+        const { refreshVectorCache } = await import("../search/vector/vectorSearch");
+        await refreshVectorCache();
+      } catch (e) {
+        console.warn("[Indexer] Failed to refresh vector cache after prune:", e);
+      }
+    }
+
+    if (allItemsInPrimaryStores.length > 0) {
+      verboseDebug(
+        `%c[Indexer] Checking ${allItemsInPrimaryStores.length} items for vectorization...`,
+        "color: #4ea1ff",
+      );
+
+      // Pre-filter items to avoid initializing worker if nothing new
+      const vectorizedItemIds = await getVectorizedItemIds();
+      const newItemsToVectorize = allItemsInPrimaryStores.filter(
+        (item) => !vectorizedItemIds.has(item.id),
+      );
+
+      if (newItemsToVectorize.length > 0) {
+        verboseDebug(
+          `%c[Indexer] Sending ${newItemsToVectorize.length} new items to worker for vectorization (${allItemsInPrimaryStores.length - newItemsToVectorize.length} already vectorized)`,
+          "color: #4ea1ff",
+        );
+        dispatchProgress(completedJobs, totalSteps, true, "Starting vectorization of new items");
+
+        try {
+          const workerManager = VectorWorkerManager.getInstance();
+          await workerManager.processItems(newItemsToVectorize, (progress) => {
+            completedJobs = dispatchVectorProgress(progress, completedJobs, totalSteps);
+          });
+          verboseDebug(
+            "%c[Indexer] Vectorization task for stored items sent to worker.",
+            "color: green",
+          );
+        } catch (error) {
+          console.error(
+            `%c[Indexer] ❌ Failed to send items to vector worker:`,
+            "color: red",
+            error,
+          );
+          dispatchProgress(completedJobs, totalSteps, false, "Vectorization failed", String(error));
+        }
+      } else {
+        verboseDebug(
+          `%c[Indexer] All ${allItemsInPrimaryStores.length} items are already vectorized, skipping worker initialization.`,
+          "color: gray",
+        );
+        completedJobs++;
+        dispatchProgress(
+          completedJobs,
+          totalSteps,
+          false,
+          "Indexing finished (all items already vectorized)",
+        );
+      }
     } else {
       verboseDebug(
-        `%c[Indexer] All ${allItemsInPrimaryStores.length} items are already vectorized, skipping worker initialization.`,
+        "%c[Indexer] No items found in primary stores to send for vectorization.",
         "color: gray",
       );
       completedJobs++;
@@ -493,31 +480,18 @@ export async function runIndexing(): Promise<void> {
         completedJobs,
         totalSteps,
         false,
-        "Indexing finished (all items already vectorized)",
+        "Indexing finished (no items for vectorization)",
       );
     }
-  } else {
-    verboseDebug(
-      "%c[Indexer] No items found in primary stores to send for vectorization.",
-      "color: gray",
-    );
-    completedJobs++;
-    dispatchProgress(
-      completedJobs,
-      totalSteps,
-      false,
-      "Indexing finished (no items for vectorization)",
-    );
-  }
 
-  allItemsInPrimaryStores = await loadAllStoredItems();
-  const itemsWithComponents = decorateIndexItems(allItemsInPrimaryStores);
-  loadDynamicItems(itemsWithComponents);
-  window.dispatchEvent(
-    new CustomEvent("dynamic-items-updated", {
-      detail: { fullRebuild: true },
-    }),
-  );
+    allItemsInPrimaryStores = await loadAllStoredItems();
+    const itemsWithComponents = decorateIndexItems(allItemsInPrimaryStores);
+    loadDynamicItems(itemsWithComponents);
+    window.dispatchEvent(
+      new CustomEvent("dynamic-items-updated", {
+        detail: { fullRebuild: true },
+      }),
+    );
   } finally {
     setIndexingActive(false);
     stopHeartbeat();

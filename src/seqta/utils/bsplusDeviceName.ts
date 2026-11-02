@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 function detectOsNameFromNavigator(): string {
   const ua = navigator.userAgent;
@@ -64,7 +64,6 @@ async function detectBrowserName(): Promise<string> {
  */
 export async function getBsplusDeviceName(): Promise<string> {
   const browserName = await detectBrowserName();
-  const osName =
-    typeof navigator !== "undefined" ? detectOsNameFromNavigator() : "Unknown OS";
+  const osName = typeof navigator !== "undefined" ? detectOsNameFromNavigator() : "Unknown OS";
   return `${browserName} on ${osName}`;
 }

@@ -3,12 +3,7 @@ export type Line = {
   dur: number;
   dashed?: boolean;
   blue?: boolean;
-  stroke: (
-    ctx: CanvasRenderingContext2D,
-    p: number,
-    w: number,
-    h: number,
-  ) => void;
+  stroke: (ctx: CanvasRenderingContext2D, p: number, w: number, h: number) => void;
 };
 
 export type LoadingVariant = {
@@ -60,8 +55,7 @@ const segment = (x1: number, y1: number, x2: number, y2: number): Line["stroke"]
 };
 
 const BASE = "linear-gradient(180deg, #010101 0%, #040404 50%, #080808 100%)";
-const BASE_LIGHT =
-  "linear-gradient(180deg, #fafafa 0%, #f4f4f5 50%, #ececef 100%)";
+const BASE_LIGHT = "linear-gradient(180deg, #fafafa 0%, #f4f4f5 50%, #ececef 100%)";
 const STAGE = "bkloading-stage-in";
 
 function theme(

@@ -1,8 +1,6 @@
-export function convertTo12HourFormat(
-  time: string,
-  noMinutes: boolean = false,
-): string {
-  let [hours, minutes] = time.split(":").map(Number);
+export function convertTo12HourFormat(time: string, noMinutes: boolean = false): string {
+  const [hoursRaw, minutes] = time.split(":").map(Number);
+  let hours = hoursRaw;
   let period = "am";
 
   if (hours >= 12) {

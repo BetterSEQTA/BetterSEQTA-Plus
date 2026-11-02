@@ -1,5 +1,5 @@
 import * as pdfjs from "pdfjs-dist";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 /** Static copies in `src/public` (see `scripts/copy-runtime-assets.mjs`, manifest web_accessible_resources). */
 const PDF_WORKER_RESOURCE = "resources/pdfjs/pdf.worker.min.mjs";

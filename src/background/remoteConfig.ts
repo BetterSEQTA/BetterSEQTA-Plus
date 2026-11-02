@@ -1,9 +1,6 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
-import {
-  bsplusApiQueryParams,
-  bsplusExtensionPayload,
-} from "@/seqta/utils/bsplusClientContext";
+import { bsplusApiQueryParams, bsplusExtensionPayload } from "@/seqta/utils/bsplusClientContext";
 import { getOrCreateInstallId } from "@/seqta/utils/feedback/installId";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import {
@@ -78,9 +75,7 @@ async function fetchGithubSnapshot(): Promise<RemoteConfigSnapshot | null> {
       BS_STATUS_MANIFEST_URL.replace(/manifest\.json$/, "") ||
       "https://raw.githubusercontent.com/BetterSEQTA/BS-Status/main/config/";
     const files: Record<string, unknown> = {};
-    for (const [key, fileName] of Object.entries(
-      manifest.files as Record<string, string>,
-    )) {
+    for (const [key, fileName] of Object.entries(manifest.files as Record<string, string>)) {
       if (typeof fileName !== "string") continue;
       const url = fileName.startsWith("http") ? fileName : `${base}${fileName}`;
       if (!isAllowedFetchUrl(url)) continue;
@@ -95,11 +90,7 @@ async function fetchGithubSnapshot(): Promise<RemoteConfigSnapshot | null> {
   }
 }
 
-async function registerInstall(
-  apiBase: string,
-  primaryOk: boolean,
-  force = false,
-): Promise<void> {
+async function registerInstall(apiBase: string, primaryOk: boolean, force = false): Promise<void> {
   if (!primaryOk) return;
   const stored = await browser.storage.local.get(BSPLUS_INSTALL_REGISTERED_AT_KEY);
   const last = Number(stored[BSPLUS_INSTALL_REGISTERED_AT_KEY] ?? 0);
@@ -259,10 +250,9 @@ export function initRemoteConfigBackground(apiBase: () => string): void {
   });
 }
 
-export function createRemoteConfigHandlers(apiBase: () => string): Record<
-  string,
-  (request: unknown, sendResponse: MessageSender) => boolean
-> {
+export function createRemoteConfigHandlers(
+  apiBase: () => string,
+): Record<string, (request: unknown, sendResponse: MessageSender) => boolean> {
   function handleRefresh(_req: unknown, sendResponse: MessageSender): boolean {
     void refreshRemoteConfig(apiBase)
       .then((res) => sendResponse(res))
@@ -275,20 +265,17 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
   }
 
   function handleGetSnapshot(_req: unknown, sendResponse: MessageSender): boolean {
-    void browser.storage.local
-      .get(BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY)
-      .then((stored) => {
-        sendResponse({
-          snapshot: normalizeRemoteConfigSnapshot(
-            stored[BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY],
-          ),
-        });
+    void browser.storage.local.get(BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY).then((stored) => {
+      sendResponse({
+        snapshot: normalizeRemoteConfigSnapshot(stored[BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY]),
       });
+    });
     return true;
   }
 
-  function handleSetPageContext(req: { hostname?: string }, sendResponse: MessageSender): boolean {
-    const hostname = typeof req.hostname === "string" ? req.hostname.trim() : "";
+  function handleSetPageContext(req: unknown, sendResponse: MessageSender): boolean {
+    const { hostname: rawHostname } = req as { hostname?: unknown };
+    const hostname = typeof rawHostname === "string" ? rawHostname.trim() : "";
     if (hostname) {
       void browser.storage.local
         .set({ [BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY]: hostname })
@@ -299,11 +286,9 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
     return true;
   }
 
-  function handleFetchRemoteThemePackage(
-    req: { packageId?: string },
-    sendResponse: MessageSender,
-  ): boolean {
-    const packageId = typeof req.packageId === "string" ? req.packageId.trim() : "";
+  function handleFetchRemoteThemePackage(req: unknown, sendResponse: MessageSender): boolean {
+    const { packageId: rawPackageId } = req as { packageId?: unknown };
+    const packageId = typeof rawPackageId === "string" ? rawPackageId.trim() : "";
     if (!packageId) {
       sendResponse({ error: "Missing packageId" });
       return false;
@@ -339,11 +324,9 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
     return true;
   }
 
-  function handleFetchRemoteThemePackageUrl(
-    req: { url?: string },
-    sendResponse: MessageSender,
-  ): boolean {
-    const url = typeof req.url === "string" ? req.url.trim() : "";
+  function handleFetchRemoteThemePackageUrl(req: unknown, sendResponse: MessageSender): boolean {
+    const { url: rawUrl } = req as { url?: unknown };
+    const url = typeof rawUrl === "string" ? rawUrl.trim() : "";
     if (!url || !isAllowedFetchUrl(url)) {
       sendResponse({ error: "URL not allowed" });
       return false;

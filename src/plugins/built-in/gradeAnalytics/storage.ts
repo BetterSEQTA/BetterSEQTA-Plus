@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { DistributionMode } from "./gradeDistribution";
 import {
   DEFAULT_ANALYTICS_GRADE_INFERENCE,
@@ -40,10 +40,7 @@ export async function saveAnalyticsCache(
   await browser.storage.local.set({ [key]: payload });
 }
 
-export function distributionModeStorageKey(
-  origin: string,
-  studentId: number,
-): string {
+export function distributionModeStorageKey(origin: string, studentId: number): string {
   return `${DISTRIBUTION_MODE_PREFIX}.${origin}.${studentId}`;
 }
 
@@ -56,10 +53,7 @@ export async function loadDistributionMode(
   const key = distributionModeStorageKey(origin, studentId);
   const result = await browser.storage.local.get(key);
   const mode = result[key];
-  if (
-    typeof mode === "string" &&
-    VALID_DISTRIBUTION_MODES.includes(mode as DistributionMode)
-  ) {
+  if (typeof mode === "string" && VALID_DISTRIBUTION_MODES.includes(mode as DistributionMode)) {
     return mode as DistributionMode;
   }
   return null;

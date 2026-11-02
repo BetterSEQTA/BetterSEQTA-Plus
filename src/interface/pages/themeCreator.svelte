@@ -38,13 +38,12 @@
     defaultThemeCreatorMeta,
     mergeThemeWithCreatorMeta,
     snapshotSidebarSettings,
-    type ThemeCreatorSidebarMeta,
   } from '@/interface/utils/themeCreatorMeta'
   import { ensureThemeCoverImage } from '@/interface/utils/themePlaceholderCover'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import type { ThemeCreatorMeta } from '@/types/CustomThemes'
 
-  const { themeID } = $props<{ themeID: string }>()
+  const { themeID }: { themeID: string } = $props()
   const themeManager = ThemeManager.getInstance();
 
   let theme = $state<LoadedCustomTheme>({
@@ -71,8 +70,6 @@
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
   let panelDark = $state(Boolean(settingsState.DarkMode));
   let creatorMeta = $state<ThemeCreatorMeta>(defaultThemeCreatorMeta());
-  let originalSidebar = $state<ThemeCreatorSidebarMeta | null>(null);
-  let originalFontId = $state<string | null>(null);
   /** When true, generated font/background CSS is merged for live preview and save. */
   let composeVisuals = $state(false);
 
@@ -152,13 +149,7 @@
   }
 
   async function prepareThemeClone() {
-    const themeClone = JSON.parse(JSON.stringify(theme)) as LoadedCustomTheme;
-
-    themeClone.CustomImages = theme.CustomImages.map((image) => ({
-      ...image,
-      blob: image.blob,
-    }));
-    themeClone.coverImage = theme.coverImage;
+    const themeClone = $state.snapshot(theme) as LoadedCustomTheme;
     themeClone.userEdited = true;
 
     if (shouldForceThemeAppearance(themeClone)) {
@@ -175,7 +166,7 @@
     return await ensureThemeCoverImage(merged);
   }
 
-  onMount(async () => {
+  onMount(() => {
     const unsubCloud = cloudAuth.subscribe((s) => {
       cloudLoggedIn = s.isLoggedIn;
     });
@@ -184,9 +175,15 @@
     });
 
     void ensureFontPickerFontsLoaded();
-    originalSidebar = snapshotSidebarSettings();
-    originalFontId = settingsState.selectedFont ?? DEFAULT_FONT_ID;
+    void loadTheme();
 
+    return () => {
+      unsubCloud();
+      unsubSettings();
+    };
+  });
+
+  async function loadTheme() {
     if (themeID) {
       const tempTheme = await themeManager.getTheme(themeID);
       if (!tempTheme) return;
@@ -214,19 +211,12 @@
     applySelectedFont(creatorMeta.fontId);
     themeLoaded = true;
     themeUpdates.triggerUpdate();
+  }
 
-    return () => {
-      unsubCloud();
-      unsubSettings();
-      if (originalSidebar) applySidebarSettings(originalSidebar);
-      if (originalFontId) applySelectedFont(originalFontId);
-    };
-  });
-
-  async function onImageUpload(event: Event) {
-    const updated = await handleImageUpload(event, theme);
+  function onImageUpload(event: Event) {
+    const updated = handleImageUpload(event, theme);
     if (updated === theme) return;
-    theme = updated as LoadedCustomTheme;
+    theme = updated;
     if (!creatorMeta.pageBackgroundImageId && theme.CustomImages.length === 1) {
       creatorMeta = { ...creatorMeta, pageBackgroundImageId: theme.CustomImages[0].id };
     }
@@ -287,12 +277,12 @@
     void themeManager.updatePreviewDebounced(snapshot);
   });
 
-  type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
+  type SettingType = 'switch' | 'button' | 'slider' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
 
   type SwitchProps = { state: boolean; onChange: (value: boolean) => void };
   type ButtonProps = { onClick: () => void; text: string };
   type SliderProps = { state: number; onChange: (value: number) => void; min?: number; max?: number };
-  type ColourPickerProps = { color: string; onChange: (color: string) => void };
+
   type SelectProps = { options: Array<{ value: string; label: string }>; value: string; onChange: (value: string) => void };
   type CodeEditorProps = { value: string; onChange: (value: string) => void };
   type LightDarkToggleProps = { state: boolean; onChange: (value: boolean) => void };
@@ -302,7 +292,7 @@
     children: SettingItem;
   };
 
-  type ComponentProps = SwitchProps | ButtonProps | SliderProps | ColourPickerProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
+  type ComponentProps = SwitchProps | ButtonProps | SliderProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
 
   type SettingItem = {
     type: SettingType;
@@ -355,10 +345,7 @@
             <Button {...(item.props as ButtonProps)} />
           {:else if item.type === 'slider'}
             <Slider {...(item.props as SliderProps)} />
-          {:else if item.type === 'colourPicker'}
-            {#key themeLoaded}
-              <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
-            {/key}
+
           {:else if item.type === 'codeEditor'}
             {#if !codeEditorFullscreen}
               {#key themeLoaded}
@@ -371,7 +358,7 @@
               <div class="mb-4 space-y-2 rounded-lg bg-white px-2 py-2 shadow-lg dark:bg-zinc-700">
                 <div class="flex h-16 items-center gap-2">
                   <div class="h-full">
-                    <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded" />
+                    <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded-sm" />
                   </div>
                   <input
                     type="text"
@@ -434,7 +421,7 @@
 
 <div class:dark={panelDark} class="h-full min-h-0 overflow-y-scroll no-scrollbar">
   {#if codeEditorFullscreen}
-    <div class="absolute inset-0 bg-white z-[10000] dark:bg-zinc-900 dark:text-white">
+    <div class="absolute inset-0 bg-white z-10000 dark:bg-zinc-900 dark:text-white">
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
@@ -486,7 +473,7 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
@@ -535,7 +522,7 @@
       {#each theme.CustomImages as image (image.id)}
         <div class="space-y-2 rounded-lg bg-zinc-200/80 px-2 py-2 dark:bg-zinc-700/80">
           <div class="flex h-16 items-center gap-2">
-            <ThemeBlobImage source={image.blob} alt="" class="h-full rounded object-contain" />
+            <ThemeBlobImage source={image.blob} alt="" class="h-full rounded-sm object-contain" />
             <input
               type="text"
               value={image.variableName}
@@ -626,7 +613,7 @@
             .filter(Boolean);
           theme = { ...theme, adaptiveCssVariables: lines };
         }}
-        class="p-2 mt-2 w-full min-h-[5rem] font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+        class="p-2 mt-2 w-full min-h-20 font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
       ></textarea>
     </div>
 
@@ -694,7 +681,7 @@
     {/each}
 
     <div
-      class="sticky bottom-0 z-[1500] -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
+      class="sticky bottom-0 z-1500 -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
     >
       <button
         type="button"

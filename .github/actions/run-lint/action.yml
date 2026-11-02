@@ -1,5 +1,5 @@
 name: Run lint
-description: Run ESLint on src.
+description: Run oxlint, the format check and the type check.
 
 runs:
   using: composite
@@ -7,5 +7,11 @@ runs:
     - name: Lint
       shell: bash
       run: npm run lint
-      env:
-        ESLINT_USE_FLAT_CONFIG: "false"
+
+    - name: Format check
+      shell: bash
+      run: npm run format:check
+
+    - name: Type check
+      shell: bash
+      run: npm run typecheck

@@ -5,13 +5,13 @@
     max = 12,
     step = 1,
     disabled = false,
-  } = $props<{
+  }: {
     value?: number;
     min?: number;
     max?: number;
     step?: number;
     disabled?: boolean;
-  }>();
+  } = $props();
 
   const percent = $derived(((value - min) / (max - min || 1)) * 100);
 </script>

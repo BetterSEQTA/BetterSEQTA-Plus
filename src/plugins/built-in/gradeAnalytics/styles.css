@@ -21,11 +21,7 @@
   --bsplus-analytics-surface: var(--theme-primary, var(--background-primary, #ffffff));
   --bsplus-analytics-surface-2: var(--theme-secondary, var(--background-secondary, #f8fafc));
   --bsplus-analytics-text: var(--text-primary, #1a1a1a);
-  --bsplus-analytics-muted: color-mix(
-    in srgb,
-    var(--bsplus-analytics-text) 65%,
-    transparent
-  );
+  --bsplus-analytics-muted: color-mix(in srgb, var(--bsplus-analytics-text) 65%, transparent);
   --bsplus-analytics-border: color-mix(
     in srgb,
     var(--theme-offset-bg, var(--background-secondary, #e2e8f0)) 78%,
@@ -170,10 +166,7 @@
 
 .bsplus-analytics-btn-privacy:hover:not(:disabled) {
   transform: scale(1.02);
-  color: var(
-    --bsplus-theme-btn-privacy-hover-color,
-    var(--bsplus-analytics-accent)
-  );
+  color: var(--bsplus-theme-btn-privacy-hover-color, var(--bsplus-analytics-accent));
   box-shadow: var(--bsplus-theme-btn-privacy-hover-shadow, none);
 }
 
@@ -250,22 +243,17 @@
 }
 
 .bsplus-analytics-btn-primary {
-  background: var(
-    --bsplus-theme-btn-primary-bg,
-    var(--bsplus-analytics-accent)
-  );
+  background: var(--bsplus-theme-btn-primary-bg, var(--bsplus-analytics-accent));
   color: var(--bsplus-theme-btn-primary-color, var(--text-color));
   box-shadow: var(
     --bsplus-theme-btn-primary-shadow,
-    0 2px 8px
-      color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent)
+    0 2px 8px color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent)
   );
 }
 
 .bsplus-analytics-btn-primary:hover:not(:disabled) {
   transform: scale(1.03);
-  box-shadow: 0 4px 14px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
 }
 
 .bsplus-analytics-btn-primary:active:not(:disabled) {
@@ -275,20 +263,13 @@
 .bsplus-analytics-btn-ghost {
   background: var(--bsplus-theme-btn-ghost-bg, transparent);
   color: var(--bsplus-theme-btn-ghost-color, var(--bsplus-analytics-text));
-  border: var(
-    --bsplus-theme-btn-ghost-border,
-    2px solid var(--bsplus-analytics-border)
-  );
+  border: var(--bsplus-theme-btn-ghost-border, 2px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-btn-ghost-shadow, none);
 }
 
 .bsplus-analytics-btn-ghost:hover:not(:disabled) {
   transform: scale(1.02);
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-surface-2) 80%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-surface-2) 80%, transparent);
 }
 
 .bsplus-analytics-btn:disabled {
@@ -349,11 +330,7 @@
   white-space: nowrap;
   text-decoration: underline;
   text-underline-offset: 0.15em;
-  text-decoration-color: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 45%,
-    transparent
-  );
+  text-decoration-color: color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
 }
 
 .bsplus-analytics-filters-clear:hover {
@@ -409,8 +386,7 @@
   padding-bottom: 0.4rem;
   background-color: var(--bsplus-analytics-control-bg-elevated);
   border-color: var(--bsplus-analytics-control-border-strong);
-  box-shadow: 0 1px 4px
-    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
 }
 
 .bsplus-analytics-filters .bsplus-analytics-input {
@@ -423,8 +399,7 @@
   padding-right: 0;
   background-color: var(--bsplus-analytics-control-bg-elevated);
   border-color: var(--bsplus-analytics-control-border-strong);
-  box-shadow: 0 1px 4px
-    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
 }
 
 .bsplus-analytics-filters .bsplus-grade-range-slider {
@@ -434,8 +409,7 @@
 .bsplus-analytics-filters .bsplus-analytics-range-value {
   background-color: var(--bsplus-analytics-control-bg-elevated);
   border-color: var(--bsplus-analytics-control-border-strong);
-  box-shadow: 0 1px 4px
-    color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
+  box-shadow: 0 1px 4px color-mix(in srgb, var(--bsplus-analytics-text) 10%, transparent);
 }
 
 @media (min-width: 900px) {
@@ -559,15 +533,12 @@
   box-sizing: content-box;
   width: 15px;
   height: 15px;
-  border: 3px solid
-    var(--item-colour, var(--better-main, var(--bsplus-analytics-accent)));
+  border: 3px solid var(--item-colour, var(--better-main, var(--bsplus-analytics-accent)));
   border-radius: 5px;
   color: var(--bsplus-analytics-text);
 }
 
-.bsplus-analytics-checkbox:hover
-  input:not(:disabled)
-  ~ .bsplus-analytics-checkmark {
+.bsplus-analytics-checkbox:hover input:not(:disabled) ~ .bsplus-analytics-checkmark {
   filter: brightness(0.8);
 }
 
@@ -628,8 +599,7 @@
     box-shadow 0.2s ease,
     background-color 0.2s ease,
     transform 0.2s var(--bsplus-analytics-ease);
-  box-shadow: 0 1px 3px
-    color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
 }
 
 .bsplus-analytics-card .bsplus-analytics-select,
@@ -794,8 +764,7 @@
   border: 2px solid var(--bsplus-analytics-control-border);
   border-radius: var(--bsplus-analytics-radius-sm);
   cursor: pointer;
-  box-shadow: 0 1px 3px
-    color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--bsplus-analytics-text) 8%, transparent);
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease,
@@ -903,19 +872,11 @@
 }
 
 .bsplus-analytics-dropdown-item:hover {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-surface-2) 90%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-surface-2) 90%, transparent);
 }
 
 .bsplus-analytics-dropdown-item.is-selected {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 12%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-accent) 12%, transparent);
   color: var(--bsplus-analytics-text);
   font-weight: 600;
 }
@@ -1272,15 +1233,9 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  border-radius: var(
-    --bsplus-theme-card-radius,
-    var(--bsplus-analytics-radius)
-  );
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
-  border: var(
-    --bsplus-theme-card-border,
-    1px solid var(--bsplus-analytics-border)
-  );
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: hidden;
@@ -1290,10 +1245,7 @@
 }
 
 .bsplus-analytics-card:hover {
-  box-shadow: var(
-    --bsplus-theme-card-shadow-hover,
-    var(--bsplus-analytics-shadow-hover)
-  );
+  box-shadow: var(--bsplus-theme-card-shadow-hover, var(--bsplus-analytics-shadow-hover));
 }
 
 .bsplus-analytics-card-header {
@@ -1473,17 +1425,9 @@
 }
 
 /* Bar chart: show axis spines and tick marks (area chart hides these) */
-.bsplus-analytics-root
-  .bsplus-chart-surface-bar
-  .lc-rule-x-line:not(.lc-grid-x-rule),
-.bsplus-analytics-root
-  .bsplus-chart-surface-bar
-  .lc-rule-y-line:not(.lc-grid-y-rule) {
-  stroke: color-mix(
-    in srgb,
-    var(--bsplus-analytics-muted) 45%,
-    transparent
-  ) !important;
+.bsplus-analytics-root .bsplus-chart-surface-bar .lc-rule-x-line:not(.lc-grid-x-rule),
+.bsplus-analytics-root .bsplus-chart-surface-bar .lc-rule-y-line:not(.lc-grid-y-rule) {
+  stroke: color-mix(in srgb, var(--bsplus-analytics-muted) 45%, transparent) !important;
 }
 
 .bsplus-analytics-root .bsplus-chart-surface-bar .lc-axis-tick {
@@ -1535,9 +1479,7 @@
 }
 
 .bsplus-analytics-root [data-slot="chart"] .lc-rule-x-line:not(.lc-grid-x-rule),
-.bsplus-analytics-root
-  [data-slot="chart"]
-  .lc-rule-y-line:not(.lc-grid-y-rule) {
+.bsplus-analytics-root [data-slot="chart"] .lc-rule-y-line:not(.lc-grid-y-rule) {
   stroke: transparent !important;
 }
 
@@ -1588,15 +1530,9 @@
 
 /* ─── Table ─── */
 .bsplus-analytics-table-wrap {
-  border-radius: var(
-    --bsplus-theme-card-radius,
-    var(--bsplus-analytics-radius)
-  );
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
-  border: var(
-    --bsplus-theme-card-border,
-    1px solid var(--bsplus-analytics-border)
-  );
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   backdrop-filter: var(--bsplus-theme-card-blur, none);
   overflow: hidden;
@@ -1624,11 +1560,7 @@
 }
 
 .bsplus-analytics-table thead {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-surface-2) 85%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-surface-2) 85%, transparent);
 }
 
 .bsplus-analytics-table th {
@@ -1665,11 +1597,7 @@
 }
 
 .bsplus-analytics-table tbody tr:hover {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 6%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-accent) 6%, transparent);
 }
 
 .bsplus-analytics-table .cell-title {
@@ -1763,15 +1691,9 @@
   gap: 1rem;
   padding: 3rem 2rem;
   text-align: center;
-  border-radius: var(
-    --bsplus-theme-card-radius,
-    var(--bsplus-analytics-radius)
-  );
+  border-radius: var(--bsplus-theme-card-radius, var(--bsplus-analytics-radius));
   background: var(--bsplus-theme-card-bg, var(--bsplus-analytics-surface));
-  border: var(
-    --bsplus-theme-card-border,
-    1px solid var(--bsplus-analytics-border)
-  );
+  border: var(--bsplus-theme-card-border, 1px solid var(--bsplus-analytics-border));
   box-shadow: var(--bsplus-theme-card-shadow, var(--bsplus-analytics-shadow));
   backdrop-filter: var(--bsplus-theme-card-blur, none);
 }

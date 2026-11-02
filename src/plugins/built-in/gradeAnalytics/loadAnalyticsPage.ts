@@ -34,9 +34,7 @@ async function loadAnalyticsPageInner(): Promise<void> {
   try {
     main = (await waitForElm("#main", true, 100, 60)) as HTMLElement;
   } catch {
-    console.warn(
-      "[BetterSEQTA+] Analytics: timed out waiting for #main (shell not ready).",
-    );
+    console.warn("[BetterSEQTA+] Analytics: timed out waiting for #main (shell not ready).");
     return;
   }
 

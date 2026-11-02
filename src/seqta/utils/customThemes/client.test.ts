@@ -1,8 +1,4 @@
-import {
-  formatCustomThemeStatus,
-  statusBadgeClass,
-  canEditCustomTheme,
-} from "./client";
+import { formatCustomThemeStatus, statusBadgeClass, canEditCustomTheme } from "./client";
 import {
   formatEnvelopeErrorMessage,
   normalizeCustomThemeApiResponse,
@@ -24,13 +20,39 @@ describe("customThemes client helpers", () => {
   });
 
   it("allows edit only for pending and rejected themes", () => {
-    expect(canEditCustomTheme({ id: "1", name: "A", description: "", coverImage: "", status: "pending" })).toBe(true);
-    expect(canEditCustomTheme({ id: "1", name: "A", description: "", coverImage: "", status: "rejected" })).toBe(true);
-    expect(canEditCustomTheme({ id: "1", name: "A", description: "", coverImage: "", status: "approved" })).toBe(false);
+    expect(
+      canEditCustomTheme({
+        id: "1",
+        name: "A",
+        description: "",
+        coverImage: "",
+        status: "pending",
+      }),
+    ).toBe(true);
+    expect(
+      canEditCustomTheme({
+        id: "1",
+        name: "A",
+        description: "",
+        coverImage: "",
+        status: "rejected",
+      }),
+    ).toBe(true);
+    expect(
+      canEditCustomTheme({
+        id: "1",
+        name: "A",
+        description: "",
+        coverImage: "",
+        status: "approved",
+      }),
+    ).toBe(false);
   });
 
   it("parses API envelope errors and validation details", () => {
-    expect(parseApiError({ code: "INVALID_THEME_STRUCTURE", message: "Bad theme" })).toBe("Bad theme");
+    expect(parseApiError({ code: "INVALID_THEME_STRUCTURE", message: "Bad theme" })).toBe(
+      "Bad theme",
+    );
     expect(parseApiError(null, 500)).toBe("Request failed (HTTP 500)");
     expect(
       parseValidationErrors({

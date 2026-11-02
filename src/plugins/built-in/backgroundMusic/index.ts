@@ -7,14 +7,16 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 import localforage from "localforage";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+import { delay } from "@/seqta/utils/delay";
 
 const settings = defineSettings({
   uploader: componentSetting({
     title: "Background Music",
     description: "Upload a .wav or .mp3 audio file to play in the background",
-    component: BackgroundMusicSetting,
+    component: toMountableComponent(BackgroundMusicSetting),
   }),
   volume: numberSetting({
     title: "Volume",
@@ -26,8 +28,7 @@ const settings = defineSettings({
   }),
   pauseOnHidden: booleanSetting({
     title: "Pause when tab hidden",
-    description:
-      "Pause music when switching to another tab or minimizing the browser",
+    description: "Pause music when switching to another tab or minimizing the browser",
     default: true,
   }),
 });
@@ -196,8 +197,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
 
     type BgSettings = { volume?: number; pauseOnHidden?: boolean };
     const vol = () => (api.settings as BgSettings).volume ?? 0.5;
-    const pauseOnHidden = () =>
-      (api.settings as BgSettings).pauseOnHidden ?? true;
+    const pauseOnHidden = () => (api.settings as BgSettings).pauseOnHidden ?? true;
 
     const runEnsurePlayback = async () => {
       if (!(await prepareAudio(vol()))) return;
@@ -225,7 +225,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       // Retry after load — some browsers allow autoplay once the page settles
       // or Media Engagement Index applies from prior visits.
       for (const delayMs of [500, 1500, 3000]) {
-        await new Promise((resolve) => setTimeout(resolve, delayMs));
+        await delay(delayMs);
         if (!audio || !audio.paused) return;
         if (await attemptPlay(vol())) return;
       }
@@ -245,11 +245,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
     });
 
     api.settings.onChange("pauseOnHidden" as never, (value: unknown) => {
-      if (
-        value === false &&
-        audio?.paused &&
-        document.visibilityState === "visible"
-      ) {
+      if (value === false && audio?.paused && document.visibilityState === "visible") {
         void ensurePlayback();
       }
     });
@@ -296,10 +292,7 @@ const backgroundMusicPlugin: Plugin<typeof settings> = {
       pageChange.unregister();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("pageshow", onUpdated);
-      window.removeEventListener(
-        "betterseqta-background-music-updated",
-        onUpdated,
-      );
+      window.removeEventListener("betterseqta-background-music-updated", onUpdated);
       window.removeEventListener("betterseqta-background-music-stop", onStop);
       if (resumeTimer) clearTimeout(resumeTimer);
       disarmGesture();

@@ -74,7 +74,7 @@ Returns the caller’s latest settings backup.
 {
   "schemaVersion": 1,
   "themeId": "uuid-string-or-empty",
-  "data": { },
+  "data": {},
   "updated_at": "2026-04-07T12:00:00.000Z"
 }
 ```
@@ -96,11 +96,11 @@ The extension resolves **`themeId`** (if non-empty), else **`data.selectedTheme`
 
 Example relational layout:
 
-| Column        | Type        | Notes |
-|---------------|-------------|--------|
-| `user_id`     | FK → users  | Unique per backup row (one row per user). |
-| `payload`     | JSON / JSONB| Store `{ "schemaVersion", "data" }` or only `data` + separate `schema_version` column. |
-| `updated_at`  | timestamptz | Set on each successful `PUT`. |
+| Column       | Type         | Notes                                                                                  |
+| ------------ | ------------ | -------------------------------------------------------------------------------------- |
+| `user_id`    | FK → users   | Unique per backup row (one row per user).                                              |
+| `payload`    | JSON / JSONB | Store `{ "schemaVersion", "data" }` or only `data` + separate `schema_version` column. |
+| `updated_at` | timestamptz  | Set on each successful `PUT`.                                                          |
 
 Unique constraint on `user_id`.
 
@@ -137,7 +137,7 @@ The extension may call **`GET /api/user/cloud-summary`** (same host, `Authorizat
 - **Auto-sync flow:** compare `bsplus.updated_at` to a **client-only** watermark stored in extension storage as **`bsplus_cloud_settings_known_remote_updated_at`** (never uploaded, never applied from the server payload; preserved on restore).
 - If the server timestamp is newer (and `schemaVersion` is not ahead of the client), the client then calls **`GET /api/bsplus/settings/sync`** and applies the full envelope as usual.
 
-This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, `storage`) and works on **Chromium and Firefox** builds (see `webextension-polyfill`).
+This uses standard **WebExtension** APIs (`browser.alarms`, `runtime` messages, `storage`) and works on **Chromium and Firefox** builds.
 
 ## Client reference (extension)
 

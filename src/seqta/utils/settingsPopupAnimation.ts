@@ -20,15 +20,21 @@ function settingsPanel(host: HTMLElement): HTMLElement | null {
   return host.shadowRoot?.querySelector<HTMLElement>("[data-settings-panel]") ?? null;
 }
 
-const popupAnimations = new WeakMap<HTMLElement, {
-  progress: number;
-  animation?: ReturnType<typeof animate>;
-}>();
+const popupAnimations = new WeakMap<
+  HTMLElement,
+  {
+    progress: number;
+    animation?: ReturnType<typeof animate>;
+  }
+>();
 
 function animatePopup(host: HTMLElement, opening: boolean): void {
   const previous = popupAnimations.get(host);
   previous?.animation?.stop();
-  const state = { progress: previous?.progress ?? 0, animation: undefined as ReturnType<typeof animate> | undefined };
+  const state = {
+    progress: previous?.progress ?? 0,
+    animation: undefined as ReturnType<typeof animate> | undefined,
+  };
   popupAnimations.set(host, state);
   if (opening) host.dispatchEvent(new Event("bsplus:settings-opening", { bubbles: true }));
   const panel = settingsPanel(host);

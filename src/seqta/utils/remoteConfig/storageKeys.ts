@@ -2,8 +2,7 @@ export const BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY = "bsplus_remote_config_snapshot"
 export const BSPLUS_REMOTE_CONFIG_ETAG_KEY = "bsplus_remote_config_etag";
 export const BSPLUS_CAMPAIGN_SEEN_KEY = "bsplus_campaign_seen";
 export const BSPLUS_LOCAL_OVERRIDE_ONOFF_KEY = "bsplus_local_override_onoff";
-export const BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY =
-  "bsplus_features_hidden_until_version";
+export const BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY = "bsplus_features_hidden_until_version";
 export const BSPLUS_INSTALL_REGISTERED_AT_KEY = "bsplus_install_registered_at";
 export const BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY = "bsplus_remote_config_fetched_at";
 export const BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY = "bsplus_remote_config_last_hostname";

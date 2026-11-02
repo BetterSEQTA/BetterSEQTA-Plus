@@ -1,12 +1,9 @@
 import type { Plugin } from "@/plugins/core/types";
-import {
-  booleanSetting,
-  componentSetting,
-  defineSettings,
-} from "@/plugins/core/settingsHelpers";
+import { booleanSetting, componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
 import styles from "./styles.css?inline";
@@ -21,7 +18,7 @@ const settings = defineSettings({
   picture: componentSetting({
     title: "Profile Picture",
     description: "Upload or remove your custom profile image",
-    component: ProfilePictureSetting,
+    component: toMountableComponent(ProfilePictureSetting),
   }),
 });
 
@@ -66,8 +63,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       const useCloud = api.settings.useCloudPfp;
       const userId = cloudAuth.state.user?.id;
       const pfpUrl =
-        cloudAuth.state.user?.pfpUrl ??
-        (userId ? defaultAccountsPfpUrl(userId) : undefined);
+        cloudAuth.state.user?.pfpUrl ?? (userId ? defaultAccountsPfpUrl(userId) : undefined);
 
       if (useCloud && pfpUrl && userId) {
         const resolved = await resolveCloudPfp(userId, pfpUrl);
@@ -108,7 +104,7 @@ const profilePicturePlugin: Plugin<typeof settings> = {
     window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
 
     const onStorageRevision = (
-      changes: Record<string, browser.Storage.StorageChange>,
+      changes: Record<string, chrome.storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName === "local" && changes.profile_picture_revision) {

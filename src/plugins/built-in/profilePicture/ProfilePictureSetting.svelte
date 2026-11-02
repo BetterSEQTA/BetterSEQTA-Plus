@@ -1,7 +1,7 @@
 <script lang="ts">
   import localforage from 'localforage'
   import { onMount } from 'svelte'
-  import browser from 'webextension-polyfill'
+  import browser from '@/lib/browser'
   import CloudPfpAvatar from '@/interface/components/CloudPfpAvatar.svelte'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import {
@@ -45,7 +45,7 @@
     void load()
     const unsub = cloudAuth.subscribe((s) => { cloudState = s })
     const onStorage = (
-      changes: Record<string, browser.Storage.StorageChange>,
+      changes: Record<string, chrome.storage.StorageChange>,
       areaName: string,
     ) => {
       if (areaName === 'local' && changes['plugin.profile-picture.settings']) void load()
@@ -173,7 +173,7 @@
   </div>
 
   {#if cloudState.isLoggedIn}
-    <div class="flex flex-wrap gap-2 justify-end items-center max-w-[14rem]">
+    <div class="flex flex-wrap gap-2 justify-end items-center max-w-56">
       <button
         type="button"
         class="text-xs text-zinc-600 dark:text-zinc-300 hover:underline disabled:opacity-50"
@@ -206,6 +206,6 @@
   {/if}
 
   {#if cloudError}
-    <p class="max-w-[12rem] text-xs text-right text-red-500">{cloudError}</p>
+    <p class="max-w-48 text-xs text-right text-red-500">{cloudError}</p>
   {/if}
 </div>

@@ -1,114 +1,64 @@
-name: 🙋 New Contributor - Need Help Getting Started
-description: Perfect for first-time contributors who need guidance
-labels: ["help wanted", "documentation"]
+name: New contributor
+description: First time contributing? Tell us what you'd like to work on and we'll help you get started.
+labels: ["help wanted"]
 title: "[NEW CONTRIBUTOR] "
-
 body:
   - type: markdown
     attributes:
       value: |
-        ## Hi there! 👋
-        Welcome to BetterSEQTA+! We're excited to have you join our community.
+        Welcome to BetterSEQTA+! Fill in what you can and a maintainer will point you in the right direction. For real-time help, join the [Discord](https://discord.gg/YzmbnCDkat).
 
   - type: checkboxes
     attributes:
-      label: Tell us about yourself (check all that apply)
+      label: About you
       options:
-        - label: "This is my first time contributing to open source"
-          required: false
-        - label: "I'm new to browser extensions"
-          required: false
-        - label: "I'm new to TypeScript/JavaScript"
-          required: false
-        - label: "I have some coding experience but new to this project"
-          required: false
-          
-  - type: checkboxes
-    attributes:
-      label: What would you like to work on? (check all that apply)
-      options:
-        - label: "Fix a bug 🐛"
-          required: false
-        - label: "Add a new feature ✨"
-          required: false
-        - label: "Improve documentation 📚"
-          required: false
-        - label: "Create a plugin 🧩"
-          required: false        
-        - label: "Improve the UI/design 🎨"
-          required: false
-        - label: "Write tests 🧪"
-          required: false
-        - label: "Not sure - I want to help but need guidance!"
-          required: false
+        - label: This is my first open source contribution
+        - label: I'm new to browser extensions
+        - label: I'm new to TypeScript or Svelte
+        - label: I've coded before but I'm new to this project
 
   - type: checkboxes
     attributes:
-      label: Have you read our guides?
+      label: What would you like to work on?
       options:
-        - label: "Getting Started Guide (see docs/GETTING_STARTED_CONTRIBUTING.md)"
+        - label: Fixing a bug
+        - label: A new feature
+        - label: A plugin
+        - label: UI and design
+        - label: Tests
+        - label: Documentation
+        - label: Not sure yet, I'd like suggestions
+
+  - type: checkboxes
+    attributes:
+      label: Have you read the guides?
+      options:
+        - label: "[CONTRIBUTING.md](https://github.com/BetterSEQTA/BetterSEQTA-Plus/blob/main/CONTRIBUTING.md)"
           required: true
-        - label: "Architecture Guide (see docs/ARCHITECTURE.md)"
-          required: true
-        - label: "Plugin Development Guide (see docs/plugins/README.md)"
-          required: true
+        - label: "The [architecture guide](https://docs.betterseqta.org/architecture/)"
+        - label: "The [plugin development guide](https://docs.betterseqta.org/plugin-development/), if you're writing a plugin"
 
-  - type: checkboxes
+  - type: dropdown
     attributes:
-      label: Have you set up the development environment yet?
+      label: Is your dev environment working?
       options:
-        - label: Yes, everything works! 🎉
-          required: false
-        - label: Partially - I can run `npm run dev` but having some issues
-          required: false
-        - label: No, I need help with setup
-          required: false
-        - label: I tried but ran into errors (please describe below)
-          required: false
+        - Yes, `npm run dev` works
+        - Partly, I'm running into issues
+        - Not set up yet
+    validations:
+      required: true
 
-  - type: input
+  - type: textarea
     attributes:
       label: Errors
-      description: "Please list any encountered errors here:"
-      placeholder: "I am encountering issues with..."
+      description: Paste any errors you've hit.
+      render: shell
     validations:
       required: false
 
-  - type: input
+  - type: textarea
     attributes:
-      label: Questions or Issues
-      description: "Tell us:
-                    1. What specifically would you like help with?
-                    2. Are you stuck on anything?
-                    3. Do you have any questions about the codebase?
-                    4. Is there anything in our documentation that's unclear?"
-      placeholder: "I want help with..."
+      label: Questions
+      description: What would you like help with? Is anything in the docs unclear?
     validations:
       required: false
-      
-  - type: input
-    attributes:
-      label: Ideas or Suggestions
-      description: "If you have any ideas for features, improvements, or just want to share your thoughts:"
-      placeholder: "It would be cool if I could help add..."
-    validations:
-      required: false
-
-  - type: markdown
-    attributes:
-      value: |
-        ## What happens next?
-
-        A maintainer will respond within 24-48 hours to:
-        - Answer your questions
-        - Suggest some good issues to work on
-        - Help you with setup if needed
-        - Point you to relevant documentation
-        
-        Don't worry if you're new to this - we're here to help! Every expert was once a beginner. 🚀
-        
-        **Join our [Discord server](https://discord.gg/YzmbnCDkat) for real-time help and community chat!** 
-      
-      
-                    
-        
