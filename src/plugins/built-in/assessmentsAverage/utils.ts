@@ -825,7 +825,7 @@ async function handleWeightings(mark: any, api: any) {
       },
     };
   } catch (error: any) {
-    console.error(`[BetterSEQTA+] Weighting fetch failed for assessment ${assessmentID}:`, error);
+    console.error("[BetterSEQTA+] Weighting fetch failed for assessment %s:", assessmentID, error);
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: {
