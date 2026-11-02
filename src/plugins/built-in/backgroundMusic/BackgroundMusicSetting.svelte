@@ -24,7 +24,6 @@
   async function handleFiles(files: FileList | null) {
     const file = files?.[0]
     if (!file) return
-    // Accept WAV and MP3 files
     const isSupported = file.type === 'audio/wav' || file.type === 'audio/mpeg' || 
                        file.name.toLowerCase().endsWith('.wav') || file.name.toLowerCase().endsWith('.mp3')
     if (!isSupported) {
@@ -36,7 +35,6 @@
     await store.setItem('audio-name', file.name)
     filename = file.name
 
-    // Probe duration
     try {
       const url = URL.createObjectURL(file)
       const audio = new Audio(url)

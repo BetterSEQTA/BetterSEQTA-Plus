@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   
-  // Import existing components
   import CoverSwiper from '../components/store/CoverSwiper.svelte';
   import ThemeGrid from '../components/store/ThemeGrid.svelte';
   import SkeletonLoader from '../components/SkeletonLoader.svelte';
@@ -43,7 +42,6 @@
     return unsub;
   });
 
-  // State variables
   let themes = $state<Theme[]>([]);
 
   /** Grid/search/cover: hides flat-listed slaves when API sends them */
@@ -180,7 +178,6 @@
     }
   }
 
-  // On mount
   onMount(async () => {
     window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
     themeUpdates.addListener(fetchCurrentThemes);

@@ -20,11 +20,9 @@ export function GetThresholdOfColor(color: any) {
         parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2,
       );
 
-      // Store the computed threshold
       gradientThresholds.push(threshold);
     }
 
-    // Calculate the average threshold
     const averageThreshold =
       gradientThresholds.reduce((acc, val) => acc + val, 0) /
       gradientThresholds.length;

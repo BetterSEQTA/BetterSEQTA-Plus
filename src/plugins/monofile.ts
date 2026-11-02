@@ -1,7 +1,5 @@
-// Third-party libraries
 import browser from "webextension-polyfill";
 
-// Internal utilities and functions
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
@@ -14,7 +12,6 @@ import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import debounce from "@/seqta/utils/debounce";
 
-// UI and theme management
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
 import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
@@ -38,14 +35,11 @@ import {
 } from "@/seqta/utils/updateTimetableTimes";
 import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 
-// JSON content
 import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
-// Icons and fonts
 import IconFamily from "@/resources/fonts/IconFamily.woff";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 
-// Stylesheets
 import iframeCSS from "@/css/iframe.scss?raw";
 
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";

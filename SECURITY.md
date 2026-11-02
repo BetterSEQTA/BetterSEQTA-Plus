@@ -1,16 +1,9 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-The following versions of BetterSEQTA+ are currently supported.
+Only the latest release gets security fixes. Store installs update automatically. If you sideload from GitHub, grab the newest [release](https://github.com/BetterSEQTA/BetterSEQTA-Plus/releases).
 
-| Version | Supported |
-| ------- | --------- |
-| 3.4.3 or later | ✅ |
-| Earlier than 3.4.3 | ❌ |
+## Reporting a vulnerability
 
-## Reporting a Vulnerability
-
-If you discover a security vulnerability, please report it responsibly through GitHub Security Advisories:
-
-https://github.com/BetterSEQTA/BetterSEQTA-Plus/security/advisories/new
+Please report vulnerabilities privately through [GitHub Security Advisories](https://github.com/BetterSEQTA/BetterSEQTA-Plus/security/advisories/new), not in a public issue.

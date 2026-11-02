@@ -31,7 +31,6 @@ const handleNotificationClick = async (target: HTMLElement) => {
     selected: new Set([matchingNotification.message.messageID]),
   });
 
-  // Close the notifications panel
   const notificationButton = document.querySelector(
     '[class*="notifications__notifications___"] > button',
   ) as HTMLButtonElement | null;

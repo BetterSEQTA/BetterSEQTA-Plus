@@ -7,7 +7,7 @@ Thanks for helping out! For anything bigger than a small fix, open an issue or a
 You need Node.js 26+, Git and a Chromium browser (Chrome, Edge or Brave).
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/BetterSEQTA-Plus.git
+git clone https://github.com/YOUR_USERNAME/BetterSEQTA-Plus
 cd BetterSEQTA-Plus
 npm install
 npm run dev
@@ -33,7 +33,7 @@ For Firefox, run `npm run dev:firefox` and load `dist/firefox` from `about:debug
 | `src/css/` | Injected styles and the shared Tailwind setup |
 | `lib/`, `scripts/` | Vite plugins and build scripts |
 
-[ARCHITECTURE.md](docs/ARCHITECTURE.md) goes into more detail.
+The [architecture guide](https://docs.betterseqta.org/architecture/) goes into more detail.
 
 ## Making changes
 
@@ -55,13 +55,9 @@ For Firefox, run `npm run dev:firefox` and load `dist/firefox` from `about:debug
 
 Search [existing issues](https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues) before opening a new one, and use the issue forms. [`good first issue`](https://github.com/BetterSEQTA/BetterSEQTA-Plus/labels/good%20first%20issue) and [`help wanted`](https://github.com/BetterSEQTA/BetterSEQTA-Plus/labels/help%20wanted) are good places to start. Issues aren't assigned, so just open a PR when you have a fix.
 
-## Plugins
-
-- [Plugin development](https://docs.betterseqta.org/plugin-development/)
-- [Plugin API](https://docs.betterseqta.org/plugin-api/)
-
 ## More docs
 
-- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [Plugin development](https://docs.betterseqta.org/plugin-development/) and the [Plugin API](https://docs.betterseqta.org/plugin-api/)
+- [Theme creation](https://docs.betterseqta.org/theme-creation/)
+- [Troubleshooting](https://docs.betterseqta.org/troubleshooting/)
 - [Releases and CI](docs/RELEASES.md)
-- [Theme creation](docs/THEME_CREATION.md)

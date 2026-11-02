@@ -138,7 +138,6 @@ function startUrlMonitoring(): void {
   window.addEventListener('hashchange', handleUrlChange, { signal });
   window.addEventListener('popstate', handleUrlChange, { signal });
   
-  // Initial check
   handleUrlChange();
 }
 
@@ -146,7 +145,6 @@ function stopUrlMonitoring(): void {
   if (!isInitialized) return;
   isInitialized = false;
 
-  // Abort all event listeners at once
   if (abortController) {
     abortController.abort();
     abortController = null;

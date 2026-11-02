@@ -137,12 +137,10 @@ export async function hybridSearch(
   const opts = { ...DEFAULT_OPTIONS, ...options };
   const trimmedQuery = query.trim().toLowerCase();
   
-  // If no BM25 results, return empty
   if (bm25Results.length === 0) {
     return [];
   }
   
-  // Limit BM25 results to top K
   const topBm25Results = bm25Results.slice(0, opts.bm25TopK);
 
   if (trimmedQuery.length > 2) {
@@ -221,15 +219,12 @@ export async function hybridSearch(
         };
       });
       
-      // Sort by hybrid score descending
       rerankedResults.sort((a, b) => b.score - a.score);
       
-      // Return top results
       return rerankedResults.slice(0, opts.finalLimit);
       
     } catch (e) {
       console.warn("[Hybrid Search] Vector reranking failed, using BM25 only:", e);
-      // Fallback to BM25 only
       return topBm25Results.slice(0, opts.finalLimit);
     }
   }
@@ -310,7 +305,6 @@ export async function hybridSearchWithExpansion(
     // This is a semantic match that BM25 missed
     const item = v.object;
 
-    // Calculate boosts
     const recencyBoost = opts.recencyBoost
       ? calculateRecencyBoost(item, now) * opts.recencyWeight
       : 0;

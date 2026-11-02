@@ -1,6 +1,4 @@
-# Manual release workflow only — runs on BetterSEQTA/BetterSEQTA-Plus via workflow_dispatch.
-# Bump package.json version on main, confirm when dispatching, then run.
-# Uses the default GITHUB_TOKEN (contents: write).
+# Manual stable release. Bump the version in package.json on main first.
 
 name: Release
 

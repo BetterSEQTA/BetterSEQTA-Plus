@@ -1,52 +1,42 @@
 name: Feature request
-description: Suggest a new Feature to be added or replaced in BetterSeqtaPLUS
+description: Suggest something new for BetterSEQTA+ or a change to an existing feature.
 labels: enhancement
-title: "[FR]"
-
+title: "[FR] "
 body:
-  - type: checkboxes
-    attributes:
-      label: Confirm
-      options:
-        - label: "Is this feature request related to a Bug report?"
-          required: false
-
-  - type: input
-    attributes:
-      label: Bug report link
-      description: "If this feature request is related to a bug report, please insert the link to the bug report here"
-      placeholder: "https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/..."
-    validations:
-      required: false
-
   - type: markdown
     attributes:
       value: |
-        ## Feature details
-        Before you request a feature, [please search](https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues) if it has already been requested. (Make sure to check closed issues as well!)
+        Please [search existing issues](https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues?q=is%3Aissue) first, including closed ones, in case it's already been suggested.
+
+  - type: textarea
+    attributes:
+      label: What would you like?
+      description: Describe the feature in as much detail as you can, and the problem it solves.
+      placeholder: It would be great if...
+    validations:
+      required: true
 
   - type: dropdown
     attributes:
-      label: Feature type
-      multiple: false
+      label: Type
       options:
-        - Graphical
-        - Functional
-        - Not Sure
+        - Visual / design
+        - Functionality
+        - Not sure
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Feature Details
-      description: Please write, with as much detail as possible, what you would like to see from this feature.
-      placeholder: it would be cool if
+      label: Related bug report
+      description: If this comes from a bug report, link it here.
+      placeholder: https://github.com/BetterSEQTA/BetterSEQTA-Plus/issues/...
     validations:
       required: false
 
   - type: textarea
     attributes:
-      label: Additional details
-      description: Anything else that would help describe your vision (reference images, descriptions, etc)
+      label: Anything else
+      description: Mockups, reference images, or examples from other apps.
     validations:
       required: false

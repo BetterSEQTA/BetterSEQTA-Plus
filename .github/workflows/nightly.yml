@@ -1,15 +1,11 @@
-# Nightly release workflow — updates the same "nightly" release with fresh builds from main.
-# Runs only on BetterSEQTA/BetterSEQTA-Plus. Uses the default GITHUB_TOKEN.
-#
-# Scheduled at midnight Australia/Adelaide (ACST/ACDT). GitHub cron is UTC-only, so we
-# trigger at 13:30 and 14:30 UTC and only proceed when Adelaide local time is 00:00.
-# Builds on windows-latest (matches local dev; Linux nightly builds were failing on Vite/Svelte).
+# Rebuilds main every night and replaces the assets on the "nightly" prerelease.
+# Runs on Windows because the layerchart Svelte build fails on Linux.
 
 name: Nightly Release
 
 on:
   schedule:
-  # 13:30 UTC = 00:00 Adelaide during daylight saving (ACDT, UTC+10:30)
+    # Midnight in Adelaide during daylight saving (UTC+10:30).
     - cron: "30 13 * * *"
 
 permissions:

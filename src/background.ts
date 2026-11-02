@@ -183,7 +183,6 @@ function isTrustedSender(sender?: browser.Runtime.MessageSender): boolean {
     try {
       if (isSeqtaOrigin(new URL(pageUrl).origin)) return true;
     } catch {
-      // try next URL
     }
   }
   return false;
@@ -335,7 +334,6 @@ function initCloudLoginCallbackListener() {
         const userId = url.searchParams.get("user_id");
 
         if (token && refreshToken) {
-          // Store tokens
           void (async () => {
             try {
               await browser.storage.local.set({
@@ -343,7 +341,6 @@ function initCloudLoginCallbackListener() {
                 bsplus_refresh_token: refreshToken,
               });
 
-              // Fetch full user info
               const userRes = await fetch("https://accounts.betterseqta.org/api/auth/me", {
                 headers: { Authorization: `Bearer ${token}` },
               });
@@ -354,7 +351,6 @@ function initCloudLoginCallbackListener() {
                 await browser.storage.local.set({ bsplus_user: { id: userId } });
               }
 
-              // Trigger cloud settings download
               void performCloudSettingsDownloadWithRetry(token).catch((err) => {
                 console.warn("[Background] Cloud settings download after login:", err);
               });
@@ -363,7 +359,6 @@ function initCloudLoginCallbackListener() {
             }
           })();
 
-          // Close the callback tab
           void browser.tabs.remove(tabId);
         }
       } catch (err) {

@@ -4,7 +4,6 @@ function adjustLuminance(color: any, lum: any) {
   let adjustedColor = Color(color.toLowerCase());
   const rgbObj = adjustedColor.rgb().object();
 
-  // Adjust luminance
   adjustedColor = Color.rgb(
     Math.min(Math.max(0, rgbObj.r + rgbObj.r * lum), 255),
     Math.min(Math.max(0, rgbObj.g + rgbObj.g * lum), 255),
@@ -26,7 +25,6 @@ export default function ColorLuminance(color: any, lum = 0) {
 
     let uniqueColorSet = new Set();
 
-    // Extract all unique color stops
     let match;
     while ((match = colorRegex.exec(color)) !== null) {
       uniqueColorSet.add(match[0]);

@@ -11,7 +11,6 @@ class ReactFiber {
       console.log("🔍 Found Fibers:", this.fibers);
       console.log("🛠 Found Components:", this.components);
       
-      // Debug fiber info
       this.fibers.forEach((fiber, index) => {
         if (fiber) {
           console.log(`Fiber ${index}:`, {
@@ -43,12 +42,10 @@ class ReactFiber {
       '__reactInternalInstance'
     ];
     
-    // Check for exact matches first
     for (const key of possibleKeys) {
       if (node[key]) return node[key];
     }
     
-    // Fall back to pattern matching
     const fiberKey = Object.getOwnPropertyNames(node).find(
       (name) =>
         name.startsWith("__reactFiber") ||
@@ -108,7 +105,6 @@ class ReactFiber {
     const fiber = this.fibers[0];
     let state = null;
     
-    // Handle class components
     if (component?.state) {
       state = component.state;
     }
@@ -273,10 +269,8 @@ class ReactFiber {
 
   setState(update) {
     this.components.forEach((component) => {
-      // Handle class components
       if (component?.setState) {
         if (typeof update === "function") {
-          // Functional update
           component.setState((prevState) => {
             const newState = update(prevState);
             if (this.debug)
@@ -338,18 +332,15 @@ class ReactFiber {
 }
 
 function makeSerializable(obj, visited = new WeakSet(), depth = 0, maxDepth = 10) {
-  // Handle primitives first
   if (obj === null || obj === undefined) {
     return obj;
   }
   
-  // Catch ALL functions early
   if (typeof obj === "function") {
     return `[Function: ${obj.name || 'anonymous'}]`;
   }
   
   if (typeof obj !== "object") {
-    // Handle other primitives
     if (typeof obj === "symbol") return obj.toString();
     if (typeof obj === "bigint") return obj.toString() + "n";
     return obj;
@@ -360,14 +351,12 @@ function makeSerializable(obj, visited = new WeakSet(), depth = 0, maxDepth = 10
     return "[Max Depth Reached]";
   }
 
-  // Prevent circular references
   if (visited.has(obj)) {
     return "[Circular Reference]";
   }
   visited.add(obj);
 
   try {
-    // Handle special objects first
     if (obj instanceof HTMLElement) {
       return {
         type: "HTMLElement",
@@ -411,15 +400,13 @@ function makeSerializable(obj, visited = new WeakSet(), depth = 0, maxDepth = 10
       };
     }
 
-    // Handle arrays
     if (Array.isArray(obj)) {
       return obj.slice(0, 50).map((item, index) => {
-        if (index >= 25) return "[...truncated]"; // Smaller limit
+        if (index >= 25) return "[...truncated]";
         return makeSerializable(item, visited, depth + 1, maxDepth);
       });
     }
 
-    // Handle regular objects
     const serializableObj = {};
     
     // Get own enumerable properties only to avoid prototype pollution
@@ -432,12 +419,11 @@ function makeSerializable(obj, visited = new WeakSet(), depth = 0, maxDepth = 10
     });
     
     // Limit number of properties to avoid huge objects
-    const maxKeys = 30; // Smaller limit for safety
+    const maxKeys = 30;
     const processedKeys = ownKeys.slice(0, maxKeys);
     
     for (const key of processedKeys) {
       try {
-        // Skip problematic keys early
         const dangerousKeys = [
           'parentNode', 'parentElement', 'ownerDocument', 'children', 'childNodes',
           'return', 'child', 'sibling', 'alternate', 'ref', // React Fiber circular refs
@@ -465,7 +451,6 @@ function makeSerializable(obj, visited = new WeakSet(), depth = 0, maxDepth = 10
         if (typeof value === "symbol") {
           value = `[Symbol: ${value.description || 'anonymous'}]`;
         }
-        // Extra function check
         else if (typeof value === "function") {
           value = `[Function: ${value.name || 'anonymous'}]`;
         } else if (value && typeof value === "object") {

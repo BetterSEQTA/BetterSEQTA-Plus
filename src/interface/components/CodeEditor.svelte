@@ -11,10 +11,8 @@
   import { color } from '@uiw/codemirror-extensions-color'
   import { Compartment } from '@codemirror/state';
 
-  // Theme
   import { githubLight, githubDark } from '@uiw/codemirror-theme-github';
 
-  // Language
   import { css } from "@codemirror/lang-css";
 
   let editor = $state<HTMLDivElement | null>(null)

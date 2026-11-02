@@ -112,7 +112,6 @@ export async function getAdaptiveColour(): Promise<string | null> {
   const colour = await getSubjectColour(subjectCode, userId);
   if (!colour || typeof colour !== "string") return null;
 
-  // Basic hex validation
   if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(colour)) return colour;
   if (/^[0-9A-Fa-f]{6}$/.test(colour)) return `#${colour}`;
   return null;

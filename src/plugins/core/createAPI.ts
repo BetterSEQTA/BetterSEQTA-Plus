@@ -41,7 +41,6 @@ function createSEQTAAPI(): SEQTAAPI {
 
       window.addEventListener("hashchange", handler);
 
-      // Return an unregister function
       return {
         unregister: () => {
           window.removeEventListener("hashchange", handler);
@@ -60,7 +59,6 @@ function createSettingsAPI<T extends PluginSettings>(
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: any) => void>>();
 
-  // Initialize with default values
   const settingsWithMeta: any = {
     onChange: <K extends keyof T>(
       key: K,
@@ -85,7 +83,6 @@ function createSettingsAPI<T extends PluginSettings>(
     loaded: Promise.resolve(), // will be replaced below
   };
 
-  // Fill with defaults first
   for (const key in plugin.settings) {
     if (plugin.settings[key].type !== 'component' && plugin.settings[key].type !== 'button') {
       settingsWithMeta[key] = plugin.settings[key].default;
@@ -250,7 +247,6 @@ function createStorageAPI<T = any>(
         return loadStoragePromise;
       }
 
-      // Direct property access
       return target[prop];
     },
     set(target, prop: string, value: any) {
@@ -262,7 +258,6 @@ function createStorageAPI<T = any>(
       target[prop] = value;
       browser.storage.local.set({ [prefix + prop]: value });
 
-      // Notify listeners
       listeners.get(prop)?.forEach((callback) => callback(value));
 
       return true;

@@ -1,8 +1,7 @@
-import { buildSimpleTheme } from "./buildSimpleTheme";
-import { buildThemeBuilderCss } from "./themeBuilderDraft";
+import { buildThemeBuilderCss, buildThemeFromDraft } from "./themeBuilderDraft";
 import { getFontPreset } from "@/seqta/ui/fonts/presets";
 
-describe("buildSimpleTheme", () => {
+describe("themeBuilderDraft", () => {
   it("paints the tint above an opaque photo when blur is disabled", () => {
     const css = buildThemeBuilderCss(
       getFontPreset("inter"),
@@ -25,7 +24,7 @@ describe("buildSimpleTheme", () => {
   });
 
   it("creates a theme with photos as custom image variables", () => {
-    const theme = buildSimpleTheme({
+    const theme = buildThemeFromDraft({
       name: "Sunset",
       accentColor: "#ff6600",
       fontId: "rubik",
@@ -41,7 +40,7 @@ describe("buildSimpleTheme", () => {
 
   it("requires a name", () => {
     expect(() =>
-      buildSimpleTheme({ name: "  ", accentColor: "#000", photoBlobs: [] }),
+      buildThemeFromDraft({ name: "  ", accentColor: "#000", photoBlobs: [] }),
     ).toThrow("Theme name is required");
   });
 });

@@ -53,7 +53,6 @@
 
   let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
-  // Listen for setting changes
   $effect(() => {
     const loadSettings = async () => {
       const settings = await browser.storage.local.get('plugin.global-search.settings');
@@ -65,7 +64,6 @@
 
     loadSettings();
 
-    // Listen for storage changes
     const handleStorageChange = (changes: any, area: string) => {
       if (area === 'local' && changes['plugin.global-search.settings']) {
         const newSettings = changes['plugin.global-search.settings'].newValue as { searchHotkey?: string } | undefined;
@@ -299,7 +297,6 @@
   };
 
   const handleKeyNav = (e: KeyboardEvent) => {
-    // Handle regular navigation
     if (e.key === 'ArrowDown') {
       e.preventDefault();
       selectNext();

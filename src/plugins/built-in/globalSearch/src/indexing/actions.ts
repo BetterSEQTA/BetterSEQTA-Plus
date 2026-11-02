@@ -357,7 +357,6 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       num("assessmentID") ??
       num("entityId") ??
       num("id");
-    const messageId = num("messageId");
 
     const navigateToAssessment = (): void => {
       if (programme !== undefined && metaclass !== undefined) {
@@ -432,7 +431,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         // same live hash navigation as the real message action instead of
         // forcing a fresh bootstrap, which can drop back to dashboard for
         // context-only endpoints.
-        void messageId; // noqa — preserved for future deep-select work
+
         navigateInCurrentSeqtaApp("/messages");
         return;
       case "people":

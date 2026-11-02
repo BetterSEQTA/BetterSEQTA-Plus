@@ -17,7 +17,6 @@ export interface StaticCommandItem extends BaseCommandItem {
   keybindLabel?: string[];
 }
 
-// Function to get current lesson
 async function getCurrentLesson() {
   const date = new Date();
   const todayFormatted = formatDate(date);
@@ -83,7 +82,6 @@ async function navigateToSpecificLesson(lesson: any) {
     const weeks = document.querySelectorAll(".course .navigator .week");
     
     for (const week of weeks) {
-      // Look for lessons in this week
       const lessons = week.querySelectorAll(".lesson");
       
       for (const lessonElement of lessons) {
@@ -172,7 +170,6 @@ const staticCommands: StaticCommandItem[] = [
     action: async () => {
       const currentLesson = await getCurrentLesson();
       if (currentLesson && currentLesson.programmeID !== 0) {
-        // Navigate to course page first
         window.location.hash = `?page=/courses/${currentLesson.programmeID}:${currentLesson.metaID}`;
         
         await navigateToSpecificLesson(currentLesson);

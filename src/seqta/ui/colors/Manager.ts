@@ -19,7 +19,6 @@ const LOGO_STYLE_ID = "bsplus-logo-style";
 let colorTransitionRafId: number | null = null;
 let lastInterpolatedHex: string | null = null;
 
-// Helper functions
 const setCSSVar = (varName: any, value: any) =>
   document.documentElement.style.setProperty(varName, value);
 const applyProperties = (props: any) =>
@@ -169,7 +168,6 @@ function applyColorsWith(selectedColor: string) {
         : ColorLuminance(selectedColor, 0.95),
   };
 
-  // Apply all the properties
   applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
 
   if (settingsState.selectedTheme) {

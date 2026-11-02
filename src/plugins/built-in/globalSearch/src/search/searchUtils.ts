@@ -185,12 +185,11 @@ export function createSearchIndexes() {
   const commands = getStaticCommands();
   const dynamicItems = dedupeIndexItemsForSearch(getDynamicItems());
 
-  // Optimized command search options
   const commandOptions = {
     keys: ["text", "category", "keywords"],
     includeScore: true,
     includeMatches: true,
-    threshold: 0.35, // Slightly more permissive for better recall
+    threshold: 0.35,
     minMatchCharLength: 2,
     useExtendedSearch: false,
     ignoreLocation: false,
@@ -317,7 +316,6 @@ export function searchDynamicItems(
 
     let score = fuseScore;
 
-    // Recency boost
     const ageInDays = (now - item.dateAdded) / (1000 * 60 * 60 * 24);
     const recencyBoost = sortByRecent ? 1 / (ageInDays + 1) : 0;
     score += recencyBoost;
@@ -390,7 +388,6 @@ export async function performSearch(
 ): Promise<CombinedResult[]> {
   const trimmedQuery = query.trim().toLowerCase();
   
-  // Check cache first
   if (trimmedQuery.length > 2) {
     const cached = getCachedResults(trimmedQuery);
     if (cached) {
@@ -464,7 +461,6 @@ export async function performSearch(
         );
       } catch (e) {
         console.warn("[Search] Hybrid search failed, using BM25 only:", e);
-        // Fallback to BM25 only
         dynamicResults = bm25Results.slice(0, 20);
       }
     } else {

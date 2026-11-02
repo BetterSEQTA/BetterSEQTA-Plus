@@ -62,7 +62,6 @@ export const subjectsJob: Job = {
 
     const items: IndexItem[] = [];
 
-    // Process each semester
     for (const semester of list.payload) {
       if (!semester.subjects || !Array.isArray(semester.subjects)) {
         console.warn("[Subjects job] Skipping invalid semester:", semester);

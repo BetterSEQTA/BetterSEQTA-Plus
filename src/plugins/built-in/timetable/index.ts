@@ -79,7 +79,6 @@ async function handleTimetable(): Promise<void> {
     /* timetable body may render after the shell */
   }
 
-  // Convert time format if needed
   if (settingsState.timeFormat == "12") {
     const times = document.querySelectorAll(".timetablepage .times .time, .timetablepage .entry.new");
     for (const time of times) {
@@ -98,7 +97,6 @@ function handleTimetableZoom(): void {
 
   verboseLog("Initializing timetable zoom controls");
 
-  // Create zoom controls
   const zoomControls = document.createElement("div");
   zoomControls.className = "timetable-zoom-controls";
 
@@ -118,7 +116,6 @@ function handleTimetableZoom(): void {
   const toolbar = document.getElementById("toolbar");
   toolbar?.appendChild(zoomControls);
 
-  // Store event listener references
   const zoomInHandler = () => {
     const seqtaZoomIn = document.querySelector('.uiButton.zoom.in') as HTMLElement;
     if (seqtaZoomIn) {
@@ -136,7 +133,6 @@ function handleTimetableZoom(): void {
   zoomIn.addEventListener("click", zoomInHandler);
   zoomOut.addEventListener("click", zoomOutHandler);
 
-  // Store references for cleanup
   zoomHandlers.set(zoomControls, {
     zoomIn: zoomInHandler,
     zoomOut: zoomOutHandler,

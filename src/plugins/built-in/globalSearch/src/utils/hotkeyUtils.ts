@@ -64,7 +64,6 @@ export function formatHotkeyForDisplay(hotkeyString: string): string {
     const parsed = parseHotkey(hotkeyString);
     const parts: string[] = [];
     
-    // Detect platform
     const isMac = (navigator.platform.toUpperCase().indexOf('MAC') >= 0);
     
     if (parsed.ctrl) {
@@ -100,7 +99,6 @@ export function matchesHotkey(event: KeyboardEvent, hotkeyString: string): boole
       return false;
     }
     
-    // Check modifiers
     if (parsed.ctrl && !event.ctrlKey) return false;
     if (parsed.meta && !event.metaKey) return false;
     if (parsed.alt && !event.altKey) return false;
@@ -112,7 +110,6 @@ export function matchesHotkey(event: KeyboardEvent, hotkeyString: string): boole
     if (!parsed.alt && event.altKey) return false;
     if (!parsed.shift && event.shiftKey) return false;
     
-    // Check the key
     return event.key.toLowerCase() === parsed.key.toLowerCase();
   } catch (error) {
     console.warn('Error matching hotkey:', hotkeyString, error);

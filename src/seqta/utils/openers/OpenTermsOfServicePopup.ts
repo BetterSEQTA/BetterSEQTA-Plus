@@ -47,8 +47,6 @@ export async function fetchTermsOfService(): Promise<LegalDocumentPayload> {
   }
 }
 
-/** @deprecated Use {@link fetchTermsOfService}. */
-export const fetchPrivacyTerms = fetchTermsOfService;
 
 function termsVersionIsNewer(
   remoteLastUpdated: string,

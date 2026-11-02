@@ -2,7 +2,6 @@ import { settingsState } from "./SettingsState";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 
-// Shortcuts rendering
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/LoadHomePage";

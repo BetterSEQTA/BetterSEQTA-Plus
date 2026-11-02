@@ -308,25 +308,21 @@ export class ThemeManager {
       // Use view transition for the theme change
       if (applyViewTransition) {
         await this.applyViewTransition(async () => {
-          // Remove current theme if exists
           if (this.currentTheme) {
             verboseDebug("[ThemeManager] Removing current theme");
             await this.removeThemeWithoutTransition(this.currentTheme);
           }
 
-          // Apply new theme
           await this.applyTheme(theme);
           this.currentTheme = theme;
           settingsState.selectedTheme = themeId;
         });
       } else {
-        // Remove current theme if exists
         if (this.currentTheme) {
           verboseDebug("[ThemeManager] Removing current theme");
           await this.removeThemeWithoutTransition(this.currentTheme);
         }
 
-        // Apply new theme
         await this.applyTheme(theme);
         this.currentTheme = theme;
         settingsState.selectedTheme = themeId;
@@ -362,7 +358,6 @@ export class ThemeManager {
         this.lastSyncedImageKey = null;
       }
 
-      // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
         const dark = getForcedDarkMode(theme);
         verboseDebug("[ThemeManager] Setting dark mode:", dark);
@@ -446,7 +441,6 @@ export class ThemeManager {
         });
       }
 
-      // Restore original settings
       if (settingsState.originalSelectedColor) {
         verboseDebug(
           "[ThemeManager] Restoring original color:",
@@ -781,7 +775,6 @@ export class ThemeManager {
   ): Promise<void> {
     verboseDebug("[ThemeManager] Installing theme:", themeData.name);
     try {
-      // Validate required fields
       if (!themeData.id || !themeData.name) {
         throw new Error("Theme is missing required fields (id or name)");
       }
@@ -818,7 +811,6 @@ export class ThemeManager {
           );
         } catch (e) {
           console.warn("[ThemeManager] Failed to process cover image:", e);
-          // Continue without cover image
         }
       }
 
@@ -1014,7 +1006,6 @@ export class ThemeManager {
         ...themeBasics
       } = theme;
 
-      // Convert images to base64
       const finalImages = await Promise.all(
         CustomImages.map(async (image) => ({
           id: image.id,
@@ -1023,7 +1014,6 @@ export class ThemeManager {
         })),
       );
 
-      // Convert cover image to base64
       const coverImageBase64 = coverImage
         ? await blobToBase64Data(coverImage)
         : null;
@@ -1035,7 +1025,6 @@ export class ThemeManager {
         coverImage: coverImageBase64,
       };
 
-      // Save theme file
       this.saveThemeFile(shareableTheme, theme.name || "Unnamed_Theme");
     } catch (error) {
       console.error("[ThemeManager] Error sharing theme:", error);
@@ -1071,7 +1060,6 @@ export class ThemeManager {
       });
       this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
 
-      // Apply theme settings
       if (shouldForceThemeAppearance(theme)) {
         settingsState.DarkMode = getForcedDarkMode(theme);
       }
@@ -1205,7 +1193,6 @@ export class ThemeManager {
 
       clearCustomThemeAdaptiveCssVariables();
 
-      // Restore original settings
       const storedColor = localStorage.getItem("originalPreviewColor");
 
       if (storedColor) {

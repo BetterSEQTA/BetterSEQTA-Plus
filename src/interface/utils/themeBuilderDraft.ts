@@ -15,7 +15,7 @@ export type ThemeBuilderDraft = {
   themeId?: string;
 };
 
-/** Keep the BetterSEQTA title bar opaque (generated themes must not use the old transparent #title hack). */
+/** Keeps the BetterSEQTA title bar opaque in generated themes. */
 const TITLEBAR_SOLID = `#title {
   background: var(--background-primary) !important;
 }`;

@@ -92,12 +92,10 @@ export function getLexicalMatchQuality(item: IndexItem, query: string): number {
 
   if (title.includes(" " + q) || title.includes(q + " ")) return 8;
 
-  // Token starts-with anywhere
   for (const t of titleTokens) {
     if (t.startsWith(q)) return 3;
   }
 
-  // Subject / curated metadata title
   const md = (item.metadata ?? {}) as Record<string, unknown>;
   const subjectName = normalize(
     typeof md.subjectName === "string" ? md.subjectName : "",

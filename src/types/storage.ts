@@ -98,7 +98,7 @@ export interface SettingsState {
   /** Google Font preset id for SEQTA interface typography (`rubik` default). */
   selectedFont?: string;
 
-  // depreciated keys
+  // Deprecated keys
   animatedbk: boolean;
   bksliderinput: string;
   lettergrade: boolean;

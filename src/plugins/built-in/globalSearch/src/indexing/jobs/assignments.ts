@@ -18,7 +18,6 @@ const fetchUpcomingAssessments = async (student: number) => {
     const res = await fetchJSON("/seqta/student/assessment/list/upcoming?", {
       student,
     });
-    // Match analytics.rs: payload is an array, return empty array if not found
     return Array.isArray(res.payload) ? res.payload : [];
   } catch (e) {
     console.error("[Assignments job] Failed to fetch upcoming assessments:", e);
@@ -41,24 +40,18 @@ const fetchSubjects = async () => {
 const fetchPastAssessments = async (student: number, subjects: any[]) => {
   const map: Record<number, any> = {};
 
-  // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
-  // This is much faster than sequential fetching
   await Promise.all(
     subjects.map(async (subject) => {
       try {
-        // Match analytics.rs exactly: parameter order is programme, metaclass, student
         const res = await fetchJSON("/seqta/student/assessment/list/past?", {
           programme: subject.programme,
           metaclass: subject.metaclass,
           student,
         });
 
-        // Past assessments API can return data in payload.tasks OR payload.pending (or both)
-        // Based on analytics.rs fetch_past_assessments, we need to check both arrays
+        // Past assessments can come back in payload.tasks, payload.pending, or both.
         const processAssessment = (assessment: any) => {
           if (assessment && assessment.id) {
-            // Ensure programme and metaclass are included from the subject
-            // Use the assessment's IDs if available, otherwise fall back to subject's
             map[assessment.id] = {
               ...assessment,
               programme: assessment.programme || assessment.programmeID || subject.programme,
@@ -69,13 +62,10 @@ const fetchPastAssessments = async (student: number, subjects: any[]) => {
           }
         };
 
-        // Match analytics.rs: Check both pending and tasks arrays
-        // Check for pending array first (matching Rust code order)
         if (res.payload?.pending && Array.isArray(res.payload.pending)) {
           res.payload.pending.forEach(processAssessment);
         }
 
-        // Check for tasks array
         if (res.payload?.tasks && Array.isArray(res.payload.tasks)) {
           res.payload.tasks.forEach(processAssessment);
         }
@@ -101,7 +91,6 @@ export const assignmentsJob: Job = {
 
     let score = 0;
     
-    // Boost upcoming assignments
     if (item.metadata.dueDate) {
       const dueDate = new Date(item.metadata.dueDate).getTime();
       const now = Date.now();
@@ -115,7 +104,6 @@ export const assignmentsJob: Job = {
       }
     }
     
-    // Boost if submitted
     if (item.metadata.submitted) {
       score += 0.02;
     }
@@ -124,8 +112,7 @@ export const assignmentsJob: Job = {
   },
 
   run: async (ctx) => {
-    // Don't filter by existing IDs - we want to process ALL assessments (both new and old)
-    // to ensure metadata is up-to-date and all past assignments are indexed
+    // Process every assessment, not just new ones, so metadata stays current.
     const existingItems = await ctx.getStoredItems("assignments");
     const existingIds = new Set(existingItems.map((i) => i.id));
 
@@ -133,7 +120,6 @@ export const assignmentsJob: Job = {
 
     verboseDebug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     
-    // Fetch data in parallel
     const [upcoming, subjects] = await Promise.all([
       fetchUpcomingAssessments(student),
       fetchSubjects(),
@@ -141,12 +127,10 @@ export const assignmentsJob: Job = {
 
     verboseDebug(`[Assignments job] Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`);
 
-    // Fetch past assessments for ALL subjects to ensure we get all historical assignments
     const past = await fetchPastAssessments(student, subjects);
     
     verboseDebug(`[Assignments job] Fetched ${past.length} past assessments`);
     
-    // Create a lookup map from subject code to programme/metaclass
     const subjectLookup = new Map<string, { programme: number; metaclass: number }>();
     subjects.forEach((s: any) => {
       if (s.code && s.programme && s.metaclass) {
@@ -154,16 +138,13 @@ export const assignmentsJob: Job = {
       }
     });
     
-    // Combine and deduplicate
     const allAssessments = new Map<number, any>();
     
     upcoming.forEach((a: any) => {
       if (a && a.id) {
-        // Prioritize capital ID fields (programmeID, metaclassID) as that's what the API returns
         let programme = a.programmeID || a.programme;
         let metaclass = a.metaclassID || a.metaclass;
         
-        // If missing, try to get from subject lookup
         if ((!programme || !metaclass) && a.code) {
           const subjectInfo = subjectLookup.get(a.code);
           if (subjectInfo) {
@@ -185,14 +166,11 @@ export const assignmentsJob: Job = {
     
     past.forEach((a: any) => {
       if (a && a.id) {
-        // Prioritize capital ID fields (programmeID, metaclassID) as that's what the API returns
         let programme = a.programmeID || a.programme;
         let metaclass = a.metaclassID || a.metaclass;
         
         const existing = allAssessments.get(a.id);
         if (existing) {
-          // Merge past assessment data, ensuring programme/metaclass are preserved
-          // Use existing values if new ones are missing
           programme = programme || existing.programme || existing.programmeID;
           metaclass = metaclass || existing.metaclass || existing.metaclassID;
           
@@ -219,17 +197,14 @@ export const assignmentsJob: Job = {
     const items: IndexItem[] = [];
     const processedIds = new Set<string>();
 
-    // Process assessments in batches to avoid overwhelming the API
     const assessmentArray = Array.from(allAssessments.values());
     const pastCount = assessmentArray.filter(a => !a.isUpcoming).length;
     const upcomingCount = assessmentArray.filter(a => a.isUpcoming).length;
     verboseDebug(`[Assignments job] Processing ${assessmentArray.length} total assessments (${upcomingCount} upcoming, ${pastCount} past)`);
-    const batchSize = 15; // Increased batch size for better performance
+    const batchSize = 15;
     
-    // Skip fetching assessment details - the API endpoint doesn't exist or returns 404
-    // Details are optional and not critical for search functionality
+    // The assessment details endpoint 404s, so details aren't fetched.
     
-    // Process ALL assessments (both upcoming and past) to ensure everything is indexed
     for (let i = 0; i < assessmentArray.length; i += batchSize) {
       const batch = assessmentArray.slice(i, i + batchSize);
       
@@ -237,27 +212,21 @@ export const assignmentsJob: Job = {
         batch.map(async (assessment) => {
           const id = `assignment-${assessment.id}`;
           
-          // Skip if already processed in this batch
           if (processedIds.has(id)) {
             return null;
           }
           
           processedIds.add(id);
           
-          // Process ALL assessments (both new and existing, upcoming and past)
-          // This ensures all historical assignments are indexed and metadata is up-to-date
 
-          // Skip fetching details - API endpoint doesn't exist
           const description = "";
 
           const subjectName = assessment.subject || assessment.code || "Unknown Subject";
           const dueDate = assessment.due ? new Date(assessment.due).getTime() : null;
           
-          // Prioritize capital ID fields (programmeID, metaclassID) as that's what the API returns
           const programmeId = assessment.programmeID || assessment.programme;
           const metaclassId = assessment.metaclassID || assessment.metaclass;
           
-          // Validate that we have the required IDs for navigation
           if (!programmeId || !metaclassId || !assessment.id) {
             console.warn(`[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`, {
               programmeId,
@@ -272,7 +241,6 @@ export const assignmentsJob: Job = {
             return null;
           }
           
-          // Convert to numbers, preserving 0 as valid
           let finalProgrammeId: number | undefined;
           let finalMetaclassId: number | undefined;
           
@@ -286,7 +254,6 @@ export const assignmentsJob: Job = {
             finalMetaclassId = isNaN(num) ? undefined : num;
           }
           
-          // Final validation - check for actual numbers (including 0)
           if (finalProgrammeId === undefined || finalMetaclassId === undefined || !assessment.id) {
             console.error(`[Assignments job] ❌ Skipping assignment ${assessment.id} - invalid IDs after conversion:`, {
               programmeId: finalProgrammeId,
@@ -338,16 +305,14 @@ export const assignmentsJob: Job = {
         })
       );
       
-      // Filter out nulls and add to items
       batchItems.forEach(item => {
         if (item) {
           items.push(item);
         }
       });
       
-      // Small delay between batches to avoid rate limiting
       if (i + batchSize < assessmentArray.length) {
-        await delay(50); // Reduced delay
+        await delay(50);
       }
     }
 
@@ -358,10 +323,8 @@ export const assignmentsJob: Job = {
   },
 
   purge: (items) => {
-    // Keep ALL assignments - don't purge old ones as users may want to search for them
-    // Only remove items that are truly invalid (missing required metadata)
+    // Old assignments stay searchable; only items missing required metadata are dropped.
     return items.filter((i) => {
-      // Keep all items that have valid metadata
       return i.metadata && 
              i.metadata.assessmentId && 
              i.metadata.programmeId !== undefined && 

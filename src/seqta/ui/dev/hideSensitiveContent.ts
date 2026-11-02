@@ -856,7 +856,6 @@ export default function hideSensitiveContent() {
       mutations.forEach((mutation) => {
         // Check for both childList and subtree changes
         if (mutation.type === 'childList') {
-          // Check added nodes
           if (mutation.addedNodes.length > 0) {
             mutation.addedNodes.forEach((node) => {
               if (node.nodeType === Node.ELEMENT_NODE) {

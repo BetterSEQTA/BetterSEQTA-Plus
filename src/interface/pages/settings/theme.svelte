@@ -8,7 +8,6 @@
     section?: "all" | "themes" | "backgrounds";
   }>();
   
-  // backgrounds
   let selectedBackground = $state<string | null>(null);
   let selectNoBackground = $state<() => void>(() => { });
     

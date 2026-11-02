@@ -1,7 +1,7 @@
 import { defaultClientConditions, defineConfig, loadEnv } from "vite";
 import { join, resolve } from "node:path";
 
-import touchGlobalCSSPlugin from "./lib/touchGlobalCSS.ts";
+
 import InlineWorkerPlugin from "./lib/inlineWorker.ts";
 import { base64Loader } from "./lib/base64loader.ts";
 import type { BuildTarget, Manifest } from "./lib/types.ts";
@@ -54,8 +54,7 @@ function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
   };
 }
 
-const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
-//const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
+const mode = process.env.MODE || "chrome";
 const repoRoot = import.meta.dirname;
 
 export default defineConfig(({ command, mode: viteMode }) => {
@@ -95,7 +94,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
     }),
     fixCrxWorkerLiveReload(),
     stabilizeCrxDevHmr(),
-    touchGlobalCSSPlugin(),
     ...(command === "build" ? [firefoxStripFunctionProbe()] : []),
   ],
   root: resolve(repoRoot, "./src"),
@@ -144,7 +142,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
     outDir: resolve(repoRoot, "dist", mode),
     emptyOutDir: true,
     minify: true,
-    //sourcemap: sourcemap,
     chunkSizeWarningLimit: 4000,
     rollupOptions: {
       input: {

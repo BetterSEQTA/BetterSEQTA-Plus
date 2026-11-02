@@ -14,7 +14,6 @@
     onCategoriesChange: (categories: string[]) => void;
   }>();
 
-  // Existing states
   let backgrounds = $state<Background[]>([]);
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
@@ -22,11 +21,9 @@
   let savedBackgrounds = $state<string[]>([]);
   let installingBackgrounds = $state<Set<string>>(new Set());
   let debugInfo = $state<string>('');
-  // New state variables
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
 
-  // Existing functions
   const loadStore = async () => {
     try {
       debugInfo = 'Fetching backgrounds...';
@@ -60,10 +57,8 @@
     }
   }
 
-  // Load data on mount
   loadStore();
 
-  // Derived states
   let filteredBackgrounds = $derived((() => {
     let filtered = backgrounds;
     
@@ -74,7 +69,6 @@
       );
     }
 
-    // Apply category filtering
     filtered = filtered.filter((bg: Background) => {
       return selectedCategory === 'All' 
         ? true 
@@ -83,7 +77,6 @@
           : bg.category === selectedCategory;
     });
 
-    // Apply sorting
     filtered.sort((a: Background, b: Background) => {
       switch (sortBy) {
         case 'name':
@@ -101,7 +94,6 @@
   })());
 
   let categories = $derived([...new Set(backgrounds.map(bg => bg.category))]);
-  // Background management functions
   async function saveBackgroundFromUrl(url: string, id: string, fileType: string): Promise<void> {
     try {
       if (!isIndexedDBSupported()) {

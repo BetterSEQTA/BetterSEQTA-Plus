@@ -342,11 +342,9 @@ export class VectorWorkerManager {
       return;
     }
 
-    // Wait until the worker reports a terminal status. Previously this method
-    // returned as soon as the job was queued, so indexers.ts continued into
-    // stopHeartbeat/loadAll/loadDynamicItems on the main thread while
-    // vectorization was still running — blocking indexing-progress handlers
-    // and freezing the chip on “Vectorization in progress”.
+    // Wait for the worker to finish, not just queue the job, so indexer.ts
+    // doesn't move on while vectorisation is still running and leave the
+    // progress chip stuck on "Vectorization in progress".
     this.vectorizationLockCount++;
     this.clearIdleTimer();
     this.clearUnloadTimer();

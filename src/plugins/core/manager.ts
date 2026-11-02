@@ -153,7 +153,6 @@ export class PluginManager {
       const api = createPluginAPI(plugin);
       this.apiDisposers.set(pluginId, api.dispose);
 
-      // Inject plugin styles if provided
       if (plugin.styles) {
         const styleElement = document.createElement("style");
         styleElement.textContent = plugin.styles;
@@ -183,7 +182,6 @@ export class PluginManager {
       this.runningPlugins.set(pluginId, true);
       verboseInfo(`Plugin "${pluginId}" started successfully`);
 
-      // Process any backlogged events
       await this.processBackloggedEvents(pluginId);
     } catch (error) {
       this.removePluginStyles(pluginId);
@@ -332,7 +330,6 @@ export class PluginManager {
             // For button or component, keep the functions
             result = { ...settingObj };
           } else {
-            // For others, strip functions
             result = Object.fromEntries(
               Object.entries(settingObj).filter(
                 ([_, value]) => typeof value !== "function",

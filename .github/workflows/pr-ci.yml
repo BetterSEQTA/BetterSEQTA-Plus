@@ -8,7 +8,7 @@ on:
 
 jobs:
   lint:
-    # windows-latest: Vite/Svelte build fails on Linux CI for layerchart vendor .svelte (see nightly.yml).
+    # The layerchart Svelte build fails on Linux, so CI runs on Windows.
     runs-on: windows-latest
     defaults:
       run:
