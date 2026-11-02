@@ -5,7 +5,6 @@ import contentShadowStyle from "./contentShadow.css?inline";
 
 const shadowStyles = {
   // Registered properties are document-wide, including inside shadow roots.
-  // Keep our gradient variables separate from a host page's own Tailwind registrations.
   settings: settingsStyle.replaceAll("--tw-gradient", "--bs-gradient"),
   content: contentShadowStyle.replaceAll("--tw-gradient", "--bs-gradient"),
 } as const;

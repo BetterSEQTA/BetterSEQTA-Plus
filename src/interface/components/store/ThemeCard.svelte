@@ -119,7 +119,7 @@
     <button
       type="button"
       data-theme-favorite
-      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scAle-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
       onclick={handleFavoriteClick}
       aria-label={isLoggedIn
         ? theme.is_favorited

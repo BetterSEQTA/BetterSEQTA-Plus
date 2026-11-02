@@ -66,9 +66,9 @@ Don't worry- if you get stuck feel free to ask around in the [discord](https://d
 ```bash
 git clone https://github.com/YOUR_USERNAME_FORKED_WITH/BetterSEQTA-Plus
 cd BetterSEQTA-Plus
-npm install --legacy-peer-deps
+npm install
 npm run dev
-````
+```
 
 Then load `dist` in `chrome://extensions` (Developer Mode → Load unpacked).
 

@@ -1,4 +1,3 @@
-/* Shared Tailwind setup for every stylesheet that uses utilities. */
 @import "tailwindcss" source("../");
 
 @plugin "@tailwindcss/forms";
@@ -35,7 +34,6 @@
 }
 
 @layer base {
-  /* Tailwind 4 defaults borders to `currentcolor`; keep the v3 look. */
   *,
   ::after,
   ::before,

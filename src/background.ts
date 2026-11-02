@@ -26,7 +26,7 @@ import {
   refreshRemoteConfig,
 } from "./background/remoteConfig";
 import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
-import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackground";
+import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
@@ -769,11 +769,17 @@ async function resetThemeOfTheMonthDismissalFor370Upgrade(
   }
 }
 
+async function disableAnimatedBackground(): Promise<void> {
+  const key = "plugin.animated-background.settings";
+  const stored = await browser.storage.local.get(key);
+  await browser.storage.local.set({ [key]: { ...(stored[key] as object), enabled: false } });
+}
+
 browser.runtime.onInstalled.addListener(function (event) {
   browser.storage.local.remove(["justupdated"]);
   browser.storage.local.remove(["data"]);
 
-  void ensureSyncableStorageDefaults();
+  const defaultsReady = ensureSyncableStorageDefaults();
 
   if (event.reason == "install" || event.reason == "update") {
     browser.storage.local.set({ justupdated: true });
@@ -792,6 +798,7 @@ browser.runtime.onInstalled.addListener(function (event) {
   if (event.reason === "install") {
     void refreshRemoteConfig(apiBase);
     void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
+    void defaultsReady.catch(() => undefined).then(disableAnimatedBackground);
   }
 });
 

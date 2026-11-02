@@ -3,10 +3,8 @@
  */
 import browser from "webextension-polyfill";
 import { writeData } from "@/interface/hooks/BackgroundDataLoader";
-import {
-  applyDefaultBackgroundOnce,
-  DEFAULT_BACKGROUND_PENDING_KEY,
-} from "./defaultBackground";
+import { applyDefaultBackgroundOnce } from "./defaultBackground";
+import { DEFAULT_BACKGROUND_PENDING_KEY } from "./defaultBackgroundKey";
 
 jest.mock("@/resources/backgrounds/default-background.webp", () => "default-background.webp", {
   virtual: true,

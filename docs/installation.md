@@ -8,7 +8,7 @@ This guide will walk you through the process of installing and setting up Better
 
 Before you begin, make sure you have the following installed:
 
-- [npm](https://www.npmjs.com/) (v7 or higher) or [Bun](https://bun.sh/) (recommended)
+- [Node.js](https://nodejs.org/) v22.12 or higher
 - A modern web browser (Chrome, Firefox, Edge, etc.)
 
 ## Installation Methods
@@ -43,22 +43,14 @@ If you want to develop for BetterSEQTA+ or modify the code, follow these steps:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/SeqtaLearning/betterseqta-plus.git
-cd betterseqta-plus
+git clone https://github.com/BetterSEQTA/BetterSEQTA-Plus.git
+cd BetterSEQTA-Plus
 ```
 
 ### 2. Install Dependencies
 
-Using npm:
-
 ```bash
 npm install
-```
-
-Using Bun (recommended):
-
-```bash
-bun install
 ```
 
 ### 3. Set Up Environment Variables - Only required for pushing to extension stores from the command line
@@ -73,16 +65,8 @@ Edit the `.env` file with your SEQTA credentials and settings.
 
 ### 4. Start the Development Server
 
-Using npm:
-
 ```bash
 npm run dev
-```
-
-Using Bun:
-
-```bash
-bun run dev
 ```
 
 This will start a development server and build the extension in watch mode.
@@ -93,7 +77,7 @@ This will start a development server and build the extension in watch mode.
 
 1. Open Chrome/Edge and navigate to `chrome://extensions` or `edge://extensions`
 2. Enable "Developer mode" using the toggle in the top right
-3. Click "Load unpacked" and select the `dist` folder in your BetterSEQTA+ directory
+3. Click "Load unpacked" and select the `dist/chrome` folder in your BetterSEQTA+ directory
 4. The extension should now appear in your extensions list
 
 #### Firefox
@@ -122,13 +106,6 @@ If you see errors about missing modules, try:
 ```bash
 rm -rf node_modules
 npm install
-```
-
-Or with Bun:
-
-```bash
-rm -rf node_modules
-bun install
 ```
 
 #### Extension not appearing in SEQTA
@@ -166,14 +143,6 @@ If you're working on the code, pull the latest changes and reinstall dependencie
 git pull
 npm install
 npm run dev
-```
-
-Or with Bun:
-
-```bash
-git pull
-bun install
-bun run dev
 ```
 
 ## Next Steps

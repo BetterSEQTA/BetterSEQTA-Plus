@@ -17,7 +17,7 @@ Welcome to BetterSEQTA+! 🎉 This guide will walk you through making your first
 ## Before You Start
 
 ### What You'll Need
-- **Node.js** (v16 or higher) - [Download here](https://nodejs.org/)
+- **Node.js** (v22.12 or higher) - [Download here](https://nodejs.org/)
 - **Git** - [Download here](https://git-scm.com/)
 - **A code editor** - We recommend [VS Code](https://code.visualstudio.com/)
 - **A Chromium browser** (Chrome, Edge, Brave) for testing (recommended, however you can use firefox although it requires being built every time you make a change)

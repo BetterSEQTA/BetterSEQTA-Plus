@@ -37,7 +37,6 @@ const animatedBackgroundPlugin: Plugin<typeof settings> = {
   description: "Adds an animated background to BetterSEQTA+",
   version: "1.0.0",
   disableToggle: true,
-  defaultEnabled: false,
   styles: styles,
   settings: instance.settings,
 

@@ -1,5 +1,4 @@
 import type { SettingsState } from "@/types/storage";
-import { DEFAULT_FONT_ID } from "@/seqta/ui/fonts/presets";
 
 function detectLowEndDevice(): boolean {
   const lowCoreCount =
@@ -18,7 +17,7 @@ export function getDefaultSettingsState(): SettingsState {
   return {
     onoff: true,
     settingsPopupExpanded: false,
-    animatedbk: false,
+    animatedbk: true,
     bksliderinput: "50",
     transparencyEffects: true,
     lessonalert: true,
@@ -80,7 +79,7 @@ export function getDefaultSettingsState(): SettingsState {
     themeOfTheMonthDisabled: false,
     autoCloudSettingsSync: true,
     showTitlebarFounderBadge: true,
-    selectedFont: DEFAULT_FONT_ID,
+    selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,
     bsCloudAutoSyncAnnouncementShown: false,
