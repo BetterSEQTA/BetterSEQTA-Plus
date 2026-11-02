@@ -162,7 +162,9 @@ async function loadEngageSubmissions(studentId: number, assessments: OverviewAss
   return submissionMap;
 }
 
-async function loadEngageAssessmentsForStudent(child: EngageChildPayload): Promise<OverviewAssessment[]> {
+async function loadEngageAssessmentsForStudent(
+  child: EngageChildPayload,
+): Promise<OverviewAssessment[]> {
   const studentId = Number(child.id);
   const studentName = child.name ?? "Student";
   const subjects = subjectsFromChild(child);

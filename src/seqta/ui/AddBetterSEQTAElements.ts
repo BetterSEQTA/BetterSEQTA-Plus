@@ -135,10 +135,7 @@ async function handleUserInfoAndStudentData() {
 
     updateUserInfo(userInfo);
     ensureTitlebarFounderBadgeMounted();
-    await updateStudentInfo(
-      (await studentResponse.json()).payload as StudentPerson[],
-      userInfo,
-    );
+    await updateStudentInfo((await studentResponse.json()).payload as StudentPerson[], userInfo);
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to handle user info and student data:", error);
   }

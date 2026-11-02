@@ -603,7 +603,8 @@ async function CreateUpcomingSection(
 
   for (let i = 0; i < assessments.length; i++) {
     const subject = colours.find(
-      (element: SeqtaColourPref) => element.name === `timetable.subject.colour.${assessments[i].code}`,
+      (element: SeqtaColourPref) =>
+        element.name === `timetable.subject.colour.${assessments[i].code}`,
     );
     if (!subject) {
       assessments[i].colour = "--item-colour: #8e8e8e;";
@@ -639,12 +640,7 @@ async function CreateUpcomingSection(
   for (const date in upcomingDates) {
     const assessmentdue = new Date(upcomingDates[date].assessments[0].due);
     const specialcase = CheckSpecialDay(Today, assessmentdue);
-    const assessmentDate = createAssessmentDateDiv(
-      date,
-      upcomingDates[date],
-      student,
-      specialcase,
-    );
+    const assessmentDate = createAssessmentDateDiv(date, upcomingDates[date], student, specialcase);
 
     if (specialcase === "Yesterday") {
       upcomingitemcontainer!.insertBefore(assessmentDate, upcomingitemcontainer!.firstChild);

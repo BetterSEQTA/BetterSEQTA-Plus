@@ -501,11 +501,7 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     return await response.arrayBuffer();
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
-    if (
-      message.includes("blob") ||
-      message.includes("Security") ||
-      message.includes("CSP")
-    ) {
+    if (message.includes("blob") || message.includes("Security") || message.includes("CSP")) {
       return await fetchPDFAsArrayBuffer(url);
     }
     throw error;
@@ -870,7 +866,10 @@ export async function parseAssessments(api: AssessmentsAverageApi) {
   await Promise.all(marks.map((mark: AssessmentMark) => handleWeightings(mark, api)));
 }
 
-export async function processAssessments(api: AssessmentsAverageApi, assessmentItems: HTMLElement[]) {
+export async function processAssessments(
+  api: AssessmentsAverageApi,
+  assessmentItems: HTMLElement[],
+) {
   let weightedTotal = 0;
   let totalWeight = 0;
   let hasInaccurateWeighting = false;
@@ -1009,7 +1008,9 @@ interface WeightingTabContext {
   statusNote: string;
 }
 
-async function resolveWeightingTabContext(api: AssessmentsAverageApi): Promise<WeightingTabContext> {
+async function resolveWeightingTabContext(
+  api: AssessmentsAverageApi,
+): Promise<WeightingTabContext> {
   const selectedItem = document.querySelector(
     "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
   ) as HTMLElement | null;

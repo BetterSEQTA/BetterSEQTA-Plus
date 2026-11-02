@@ -535,7 +535,10 @@ export function installPassiveObserver(): void {
       }
       return originalOpen.apply(this, [method, url, ...rest] as Parameters<typeof originalOpen>);
     };
-    ProtoXhr.send = function patchedSend(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
+    ProtoXhr.send = function patchedSend(
+      this: XMLHttpRequest,
+      body?: Document | XMLHttpRequestBodyInit | null,
+    ) {
       try {
         const url = asXhrWithBsplusMeta(this).__bsplusUrl;
         if (url && isSameOriginSeqtaUrl(url)) {

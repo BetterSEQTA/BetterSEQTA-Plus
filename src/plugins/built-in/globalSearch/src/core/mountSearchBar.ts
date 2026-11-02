@@ -273,9 +273,9 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
 
   const clickHandler = () => {
     warmUpVectorSearchOnInteraction();
-    (window as Window & { setCommandPalleteOpen?: (open: boolean) => void }).setCommandPalleteOpen?.(
-      true,
-    );
+    (
+      window as Window & { setCommandPalleteOpen?: (open: boolean) => void }
+    ).setCommandPalleteOpen?.(true);
   };
   searchButton.addEventListener("click", clickHandler);
   appRef.clickHandler = clickHandler;

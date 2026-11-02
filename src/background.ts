@@ -256,7 +256,10 @@ async function parseJsonResponse(r: Response): Promise<unknown> {
   }
 }
 
-function handleCloudReserveClient(request: BackgroundRequest, sendResponse: MessageSender): boolean {
+function handleCloudReserveClient(
+  request: BackgroundRequest,
+  sendResponse: MessageSender,
+): boolean {
   const redirect_uri =
     request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
   fetch("https://accounts.betterseqta.org/api/bsplus/client/reserve", {
@@ -662,7 +665,10 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   },
 };
 
-registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS as CalendarMessageHandlerMap, isTrustedSender);
+registerGoogleCalendarMessageHandlers(
+  MESSAGE_HANDLERS as CalendarMessageHandlerMap,
+  isTrustedSender,
+);
 registerOutlookCalendarMessageHandlers(
   MESSAGE_HANDLERS as CalendarMessageHandlerMap,
   isTrustedSender,
@@ -670,7 +676,11 @@ registerOutlookCalendarMessageHandlers(
 initCalendarBackground();
 
 browser.runtime.onMessage.addListener(
-  (request: BackgroundRequest, sender: chrome.runtime.MessageSender, sendResponse: MessageSender) => {
+  (
+    request: BackgroundRequest,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: MessageSender,
+  ) => {
     const handler = MESSAGE_HANDLERS[request.type as string];
     if (handler) {
       const result = handler(request, sendResponse, sender);

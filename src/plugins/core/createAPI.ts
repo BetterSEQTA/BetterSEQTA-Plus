@@ -91,7 +91,9 @@ function createSettingsAPI<T extends PluginSettings>(
   const loaded = (async () => {
     try {
       const allSettings = settingsState.getAll() as unknown as Record<string, unknown>;
-      const storedSettings = allSettings[storageKey] as Partial<Record<keyof T, SettingValue<T[keyof T]>>>;
+      const storedSettings = allSettings[storageKey] as Partial<
+        Record<keyof T, SettingValue<T[keyof T]>>
+      >;
       if (storedSettings) {
         for (const key in storedSettings) {
           if (key in settingsWithMeta) {
@@ -282,9 +284,10 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
-export function createPluginAPI<T extends PluginSettings, S extends Record<string, unknown> = Record<string, unknown>>(
-  plugin: Plugin<T, S>,
-): PluginAPI<T, S> {
+export function createPluginAPI<
+  T extends PluginSettings,
+  S extends Record<string, unknown> = Record<string, unknown>,
+>(plugin: Plugin<T, S>): PluginAPI<T, S> {
   const { settings, dispose: disposeSettings } = createSettingsAPI(plugin);
   const { storage, dispose: disposeStorage } = createStorageAPI<S>(plugin.id);
 

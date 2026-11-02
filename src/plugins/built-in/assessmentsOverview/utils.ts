@@ -194,9 +194,7 @@ function readNumber(value: unknown): number | null {
   return Number.isNaN(n) ? null : n;
 }
 
-function readNestedRecord(
-  value: unknown,
-): Record<string, unknown> | undefined {
+function readNestedRecord(value: unknown): Record<string, unknown> | undefined {
   return value && typeof value === "object" ? (value as Record<string, unknown>) : undefined;
 }
 
@@ -263,9 +261,9 @@ export function extractAssessmentLetterGrade(assessment: OverviewAssessment): st
   if (assessment?.grade != null && String(assessment.grade).trim() !== "") {
     return String(assessment.grade).trim();
   }
-  return extractLetterGradeStringFromPayload(assessment as Parameters<
-    typeof extractLetterGradeStringFromPayload
-  >[0]);
+  return extractLetterGradeStringFromPayload(
+    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
+  );
 }
 
 export function percentageToLetterGrade(percentage: number): string {

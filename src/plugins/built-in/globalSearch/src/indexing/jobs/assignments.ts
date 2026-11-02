@@ -37,9 +37,7 @@ const fetchSubjects = async () => {
     return (
       payload
         ?.filter((s) => s.active === 1)
-        ?.flatMap((s) =>
-          Array.isArray(s.subjects) ? (s.subjects as OverviewSubject[]) : [],
-        ) ?? []
+        ?.flatMap((s) => (Array.isArray(s.subjects) ? (s.subjects as OverviewSubject[]) : [])) ?? []
     );
   } catch (e) {
     console.error("[Assignments job] Failed to fetch subjects:", e);
@@ -116,19 +114,16 @@ function buildAssignmentIndexItem(
   const metaclassId = assessment.metaclassID || assessment.metaclass;
 
   if (!programmeId || !metaclassId || !assessment.id) {
-    console.warn(
-      `[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`,
-      {
-        programmeId,
-        metaclassId,
-        assessmentId: assessment.id,
-        programmeID: assessment.programmeID,
-        metaclassID: assessment.metaclassID,
-        programme: assessment.programme,
-        metaclass: assessment.metaclass,
-        assessment,
-      },
-    );
+    console.warn(`[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`, {
+      programmeId,
+      metaclassId,
+      assessmentId: assessment.id,
+      programmeID: assessment.programmeID,
+      metaclassID: assessment.metaclassID,
+      programme: assessment.programme,
+      metaclass: assessment.metaclass,
+      assessment,
+    });
     return null;
   }
 
@@ -157,8 +152,7 @@ function buildAssignmentIndexItem(
     id,
     text: String(assessment.title || assessment.name || "Untitled Assignment"),
     category: "assignments",
-    content:
-      `\nSubject: ${subjectName}\nDue: ${assessment.due || "No due date"}`.trim(),
+    content: `\nSubject: ${subjectName}\nDue: ${assessment.due || "No due date"}`.trim(),
     dateAdded: dueDate || Date.now(),
     metadata: {
       assessmentId: assessment.id,

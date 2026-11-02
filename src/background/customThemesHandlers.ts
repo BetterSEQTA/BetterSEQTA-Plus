@@ -95,7 +95,10 @@ export function createCustomThemesHandlers(deps: {
     return await readCustomThemesResponse(r);
   }
 
-  function handleFetchCustomThemes(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleFetchCustomThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();
@@ -121,7 +124,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchMyCustomThemes(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleFetchMyCustomThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();
@@ -142,7 +148,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchMyCustomThemeDetail(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleFetchMyCustomThemeDetail(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -168,7 +177,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleSubmitCustomTheme(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleSubmitCustomTheme(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const payload = request.payload as UploadPayload | undefined;
     if (!payload?.themeZip && (!payload?.looseFiles || payload.looseFiles.length === 0)) {
       sendResponse({ success: false, error: "Missing upload files" });
@@ -189,7 +201,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleReplaceCustomThemeFiles(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleReplaceCustomThemeFiles(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId, payload: payloadRaw } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -220,7 +235,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleUpdateCustomThemeMetadata(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleUpdateCustomThemeMetadata(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId, body } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -250,7 +268,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleDeleteCustomTheme(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleDeleteCustomTheme(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     const { themeId } = request;
     if (!themeId || typeof themeId !== "string") {
       sendResponse({ success: false, error: "Missing themeId" });
@@ -290,7 +311,10 @@ export function createCustomThemesHandlers(deps: {
     return true;
   }
 
-  function handleFetchBsplusAdminThemes(request: Record<string, unknown>, sendResponse: MessageSender): boolean {
+  function handleFetchBsplusAdminThemes(
+    request: Record<string, unknown>,
+    sendResponse: MessageSender,
+  ): boolean {
     void (async () => {
       try {
         const params = new URLSearchParams();

@@ -70,7 +70,9 @@ function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetad
   metadata: AssessmentMetadata;
 } {
   try {
-    const itemClone = JSON.parse(JSON.stringify(item)) as IndexItem & { metadata: AssessmentMetadata };
+    const itemClone = JSON.parse(JSON.stringify(item)) as IndexItem & {
+      metadata: AssessmentMetadata;
+    };
     return { itemClone, metadata: itemClone.metadata || {} };
   } catch (e) {
     console.warn(
@@ -204,10 +206,7 @@ type PassiveRouteContext = {
   assessmentId?: number;
 };
 
-function readPassiveMetadataNumber(
-  md: Record<string, unknown>,
-  key: string,
-): number | undefined {
+function readPassiveMetadataNumber(md: Record<string, unknown>, key: string): number | undefined {
   const value = md[key];
   if (typeof value === "number" && Number.isFinite(value)) return value;
   if (typeof value === "string" && value && Number.isFinite(Number(value))) {
@@ -216,10 +215,7 @@ function readPassiveMetadataNumber(
   return undefined;
 }
 
-function readPassiveMetadataString(
-  md: Record<string, unknown>,
-  key: string,
-): string | undefined {
+function readPassiveMetadataString(md: Record<string, unknown>, key: string): string | undefined {
   const value = md[key];
   return typeof value === "string" && value ? value : undefined;
 }
@@ -248,8 +244,7 @@ function parsePassiveRouteContext(item: IndexItem): PassiveRouteContext {
     portalUuid: str("portalUuid") ?? str("uuid"),
     forumId: num("forumId") ?? num("forum"),
     year: num("year"),
-    assessmentId:
-      num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id"),
+    assessmentId: num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id"),
   };
 }
 
