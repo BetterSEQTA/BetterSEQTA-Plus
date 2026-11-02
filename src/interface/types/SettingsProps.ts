@@ -4,6 +4,6 @@ export interface SettingsList {
   title: string;
   id: number;
   description: string;
-  Component: Component<any>;
+  Component: Component<Record<string, unknown>>;
   props?: Record<string, unknown>;
 }

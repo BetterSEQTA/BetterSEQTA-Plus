@@ -27,7 +27,9 @@ interface AssessmentMetadata {
   author?: string;
 }
 
-type ActionHandler<T = any> = (item: IndexItem & { metadata: T }) => void;
+type ActionHandler<T extends Record<string, unknown> = Record<string, unknown>> = (
+  item: IndexItem & { metadata: T },
+) => void;
 
 /**
  * Navigate to a SEQTA SPA hash route in the most reliable way available.
@@ -63,7 +65,7 @@ function navigateInCurrentSeqtaApp(routeWithLeadingSlash: string): void {
  */
 const FALLBACK_ROUTE = "/dashboard";
 
-export const actionMap: Record<string, ActionHandler<any>> = {
+export const actionMap: Record<string, ActionHandler<Record<string, unknown>>> = {
   message: (async (item: IndexItem & { metadata: MessageMetadata }) => {
     window.location.hash = `#?page=/messages`;
 
@@ -91,7 +93,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     if (button) {
       (button as HTMLElement).click();
     }
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
     // Deep clone the entire item to avoid Firefox XrayWrapper issues
@@ -123,8 +125,8 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     // The metadata bag is intentionally typed loosely here because Firefox's
     // XrayWrapper occasionally surfaces extra/casing-variant keys we still
     // want to read defensively.
-    const getMetadataValue = (key: string, altKey?: string): any => {
-      const bag = metadata as unknown as Record<string, any>;
+    const getMetadataValue = (key: string, altKey?: string): unknown => {
+      const bag = metadata as Record<string, unknown>;
       try {
         const value = bag[key];
         if (value !== undefined && value !== null) {
@@ -240,19 +242,19 @@ export const actionMap: Record<string, ActionHandler<any>> = {
         }
       }
     }
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   subjectassessment: ((item: IndexItem) => {
     navigateToHashRoute(`/assessments/${item.metadata.programme}:${item.metadata.subjectId}`);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   subjectcourse: ((item: IndexItem) => {
     navigateToHashRoute(`/courses/${item.metadata.programme}:${item.metadata.subjectId}`);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   forum: ((item: IndexItem) => {
     navigateToHashRoute(`/forums/${item.metadata.forumId}`);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   course: ((item: IndexItem) => {
     const programme = item.metadata?.programme;
@@ -266,28 +268,28 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       return;
     }
     navigateToHashRoute(FALLBACK_ROUTE);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
-  notice: ((_item: IndexItem) => {
+  notice: (() => {
     // SEQTA's notices route doesn't honour `&date=` from the hash, so just
     // open the listing.
     navigateToHashRoute("/notices");
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
-  document: ((_item: IndexItem) => {
+  document: (() => {
     // We don't trigger downloads automatically: opening the documents page
     // gives users full SEQTA controls (preview, download, share) without
     // needing the JWT-stamped streaming URL we deliberately avoid storing.
     navigateToHashRoute("/documents");
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
-  folio: ((_item: IndexItem) => {
+  folio: (() => {
     // SEQTA's folio SPA does not expose a per-id route; the previous
     // `?page=/folios/read?id=N` shape contained a literal `?` inside the
     // `page` query value and was unmatchable, which sent users to the
     // dashboard. Always land on the read view and let the user pick.
     navigateToHashRoute("/folios/read");
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   portal: ((item: IndexItem) => {
     // SEQTA renders portals via the in-app viewer at `?page=/portals/<uuid>`
@@ -305,11 +307,11 @@ export const actionMap: Record<string, ActionHandler<any>> = {
       return;
     }
     navigateToHashRoute(FALLBACK_ROUTE);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
-  report: ((_item: IndexItem) => {
+  report: (() => {
     navigateToHashRoute("/reports");
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   goal: ((item: IndexItem) => {
     const year = item.metadata?.year;
@@ -318,7 +320,7 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     } else {
       navigateToHashRoute("/goals");
     }
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 
   /**
    * Routes for passively-captured items.
@@ -450,5 +452,5 @@ export const actionMap: Record<string, ActionHandler<any>> = {
     }
 
     navigateToHashRoute(FALLBACK_ROUTE);
-  }) as ActionHandler<any>,
+  }) as ActionHandler<Record<string, unknown>>,
 };

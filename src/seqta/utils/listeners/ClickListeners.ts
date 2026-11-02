@@ -15,9 +15,13 @@ const handleNotificationClick = async (target: HTMLElement) => {
   const buttonId = notificationItem.getAttribute("data-id");
   if (!buttonId) return;
 
-  const matchingNotification = notificationList.items.find(
-    (item: any) => item.notificationID === parseInt(buttonId),
-  );
+  type NotificationListItem = {
+    notificationID?: number;
+    message?: { messageID?: number };
+  };
+  const matchingNotification = (
+    notificationList.items as NotificationListItem[]
+  ).find((item) => item.notificationID === parseInt(buttonId, 10));
 
   if (!matchingNotification?.message?.messageID) return;
 

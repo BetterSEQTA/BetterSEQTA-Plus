@@ -39,7 +39,8 @@ async function getSubjectCode(programme: number, metaclass: number): Promise<str
       const subjects = semester?.subjects;
       if (!Array.isArray(subjects)) continue;
       const subject = subjects.find(
-        (s: any) => s && Number(s.programme) === programme && Number(s.metaclass) === metaclass,
+        (s: { programme?: unknown; metaclass?: unknown; code?: string }) =>
+          s && Number(s.programme) === programme && Number(s.metaclass) === metaclass,
       );
       if (subject?.code) return subject.code;
     }

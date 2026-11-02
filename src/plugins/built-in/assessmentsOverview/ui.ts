@@ -1,11 +1,12 @@
 import renderSvelte from "@/interface/main";
+import { getAssessmentsData } from "./api";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import AssessmentsOverview from "./AssessmentsOverview.svelte";
 import SkeletonLoader from "./SkeletonLoader.svelte";
 import ErrorState from "./ErrorState.svelte";
 import { unmount } from "svelte";
 
-let currentApp: any = null;
+let currentApp: ReturnType<typeof renderSvelte> | null = null;
 let themeObserver: MutationObserver | null = null;
 type ThemeSettingKey =
   | "selectedColor"
@@ -111,7 +112,10 @@ function prepareContainer(container: HTMLElement) {
   watchOverviewTheme(container);
 }
 
-export function renderGrid(container: HTMLElement, data: any) {
+export function renderGrid(
+  container: HTMLElement,
+  data: Awaited<ReturnType<typeof getAssessmentsData>>,
+) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
   currentApp = renderSvelte(AssessmentsOverview, container, { data });

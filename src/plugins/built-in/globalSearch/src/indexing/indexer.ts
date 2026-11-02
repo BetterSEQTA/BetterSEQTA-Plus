@@ -54,12 +54,12 @@ async function ensureSchemaCurrent(): Promise<void> {
 
 export { ensureSchemaCurrent };
 
-async function loadProgress<T = any>(jobId: string): Promise<T | undefined> {
+async function loadProgress<T = unknown>(jobId: string): Promise<T | undefined> {
   const rec = await get(META_STORE, `progress:${jobId}`);
   return rec?.progress as T | undefined;
 }
 
-async function saveProgress<T = any>(jobId: string, progress: T): Promise<void> {
+async function saveProgress<T = unknown>(jobId: string, progress: T): Promise<void> {
   await put(META_STORE, { progress }, `progress:${jobId}`);
 }
 

@@ -62,7 +62,7 @@ export async function closePopup() {
   }
 
   if (fullMotionEffectsEnabled()) {
-    await (motionAnimate as any)(
+    await motionAnimate(
       [popup, background],
       { opacity: [1, 0], scale: [1, 0.95] },
       { duration: 0.25, easing: [0.22, 0.03, 0.26, 1] },
@@ -177,7 +177,7 @@ export function openPopup({
 
   if (settingsState.animations) {
     if (fullMotionEffectsEnabled()) {
-      (motionAnimate as any)(
+      motionAnimate(
         [container, background],
         { scale: [0, 1] },
         { type: "spring", stiffness: 220, damping: 18 },
@@ -189,7 +189,7 @@ export function openPopup({
             ? document.querySelectorAll(animateSelector)
             : animateSelector;
 
-        (motionAnimate as any)(
+        motionAnimate(
           targets!,
           { opacity: [0, 1], y: [10, 0] },
           {

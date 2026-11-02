@@ -3,7 +3,12 @@ import type { IndexItem, Job } from "../types";
 import { verboseDebug } from "@/utils/verboseLog";
 import { delay } from "@/seqta/utils/delay";
 import { getUserInfo } from "@/seqta/utils/userInfo";
-const fetchJSON = async (url: string, body: any) => {
+import {
+  type OverviewAssessment,
+  type OverviewSubject,
+} from "@/plugins/built-in/assessmentsOverview/utils";
+
+const fetchJSON = async (url: string, body: Record<string, unknown>) => {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",
     credentials: "include",
@@ -28,15 +33,22 @@ const fetchUpcomingAssessments = async (student: number) => {
 const fetchSubjects = async () => {
   try {
     const res = await fetchJSON("/seqta/student/load/subjects?", {});
-    return res.payload?.filter((s: any) => s.active === 1)?.flatMap((s: any) => s.subjects) || [];
+    const payload = res.payload as Record<string, unknown>[] | undefined;
+    return (
+      payload
+        ?.filter((s) => s.active === 1)
+        ?.flatMap((s) =>
+          Array.isArray(s.subjects) ? (s.subjects as OverviewSubject[]) : [],
+        ) ?? []
+    );
   } catch (e) {
     console.error("[Assignments job] Failed to fetch subjects:", e);
     return [];
   }
 };
 
-const fetchPastAssessments = async (student: number, subjects: any[]) => {
-  const map: Record<number, any> = {};
+const fetchPastAssessments = async (student: number, subjects: OverviewSubject[]) => {
+  const map: Record<number, OverviewAssessment> = {};
 
   await Promise.all(
     subjects.map(async (subject) => {
@@ -48,15 +60,16 @@ const fetchPastAssessments = async (student: number, subjects: any[]) => {
         });
 
         // Past assessments can come back in payload.tasks, payload.pending, or both.
-        const processAssessment = (assessment: any) => {
-          if (assessment && assessment.id) {
-            map[assessment.id] = {
+        const processAssessment = (assessment: OverviewAssessment) => {
+          if (assessment && assessment.id != null) {
+            const id = Number(assessment.id);
+            map[id] = {
               ...assessment,
               programme: assessment.programme || assessment.programmeID || subject.programme,
               programmeID: assessment.programmeID || assessment.programme || subject.programme,
               metaclass: assessment.metaclass || assessment.metaclassID || subject.metaclass,
               metaclassID: assessment.metaclassID || assessment.metaclass || subject.metaclass,
-            };
+            } as OverviewAssessment;
           }
         };
 
@@ -137,15 +150,15 @@ export const assignmentsJob: Job = {
     verboseDebug(`[Assignments job] Fetched ${past.length} past assessments`);
 
     const subjectLookup = new Map<string, { programme: number; metaclass: number }>();
-    subjects.forEach((s: any) => {
+    subjects.forEach((s: OverviewSubject) => {
       if (s.code && s.programme && s.metaclass) {
         subjectLookup.set(s.code, { programme: s.programme, metaclass: s.metaclass });
       }
     });
 
-    const allAssessments = new Map<number, any>();
+    const allAssessments = new Map<number, OverviewAssessment>();
 
-    upcoming.forEach((a: any) => {
+    upcoming.forEach((a: OverviewAssessment) => {
       if (a && a.id) {
         let programme = a.programmeID || a.programme;
         let metaclass = a.metaclassID || a.metaclass;
@@ -169,7 +182,7 @@ export const assignmentsJob: Job = {
       }
     });
 
-    past.forEach((a: any) => {
+    past.forEach((a: OverviewAssessment) => {
       if (a && a.id) {
         let programme = a.programmeID || a.programme;
         let metaclass = a.metaclassID || a.metaclass;

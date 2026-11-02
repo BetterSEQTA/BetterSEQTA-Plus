@@ -1,7 +1,7 @@
 export function CreateElement(
   type: string,
-  class_?: any,
-  id?: any,
+  class_?: string,
+  id?: string,
   innerText?: string,
   innerHTML?: string,
   style?: string,

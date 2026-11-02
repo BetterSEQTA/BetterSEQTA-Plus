@@ -319,7 +319,7 @@ async function withObjectStore<T>(
   return result;
 }
 
-export async function getAll(store: string): Promise<any[]> {
+export async function getAll(store: string): Promise<unknown[]> {
   try {
     return await withObjectStore(store, "readonly", async (s) => idbRequest(s.getAll()));
   } catch (error) {
@@ -328,7 +328,7 @@ export async function getAll(store: string): Promise<any[]> {
   }
 }
 
-export async function get(store: string, key: string): Promise<any> {
+export async function get(store: string, key: string): Promise<unknown> {
   try {
     return await withObjectStore(store, "readonly", async (s) => idbRequest(s.get(key)));
   } catch (error) {
@@ -337,7 +337,7 @@ export async function get(store: string, key: string): Promise<any> {
   }
 }
 
-export async function put(store: string, value: any, key?: string): Promise<void> {
+export async function put(store: string, value: unknown, key?: string): Promise<void> {
   try {
     await withObjectStore(store, "readwrite", async (s) => {
       await idbRequest(key ? s.put(value, key) : s.put(value));
@@ -350,7 +350,7 @@ export async function put(store: string, value: any, key?: string): Promise<void
 
 export async function applyStoreDiff(
   store: string,
-  puts: Array<{ key: string; value: any }>,
+  puts: Array<{ key: string; value: unknown }>,
   removeKeys: string[],
 ): Promise<void> {
   if (puts.length === 0 && removeKeys.length === 0) return;
@@ -371,7 +371,7 @@ export async function applyStoreDiff(
 function runStoreDiffTransaction(
   db: IDBDatabase,
   store: string,
-  puts: Array<{ key: string; value: any }>,
+  puts: Array<{ key: string; value: unknown }>,
   removeKeys: string[],
 ): Promise<void> {
   return new Promise((resolve, reject) => {

@@ -56,7 +56,8 @@ const fetchNoticesForDate = async (date: string): Promise<NoticeRecord[]> => {
   );
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray((payload as any).notices)) return (payload as any).notices;
+  const wrapped = payload as { notices?: NoticeRecord[] };
+  if (Array.isArray(wrapped.notices)) return wrapped.notices;
   return [];
 };
 

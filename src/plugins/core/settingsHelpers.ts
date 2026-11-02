@@ -59,13 +59,13 @@ export function hotkeySetting(options: Omit<HotkeySetting, "type">): HotkeySetti
   };
 }
 
-export function defineSettings<TSettings extends Record<string, any>>(
+export function defineSettings<TSettings extends Record<string, import("./types").PluginSetting>>(
   settings: TSettings,
 ): TSettings {
   return settings;
 }
 
-export function Setting(settingDef: any): PropertyDecorator {
+export function Setting(settingDef: import("./types").PluginSetting): PropertyDecorator {
   return (target, propertyKey) => {
     const proto = target.constructor.prototype;
     if (!Object.hasOwn(proto, "settings")) {

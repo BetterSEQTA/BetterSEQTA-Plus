@@ -82,8 +82,8 @@ function storageChangeIsNoop(oldValue: unknown, newValue: unknown): boolean {
   return JSON.stringify(oldValue) === JSON.stringify(newValue);
 }
 
-type ChangeListener = (newValue: any, oldValue: any) => void;
-type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
+type ChangeListener = (newValue: unknown, oldValue: unknown) => void;
+type GlobalChangeListener = (newValue: unknown, oldValue: unknown, key: string) => void;
 
 class StorageManager {
   private static instance: StorageManager;
@@ -105,8 +105,8 @@ class StorageManager {
 
     const handler: ProxyHandler<StorageManager> = {
       get: (target, prop: keyof SettingsState | "register" | "initialize") => {
-        if (prop in target) {
-          return (target as any)[prop];
+        if (typeof prop === "string" && prop in target) {
+          return Reflect.get(target, prop);
         }
         if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
           return undefined;

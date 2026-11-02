@@ -1,4 +1,4 @@
-import type { IndexItem, Job } from "../types";
+import type { IndexItem, Job, JobContext } from "../types";
 import { htmlToPlainText } from "../utils";
 import { fetchMessageContent } from "./messages";
 import { delay } from "@/seqta/utils/delay";
@@ -40,6 +40,13 @@ interface AssessmentNotification {
 
 type Notification = MessageNotification | AssessmentNotification;
 
+type AssessmentTitleRef = { id?: number; title?: string };
+type AssessmentListPayload = {
+  syllabus?: { assessments?: AssessmentTitleRef[] }[];
+  pending?: AssessmentTitleRef[];
+  tasks?: AssessmentTitleRef[];
+};
+
 interface NotificationsProgress {
   lastTs: number;
   failedRequests: number;
@@ -67,17 +74,17 @@ const fetchAssessmentName = async (
   programmeId: number,
   retryCount = 0,
 ): Promise<string> => {
-  const searchAssessment = (data: any): string | null => {
+  const searchAssessment = (data: AssessmentListPayload): string | null => {
     for (const item of data.syllabus || []) {
-      const found = (item.assessments || []).find((a: any) => a.id === assessmentId);
-      if (found) return found.title;
+      const found = (item.assessments || []).find((a) => a.id === assessmentId);
+      if (found?.title) return found.title;
     }
 
-    const foundPending = (data.pending || []).find((a: any) => a.id === assessmentId);
-    if (foundPending) return foundPending.title;
+    const foundPending = (data.pending || []).find((a) => a.id === assessmentId);
+    if (foundPending?.title) return foundPending.title;
 
-    const foundTask = (data.tasks || []).find((a: any) => a.id === assessmentId);
-    if (foundTask) return foundTask.title;
+    const foundTask = (data.tasks || []).find((a) => a.id === assessmentId);
+    if (foundTask?.title) return foundTask.title;
 
     return null;
   };
@@ -125,8 +132,11 @@ const fetchAssessmentName = async (
     await delay(NOTIFICATIONS_RATE_LIMIT.baseDelay);
 
     const upcomingPayload = await fetchAssessments("/seqta/student/assessment/list/upcoming");
-    const foundUpcoming = (upcomingPayload || []).find((a: any) => a.id === assessmentId);
-    if (foundUpcoming) return foundUpcoming.title;
+    const upcomingList = Array.isArray(upcomingPayload)
+      ? (upcomingPayload as AssessmentTitleRef[])
+      : [];
+    const foundUpcoming = upcomingList.find((a) => a.id === assessmentId);
+    if (foundUpcoming?.title) return foundUpcoming.title;
 
     throw new Error(`Assessment with ID ${assessmentId} not found in past or upcoming.`);
   } catch (error) {
@@ -387,7 +397,7 @@ export const notificationsJob: Job = {
 
 async function processNotification(
   notif: Notification,
-  ctx: any,
+  ctx: JobContext,
 ): Promise<{ success: boolean; item?: IndexItem }> {
   const id = notif.notificationID.toString();
 

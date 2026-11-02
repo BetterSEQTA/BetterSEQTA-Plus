@@ -1,3 +1,4 @@
+import { getCkeditorGlobal } from "@/seqta/utils/ckeditorGlobal";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
@@ -590,11 +591,11 @@ export function tryLoad() {
     finishLoad();
   });
 
-  waitForElm("[data-key=welcome]").then((elm: any) => {
+  waitForElm("[data-key=welcome]").then((elm: Element) => {
     elm.classList.remove("active");
   });
 
-  waitForElm(".code", true, 50).then((elm: any) => {
+  waitForElm(".code", true, 50).then((elm: Element) => {
     if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
   });
 
@@ -820,7 +821,7 @@ export function init() {
             iframe.focus();
             return;
           }
-          const ckeditor = (window as any).CKEDITOR;
+          const ckeditor = getCkeditorGlobal();
           if (ckeditor?.instances?.editor1) {
             try {
               ckeditor.instances.editor1.focus();

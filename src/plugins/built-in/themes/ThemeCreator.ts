@@ -11,7 +11,7 @@ import {
   clearThemeCreatorLayout,
 } from "@/plugins/built-in/themes/themeCreatorLayout";
 
-let themeCreatorSvelteApp: any = null;
+let themeCreatorSvelteApp: Parameters<typeof unmount>[0] | null = null;
 let currentWidthPx = 400;
 
 /**

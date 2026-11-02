@@ -32,7 +32,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
           "[Global Search] Extension updated — search index reset; the next indexing pass will repopulate.",
         );
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       const msg = error?.message ?? "";
       if (
         msg.includes("preload CSS") ||

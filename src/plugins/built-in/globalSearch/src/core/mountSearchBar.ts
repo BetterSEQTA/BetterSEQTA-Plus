@@ -4,12 +4,17 @@ import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { transparencyEnabled } from "@/seqta/utils/performanceMode";
+import renderSvelte from "@/interface/main";
+import type { GlobalSearchApi } from "../../lazy";
 import browser from "@/lib/browser";
 
 type AppRef = {
-  current: any;
-  storageChangeHandler?: any;
-  progressHandler?: any;
+  current: ReturnType<typeof renderSvelte> | null;
+  storageChangeHandler?: (
+    changes: Record<string, browser.storage.StorageChange>,
+    area: string,
+  ) => void;
+  progressHandler?: ((event: Event) => void) | null;
   clearDoneFlashTimer?: () => void;
   clickHandler?: () => void;
   ownedTrigger?: boolean;
@@ -75,7 +80,7 @@ function triggerParts(searchWrapper: HTMLElement) {
   };
 }
 
-export async function mountSearchBar(titleElement: Element, api: any, appRef: AppRef) {
+export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi, appRef: AppRef) {
   const preRendered = await resolveTriggerWrapper(titleElement);
   if (preRendered?.dataset.bsplusSearchWired === "1") return;
 
@@ -246,7 +251,10 @@ export async function mountSearchBar(titleElement: Element, api: any, appRef: Ap
   }
   searchWrapper.dataset.bsplusSearchWired = "1";
 
-  const handleStorageChange = (changes: any, area: string) => {
+  const handleStorageChange = (
+    changes: Record<string, browser.storage.StorageChange>,
+    area: string,
+  ) => {
     if (area !== "local" || !changes["plugin.global-search.settings"]) return;
     const next = changes["plugin.global-search.settings"].newValue as
       | { searchHotkey?: string }
@@ -265,8 +273,9 @@ export async function mountSearchBar(titleElement: Element, api: any, appRef: Ap
 
   const clickHandler = () => {
     warmUpVectorSearchOnInteraction();
-    // @ts-ignore
-    window.setCommandPalleteOpen(true);
+    (window as Window & { setCommandPalleteOpen?: (open: boolean) => void }).setCommandPalleteOpen?.(
+      true,
+    );
   };
   searchButton.addEventListener("click", clickHandler);
   appRef.clickHandler = clickHandler;

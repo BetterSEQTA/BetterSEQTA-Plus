@@ -30,7 +30,10 @@ class ReactFiber {
     return event.source === window && event.origin === this.getTargetOrigin();
   }
 
-  private async sendMessage(action: string, payload: any = {}): Promise<any> {
+  private async sendMessage(
+    action: string,
+    payload: Record<string, unknown> = {},
+  ): Promise<unknown> {
     return new Promise((resolve, _) => {
       const messageId = this.messageIdCounter++;
       const message = {
@@ -60,7 +63,7 @@ class ReactFiber {
     });
   }
 
-  async getState(key?: string | string[]): Promise<any> {
+  async getState(key?: string | string[]): Promise<unknown> {
     return this.sendMessage("getState", {
       key,
     });
@@ -75,13 +78,13 @@ class ReactFiber {
     return this;
   }
 
-  async getProps(propName?: string): Promise<any> {
+  async getProps(propName?: string): Promise<unknown> {
     return this.sendMessage("getProp", {
       propName,
     });
   }
 
-  async setProp(propName: string, value: any): Promise<ReactFiber> {
+  async setProp(propName: string, value: unknown): Promise<ReactFiber> {
     await this.sendMessage("setProp", {
       propName,
       value,

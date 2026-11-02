@@ -7,10 +7,10 @@ export interface DynamicContentItem {
   category: string;
   content: string;
   dateAdded: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: Component<any>;
+  renderComponent?: Component<Record<string, unknown>>;
 }
 
 let dynamicItems: IndexItem[] = [];

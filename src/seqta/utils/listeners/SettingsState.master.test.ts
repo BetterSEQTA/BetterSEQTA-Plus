@@ -9,7 +9,7 @@ describe("master extension setting", () => {
     "persists %s and queued preferences before reloading SEQTA tabs",
     async (enabled) => {
       jest.useFakeTimers();
-      let browser: any;
+      let browser: typeof import("@/lib/browser").default;
       let settings: typeof import("./SettingsState");
       jest.isolateModules(() => {
         browser = require("@/lib/browser").default;

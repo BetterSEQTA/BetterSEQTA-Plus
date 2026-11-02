@@ -18,9 +18,9 @@ const LOGO_STYLE_ID = "bsplus-logo-style";
 let colorTransitionRafId: number | null = null;
 let lastInterpolatedHex: string | null = null;
 
-const setCSSVar = (varName: any, value: any) =>
+const setCSSVar = (varName: string, value: string) =>
   document.documentElement.style.setProperty(varName, value);
-const applyProperties = (props: any) =>
+const applyProperties = (props: Record<string, string>) =>
   Object.entries(props).forEach(([key, value]) => setCSSVar(key, value));
 
 function easeInOutCubic(t: number): number {

@@ -1,3 +1,4 @@
+import type { HomeTimetableLesson } from "@/seqta/utils/loaders/homePageTypes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -39,7 +40,7 @@ async function getCurrentLesson() {
       return null;
     }
 
-    const lessons = timetableData.payload.items.sort((a: any, b: any) =>
+    const lessons = (timetableData.payload.items as HomeTimetableLesson[]).sort((a, b) =>
       a.from.localeCompare(b.from),
     );
 
@@ -69,7 +70,7 @@ async function getCurrentLesson() {
   }
 }
 
-async function navigateToSpecificLesson(lesson: any) {
+async function navigateToSpecificLesson(lesson: HomeTimetableLesson) {
   try {
     await waitForElm(".course .navigator", true, 100, 100);
 

@@ -126,7 +126,15 @@ export function appendNoticeEmptyState(container: HTMLElement, message: string) 
   container.append(emptyState);
 }
 
-function createNoticeElement(notice: any, colour: string | undefined): Node {
+type NoticeRecord = {
+  title: string;
+  staff: string;
+  contents: string;
+  label_title?: string;
+  colour?: unknown;
+};
+
+function createNoticeElement(notice: NoticeRecord, colour: string | undefined): Node {
   const htmlContent = noticeCardHtml(notice, colour, noticePreview(notice.contents), {
     wrapperStyle:
       "position: relative; background: var(--background-primary); cursor: pointer; transition: all 0.3s ease; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); border: 1px solid rgba(255, 255, 255, 0.1);",
@@ -138,7 +146,7 @@ function createNoticeElement(notice: any, colour: string | undefined): Node {
 }
 
 export function openNoticeModal(
-  notice: any,
+  notice: NoticeRecord,
   colour: string | undefined,
   sourceElement: HTMLElement,
 ) {
@@ -294,7 +302,9 @@ export function renderNoticesIntoContainer(
   const fragment = document.createDocumentFragment();
   for (const notice of notices) {
     if (settingsState.mockNotices || noticeMatchesLabelFilter(notice, labelTokens)) {
-      fragment.appendChild(createNoticeElement(notice, processNoticeColor(notice.colour)));
+      fragment.appendChild(
+        createNoticeElement(notice as NoticeRecord, processNoticeColor(notice.colour)),
+      );
     }
   }
 

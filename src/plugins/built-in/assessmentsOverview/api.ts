@@ -2,6 +2,7 @@ import {
   activeSubjectsFromLearnPayload,
   assessmentBelongsToActiveSubjects,
   filterAssessmentsForActiveSubjects,
+  type OverviewAssessment,
   type OverviewSubject,
 } from "./utils";
 
@@ -16,10 +17,15 @@ import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { getEngageAssessmentsData } from "./engageApi";
 
-let cache: { time: number; engageAll?: boolean; studentId: number; data: any } | null = null;
+let cache: {
+  time: number;
+  engageAll?: boolean;
+  studentId: number;
+  data: Awaited<ReturnType<typeof getLearnAssessmentsData>>;
+} | null = null;
 const CACHE_MS = 10 * 60 * 1000;
 
-async function fetchJSON(url: string, body: any) {
+async function fetchJSON(url: string, body: Record<string, unknown>) {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",
     credentials: "include",
@@ -60,19 +66,22 @@ async function loadUpcoming(student: number) {
   return res.payload;
 }
 
-function normalizeAssessmentDates(t: any, subject: OverviewSubject): any {
+function normalizeAssessmentDates(
+  t: OverviewAssessment,
+  subject: OverviewSubject,
+): OverviewAssessment {
   const normalized = { ...t };
   if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
     normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
   }
   if (!normalized.programmeID) normalized.programmeID = subject.programme;
   if (!normalized.metaclassID) normalized.metaclassID = subject.metaclass;
-  if (!normalized.code && t.subject) normalized.code = t.subject;
+  if (!normalized.code && typeof t.subject === "string") normalized.code = t.subject;
   return normalized;
 }
 
 async function loadPast(student: number, subjects: OverviewSubject[]) {
-  const map: Record<number, any> = {};
+  const map: Record<number, OverviewAssessment> = {};
   await Promise.all(
     subjects.map(async (s) => {
       const res = await fetchJSON("/seqta/student/assessment/list/past?", {
@@ -80,7 +89,7 @@ async function loadPast(student: number, subjects: OverviewSubject[]) {
         metaclass: s.metaclass,
         student,
       });
-      const processAssessment = (t: any) => {
+      const processAssessment = (t: OverviewAssessment) => {
         if (t && t.id) {
           const merged = {
             ...t,
@@ -102,7 +111,7 @@ async function loadPast(student: number, subjects: OverviewSubject[]) {
   return map;
 }
 
-async function loadSubmissions(student: number, assessments: any[]) {
+async function loadSubmissions(student: number, assessments: OverviewAssessment[]) {
   const submissionMap: Record<number, boolean> = {};
 
   await Promise.all(
@@ -132,13 +141,13 @@ async function getLearnAssessmentsData(studentId: number) {
     loadUpcoming(studentId),
   ]);
   const pastMap = await loadPast(studentId, subjects);
-  const map: Record<number, any> = {};
-  upcoming.forEach((a: any) => {
+  const map: Record<number, OverviewAssessment> = {};
+  upcoming.forEach((a: OverviewAssessment) => {
     if (assessmentBelongsToActiveSubjects(a, subjects)) {
       map[a.id] = { ...a };
     }
   });
-  Object.values(pastMap).forEach((t: any) => {
+  Object.values(pastMap).forEach((t: OverviewAssessment) => {
     if (!assessmentBelongsToActiveSubjects(t, subjects)) return;
     if (map[t.id]) Object.assign(map[t.id], t);
     else map[t.id] = t;
@@ -147,7 +156,7 @@ async function getLearnAssessmentsData(studentId: number) {
   const allAssessments = filterAssessmentsForActiveSubjects(Object.values(map), subjects);
   const submissions = await loadSubmissions(studentId, allAssessments);
 
-  allAssessments.forEach((assessment: any) => {
+  allAssessments.forEach((assessment: OverviewAssessment) => {
     assessment.submitted = submissions[assessment.id] || false;
   });
 

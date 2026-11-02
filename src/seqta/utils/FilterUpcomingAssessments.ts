@@ -1,6 +1,6 @@
 import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 
-export function FilterUpcomingAssessments(subjectoptions: any) {
+export function FilterUpcomingAssessments(subjectoptions: Record<string, boolean>) {
   for (const item in subjectoptions) {
     const subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
@@ -44,7 +44,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
   }
 }
 
-function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
+function AddPlaceHolderToParent(parent: HTMLElement, numberofassessments: number) {
   const textcontainer = CreateElement("div", "upcoming-blank");
   const textblank = CreateElement("p", "upcoming-hiddenassessment");
   let s = "";

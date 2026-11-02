@@ -1,7 +1,8 @@
 import ShortcutLinks from "@/seqta/content/links.json";
 import stringToHTML from "../stringToHTML";
+import type { Shortcut } from "@/types/storage";
 
-export function addShortcuts(shortcuts: any) {
+export function addShortcuts(shortcuts: Shortcut[]) {
   for (let i = 0; i < shortcuts.length; i++) {
     const currentShortcut = shortcuts[i];
 
@@ -23,7 +24,7 @@ export function addShortcuts(shortcuts: any) {
   }
 }
 
-function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
+function createNewShortcut(link: string, icon: string, viewBox: string, title: string) {
   // Creates the stucture and element information for each seperate shortcut
   const container = document.getElementById("shortcuts");
   if (!container) return;

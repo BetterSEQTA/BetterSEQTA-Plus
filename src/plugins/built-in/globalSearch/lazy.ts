@@ -86,6 +86,7 @@ const globalSearchPlugin = defineLazyPlugin({
 });
 
 const runGlobalSearch = globalSearchPlugin.run!;
+export type GlobalSearchApi = Parameters<typeof runGlobalSearch>[0];
 
 globalSearchPlugin.run = async (api) => {
   if (isSeqtaEngageExperience() || isSeqtaLoginPage()) return () => {};

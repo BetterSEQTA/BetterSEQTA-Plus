@@ -135,12 +135,12 @@ export async function observeMenuItemPosition() {
       const node = element as HTMLElement;
 
       if (!isTopLevelSidebarItem(node)) return;
-      if ((element as any)[processedSymbol]) return;
+      if ((element as Element & Record<symbol, boolean>)[processedSymbol]) return;
 
       if (!isMenuOptionsOpen()) {
         processMenuItemNode(node);
         ChangeMenuItemPositions(settingsState.menuorder);
-        (element as any)[processedSymbol] = true;
+        (element as Element & Record<symbol, boolean>)[processedSymbol] = true;
       }
     },
   );

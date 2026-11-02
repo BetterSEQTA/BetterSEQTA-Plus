@@ -11,9 +11,9 @@ const shadowStyles = {
 export type ShadowStyleVariant = keyof typeof shadowStyles;
 
 export default function renderSvelte(
-  Component: Component<any>,
+  Component: Component<Record<string, unknown>>,
   mountPoint: ShadowRoot | HTMLElement,
-  props: Record<string, any> = {},
+  props: Record<string, unknown> = {},
   shadowStyle: ShadowStyleVariant = "settings",
 ) {
   if (mountPoint instanceof ShadowRoot || props.standalone === true) {

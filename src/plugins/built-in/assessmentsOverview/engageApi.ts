@@ -3,6 +3,7 @@ import {
   activeSubjectsFromEngageChild,
   assessmentBelongsToActiveSubjects,
   filterAssessmentsForActiveSubjects,
+  type OverviewAssessment,
   type OverviewSubject,
 } from "./utils";
 
@@ -87,19 +88,22 @@ async function loadEngageUpcoming(studentId: number) {
   return res.payload ?? [];
 }
 
-function normalizeAssessmentDates(t: any, subject: OverviewSubject): any {
+function normalizeAssessmentDates(
+  t: OverviewAssessment,
+  subject: OverviewSubject,
+): OverviewAssessment {
   const normalized = { ...t };
   if (!normalized.due && (t.date || t.dueDate || t.created || t.submittedDate)) {
     normalized.due = t.date || t.dueDate || t.created || t.submittedDate;
   }
   if (!normalized.programmeID) normalized.programmeID = subject.programme;
   if (!normalized.metaclassID) normalized.metaclassID = subject.metaclass;
-  if (!normalized.code && t.subject) normalized.code = t.subject;
+  if (!normalized.code && typeof t.subject === "string") normalized.code = t.subject;
   return normalized;
 }
 
 async function loadEngagePast(studentId: number, subjects: OverviewSubject[]) {
-  const map: Record<number, any> = {};
+  const map: Record<number, OverviewAssessment> = {};
 
   await Promise.all(
     subjects.map(async (subject) => {
@@ -109,7 +113,7 @@ async function loadEngagePast(studentId: number, subjects: OverviewSubject[]) {
         student: studentId,
       });
 
-      const processAssessment = (task: any) => {
+      const processAssessment = (task: OverviewAssessment) => {
         if (task?.id) {
           const merged = {
             ...task,
@@ -133,7 +137,7 @@ async function loadEngagePast(studentId: number, subjects: OverviewSubject[]) {
   return map;
 }
 
-async function loadEngageSubmissions(studentId: number, assessments: any[]) {
+async function loadEngageSubmissions(studentId: number, assessments: OverviewAssessment[]) {
   const submissionMap: Record<number, boolean> = {};
 
   await Promise.all(
@@ -158,7 +162,7 @@ async function loadEngageSubmissions(studentId: number, assessments: any[]) {
   return submissionMap;
 }
 
-async function loadEngageAssessmentsForStudent(child: EngageChildPayload): Promise<any[]> {
+async function loadEngageAssessmentsForStudent(child: EngageChildPayload): Promise<OverviewAssessment[]> {
   const studentId = Number(child.id);
   const studentName = child.name ?? "Student";
   const subjects = subjectsFromChild(child);
@@ -167,13 +171,13 @@ async function loadEngageAssessmentsForStudent(child: EngageChildPayload): Promi
     loadEngagePast(studentId, subjects),
   ]);
 
-  const map: Record<number, any> = {};
-  upcoming.forEach((assessment: any) => {
+  const map: Record<number, OverviewAssessment> = {};
+  upcoming.forEach((assessment: OverviewAssessment) => {
     if (assessmentBelongsToActiveSubjects(assessment, subjects)) {
       map[assessment.id] = { ...assessment };
     }
   });
-  Object.values(pastMap).forEach((task: any) => {
+  Object.values(pastMap).forEach((task: OverviewAssessment) => {
     if (!assessmentBelongsToActiveSubjects(task, subjects)) return;
     if (map[task.id]) Object.assign(map[task.id], task);
     else map[task.id] = task;

@@ -5,6 +5,7 @@ import type {
   HotkeySetting,
   NumberSetting,
   Plugin,
+  PluginSetting,
   PluginSettings,
   SelectSetting,
   StringSetting,
@@ -22,10 +23,10 @@ import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode"
 
 interface PluginSettingsStorage {
   enabled?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-interface StorageChange<T = any> {
+interface StorageChange<T = unknown> {
   oldValue?: T;
   newValue?: T;
 }
@@ -61,14 +62,14 @@ const PLUGIN_BOOT_ONLY_IDS = new Set(["error-page-kitten"]);
  */
 export class PluginManager {
   private static instance: PluginManager;
-  private plugins: Map<string, Plugin<any, any>> = new Map();
+  private plugins: Map<string, Plugin> = new Map();
   private runningPlugins: Map<string, boolean> = new Map();
   private startingPlugins: Map<string, Promise<void>> = new Map();
   private pendingStops: Map<string, symbol> = new Map();
-  private eventBacklog: Map<string, any[]> = new Map();
+  private eventBacklog: Map<string, unknown[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
   private apiDisposers: Map<string, () => void> = new Map();
-  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
+  private listeners: Map<string, Set<(...args: unknown[]) => void>> = new Map();
   private styleElements: Map<string, HTMLStyleElement> = new Map();
 
   /**
@@ -86,7 +87,7 @@ export class PluginManager {
     return PluginManager.instance;
   }
 
-  public dispatchPluginEvent(pluginId: string, event: string, args?: any) {
+  public dispatchPluginEvent(pluginId: string, event: string, args?: unknown) {
     const fullEventName = `plugin.${pluginId}.${event}`;
 
     // Dispatch plugin event if it's running otherwise queue it
@@ -159,7 +160,7 @@ export class PluginManager {
       }
 
       // Wait for both settings and storage to be loaded before starting the plugin
-      await Promise.all([(api.settings as any).loaded, api.storage.loaded]);
+      await Promise.all([api.settings.loaded, api.storage.loaded]);
 
       if (!this.shouldStartPlugin(plugin)) {
         this.removePluginStyles(pluginId);
@@ -312,21 +313,27 @@ export class PluginManager {
             trigger?: () => void | Promise<void>;
           })
         | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string })
-        | (Omit<ComponentSetting, "type"> & { type: "component"; id: string; component: any });
+        | (Omit<ComponentSetting, "type"> & {
+            type: "component";
+            id: string;
+            component: ComponentSetting["component"];
+          });
     };
     // Actual type is more complex, see original code, but this gives the gist for the JSDoc.
     // Array<{ pluginId: string; name: string; description: string; beta?: boolean; settings: Record<string, ProcessedSetting>; disableToggle?: boolean; }>
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {
       const settingsEntries = Object.entries(plugin.settings).map(([key, setting]) => {
-        const settingObj = setting as any;
-        let result: any;
+        const settingObj = setting as PluginSetting;
+        let result: Record<string, unknown>;
         if (settingObj.type === "button" || settingObj.type === "component") {
           // For button or component, keep the functions
-          result = { ...settingObj };
+          result = { ...(settingObj as Record<string, unknown>) };
         } else {
           result = Object.fromEntries(
-            Object.entries(settingObj).filter(([_, value]) => typeof value !== "function"),
+            Object.entries(settingObj as Record<string, unknown>).filter(
+              ([, value]) => typeof value !== "function",
+            ),
           );
         }
         result.id = key;
@@ -363,21 +370,21 @@ export class PluginManager {
     return this.runningPlugins.get(pluginId) || false;
   }
 
-  private emit(event: string, ...args: any[]): void {
+  private emit(event: string, ...args: unknown[]): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
       listeners.forEach((listener) => listener(...args));
     }
   }
 
-  public on(event: string, callback: (...args: any[]) => void): void {
+  public on(event: string, callback: (...args: unknown[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
   }
 
-  public off(event: string, callback: (...args: any[]) => void): void {
+  public off(event: string, callback: (...args: unknown[]) => void): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
       listeners.delete(callback);

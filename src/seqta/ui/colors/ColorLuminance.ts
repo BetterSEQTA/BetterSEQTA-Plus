@@ -1,6 +1,6 @@
 import Color from "color";
 
-function adjustLuminance(color: any, lum: any) {
+function adjustLuminance(color: string, lum: number) {
   let adjustedColor = Color(color.toLowerCase());
   const rgbObj = adjustedColor.rgb().object();
 
@@ -13,7 +13,7 @@ function adjustLuminance(color: any, lum: any) {
   return adjustedColor.string();
 }
 
-export default function ColorLuminance(color: any, lum = 0) {
+export default function ColorLuminance(color: string, lum = 0) {
   if (color == "" || color == null) {
     // light cyan blue
     return "#00bfff";

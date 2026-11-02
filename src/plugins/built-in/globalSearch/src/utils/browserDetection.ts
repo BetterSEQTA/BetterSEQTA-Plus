@@ -6,7 +6,7 @@ import browser from "@/lib/browser";
 export function isFirefox(): boolean {
   try {
     // Firefox-specific API
-    if (typeof (browser.runtime as any).getBrowserInfo === "function") {
+    if (typeof (browser.runtime as typeof browser.runtime & { getBrowserInfo?: () => unknown }).getBrowserInfo === "function") {
       return true;
     }
     // Fallback: check user agent

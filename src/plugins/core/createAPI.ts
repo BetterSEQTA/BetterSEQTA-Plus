@@ -57,9 +57,13 @@ function createSettingsAPI<T extends PluginSettings>(
   dispose: () => void;
 } {
   const storageKey = `plugin.${plugin.id}.settings`;
-  const listeners = new Map<keyof T, Set<(value: any) => void>>();
+  const listeners = new Map<keyof T, Set<(value: SettingValue<T[keyof T]>) => void>>();
 
-  const settingsWithMeta: any = {
+  const settingsWithMeta: Record<string, unknown> & {
+    onChange: SettingsAPI<T>["onChange"];
+    offChange: SettingsAPI<T>["offChange"];
+    loaded: Promise<void>;
+  } = {
     onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       if (!listeners.has(key)) {
         listeners.set(key, new Set());
@@ -87,7 +91,7 @@ function createSettingsAPI<T extends PluginSettings>(
   const loaded = (async () => {
     try {
       const allSettings = settingsState.getAll() as unknown as Record<string, unknown>;
-      const storedSettings = allSettings[storageKey] as Partial<Record<keyof T, any>>;
+      const storedSettings = allSettings[storageKey] as Partial<Record<keyof T, SettingValue<T[keyof T]>>>;
       if (storedSettings) {
         for (const key in storedSettings) {
           if (key in settingsWithMeta) {
@@ -106,7 +110,7 @@ function createSettingsAPI<T extends PluginSettings>(
   const handleSettingsChange = (newValue: unknown) => {
     if (!newValue || typeof newValue !== "object") return;
 
-    const newSettings = newValue as Partial<Record<keyof T, any>>;
+    const newSettings = newValue as Partial<Record<keyof T, SettingValue<T[keyof T]>>>;
     for (const key in newSettings) {
       const typedKey = key as keyof T;
       settingsWithMeta[typedKey] = newSettings[typedKey];
@@ -130,7 +134,7 @@ function createSettingsAPI<T extends PluginSettings>(
       target[prop] = value;
 
       // Reconstruct just the data keys for storage (excluding metadata methods)
-      const dataToStore: any = {};
+      const dataToStore: Record<string, unknown> = {};
       for (const key in plugin.settings) {
         dataToStore[key] = target[key];
       }
@@ -154,15 +158,15 @@ function createSettingsAPI<T extends PluginSettings>(
   return { settings: proxy, dispose };
 }
 
-function createStorageAPI<T = any>(
+function createStorageAPI<T extends Record<string, unknown> = Record<string, unknown>>(
   pluginId: string,
 ): {
   storage: StorageAPI<T> & { [K in keyof T]: T[K] };
   dispose: () => void;
 } {
   const prefix = `plugin.${pluginId}.storage.`;
-  const cache: Record<string, any> = {};
-  const listeners = new Map<string, Set<(value: any) => void>>();
+  const cache: Record<string, unknown> = {};
+  const listeners = new Map<string, Set<(value: unknown) => void>>();
 
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
@@ -222,7 +226,7 @@ function createStorageAPI<T = any>(
 
       return target[prop];
     },
-    set(target, prop: string, value: any) {
+    set(target, prop: string, value: unknown) {
       if (["onChange", "offChange", "loaded"].includes(prop)) {
         return false;
       }
@@ -244,7 +248,7 @@ function createEventsAPI(pluginId: string): EventsAPI {
   const prefix = `plugin.${pluginId}.`;
   const eventListeners = new Map<
     string,
-    Set<{ callback: (...args: any[]) => void; listener: EventListener }>
+    Set<{ callback: (...args: unknown[]) => void; listener: EventListener }>
   >();
 
   return {
@@ -278,7 +282,7 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
-export function createPluginAPI<T extends PluginSettings, S = any>(
+export function createPluginAPI<T extends PluginSettings, S extends Record<string, unknown> = Record<string, unknown>>(
   plugin: Plugin<T, S>,
 ): PluginAPI<T, S> {
   const { settings, dispose: disposeSettings } = createSettingsAPI(plugin);

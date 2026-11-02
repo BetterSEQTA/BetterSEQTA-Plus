@@ -1,6 +1,7 @@
 import type { IndexItem } from "./types";
 import { getAll, put } from "./db";
 import { buildIndexItem, extractTextFromValue, pickId, pickTitle } from "./extract";
+import { asXhrWithBsplusMeta } from "@/seqta/utils/xhrBsplusMeta";
 import { verboseDebug } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
@@ -515,7 +516,7 @@ export function installPassiveObserver(): void {
   };
 
   // Best-effort XHR hook for the rare callers that bypass fetch.
-  const ProtoXhr = (window as any).XMLHttpRequest?.prototype;
+  const ProtoXhr = XMLHttpRequest.prototype;
   if (ProtoXhr) {
     const originalOpen = ProtoXhr.open;
     const originalSend = ProtoXhr.send;
@@ -523,19 +524,20 @@ export function installPassiveObserver(): void {
       this: XMLHttpRequest,
       method: string,
       url: string,
-      ...rest: any[]
+      ...rest: unknown[]
     ) {
       try {
-        (this as any).__bsplusUrl = url;
-        (this as any).__bsplusMethod = method;
+        const xhr = asXhrWithBsplusMeta(this);
+        xhr.__bsplusUrl = url;
+        xhr.__bsplusMethod = method;
       } catch {
         /* ignore */
       }
-      return originalOpen.call(this, method, url, ...rest);
+      return originalOpen.apply(this, [method, url, ...rest] as Parameters<typeof originalOpen>);
     };
-    ProtoXhr.send = function patchedSend(this: XMLHttpRequest, body?: any) {
+    ProtoXhr.send = function patchedSend(this: XMLHttpRequest, body?: Document | XMLHttpRequestBodyInit | null) {
       try {
-        const url = (this as any).__bsplusUrl as string | undefined;
+        const url = asXhrWithBsplusMeta(this).__bsplusUrl;
         if (url && isSameOriginSeqtaUrl(url)) {
           const parsed = typeof body === "string" ? tryParseJson(body) : undefined;
           this.addEventListener("load", () => {

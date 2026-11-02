@@ -1,4 +1,4 @@
-import type { IndexItem, Job } from "../types";
+import type { IndexItem, Job, JobContext } from "../types";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 import { VectorWorkerManager } from "../worker/vectorWorkerManager";
@@ -56,7 +56,7 @@ const fetchMessages = async (offset = 0, limit = 100) => {
     }),
   });
   return res.json() as Promise<{
-    payload: { hasMore: boolean; messages: any[]; ts: string };
+    payload: { hasMore: boolean; messages: Record<string, unknown>[]; ts: string };
     status: string;
   }>;
 };
@@ -188,11 +188,11 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
 }
 
 async function processMessagesInParallel(
-  messages: any[],
+  messages: Record<string, unknown>[],
   existingIds: Set<string>,
   processedIdsSet: Set<string>,
   progress: MessagesProgress,
-  ctx: any,
+  ctx: JobContext,
 ): Promise<{
   processedItems: IndexItem[];
   consecutiveExisting: number;

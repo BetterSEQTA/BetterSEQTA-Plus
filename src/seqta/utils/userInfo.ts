@@ -1,5 +1,14 @@
-let cachedUserInfo: any = null;
-let userInfoFetchPromise: Promise<any> | null = null;
+export type SeqtaUserInfo = {
+  id?: number;
+  student?: number;
+  personUUID?: string;
+  type?: string;
+  userDesc?: string;
+  [key: string]: unknown;
+};
+
+let cachedUserInfo: SeqtaUserInfo | null = null;
+let userInfoFetchPromise: Promise<SeqtaUserInfo> | null = null;
 
 function invalidateCachedUserInfo(): void {
   cachedUserInfo = null;
@@ -52,7 +61,7 @@ export async function getUserInfo(options?: { validateSession?: boolean }) {
         invalidateCachedUserInfo();
       }
 
-      cachedUserInfo = payload;
+      cachedUserInfo = payload as SeqtaUserInfo;
       return cachedUserInfo;
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to get user info:", error);
@@ -71,14 +80,6 @@ export async function getUserInfo(options?: { validateSession?: boolean }) {
   userInfoFetchPromise = fetchUserInfo();
   return userInfoFetchPromise;
 }
-
-export type SeqtaUserInfo = {
-  id?: number;
-  student?: number;
-  personUUID?: string;
-  type?: string;
-  userDesc?: string;
-};
 
 export async function tryGetUserInfo(): Promise<SeqtaUserInfo | undefined> {
   return (await getUserInfo().catch(() => undefined)) ?? undefined;

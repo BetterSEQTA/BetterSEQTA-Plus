@@ -47,7 +47,7 @@ export function isDateInCachedWeek(date: Date, weekFrom: string, weekUntil: stri
   return isInWeekRange(toISODate(date), weekFrom, weekUntil);
 }
 
-async function postParentTimetable(body: object): Promise<any> {
+async function postParentTimetable(body: object): Promise<unknown> {
   const res = await fetch(`${location.origin}${TIMETABLE_URL}`, {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },

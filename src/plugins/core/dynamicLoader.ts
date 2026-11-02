@@ -1,7 +1,7 @@
 import type { Plugin, PluginSettings } from "./types";
 import { verboseInfo } from "@/utils/verboseLog";
 
-export interface LazyPlugin<T extends PluginSettings = PluginSettings, S = any> {
+export interface LazyPlugin<T extends PluginSettings = PluginSettings, S = unknown> {
   id: string;
   name: string;
   description: string;
@@ -21,7 +21,7 @@ function isAssetLoadError(error: unknown): boolean {
   return ASSET_LOAD_ERRORS.some((token) => msg.includes(token));
 }
 
-export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = any>(
+export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = unknown>(
   lazyPlugin: LazyPlugin<T, S>,
 ): Plugin<T, S> {
   const { loader, ...meta } = lazyPlugin;
@@ -51,7 +51,7 @@ export function createLazyPlugin<T extends PluginSettings = PluginSettings, S = 
   };
 }
 
-export function defineLazyPlugin<T extends PluginSettings = PluginSettings, S = any>(
+export function defineLazyPlugin<T extends PluginSettings = PluginSettings, S = unknown>(
   config: LazyPlugin<T, S>,
 ): Plugin<T, S> {
   return createLazyPlugin(config);

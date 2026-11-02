@@ -12,7 +12,7 @@ import { delay } from "@/seqta/utils/delay";
  *   per-subject course crawls) from hammering SEQTA.
  */
 
-export interface SeqtaResponse<T = any> {
+export interface SeqtaResponse<T = unknown> {
   payload: T;
   status: string;
 }
@@ -159,7 +159,7 @@ function isTransientError(err: unknown): boolean {
     return false;
   }
   if (err instanceof TypeError) return true;
-  if ((err as any)?.name === "AbortError") return false;
+  if (err instanceof Error && err.name === "AbortError") return false;
   return true;
 }
 
@@ -174,7 +174,7 @@ function isTransientError(err: unknown): boolean {
  *   the SEQTA convention; jobs that need raw payloads can pass `path` but
  *   call `seqtaFetch` directly via the underlying API if they need to).
  */
-export async function seqtaFetchJson<T = any>(
+export async function seqtaFetchJson<T = unknown>(
   path: string,
   body: Record<string, unknown> | undefined = {},
   options: SeqtaFetchOptions = {},
@@ -293,7 +293,7 @@ export async function seqtaFetchJson<T = any>(
  * Convenience helper: fetch and unwrap `.payload` directly. Returns `null`
  * on failure rather than throwing, so jobs can use the value optionally.
  */
-export async function seqtaFetchPayload<T = any>(
+export async function seqtaFetchPayload<T = unknown>(
   path: string,
   body: Record<string, unknown> | undefined = {},
   options: SeqtaFetchOptions = {},

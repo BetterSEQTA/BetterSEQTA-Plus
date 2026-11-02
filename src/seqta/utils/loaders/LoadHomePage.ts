@@ -27,6 +27,15 @@ import {
   applyPageFeatureGateEarly,
   injectPageFeatureBanner,
 } from "@/seqta/utils/remoteConfig/runtime";
+import type {
+  ActiveSubjectLike,
+  DateSortable,
+  HomeLessonAssessmentLink,
+  HomeTimetableLesson,
+  HomeUpcomingAssessment,
+  SeqtaColourPref,
+  UpcomingDateBucket,
+} from "@/seqta/utils/loaders/homePageTypes";
 
 let lessonInterval: ReturnType<typeof setInterval> | null = null;
 let homeTeardown: (() => void) | null = null;
@@ -291,7 +300,7 @@ async function GetActiveClasses() {
   }
 }
 
-function comparedate(obj1: any, obj2: any) {
+function comparedate(obj1: DateSortable, obj2: DateSortable) {
   const d1 = new Date(obj1.due || obj1.date || 0).getTime();
   const d2 = new Date(obj2.due || obj2.date || 0).getTime();
   return d1 - d2;
@@ -301,7 +310,7 @@ function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-async function callHomeTimetable(date: string, change?: any) {
+async function callHomeTimetable(date: string, change?: boolean) {
   const { id: student } = await getUserInfo();
   const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
     method: "POST",
@@ -319,7 +328,7 @@ async function callHomeTimetable(date: string, change?: any) {
 
   if (serverResponse.payload.items.length > 0) {
     if (DayContainer.innerText || change) {
-      const lessonArray: Array<any> = [...serverResponse.payload.items].sort((a, b) =>
+      const lessonArray: HomeTimetableLesson[] = [...serverResponse.payload.items].sort((a, b) =>
         a.from.localeCompare(b.from),
       );
 
@@ -329,7 +338,7 @@ async function callHomeTimetable(date: string, change?: any) {
             lessonArray[i].type == "tutorial"
               ? `timetable.tutor.${lessonArray[i].tutorID}`
               : `timetable.subject.colour.${lessonArray[i].code}`;
-          const subject = colours.find((element: any) => element.name === subjectname);
+          const subject = colours.find((element: SeqtaColourPref) => element.name === subjectname);
 
           if (!subject) {
             lessonArray[i].colour = "--item-colour: #8e8e8e;";
@@ -385,7 +394,7 @@ async function callHomeTimetable(date: string, change?: any) {
   }
 }
 
-function CheckCurrentLessonAll(lessons: any) {
+function CheckCurrentLessonAll(lessons: HomeTimetableLesson[]) {
   clearLessonInterval();
   lessonInterval = setInterval(() => {
     for (let i = 0; i < lessons.length; i++) {
@@ -394,7 +403,7 @@ function CheckCurrentLessonAll(lessons: any) {
   }, 60000);
 }
 
-async function CheckCurrentLesson(lesson: any, num: number) {
+async function CheckCurrentLesson(lesson: HomeTimetableLesson, num: number) {
   const { from: startTime, until: endTime, code, description, room, staff } = lesson;
   const currentDate = new Date();
 
@@ -443,7 +452,7 @@ async function CheckCurrentLesson(lesson: any, num: number) {
   }
 }
 
-function makeLessonDiv(lesson: any, num: number) {
+function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
   const {
     code,
     colour,
@@ -484,7 +493,7 @@ function makeLessonDiv(lesson: any, num: number) {
     if (assessments && assessments.length > 0) {
       const assessmentString = assessments
         .map(
-          (element: any) =>
+          (element: HomeLessonAssessmentLink) =>
             `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`,
         )
         .join("");
@@ -506,18 +515,25 @@ function makeLessonDiv(lesson: any, num: number) {
   return element;
 }
 
-function buildAssessmentURL(programmeID: any, metaID: any, itemID = "") {
+function buildAssessmentURL(
+  programmeID: number | undefined,
+  metaID: number | undefined,
+  itemID: number | string = "",
+) {
   const base = "../#?page=/assessments/";
   return itemID
     ? `${base}${programmeID}:${metaID}&item=${itemID}`
     : `${base}${programmeID}:${metaID}`;
 }
 
-function CheckUnmarkedAttendance(lessonattendance: any) {
+function CheckUnmarkedAttendance(lessonattendance: { label?: string } | null | undefined) {
   return lessonattendance ? lessonattendance.label : " ";
 }
 
-function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
+function applyHomeUpcomingLimits(
+  assessments: HomeUpcomingAssessment[],
+  activeSubjects: ActiveSubjectLike[],
+) {
   const maxSubjects = settingsState.homeUpcomingSubjectsMax ?? 5;
   const maxPerSubject = settingsState.homeUpcomingAssessmentsPerSubjectMax ?? 0;
 
@@ -526,7 +542,7 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
     assessments[i].filterCode = subject?.code ?? assessments[i].code;
   }
 
-  const bySubject = new Map<string, any[]>();
+  const bySubject = new Map<string, HomeUpcomingAssessment[]>();
   const subjectOrder: string[] = [];
 
   for (const assessment of assessments) {
@@ -550,7 +566,7 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
   const subjectLimit = maxSubjects > 0 ? maxSubjects : subjectOrder.length;
   const allowedSubjects = subjectOrder.slice(0, subjectLimit);
 
-  const limited: any[] = [];
+  const limited: HomeUpcomingAssessment[] = [];
   for (const code of allowedSubjects) {
     const items = bySubject.get(code)!;
     const perSubjectLimit = maxPerSubject > 0 ? maxPerSubject : items.length;
@@ -562,10 +578,13 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
   assessments.splice(0, assessments.length, ...limited);
 }
 
-async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
+async function CreateUpcomingSection(
+  assessments: HomeUpcomingAssessment[],
+  activeSubjects: ActiveSubjectLike[],
+) {
   const { id: student } = await getUserInfo();
   const upcomingitemcontainer = document.querySelector("#upcoming-items");
-  const upcomingDates = {};
+  const upcomingDates: Record<string, UpcomingDateBucket> = {};
   const Today = new Date();
 
   if (!(settingsState.homeUpcomingIncludePast ?? true)) {
@@ -584,7 +603,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
 
   for (let i = 0; i < assessments.length; i++) {
     const subject = colours.find(
-      (element: any) => element.name === `timetable.subject.colour.${assessments[i].code}`,
+      (element: SeqtaColourPref) => element.name === `timetable.subject.colour.${assessments[i].code}`,
     );
     if (!subject) {
       assessments[i].colour = "--item-colour: #8e8e8e;";
@@ -596,7 +615,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   const filterSubjects = subjectsWithUpcomingAssessments(assessments, activeSubjects).map(
     (subject) => {
       const colour = colours.find(
-        (c: any) => c.name === `timetable.subject.colour.${subject.code}`,
+        (c: SeqtaColourPref) => c.name === `timetable.subject.colour.${subject.code}`,
       );
       return { code: subject.code, colour: `--item-colour: ${colour?.value ?? "#8e8e8e"};` };
     },
@@ -605,28 +624,24 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   CreateFilters(filterSubjects);
 
   for (let i = 0; i < assessments.length; i++) {
-    const element: any = assessments[i];
-    if (!upcomingDates[element.due as keyof typeof upcomingDates]) {
-      const dateObj: any = {
-        div: CreateElement("div", "upcoming-date-container"),
+    const element = assessments[i];
+    if (!upcomingDates[element.due]) {
+      const dateObj: UpcomingDateBucket = {
+        div: CreateElement("div", "upcoming-date-container") as HTMLElement,
         assessments: [],
       };
-      (upcomingDates[element.due as keyof typeof upcomingDates] as any) = dateObj;
+      upcomingDates[element.due] = dateObj;
     }
-    const assessmentDateDiv = upcomingDates[element.due as keyof typeof upcomingDates];
-    if (assessmentDateDiv) {
-      (assessmentDateDiv as any).assessments.push(element);
-    }
+    const assessmentDateDiv = upcomingDates[element.due];
+    assessmentDateDiv.assessments.push(element);
   }
 
   for (const date in upcomingDates) {
-    const assessmentdue = new Date(
-      (upcomingDates[date as keyof typeof upcomingDates] as any).assessments[0].due,
-    );
+    const assessmentdue = new Date(upcomingDates[date].assessments[0].due);
     const specialcase = CheckSpecialDay(Today, assessmentdue);
     const assessmentDate = createAssessmentDateDiv(
       date,
-      upcomingDates[date as keyof typeof upcomingDates],
+      upcomingDates[date],
       student,
       specialcase,
     );
@@ -648,7 +663,12 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   }
 }
 
-function createAssessmentDateDiv(date: string, value: any, student: number, datecase?: any) {
+function createAssessmentDateDiv(
+  date: string,
+  value: UpcomingDateBucket,
+  student: number,
+  datecase?: string,
+) {
   const options: Intl.DateTimeFormatOptions = {
     weekday: "long",
     month: "long",
@@ -799,7 +819,7 @@ function CreateFilters(subjects: { code: string; colour: string }[]) {
   settingsState.subjectfilters = filteroptions;
 }
 
-function CreateSubjectFilter(subjectcode: any, itemcolour: string, checked: any) {
+function CreateSubjectFilter(subjectcode: string, itemcolour: string, checked: boolean) {
   const label = CreateElement("label", "upcoming-checkbox-container");
   label.innerText = subjectcode;
   const input = CreateElement("input") as HTMLInputElement;

@@ -24,7 +24,7 @@ function syncDefaultMenuOrder(menu: HTMLElement) {
   if (settingsState.defaultmenuorder.length === 0) {
     settingsState.defaultmenuorder = Array.from(childnodes).map(
       (element) => (element as HTMLElement).dataset.key,
-    );
+    ) as string[];
     return;
   }
 
@@ -253,8 +253,8 @@ function saveNewOrder(sortable: Sortable) {
   settingsState.menuorder = sortable.toArray();
 }
 
-function cloneAttributes(target: any, source: any) {
-  [...source.attributes].forEach((attr) => {
-    target.setAttribute(attr.nodeName, attr.nodeValue);
-  });
+function cloneAttributes(target: Element, source: Element) {
+  for (const attr of source.attributes) {
+    target.setAttribute(attr.name, attr.value);
+  }
 }

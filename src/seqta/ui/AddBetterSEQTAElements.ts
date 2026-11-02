@@ -66,7 +66,7 @@ export async function AddBetterSEQTAElements() {
     const menuList = menu.firstChild as HTMLElement;
 
     if (!checkRemoteFeature("page.home").hide) {
-      createHomeButton(fragment, menuList);
+      createHomeButton(fragment);
     }
     if (!checkRemoteFeature("page.news").hide) {
       createNewsButton(fragment, menu);
@@ -99,7 +99,15 @@ export async function AddBetterSEQTAElements() {
   attachNotificationsPanelAnimation();
 }
 
-function createHomeButton(fragment: DocumentFragment, _: HTMLElement) {
+type StudentPerson = {
+  firstname?: string;
+  surname?: string;
+  house?: string;
+  year?: string | number;
+  house_colour?: string;
+};
+
+function createHomeButton(fragment: DocumentFragment) {
   const container = document.getElementById("content")!;
   const div = document.createElement("div");
   div.classList.add("titlebar");
@@ -127,7 +135,10 @@ async function handleUserInfoAndStudentData() {
 
     updateUserInfo(userInfo);
     ensureTitlebarFounderBadgeMounted();
-    await updateStudentInfo((await studentResponse.json()).payload, userInfo);
+    await updateStudentInfo(
+      (await studentResponse.json()).payload as StudentPerson[],
+      userInfo,
+    );
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to handle user info and student data:", error);
   }
@@ -190,9 +201,12 @@ function updateUserInfo(info: {
     .appendChild(document.getElementsByClassName("logout")[0]);
 }
 
-async function updateStudentInfo(students: any, info: Awaited<ReturnType<typeof getUserInfo>>) {
+async function updateStudentInfo(
+  students: StudentPerson[],
+  info: Awaited<ReturnType<typeof getUserInfo>>,
+) {
   const index = students.findIndex(
-    (person: any) =>
+    (person) =>
       person.firstname == info.userDesc.split(" ")[0] &&
       person.surname == info.userDesc.split(" ")[1],
   );

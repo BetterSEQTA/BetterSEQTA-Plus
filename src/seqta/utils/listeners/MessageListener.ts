@@ -19,12 +19,29 @@ function getThemeManager(): Promise<ThemeManager> {
   return themeManagerPromise;
 }
 
+type SendResponse = (response?: unknown) => void;
+
+type ThemeMessageBody = Record<string, unknown> & {
+  themeID?: string;
+  id?: string;
+  enableTheme?: boolean;
+};
+
+type ContentScriptMessage = {
+  info?: string;
+  save?: boolean;
+  body?: ThemeMessageBody;
+};
+
 export class MessageHandler {
   constructor() {
-    // @ts-ignore
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
-  routeMessage(request: any, _sender: any, sendResponse: any) {
+  routeMessage(
+    request: ContentScriptMessage,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: SendResponse,
+  ) {
     console.debug("Message received:", request);
 
     switch (request.info) {
@@ -42,8 +59,8 @@ export class MessageHandler {
               ...request.body,
               userEdited: true,
             });
-            if (request.body.enableTheme) {
-              await themeManager.setTheme(request.body.id);
+            if (request.body?.enableTheme) {
+              await themeManager.setTheme(request.body.id as string);
             }
             sendResponse({ status: "success" });
             sendThemeUpdate();
@@ -59,7 +76,7 @@ export class MessageHandler {
 
       case "GetTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.getTheme(request.body.themeID).then((theme) => {
+          themeManager.getTheme(request.body!.themeID as string).then((theme) => {
             sendResponse(theme);
           });
         });
@@ -67,7 +84,7 @@ export class MessageHandler {
 
       case "SetTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.setTheme(request.body.themeID).then(() => {
+          themeManager.setTheme(request.body!.themeID as string).then(() => {
             sendResponse({ status: "success" });
           });
         });
@@ -83,7 +100,7 @@ export class MessageHandler {
 
       case "DeleteTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.deleteTheme(request.body.themeID).then(() => {
+          themeManager.deleteTheme(request.body!.themeID as string).then(() => {
             sendResponse({ status: "success" });
           });
         });
@@ -100,7 +117,7 @@ export class MessageHandler {
       case "OpenThemeCreator": {
         const themeID = request?.body?.themeID;
         void import("@/plugins/built-in/themes/ThemeCreator").then(({ OpenThemeCreator }) => {
-          void OpenThemeCreator(themeID ? themeID : "");
+          void OpenThemeCreator(themeID ? String(themeID) : "");
         });
         closeExtensionPopup();
         sendResponse({ status: "success" });
@@ -109,7 +126,7 @@ export class MessageHandler {
 
       case "ShareTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.shareTheme(request.body.themeID).then((id) => {
+          themeManager.shareTheme(request.body!.themeID as string).then((id) => {
             sendResponse({ status: "success", id });
           });
         });

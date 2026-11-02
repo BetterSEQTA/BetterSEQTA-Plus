@@ -2,7 +2,7 @@ export type SettingsState = {
   DarkMode: boolean;
   selectedTheme: string;
   customshortcuts: CustomShortcut[];
-  defaultmenuorder: any[];
+  defaultmenuorder: string[];
   lessonalert: boolean;
   menuitems: {
     assessments: ToggleItem;
@@ -24,14 +24,14 @@ export type SettingsState = {
     welcome: ToggleItem;
     [key: string]: ToggleItem;
   };
-  menuorder: any[];
+  menuorder: string[];
   onoff: boolean;
   /** Last popup size explicitly selected with the expand/collapse control. */
   settingsPopupExpanded?: boolean;
   selectedColor: string;
   originalSelectedColor: string;
   shortcuts: Shortcut[];
-  subjectfilters: Record<string, any>;
+  subjectfilters: Record<string, boolean>;
   transparencyEffects: boolean;
   justupdated?: boolean;
   privacyStatementShown?: boolean;

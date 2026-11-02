@@ -1,5 +1,7 @@
 import ReactFiber from "@/seqta/utils/ReactFiber";
 
+import type { Component } from "svelte";
+
 export interface BooleanSetting {
   type: "boolean";
   default: boolean;
@@ -52,7 +54,7 @@ export interface ComponentSetting {
   type: "component";
   title: string;
   description?: string;
-  component: any;
+  component: Component<Record<string, unknown>>;
 }
 
 export type PluginSetting =
@@ -103,7 +105,7 @@ export interface SEQTAAPI {
   };
 }
 
-export interface StorageAPI<T = any> {
+export interface StorageAPI<T = unknown> {
   /**
    * Register a callback to be called when a storage value changes
    */
@@ -123,11 +125,11 @@ export type TypedStorageAPI<T> = StorageAPI<T> & {
 };
 
 export interface EventsAPI {
-  on: (event: string, callback: (...args: any[]) => void) => { unregister: () => void };
-  emit: (event: string, ...args: any[]) => void;
+  on: (event: string, callback: (...args: unknown[]) => void) => { unregister: () => void };
+  emit: (event: string, ...args: unknown[]) => void;
 }
 
-export interface PluginAPI<T extends PluginSettings, S = any> {
+export interface PluginAPI<T extends PluginSettings, S = unknown> {
   seqta: SEQTAAPI;
   settings: SettingsAPI<T>;
   storage: TypedStorageAPI<S>;
@@ -137,7 +139,7 @@ export interface PluginAPI<T extends PluginSettings, S = any> {
 
 export type PluginRunResult = void | (() => void);
 
-export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
+export interface Plugin<T extends PluginSettings = PluginSettings, S = unknown> {
   id: string;
   name: string;
   description: string;

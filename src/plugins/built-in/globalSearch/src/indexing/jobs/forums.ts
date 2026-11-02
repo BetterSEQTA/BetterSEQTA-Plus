@@ -9,7 +9,7 @@ const fetchForums = async () => {
   });
 
   return res.json() as Promise<{
-    payload: { forums: any[] };
+    payload: { forums: Record<string, unknown>[] };
     status: string;
   }>;
 };

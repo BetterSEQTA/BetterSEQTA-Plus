@@ -7,7 +7,7 @@ import type { IndexItem } from "./types";
 import { jobs } from "./jobs";
 import { loadDynamicItems } from "../utils/dynamicItems";
 
-export const renderComponentMap: Record<string, Component<any>> = {
+export const renderComponentMap: Record<string, Component<Record<string, unknown>>> = {
   assessment: AssessmentItem,
   message: AssessmentItem,
   forum: ForumItem,
@@ -26,7 +26,7 @@ export const renderComponentMap: Record<string, Component<any>> = {
   passive: GenericItem,
 };
 
-function resolveRenderComponent(item: IndexItem): Component<any> | undefined {
+function resolveRenderComponent(item: IndexItem): Component<Record<string, unknown>> | undefined {
   const jobDef =
     jobs[item.category] ||
     Object.values(jobs).find((j) => j.id === item.category) ||

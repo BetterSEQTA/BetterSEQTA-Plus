@@ -1,3 +1,5 @@
+import debounce from "@/seqta/utils/debounce";
+
 interface ElementConfig {
   selector: string;
   action: (element: Element) => void;
@@ -19,18 +21,6 @@ const MOCK_DAY_ATTR = "data-bsp-mock-day";
 
 /** Skip MutationObserver-driven reprocessing while we inject the home mock (avoids feedback loops) */
 let suppressMockMutations = false;
-
-function debounce(func: Function, wait: number): Function {
-  let timeout: NodeJS.Timeout;
-  return function executedFunction(...args: any[]) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-}
 
 function getRandomElement(array: string[]): string {
   return array[Math.floor(Math.random() * array.length)];
@@ -861,7 +851,7 @@ export function getMockAssessmentsData() {
     if (i >= 10) due.setFullYear(currentYear - 1);
 
     const types = ["Assignment", "Test", "Exam", "Project", "Presentation", "Report"];
-    const assessment: any = {
+    const assessment: Record<string, unknown> = {
       id: i + 1,
       title: mockData.assessmentTitles[i % mockData.assessmentTitles.length],
       code: subj.code,
@@ -889,7 +879,7 @@ export function getMockAssessmentsData() {
 const debouncedProcessElements = debounce(processNewElements, 1);
 
 function processNewElements() {
-  Object.entries(contentConfig).forEach(([_, config]) => {
+  for (const config of Object.values(contentConfig)) {
     const { selector, action, alwaysRun, neverMarkProcessed } = config;
     const elements = document.querySelectorAll(selector);
     elements.forEach((element: Element) => {
@@ -900,7 +890,7 @@ function processNewElements() {
         }
       }
     });
-  });
+  }
 }
 
 let observer: MutationObserver | null = null;
