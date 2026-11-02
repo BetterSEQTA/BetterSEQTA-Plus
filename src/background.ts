@@ -1,5 +1,4 @@
 import browser from "@/lib/browser";
-import semver from "semver";
 import type { SettingsState } from "@/types/storage";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import { ensureSyncableStorageDefaults } from "@/seqta/utils/ensureSyncableStorageDefaults";
@@ -30,6 +29,7 @@ import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey"
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
+import { runStorageMigrations } from "./background/storageMigrations";
 
 /**
  * Session-only dev-mode override of the content API base.
@@ -661,114 +661,8 @@ function SetStorageValue(object: SettingsState) {
   );
 }
 
-async function disableAnimatedBackground(): Promise<void> {
-  const key = "plugin.animated-background.settings";
-  const stored = await browser.storage.local.get(key);
-  await browser.storage.local.set({ [key]: { ...(stored[key] as object), enabled: false } });
-}
-
-/** One-time migration for 3.6.5: opt upgraders into Global Search + indexing + transparency defaults. */
-const GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY = "plugin.global-search.settings";
-const GLOBAL_SEARCH_MIGRATION_VERSION = "3.6.5";
-
-async function migrateGlobalSearchDefaultsFor365Upgrade(previousVersion: string): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, GLOBAL_SEARCH_MIGRATION_VERSION) ||
-      !semver.lt(prev, GLOBAL_SEARCH_MIGRATION_VERSION)
-    ) {
-      return;
-    }
-
-    const got = await browser.storage.local.get(GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY);
-    const existing = (got[GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY] ?? {}) as Record<string, unknown>;
-
-    await browser.storage.local.set({
-      [GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY]: {
-        ...existing,
-        enabled: true,
-        transparencyEffects: true,
-        runIndexingOnLoad: true,
-        passiveIndexing: true,
-      },
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${GLOBAL_SEARCH_MIGRATION_VERSION}: Global Search and related settings enabled (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn("[BetterSEQTA+] Global Search 3.6.5 settings migration failed:", e);
-  }
-}
-
-/** One-time reset for 3.6.6: re-enable Theme of the Month for existing users. */
-const THEME_OF_THE_MONTH_RESET_VERSION = "3.6.6";
-
-async function resetThemeOfTheMonthDisabledFor366Upgrade(previousVersion: string): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, THEME_OF_THE_MONTH_RESET_VERSION) ||
-      !semver.lt(prev, THEME_OF_THE_MONTH_RESET_VERSION)
-    ) {
-      return;
-    }
-
-    await browser.storage.local.set({
-      themeOfTheMonthDisabled: false,
-      themeOfTheMonthLastSeenId: undefined,
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RESET_VERSION}: Theme of the Month re-enabled (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn("[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:", e);
-  }
-}
-
-/** 3.7.0: Close no longer marks entries seen — clear legacy dismissal keys. */
-const THEME_OF_THE_MONTH_RELOAD_VERSION = "3.7.0";
-
-async function resetThemeOfTheMonthDismissalFor370Upgrade(previousVersion: string): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, THEME_OF_THE_MONTH_RELOAD_VERSION) ||
-      !semver.lt(prev, THEME_OF_THE_MONTH_RELOAD_VERSION)
-    ) {
-      return;
-    }
-
-    await browser.storage.local.set({
-      themeOfTheMonthLastSeenId: undefined,
-      themeOfTheMonthDismissedMonth: undefined,
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RELOAD_VERSION}: Theme of the Month shows again until dismissed for the month (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn("[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:", e);
-  }
-}
-
 browser.runtime.onInstalled.addListener(function (event) {
-  browser.storage.local.remove(["justupdated"]);
-  browser.storage.local.remove(["data"]);
+  browser.storage.local.remove(["justupdated", "data"]);
 
   const defaultsReady = ensureSyncableStorageDefaults();
 
@@ -777,9 +671,7 @@ browser.runtime.onInstalled.addListener(function (event) {
   }
 
   if (event.reason === "update" && event.previousVersion) {
-    void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
-    void resetThemeOfTheMonthDisabledFor366Upgrade(event.previousVersion);
-    void resetThemeOfTheMonthDismissalFor370Upgrade(event.previousVersion);
+    void runStorageMigrations(event.previousVersion);
     void browser.storage.local.remove(BSPLUS_INSTALL_REGISTERED_AT_KEY).then(() => {
       void refreshRemoteConfig(apiBase);
     });
@@ -789,7 +681,11 @@ browser.runtime.onInstalled.addListener(function (event) {
   if (event.reason === "install") {
     void refreshRemoteConfig(apiBase);
     void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
-    void defaultsReady.catch(() => undefined).then(disableAnimatedBackground);
+    void defaultsReady.catch(() => undefined).then(async () => {
+      const key = "plugin.animated-background.settings";
+      const { [key]: settings } = await browser.storage.local.get(key);
+      await browser.storage.local.set({ [key]: { ...(settings as object), enabled: false } });
+    });
   }
 });
 

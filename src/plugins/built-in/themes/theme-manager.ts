@@ -223,15 +223,10 @@ export class ThemeManager {
     verboseDebug("[ThemeManager] Starting initialization");
     try {
       const neumorphicThemeId = "9a9786d1-b5fc-4a91-8c7a-f8bf7f7679ad";
-      const migrationCSS = "#title {\nbackground: transparent !important;\n}";
-
+      const titlePatch = "#title {\nbackground: transparent !important;\n}";
       const theme = (await localforage.getItem(neumorphicThemeId)) as CustomTheme | null;
-      if (
-        theme &&
-        theme.CustomCSS &&
-        !theme.CustomCSS.includes("#title {\nbackground: transparent !important;\n}")
-      ) {
-        theme.CustomCSS = theme.CustomCSS + "\n" + migrationCSS;
+      if (theme?.CustomCSS && !theme.CustomCSS.includes(titlePatch)) {
+        theme.CustomCSS += `\n${titlePatch}`;
         await localforage.setItem(neumorphicThemeId, theme);
       }
 
