@@ -32,7 +32,8 @@ import {
   heartbeatIdentityFields,
   optInIdentityDigest,
 } from "./identityBinding";
-import { resolvePersonUuid, resolveStudentId } from "./seqtaClient";
+import { resolvePersonUuid } from "./seqtaClient";
+import { getStudentId } from "@/seqta/utils/userInfo";
 import {
   fetchSchoolYearEnrollmentSnapshot,
   fingerprintEnrollment,
@@ -134,7 +135,7 @@ export async function revokeOptIn(): Promise<{ ok: boolean; error?: string }> {
     if (!res.ok) return res;
   }
 
-  const seqtaId = await resolveStudentId();
+  const seqtaId = await getStudentId();
   if (seqtaId != null) {
     const [index, archived] = await Promise.all([loadRosterIndex(), loadArchivedMembers()]);
     await Promise.all([
@@ -221,7 +222,7 @@ export async function runTimetableClassmatesSync(
   if (!instanceHost) return { ok: false, error: "Not on a SEQTA page" };
   if (!cloudAuth.state.isLoggedIn) return { ok: false, error: "Cloud login required" };
 
-  const seqtaId = await resolveStudentId();
+  const seqtaId = await getStudentId();
   const personUuid = await resolvePersonUuid();
   if (seqtaId == null || !personUuid) return { ok: false, error: "SEQTA login required" };
 

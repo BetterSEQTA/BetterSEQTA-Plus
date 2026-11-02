@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";

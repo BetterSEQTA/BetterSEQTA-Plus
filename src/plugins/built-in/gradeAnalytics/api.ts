@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockGradeAnalyticsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { resolveGradeFromAssessmentPayload } from "./gradeResolution";

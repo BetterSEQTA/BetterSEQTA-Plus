@@ -43,7 +43,9 @@ describe("cloud theme restoration", () => {
     jest.spyOn(console, "warn").mockImplementation(() => {});
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   it.each(["themes", "custom-themes"])(
     "installs a missing %s catalog theme",

@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 
 /**
  * Parses the current page from window.location.hash.

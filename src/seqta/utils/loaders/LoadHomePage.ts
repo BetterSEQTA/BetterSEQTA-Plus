@@ -13,6 +13,7 @@ import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 import { verboseInfo } from "@/utils/verboseLog";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import {
   activeSubjectsFromLearnPayload,
   activeSubjectForAssessment,
@@ -225,15 +226,13 @@ export function registerHomeUpcomingSettingsListeners() {
 
 async function GetUpcomingAssessments() {
   try {
-    return fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
+    const { id: student } = await getUserInfo();
+    const response = await fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-      },
-      body: JSON.stringify({ student: 69 }),
-    })
-      .then((result) => result.json())
-      .then((response) => response.payload);
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ student }),
+    });
+    return (await response.json()).payload;
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to get upcoming assessments:", error);
     return [];
@@ -313,10 +312,11 @@ function startOfDay(date: Date): Date {
 }
 
 async function callHomeTimetable(date: string, change?: any) {
+  const { id: student } = await getUserInfo();
   const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
-    body: JSON.stringify({ from: date, until: date, student: 69 }),
+    body: JSON.stringify({ from: date, until: date, student }),
   });
   const serverResponse = await response.json();
 
@@ -601,6 +601,7 @@ function applyHomeUpcomingLimits(assessments: any[], activeSubjects: any[]) {
 }
 
 async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
+  const { id: student } = await getUserInfo();
   const upcomingitemcontainer = document.querySelector("#upcoming-items");
   const upcomingDates = {};
   const Today = new Date();
@@ -679,6 +680,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     const assessmentDate = createAssessmentDateDiv(
       date,
       upcomingDates[date as keyof typeof upcomingDates],
+      student,
       specialcase,
     );
 
@@ -702,7 +704,7 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
   }
 }
 
-function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
+function createAssessmentDateDiv(date: string, value: any, student: number, datecase?: any) {
   const options = {
     weekday: "long" as "long",
     month: "long" as "long",
@@ -767,7 +769,7 @@ function createAssessmentDateDiv(date: string, value: any, datecase?: any) {
       body: JSON.stringify({
         assessment: element.id,
         metaclass: element.metaclassID,
-        student: 69,
+        student,
       }),
     })
       .then((result) => result.json())
@@ -813,13 +815,13 @@ function CheckSpecialDay(date1: Date, date2: Date) {
 
 async function GetLessonColours() {
   try {
-    return fetch(`${location.origin}/seqta/student/load/prefs?`, {
+    const { id: user } = await getUserInfo();
+    const response = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: "POST",
       headers: { "Content-Type": "application/json; charset=utf-8" },
-      body: JSON.stringify({ request: "userPrefs", asArray: true, user: 69 }),
-    })
-      .then((result) => result.json())
-      .then((response) => response.payload);
+      body: JSON.stringify({ request: "userPrefs", asArray: true, user }),
+    });
+    return (await response.json()).payload;
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to get lesson colours:", error);
     return [];

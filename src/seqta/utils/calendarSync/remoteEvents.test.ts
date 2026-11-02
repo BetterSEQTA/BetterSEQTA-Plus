@@ -4,7 +4,9 @@ import {
   listOutlookSyncedEvents,
 } from "./remoteEvents";
 
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 it.each([
   { provider: "google", body: "invalid JSON" },

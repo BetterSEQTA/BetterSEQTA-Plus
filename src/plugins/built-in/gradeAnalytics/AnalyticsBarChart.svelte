@@ -4,7 +4,7 @@
   import { BarChart } from "layerchart";
   import * as Chart from "./chart/index";
   import { cubicInOut } from "svelte/easing";
-  import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+  import { getUserInfo } from "@/seqta/utils/userInfo";
   import type { Assessment } from "./types";
   import { getTimeRangeLabel, type CustomTimeRange, type TimeRange } from "./timeRange";
   import {

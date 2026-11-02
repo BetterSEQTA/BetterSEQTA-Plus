@@ -21,7 +21,7 @@ import {
   loadSession,
 } from "./rosterStore";
 import { refreshPeopleCacheIfStale } from "./peopleCache";
-import { resolveStudentId } from "./seqtaClient";
+import { getStudentId } from "@/seqta/utils/userInfo";
 import { peerCloudIdsForPaint } from "./accountsClient";
 import { fetchSchoolYearEnrollmentSnapshot } from "./timetableYearSnapshot";
 import { CLASSMATES_TIMETABLE_POLL_MS } from "./constants";
@@ -101,7 +101,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
           return;
         }
 
-        const selfId = await resolveStudentId();
+        const selfId = await getStudentId();
         if (selfId == null) return;
 
         const [roster, peopleCache, archived, ciMap, cloudIds] = await Promise.all([

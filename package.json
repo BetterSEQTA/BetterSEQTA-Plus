@@ -109,5 +109,12 @@
   },
   "overrides": {
     "glob": "$glob"
+  },
+  "allowScripts": {
+    "@parcel/watcher": false,
+    "esbuild": false,
+    "onnxruntime-node": false,
+    "protobufjs": false,
+    "sharp": false
   }
 }

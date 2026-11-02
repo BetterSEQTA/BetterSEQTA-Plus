@@ -10,7 +10,7 @@ interface PrefItem {
   value: string;
 }
 
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";

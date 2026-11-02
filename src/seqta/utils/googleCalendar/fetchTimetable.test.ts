@@ -53,7 +53,9 @@ describe("calendar source fetches", () => {
     });
   });
 
-  afterEach(() => jest.restoreAllMocks());
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
 
   it("uses the same Engage child for timetable and assessment sync", async () => {
     document.body.classList.contains = () => true;

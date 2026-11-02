@@ -2,6 +2,7 @@ import type { IndexItem, Job } from "../types";
 
 import { verboseDebug } from '@/utils/verboseLog';
 import { delay } from "@/seqta/utils/delay";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 const fetchJSON = async (url: string, body: any) => {
   const res = await fetch(`${location.origin}${url}`, {
     method: "POST",
@@ -12,7 +13,7 @@ const fetchJSON = async (url: string, body: any) => {
   return res.json();
 };
 
-const fetchUpcomingAssessments = async (student: number = 69) => {
+const fetchUpcomingAssessments = async (student: number) => {
   try {
     const res = await fetchJSON("/seqta/student/assessment/list/upcoming?", {
       student,
@@ -37,7 +38,7 @@ const fetchSubjects = async () => {
   }
 };
 
-const fetchPastAssessments = async (student: number = 69, subjects: any[]) => {
+const fetchPastAssessments = async (student: number, subjects: any[]) => {
   const map: Record<number, any> = {};
 
   // Fetch past assessments for all subjects in parallel (like assessmentsOverview does)
@@ -128,7 +129,7 @@ export const assignmentsJob: Job = {
     const existingItems = await ctx.getStoredItems("assignments");
     const existingIds = new Set(existingItems.map((i) => i.id));
 
-    const student = 69; // TODO: Get from context if available
+    const { id: student } = await getUserInfo();
 
     verboseDebug("[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...");
     

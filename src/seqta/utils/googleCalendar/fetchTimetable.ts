@@ -1,4 +1,5 @@
 import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
+import { getStudentId, tryGetUserInfo } from "@/seqta/utils/userInfo";
 import type { CalendarSyncAssessment } from "./eventMapper";
 import type { SyncDateRange } from "./syncDateRange";
 import { isDateInRange, syncWindowRange } from "./syncDateRange";
@@ -71,29 +72,6 @@ function withSubjectColours(
   });
 }
 
-type SeqtaLoginPayload = {
-  id?: number;
-  student?: number;
-  type?: string;
-};
-
-let cachedLogin: SeqtaLoginPayload | null = null;
-
-async function resolveLoginPayload(): Promise<SeqtaLoginPayload | undefined> {
-  if (cachedLogin?.id != null) return cachedLogin;
-  try {
-    const json = await postSeqtaJson<{ payload?: SeqtaLoginPayload }>(
-      "/seqta/student/login",
-      { mode: "normal", query: null, redirect_url: location.href },
-    );
-    const payload = json?.payload;
-    if (!payload) return undefined;
-    cachedLogin = payload;
-    return payload;
-  } catch {
-    return undefined;
-  }
-}
 
 export async function resolveStudentId(): Promise<number | undefined> {
   if (isEngageParentContext()) {
@@ -104,13 +82,11 @@ export async function resolveStudentId(): Promise<number | undefined> {
     const id = Array.isArray(data?.payload) ? Number(data.payload[0]?.id) : NaN;
     return Number.isFinite(id) && id > 0 ? id : undefined;
   }
-  const payload = await resolveLoginPayload();
-  const id = payload?.id ?? payload?.student;
-  return typeof id === "number" && Number.isFinite(id) ? id : undefined;
+  return getStudentId();
 }
 
 async function resolvePersonType(): Promise<string> {
-  const payload = await resolveLoginPayload();
+  const payload = await tryGetUserInfo();
   const type = payload?.type?.trim().toLowerCase();
   return type || "student";
 }

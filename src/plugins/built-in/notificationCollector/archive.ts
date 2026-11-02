@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 
 type RawNotification = Record<string, unknown>;
 

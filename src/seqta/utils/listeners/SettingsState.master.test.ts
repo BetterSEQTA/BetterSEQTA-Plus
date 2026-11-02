@@ -1,7 +1,9 @@
 /** @jest-environment jsdom */
 
 describe("master extension setting", () => {
-  afterEach(() => jest.useRealTimers());
+  afterEach(() => {
+    jest.useRealTimers();
+  });
 
   it.each([false, true])("persists %s and queued preferences before reloading SEQTA tabs", async (enabled) => {
     jest.useFakeTimers();

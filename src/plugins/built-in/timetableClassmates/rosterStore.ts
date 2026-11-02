@@ -1,7 +1,7 @@
 import localforage, { type LocalForage } from "localforage";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
 import type { ArchivedMembers, ClassRosterIndex } from "./rosterMerge";
-import { resolveStudentId } from "./seqtaClient";
+import { getStudentId } from "@/seqta/utils/userInfo";
 import { TIMETABLE_CLASSMATES_CONSENT_VERSION } from "./constants";
 
 const ROSTER_KEY = "classRosterIndex";
@@ -39,7 +39,7 @@ const defaultSession = (): ClassmatesSession => ({
 
 export async function resolveClassmatesScope(): Promise<string | null> {
   const host = getInstanceHostname()?.toLowerCase();
-  const studentId = await resolveStudentId();
+  const studentId = await getStudentId();
   if (!host || studentId == null) return null;
   return `${host}#${studentId}`;
 }
