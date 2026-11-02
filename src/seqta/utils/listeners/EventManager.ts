@@ -97,7 +97,7 @@ class EventManager {
   ): Promise<void> {
     const root = options.parentElement || document.documentElement;
     const selector = this.buildSelector(options);
-    let elements: Element[] = [];
+    let elements: Element[];
 
     if (selector) {
       elements = Array.from(root.querySelectorAll(selector));

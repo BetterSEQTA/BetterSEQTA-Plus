@@ -255,7 +255,7 @@ export async function hybridSearchWithExpansion(
     return hybridSearch(bm25Results, query, options);
   }
 
-  let vectorResults: VectorSearchResult[] = [];
+  let vectorResults: VectorSearchResult[];
   try {
     vectorResults = await searchVectors(trimmedQuery, opts.bm25TopK * 2);
   } catch (e) {

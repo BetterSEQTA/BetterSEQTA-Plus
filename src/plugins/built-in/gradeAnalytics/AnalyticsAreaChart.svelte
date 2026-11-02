@@ -251,13 +251,8 @@
           {xDomain}
           yScale={yScale}
           series={areaSeries}
+          seriesLayout="overlap"
           props={{
-            area: {
-              curve: curveMonotoneX,
-              "fill-opacity": showSubjectTrends ? 0.12 : 0.35,
-              line: { class: "stroke-2" },
-              motion: animationsOn ? "tween" : false,
-            },
             xAxis: {
               ticks: timeRange === "7d" ? 7 : undefined,
               format: (v: Date) =>
@@ -271,7 +266,7 @@
             },
           }}
         >
-          {#snippet marks({ series, getAreaProps })}
+          {#snippet marks({ context })}
             <defs>
               <linearGradient id={chartUid} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color={accentColor} stop-opacity="0.55" />
@@ -287,22 +282,23 @@
                   }
                 : undefined}
             >
-              {#each series as s, i (s.key)}
+              {#each context.series.visibleSeries as s (s.key)}
                 {@const meta = chartSeries.find((c) => c.key === s.key)}
                 {@const isOverall = meta?.isOverall ?? s.key === "average"}
-                {@const isForecast = s.key === "forecast"}
+                {@const color = meta?.color ?? s.color}
 
-                {#if !isForecast}
+                {#if s.key !== "forecast"}
                   <Area
-                    {...getAreaProps(s, i)}
+                    seriesKey={s.key}
+                    curve={curveMonotoneX}
+                    motion={animationsOn ? "tween" : false}
+                    line={{ class: "stroke-2", stroke: color }}
                     fill={isOverall && !showSubjectTrends
                       ? `url(#${chartUid})`
                       : isOverall
                         ? accentColor
                         : "transparent"}
-                    fill-opacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
-                    stroke={meta?.color ?? s.color}
-                    style={`stroke: ${meta?.color ?? s.color}`}
+                    fillOpacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
                   />
                 {/if}
               {/each}

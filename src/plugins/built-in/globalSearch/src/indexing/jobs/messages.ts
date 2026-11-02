@@ -416,8 +416,6 @@ export const messagesJob: Job = {
       }
     }
 
-    let consecutiveExisting = 0;
-    let requestStartTime = 0;
     let progressUpdateCounter = 0;
     let itemsStreamedToVector = 0;
 
@@ -521,7 +519,7 @@ export const messagesJob: Job = {
       }
 
       await delay(progress.currentDelay);
-      requestStartTime = Date.now();
+      const requestStartTime = Date.now();
 
       let list;
       try {
@@ -580,8 +578,7 @@ export const messagesJob: Job = {
 
       itemsToStream.push(...processedItems);
 
-      consecutiveExisting = newConsecutiveExisting;
-      if (consecutiveExisting >= 20) {
+      if (newConsecutiveExisting >= 20) {
         progress.done = true;
       }
 

@@ -1,0 +1,50 @@
+/* Shared Tailwind setup for every stylesheet that uses utilities. */
+@import "tailwindcss" source("../");
+
+@plugin "@tailwindcss/forms";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --text-*: initial;
+  --text-xs: 0.65rem;
+  --text-sm: 0.775rem;
+  --text-base: 0.65rem;
+  --text-md: 0.65rem;
+  --text-lg: 1rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  --text-5xl: 3rem;
+  --text-6xl: 4rem;
+  --text-7xl: 5rem;
+  --text-8xl: 6rem;
+  --text-9xl: 8rem;
+  --text-10xl: 10rem;
+  --text-11xl: 12rem;
+  --text-12xl: 14rem;
+  --text-13xl: 16rem;
+  --text-14xl: 18rem;
+
+  --font-IconFamily: IconFamily;
+
+  --animate-spin-fast: spin 0.4s linear infinite;
+
+  --aspect-theme: 5 / 1;
+}
+
+@layer base {
+  /* Tailwind 4 defaults borders to `currentcolor`; keep the v3 look. */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentcolor);
+  }
+
+  button {
+    cursor: pointer;
+  }
+}

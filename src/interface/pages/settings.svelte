@@ -584,7 +584,7 @@
               type="search"
               placeholder="Search settings"
               bind:value={settingsSearch}
-              class="h-10 w-full rounded-lg bg-zinc-200/70 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors duration-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-white dark:placeholder:text-zinc-500 dark:focus:bg-zinc-800 dark:focus:ring-offset-zinc-900"
+              class="h-10 w-full rounded-lg bg-zinc-200/70 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors duration-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-white dark:placeholder:text-zinc-500 dark:focus:bg-zinc-800 dark:focus:ring-offset-zinc-900"
             />
           </label>
         {/if}
@@ -618,7 +618,7 @@
             <button
               type="button"
               onclick={action.onclick}
-              class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white dark:focus:ring-offset-zinc-900"
+              class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white dark:focus:ring-offset-zinc-900"
             >
               <span class="w-5 text-center font-IconFamily text-[18px]" aria-hidden="true">{action.icon}</span>
               <span>{action.label}</span>
@@ -628,7 +628,7 @@
           <button
             type="button"
             onclick={() => openFeedback()}
-            class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus:ring-offset-zinc-900"
+            class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus:ring-offset-zinc-900"
           >
             <svg
               class="w-5 h-5 shrink-0"
@@ -756,7 +756,7 @@
       />
       {#if !standalone}
         <button type="button" onclick={toggleExpanded}
-          class="mt-2 flex h-11 w-11 shrink-0 self-start items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-none dark:text-zinc-400 dark:hover:text-white"
+          class="mt-2 flex h-11 w-11 shrink-0 self-start items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
           aria-label="Expand settings" title="Expand settings" aria-expanded="false">
           <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uebdb"}</span>
         </button>
@@ -810,7 +810,7 @@
     <button
       type="button"
       class="settings-backdrop absolute inset-0 {expanded ? 'bg-black/60' : 'bg-transparent'} {expanded && !$settingsState.performanceMode
-        ? 'backdrop-blur-sm'
+        ? 'backdrop-blur-xs'
         : 'backdrop-blur-none'}"
       class:settings-backdrop--motion={$settingsState.animations !== false && !$settingsState.performanceMode}
       aria-label="Close settings"

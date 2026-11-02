@@ -87,7 +87,7 @@ export async function applyNativeSidebar(): Promise<boolean> {
     return true;
   }
 
-  let menu: HTMLElement | null = null;
+  let menu: HTMLElement | null;
   try {
     menu = (await waitForElm("#menu", true, 50, 200)) as HTMLElement;
   } catch {

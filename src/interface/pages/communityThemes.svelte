@@ -22,7 +22,7 @@
         <button
           type="button"
           class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'browse'
-            ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
+            ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
           onclick={() => (communityState.innerTab = "browse")}
         >
@@ -31,7 +31,7 @@
         <button
           type="button"
           class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'mine'
-            ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
+            ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
           onclick={() => (communityState.innerTab = "mine")}
         >
@@ -41,7 +41,7 @@
           <button
             type="button"
             class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'review'
-              ? 'bg-white text-zinc-900 shadow dark:bg-zinc-700 dark:text-white'
+              ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
               : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
             onclick={() => (communityState.innerTab = "review")}
           >

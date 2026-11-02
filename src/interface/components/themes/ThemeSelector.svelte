@@ -177,7 +177,7 @@
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
-          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
+          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={(e) => handleThemeClick(theme, e)}
         >
           {#if isEditMode}
@@ -282,7 +282,7 @@
     {/if}
 
     {#if themes && showNavigation}
-      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
+      <div id="divider" class="w-full h-px my-2 bg-zinc-100 dark:bg-zinc-600"></div>
 
       <button
         onclick={() => void openStorePage()}

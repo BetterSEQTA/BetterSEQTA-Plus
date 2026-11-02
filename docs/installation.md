@@ -52,7 +52,7 @@ cd betterseqta-plus
 Using npm:
 
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 Using Bun (recommended):

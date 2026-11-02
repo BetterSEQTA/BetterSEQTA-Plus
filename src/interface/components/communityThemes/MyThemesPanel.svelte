@@ -192,7 +192,7 @@
         <li>
           <button
             type="button"
-            class="flex w-full items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left transition hover:border-zinc-300 hover:shadow-sm dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
+            class="flex w-full items-center gap-4 rounded-xl border border-zinc-200 bg-white p-4 text-left transition hover:border-zinc-300 hover:shadow-xs dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-zinc-600"
             onclick={() => void communityState.openDetail(theme)}
           >
             {#if theme.coverImage}

@@ -863,7 +863,7 @@ async function handleWeightings(mark: any, api: any) {
         await new Promise((resolve) => setTimeout(resolve, 2000));
         text = await extractPDFTextWithRetry(pdfUrl, 2, 2000);
       } else {
-        throw new Error(`PDF extraction failed: ${error.message}`);
+        throw new Error(`PDF extraction failed: ${error.message}`, { cause: error });
       }
     }
 
@@ -918,7 +918,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
   let hasRefreshingWeighting = false;
   let count = 0;
 
-  let fiberMarks: MarkLike[] = [];
+  let fiberMarks: MarkLike[];
   try {
     const state = await ReactFiber.find(
       "[class*='AssessmentList__items___']",

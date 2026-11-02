@@ -72,12 +72,12 @@
       </div>
     </div>
 
-    <div class="flex flex-col flex-shrink-0 justify-center items-center w-12">
-      <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+    <div class="flex flex-col shrink-0 justify-center items-center w-12">
+      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
       <div class="text-2xl text-zinc-900 dark:text-zinc-100">
         →
       </div>
-      <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
     </div>
 
     {#if !isCalculating}

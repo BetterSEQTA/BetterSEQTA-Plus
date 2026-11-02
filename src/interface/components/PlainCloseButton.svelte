@@ -8,7 +8,7 @@
 <button
   type="button"
   {onclick}
-  class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-none dark:text-zinc-400 dark:hover:text-white"
+  class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
   aria-label={label}
 >
   <svg

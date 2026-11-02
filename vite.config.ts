@@ -130,8 +130,6 @@ export default defineConfig(({ command, mode: viteMode }) => {
   },
   optimizeDeps: {
     include: [
-      "@babel/runtime/helpers/extends",
-      "@babel/runtime/helpers/interopRequireDefault",
       "layerchart",
       "d3-scale",
       "d3-shape",

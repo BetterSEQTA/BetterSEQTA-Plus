@@ -116,7 +116,7 @@
 {#if showQrModal && qrDataUrl}
   <div
     use:portal
-    class="fixed cursor-auto inset-0 z-[10000] flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-sm' : ''} {$settingsState.DarkMode ? 'dark' : ''}"
+    class="fixed cursor-auto inset-0 z-10000 flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-xs' : ''} {$settingsState.DarkMode ? 'dark' : ''}"
     role="button"
     tabindex="-1"
     onclick={(e) => {

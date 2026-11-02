@@ -61,7 +61,7 @@ export async function writeData(
     await txDone(tx);
   } catch (e) {
     const detail = e instanceof Error ? e.message : String(e);
-    throw new Error(`Failed to save background: ${detail}`);
+    throw new Error(`Failed to save background: ${detail}`, { cause: e });
   }
 }
 

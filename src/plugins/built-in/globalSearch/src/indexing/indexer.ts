@@ -23,7 +23,7 @@ let schemaCheckPromise: Promise<void> | null = null;
 async function ensureSchemaCurrent(): Promise<void> {
   if (schemaCheckPromise) return schemaCheckPromise;
   schemaCheckPromise = (async () => {
-    let storedRaw: string | null = null;
+    let storedRaw: string | null;
     try {
       storedRaw = localStorage.getItem(SCHEMA_VERSION_KEY);
     } catch {
@@ -279,10 +279,9 @@ function dispatchVectorProgress(
   } else if (status === "cancelled") {
     dispatchProgress(completed, totalSteps, false, "Vectorization cancelled", `Vectorization cancelled: ${message}`);
     return completed;
-  } else {
-    dispatchProgress(completed, totalSteps, true, "Vectorization in progress", detail);
   }
 
+  dispatchProgress(completed, totalSteps, true, "Vectorization in progress", detail);
   return completed;
 }
 

@@ -371,7 +371,7 @@
               <div class="mb-4 space-y-2 rounded-lg bg-white px-2 py-2 shadow-lg dark:bg-zinc-700">
                 <div class="flex h-16 items-center gap-2">
                   <div class="h-full">
-                    <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded" />
+                    <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded-sm" />
                   </div>
                   <input
                     type="text"
@@ -434,7 +434,7 @@
 
 <div class:dark={panelDark} class="h-full min-h-0 overflow-y-scroll no-scrollbar">
   {#if codeEditorFullscreen}
-    <div class="absolute inset-0 bg-white z-[10000] dark:bg-zinc-900 dark:text-white">
+    <div class="absolute inset-0 bg-white z-10000 dark:bg-zinc-900 dark:text-white">
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
@@ -486,7 +486,7 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
@@ -535,7 +535,7 @@
       {#each theme.CustomImages as image (image.id)}
         <div class="space-y-2 rounded-lg bg-zinc-200/80 px-2 py-2 dark:bg-zinc-700/80">
           <div class="flex h-16 items-center gap-2">
-            <ThemeBlobImage source={image.blob} alt="" class="h-full rounded object-contain" />
+            <ThemeBlobImage source={image.blob} alt="" class="h-full rounded-sm object-contain" />
             <input
               type="text"
               value={image.variableName}
@@ -626,7 +626,7 @@
             .filter(Boolean);
           theme = { ...theme, adaptiveCssVariables: lines };
         }}
-        class="p-2 mt-2 w-full min-h-[5rem] font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-none focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+        class="p-2 mt-2 w-full min-h-20 font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
       ></textarea>
     </div>
 
@@ -694,7 +694,7 @@
     {/each}
 
     <div
-      class="sticky bottom-0 z-[1500] -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
+      class="sticky bottom-0 z-1500 -mx-2 mt-4 space-y-2 border-t border-zinc-200/80 bg-zinc-100 p-3 pb-4 dark:border-zinc-700/60 dark:bg-zinc-800"
     >
       <button
         type="button"

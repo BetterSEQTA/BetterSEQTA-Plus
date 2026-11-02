@@ -187,7 +187,7 @@
           <button
             class={`px-4 py-2 text-sm font-medium transition-colors rounded-full
               ${activeTab === tab.toLowerCase() ? 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700' : 
-                'bg-zinc-100 dark:bg-transparent dark:outline dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
+                'bg-zinc-100 dark:bg-transparent dark:outline-solid dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
             onclick={() => activeTab = tab.toLowerCase() as typeof activeTab}
           >
             {tab}
@@ -266,7 +266,7 @@
 </div>
 
 {#if settingsState.devMode}
-  <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
+  <div class="p-4 mt-8 rounded-sm bg-zinc-100 dark:bg-zinc-800">
     <h3 class="mb-2 font-bold">Debug Info:</h3>
     <p>{debugInfo}</p>
     <p>Total backgrounds: {backgrounds.length}</p>

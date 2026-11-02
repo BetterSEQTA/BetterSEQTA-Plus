@@ -200,7 +200,7 @@ export async function fetchTimetableLessons(
   const { from, until } = range;
   const coloursPromise = fetchSubjectColours();
 
-  let lessons: SeqtaTimetableLesson[] = [];
+  let lessons: SeqtaTimetableLesson[];
 
   if (isEngageParentContext()) {
     const studentId = await resolveStudentId();

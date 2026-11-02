@@ -72,7 +72,7 @@
   <button
     type="button"
     onclick={handleButtonClick}
-    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-none dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
+    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-hidden dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
@@ -88,7 +88,7 @@
       {/if}
       <span
         class={alwaysShowUserName
-          ? "inline max-w-[10rem] truncate"
+          ? "inline max-w-40 truncate"
           : "hidden max-w-24 truncate sm:inline"}
       >
         {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
@@ -103,7 +103,7 @@
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
-      class="cloud-dropdown absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 shadow-xl z-[100] overflow-hidden"
+      class="cloud-dropdown absolute right-0 top-full mt-2 w-80 rounded-xl border border-zinc-200 dark:border-zinc-600 bg-white dark:bg-zinc-800 shadow-xl z-100 overflow-hidden"
       class:cloud-dropdown--motion={$settingsState.animations}
       onclick={(e) => e.stopPropagation()}
     >

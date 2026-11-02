@@ -65,7 +65,7 @@
   "GitHub latest version override",
 )}
   <div
-    class="flex-col p-1 my-1 bg-gradient-to-br from-white rounded-xl border shadow-sm to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
+    class="flex-col p-1 my-1 bg-linear-to-br from-white rounded-xl border shadow-xs to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
   >
     <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
@@ -216,7 +216,7 @@
             type="text"
             placeholder="https://betterseqta.org"
             bind:value={devApiBaseInput}
-            class="flex-1 px-2 py-1 text-xs rounded border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+            class="flex-1 px-2 py-1 text-xs rounded-sm border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
           />
           <Button onClick={applyDevApiBase} text="Apply" />
           {#if devApiBaseActive}
@@ -240,7 +240,7 @@
         oninput={(e) => {
           settingsState.devGhReleaseVersionOverride = e.currentTarget.value;
         }}
-        class="px-2 py-1 text-xs rounded border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
+        class="px-2 py-1 text-xs rounded-sm border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
       />
     </div>
   </div>

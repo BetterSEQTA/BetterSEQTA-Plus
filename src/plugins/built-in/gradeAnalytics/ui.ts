@@ -1,4 +1,4 @@
-import tailwindStyles from "./tailwind.css?inline";
+import tailwindStyles from "@/css/tailwind.css?inline";
 import pluginStyles from "./styles.css?inline";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { isSimpleAnalyticsUi } from "@/seqta/utils/performanceMode";

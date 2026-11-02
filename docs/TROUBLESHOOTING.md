@@ -21,8 +21,8 @@ Having issues with BetterSEQTA+ development? This guide covers the most common p
 
 **Solution**:
 ```bash
-rm -rf node_modules package-lock.json
-npm install --legacy-peer-deps
+rm -rf node_modules
+npm install
 ```
 
 ### ❌ "Cannot find module" errors
@@ -33,18 +33,18 @@ npm install --legacy-peer-deps
 1. **Clear and reinstall**:
    ```bash
    rm -rf node_modules
-   npm install --legacy-peer-deps
+   npm install
    ```
 
 2. **Check Node.js version**:
    ```bash
-   node --version  # Should be v16 or higher
+   node --version  # Should be v22.12 or higher
    ```
 
 3. **Try with npm cache clean**:
    ```bash
    npm cache clean --force
-   npm install --legacy-peer-deps
+   npm install
    ```
 
 ### ❌ Permission errors on macOS/Linux
@@ -246,7 +246,7 @@ sudo chown -R $(whoami) /usr/local/lib/node_modules
 2. **Clear cache and rebuild**:
    ```bash
    rm -rf dist node_modules
-   npm install --legacy-peer-deps
+   npm install
    npm run build
    ```
 

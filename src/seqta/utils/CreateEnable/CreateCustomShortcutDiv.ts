@@ -27,7 +27,7 @@ export function CreateCustomShortcutDiv(element: any) {
   shortcutdiv.classList.add("shortcut");
   shortcutdiv.classList.add("customshortcut");
 
-  let image: ChildNode | null = null;
+  let image: ChildNode | null;
 
   if (typeof element.icon === "string" && element.icon.trim().startsWith("<")) {
     image = stringToHTML(element.icon).firstChild;

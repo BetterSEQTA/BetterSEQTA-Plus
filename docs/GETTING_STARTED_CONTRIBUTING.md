@@ -42,7 +42,7 @@ cd BetterSEQTA-plus
 
 ### 2. Install Dependencies (3 minutes)
 ```bash
-npm install --legacy-peer-deps
+npm install
 ```
 
 ### 3. Start Development Server (2 minutes)

@@ -74,7 +74,7 @@
   }
 </script>
 
-<div class="flex flex-col items-end gap-2 shrink-0 max-w-[14rem]" title={scopeLabel}>
+<div class="flex flex-col items-end gap-2 shrink-0 max-w-56" title={scopeLabel}>
   {#if syncOptIn}
     <p class="text-xs font-medium text-green-600 dark:text-green-400">Opted in on this site</p>
   {:else}

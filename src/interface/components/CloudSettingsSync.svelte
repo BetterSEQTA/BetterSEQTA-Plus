@@ -109,7 +109,7 @@
         href="https://betterseqta.org/privacy"
         target="_blank"
         rel="noopener noreferrer"
-        class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-sm"
+        class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-xs"
       >Privacy policy</a>
     </p>
   </div>

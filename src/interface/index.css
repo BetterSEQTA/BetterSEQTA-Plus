@@ -1,12 +1,6 @@
-@import "./components/ColourPicker.css";
+@import './components/ColourPicker.css' layer(base);
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-button {
-  @apply cursor-pointer;
-}
+@import "../css/tailwind.css";
 
 ::-webkit-scrollbar {
   display: none;

@@ -35,7 +35,7 @@ async function sendRuntimeMessage<T>(message: object): Promise<T> {
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     if (/disconnected port|context invalidated|receiving end does not exist|message port closed/i.test(msg)) {
-      throw new Error(EXTENSION_RELOAD_HINT);
+      throw new Error(EXTENSION_RELOAD_HINT, { cause: err });
     }
     throw err;
   }

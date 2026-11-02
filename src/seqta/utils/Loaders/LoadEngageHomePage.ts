@@ -228,7 +228,7 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
   const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
   if (!noticeContainer) return;
 
-  let prefsPayload: unknown = [];
+  let prefsPayload: unknown;
   try {
     const prefsRes = await fetch(`${location.origin}/seqta/parent/load/prefs?`, {
       method: "POST",

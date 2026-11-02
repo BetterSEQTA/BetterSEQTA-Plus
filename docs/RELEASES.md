@@ -54,7 +54,7 @@ All release and CI builds that need packaged extensions use the composite action
 
 It:
 
-1. Installs dependencies (`npm install --legacy-peer-deps`)
+1. Installs dependencies (`npm ci`)
 2. Runs `npm run build` (Chrome then Firefox via Vite)
 3. Zips each unpacked folder into sideload-ready archives:
    - `dist/betterseqtaplus-{version}-chrome.zip`
@@ -154,7 +154,7 @@ The nightly release body warns that builds are experimental and must not be uplo
 
 **Steps:**
 
-1. `npm install --legacy-peer-deps`
+1. `npm ci`
 2. `npm run lint` (ESLint on `src/**/*.{js,ts}`)
 3. Build via the shared action with **no** update detector
 

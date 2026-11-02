@@ -202,7 +202,7 @@ export function determineStatus(item: any): string {
   }
 
   const completedKey = "betterseqta-completed-assessments";
-  let completed: unknown[] = [];
+  let completed: unknown[];
   try {
     const raw = localStorage.getItem(completedKey);
     const parsed = raw ? JSON.parse(raw) : [];

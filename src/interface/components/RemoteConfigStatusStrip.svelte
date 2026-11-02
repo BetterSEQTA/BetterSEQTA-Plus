@@ -65,7 +65,7 @@
       {#if activeTheme?.mode === "optional" && snapshot.remoteTheme?.allowUserOptOut !== false}
         <button
           type="button"
-          class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+          class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
           onclick={() => void turnOffOptionalTheme()}
         >
           Turn off school theme
@@ -74,7 +74,7 @@
       {#if killActive && !isEffectiveBsplusEnabled() && allowOverride}
         <button
           type="button"
-          class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
+          class="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900"
           onclick={enableLocalRun}
         >
           Run locally anyway
@@ -86,7 +86,7 @@
       {/if}
       <button
         type="button"
-        class="rounded-lg border border-amber-300/80 px-3 py-1.5 text-xs font-medium transition-colors duration-200 hover:bg-amber-100/80 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:border-amber-800 dark:hover:bg-amber-900/50 dark:focus:ring-offset-zinc-900"
+        class="rounded-lg border border-amber-300/80 px-3 py-1.5 text-xs font-medium transition-colors duration-200 hover:bg-amber-100/80 focus:outline-hidden focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 dark:border-amber-800 dark:hover:bg-amber-900/50 dark:focus:ring-offset-zinc-900"
         onclick={openGeneralSettings}
       >
         General settings

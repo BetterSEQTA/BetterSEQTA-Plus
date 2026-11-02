@@ -52,7 +52,7 @@ export function createCustomThemesHandlers(deps: {
 }): Record<string, (request: any, sendResponse: MessageSender) => boolean> {
   async function readCustomThemesResponse(r: Response): Promise<Record<string, unknown>> {
     const text = await r.text();
-    let body: unknown = {};
+    let body: unknown;
     try {
       body = text ? JSON.parse(text) : {};
     } catch {

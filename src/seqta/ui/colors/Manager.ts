@@ -140,8 +140,7 @@ function applyColorsWith(selectedColor: string) {
   };
 
   // Mode-based properties, applied if storedSetting is provided
-  let modeProps = {};
-  modeProps = settingsState.DarkMode
+  const modeProps = settingsState.DarkMode
     ? {
         "--betterseqta-logo": `url(${resolveExtensionAssetUrl(darkLogo)})`,
       }

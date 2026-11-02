@@ -19,8 +19,8 @@
 
   const inputClass = $derived(
     compact
-      ? "w-full px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200"
-      : "w-full px-4 py-3 text-base rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-none focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200",
+      ? "w-full px-4 py-2 text-sm rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200"
+      : "w-full px-4 py-3 text-base rounded-lg bg-zinc-100 dark:bg-zinc-800 dark:text-white border border-zinc-200 dark:border-zinc-600 focus:outline-hidden focus:ring-2 focus:ring-accent-ring focus:border-transparent transition-colors duration-200",
   );
 
   const btnClass = $derived(

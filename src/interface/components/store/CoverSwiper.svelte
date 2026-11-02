@@ -53,9 +53,9 @@
           >
             <img src={slide.imageUrl} alt="" class="absolute inset-0 z-0 h-full w-full object-cover" />
             {#if slide.badgeFeatured === true}
-              <div class="absolute top-4 left-4 z-[2] pointer-events-none">
+              <div class="absolute top-4 left-4 z-2 pointer-events-none">
                 <span
-                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-sm"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-xs"
                   aria-label="Featured theme"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
@@ -69,7 +69,7 @@
                 </span>
               </div>
             {/if}
-            <div class="absolute bottom-0 left-0 z-[2] p-8">
+            <div class="absolute bottom-0 left-0 z-2 p-8">
               <h2 class="text-4xl font-bold text-white">{slide.title}</h2>
               {#if slide.subtitle}
                 <p class="text-lg font-medium text-white/95 mt-1 line-clamp-2">{slide.subtitle}</p>

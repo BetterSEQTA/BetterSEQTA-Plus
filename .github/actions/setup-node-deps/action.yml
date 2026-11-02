@@ -1,5 +1,5 @@
 name: Setup Node and dependencies
-description: Install Node.js 22.x and npm dependencies.
+description: Install Node.js 22.x and npm dependencies from the lockfile.
 
 runs:
   using: composite
@@ -11,4 +11,4 @@ runs:
 
     - name: Install dependencies
       shell: bash
-      run: npm install --legacy-peer-deps
+      run: npm ci

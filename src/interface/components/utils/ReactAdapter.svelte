@@ -1,30 +1,31 @@
 <script lang="ts">
-  import React from "react";
-  import ReactDOM from "react-dom";
+  import { createElement } from "react";
+  import { createRoot, type Root } from "react-dom/client";
   import { onDestroy } from "svelte";
 
-  const e = React.createElement;
   let adapterProps = $props();
   let container = $state<HTMLDivElement | null>(null);
+  let root: Root | null = null;
 
   $effect(() => {
     if (!container) return;
 
     const { el, children, class: className, ...rest } = adapterProps;
     try {
-      ReactDOM.render(e(el, rest, children), container);
+      root ??= createRoot(container);
+      root.render(createElement(el, rest, children));
     } catch (err) {
       console.warn(`react-adapter failed to mount.`, { err });
     }
   });
 
   onDestroy(() => {
-    if (!container) return;
     try {
-      ReactDOM.unmountComponentAtNode(container);
+      root?.unmount();
     } catch (err) {
       console.warn(`react-adapter failed to unmount.`, { err });
     }
+    root = null;
   });
 </script>
 
