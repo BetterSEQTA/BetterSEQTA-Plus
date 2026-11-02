@@ -325,11 +325,11 @@ async function callHomeTimetable(date: string, change?: any) {
 
       GetLessonColours().then((colours) => {
         for (let i = 0; i < lessonArray.length; i++) {
-          let subjectname =
+          const subjectname =
             lessonArray[i].type == "tutorial"
               ? `timetable.tutor.${lessonArray[i].tutorID}`
               : `timetable.subject.colour.${lessonArray[i].code}`;
-          let subject = colours.find((element: any) => element.name === subjectname);
+          const subject = colours.find((element: any) => element.name === subjectname);
 
           if (!subject) {
             lessonArray[i].colour = "--item-colour: #8e8e8e;";

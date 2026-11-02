@@ -222,7 +222,7 @@ export async function syncLessonsToCalendar(
     verboseLog(`[BetterSEQTA+] ${provider.label} remote event list failed:`, err);
   }
 
-  let staleEntries = entriesToPrune(
+  const staleEntries = entriesToPrune(
     eventMap,
     request.origin,
     mode,

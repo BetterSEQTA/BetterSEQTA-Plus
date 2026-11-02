@@ -15,7 +15,7 @@ let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;
 let initializationFailed = false;
 let currentAbortController: AbortController | null = null;
-let loadedItemIds = new Set<string>();
+const loadedItemIds = new Set<string>();
 
 function isFirefoxWorker(): boolean {
   try {

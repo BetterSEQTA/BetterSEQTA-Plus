@@ -28,17 +28,17 @@ function createNewShortcut(link: any, icon: any, viewBox: any, title: any) {
   const container = document.getElementById("shortcuts");
   if (!container) return;
 
-  let shortcut = document.createElement("a");
+  const shortcut = document.createElement("a");
   shortcut.setAttribute("href", link);
   shortcut.setAttribute("target", "_blank");
-  let shortcutdiv = document.createElement("div");
+  const shortcutdiv = document.createElement("div");
   shortcutdiv.classList.add("shortcut");
 
-  let image = stringToHTML(
+  const image = stringToHTML(
     `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
   ).firstChild;
   (image! as HTMLElement).classList.add("shortcuticondiv");
-  let text = document.createElement("p");
+  const text = document.createElement("p");
   text.textContent = title;
   shortcutdiv.append(image as HTMLElement);
   shortcutdiv.append(text);

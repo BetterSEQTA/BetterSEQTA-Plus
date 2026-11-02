@@ -46,7 +46,7 @@ function registerFetchSeqtaAppLinkListener() {
   });
 }
 
-var IsSEQTAPage = false;
+let IsSEQTAPage = false;
 
 /** Loaded on demand by SEQTA.ts for pages with the SEQTA copyright comment. */
 export function boot() {

@@ -158,7 +158,7 @@ function average(nums: number[]): number {
 
 function slugSubjectKey(name: string, keyBySubject: Map<string, string>): string {
   if (keyBySubject.has(name)) return keyBySubject.get(name)!;
-  let base =
+  const base =
     name
       .trim()
       .replace(/[^\w]+/g, "_")

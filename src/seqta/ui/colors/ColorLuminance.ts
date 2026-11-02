@@ -23,7 +23,7 @@ export default function ColorLuminance(color: any, lum = 0) {
   if (color.toLowerCase().includes("gradient")) {
     let gradient = color;
 
-    let uniqueColorSet = new Set();
+    const uniqueColorSet = new Set();
 
     let match;
     while ((match = colorRegex.exec(color)) !== null) {
@@ -31,7 +31,7 @@ export default function ColorLuminance(color: any, lum = 0) {
     }
 
     // Adjust luminance for each unique color stop
-    for (let colorStop of uniqueColorSet) {
+    for (const colorStop of uniqueColorSet) {
       const adjustedColor = adjustLuminance(colorStop, lum);
       gradient = gradient.replace(new RegExp(colorStop as string, "gi"), adjustedColor);
     }

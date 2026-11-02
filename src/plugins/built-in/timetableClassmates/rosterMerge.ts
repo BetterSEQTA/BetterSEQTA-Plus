@@ -22,7 +22,7 @@ export function mergePayloadIntoRoster(
   const senderId = payload.sender.seqtaId;
   if (!allowedSeqtaIds.has(senderId)) return index;
 
-  let next: ClassRosterIndex = { ...index };
+  const next: ClassRosterIndex = { ...index };
   const refs = classRefsFromTimetableItems(payload.classes);
   const updatedAt = Date.now();
   const member: RosterMember = {

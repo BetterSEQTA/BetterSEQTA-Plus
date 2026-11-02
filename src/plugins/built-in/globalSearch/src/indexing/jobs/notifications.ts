@@ -118,8 +118,8 @@ const fetchAssessmentName = async (
   };
 
   try {
-    let payload = await fetchAssessments("/seqta/student/assessment/list/past");
-    let title = searchAssessment(payload);
+    const payload = await fetchAssessments("/seqta/student/assessment/list/past");
+    const title = searchAssessment(payload);
     if (title) return title;
 
     await delay(NOTIFICATIONS_RATE_LIMIT.baseDelay);

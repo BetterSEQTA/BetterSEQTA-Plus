@@ -2,7 +2,7 @@ import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 
 export function FilterUpcomingAssessments(subjectoptions: any) {
   for (const item in subjectoptions) {
-    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
+    const subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
     for (let i = 0; i < subjectdivs.length; i++) {
       const element = subjectdivs[i];
@@ -15,7 +15,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
       }
       (element.parentNode! as HTMLElement).classList.remove("hidden");
 
-      let children = element.parentNode!.parentNode!.children;
+      const children = element.parentNode!.parentNode!.children;
       for (let i = 0; i < children.length; i++) {
         const element = children[i];
         if (element.hasAttribute("data-hidden")) {
@@ -45,8 +45,8 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
 }
 
 function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
-  let textcontainer = CreateElement("div", "upcoming-blank");
-  let textblank = CreateElement("p", "upcoming-hiddenassessment");
+  const textcontainer = CreateElement("div", "upcoming-blank");
+  const textblank = CreateElement("p", "upcoming-hiddenassessment");
   let s = "";
   if (numberofassessments > 1) {
     s = "s";

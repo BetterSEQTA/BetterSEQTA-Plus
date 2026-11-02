@@ -195,7 +195,7 @@ function applyColorsWith(selectedColor: string) {
     }
   }
 
-  let alliframes = document.getElementsByTagName("iframe");
+  const alliframes = document.getElementsByTagName("iframe");
 
   for (let i = 0; i < alliframes.length; i++) {
     const element = alliframes[i];

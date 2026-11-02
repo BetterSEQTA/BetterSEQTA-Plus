@@ -283,7 +283,7 @@ export function searchDynamicItems(
 
   // For short queries, always do a simple substring match to supplement Fuse.js results
   // This ensures we catch partial word matches like "SAT" in "SAT 1: Differential Calculus"
-  let additionalMatches: IndexItem[] = [];
+  const additionalMatches: IndexItem[] = [];
   if (isShortQuery) {
     // Always do substring search for short queries to catch partial word matches
     for (const item of dynamicIdToItemMap.values()) {

@@ -6,7 +6,7 @@ export function GetThresholdOfColor(color: any) {
 
   // Check if the color string is a gradient (linear or radial)
   if (color.includes("gradient")) {
-    let gradientThresholds = [];
+    const gradientThresholds = [];
 
     // Find and replace all instances of RGBA in the gradient
     let match;

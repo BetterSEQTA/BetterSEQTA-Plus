@@ -879,7 +879,7 @@ export function AppendElementsToDisabledPage() {
   verboseInfo("[BetterSEQTA+] Appending elements to disabled page");
   AddBetterSEQTAElements();
 
-  let settingsStyle = document.createElement("style");
+  const settingsStyle = document.createElement("style");
   settingsStyle.innerHTML = /* css */ `
   .addedButton {
     position: absolute !important;

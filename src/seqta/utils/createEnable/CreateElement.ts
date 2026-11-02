@@ -6,7 +6,7 @@ export function CreateElement(
   innerHTML?: string,
   style?: string,
 ) {
-  let element = document.createElement(type);
+  const element = document.createElement(type);
   if (class_ !== undefined) {
     element.classList.add(class_);
   }
