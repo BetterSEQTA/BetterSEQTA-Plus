@@ -9,7 +9,7 @@
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
   import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
-  import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
+  import { closeExtensionPopup } from '@/seqta/utils/closers/closeExtensionPopup'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
   import { getRemoteConfigSnapshot, resolveEffectiveRemoteTheme } from '@/seqta/utils/remoteConfig/runtime'
 

@@ -1,6 +1,6 @@
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";

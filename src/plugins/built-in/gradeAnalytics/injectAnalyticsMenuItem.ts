@@ -4,10 +4,10 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import {
   ensureAnalyticsMenuOrder,
   insertMenuItemAfterKey,
-} from "@/seqta/utils/Openers/analyticsMenuOrder";
+} from "@/seqta/utils/openers/analyticsMenuOrder";
 import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";

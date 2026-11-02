@@ -4,7 +4,7 @@
 
 import patchScript from "@/seqta/utils/themeImagePagePatch.js?script&iife";
 import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
-import { blobToBase64Data } from "@/plugins/built-in/themes/themeImageUrl";
+import { blobToBase64Data } from "@/seqta/utils/base64";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-theme-image-page-patch-loader";
 const BRIDGE_ID = "bsplus-theme-image-bridge";

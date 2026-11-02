@@ -11,9 +11,9 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
-  import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
-  import { OpenAboutPage } from "@/seqta/utils/Openers/OpenAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/Openers/OpenWhatsNewPopup";
+  import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
+  import { OpenAboutPage } from "@/seqta/utils/openers/OpenAboutPage";
+  import { OpenWhatsNewPopup } from "@/seqta/utils/openers/OpenWhatsNewPopup";
 
   import type { Component } from "svelte";
   import SidebarNav from "../components/SidebarNav.svelte";

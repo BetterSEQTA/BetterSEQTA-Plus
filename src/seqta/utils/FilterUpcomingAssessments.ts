@@ -1,4 +1,4 @@
-import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
+import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 
 export function FilterUpcomingAssessments(subjectoptions: any) {
   for (var item in subjectoptions) {

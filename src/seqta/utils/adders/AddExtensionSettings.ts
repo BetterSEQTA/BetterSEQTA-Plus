@@ -1,4 +1,4 @@
-import { closeExtensionPopup } from "../Closers/closeExtensionPopup";
+import { closeExtensionPopup } from "../closers/closeExtensionPopup";
 import { isExtensionSettingsOpen } from "../settingsPopupAnimation";
 
 let isSettingsRendered = false;

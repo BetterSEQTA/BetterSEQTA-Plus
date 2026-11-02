@@ -1,8 +1,8 @@
 import browser from "webextension-polyfill";
 
-import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
-import { OpenMenuOptions } from "@/seqta/utils/Openers/OpenMenuOptions";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
+import { OpenMenuOptions } from "@/seqta/utils/openers/OpenMenuOptions";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";

@@ -3,11 +3,11 @@ import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 
 // Shortcuts rendering
-import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
+import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
-import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/Loaders/LoadHomePage";
+import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/LoadHomePage";
 import { applyMenuItemVisibility, scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
 
 import type { CustomShortcut } from "@/types/storage";

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { blobToDataUrl } from '@/plugins/built-in/themes/themeImageUrl'
+  import { blobToDataUrl } from '@/seqta/utils/base64'
 
   let { source, alt = '', class: className = '' } = $props<{
     source: string | Blob | null | undefined

@@ -8,8 +8,8 @@ import { convertTo12HourFormat } from "../convertTo12HourFormat";
 import { delay } from "../delay";
 import { settingsState } from "../listeners/SettingsState";
 import stringToHTML from "../stringToHTML";
-import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
-import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
+import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
+import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { setupFixedTooltips } from "@/seqta/utils/fixedTooltip";
 import { verboseInfo } from "@/utils/verboseLog";
@@ -21,7 +21,7 @@ import {
 } from "@/plugins/built-in/assessmentsOverview/utils";
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
 import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
-import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
+import { lessonsSubtitleForViewDate } from "@/seqta/utils/loaders/timetableSubtitle";
 import {
   applyPageFeatureGateEarly,
   injectPageFeatureBanner,

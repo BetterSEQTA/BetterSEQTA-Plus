@@ -2,9 +2,9 @@
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import { openTermsOfServicePopup } from "@/seqta/utils/Openers/OpenTermsOfServicePopup";
-  import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/Openers/OpenThemeOfTheMonthPopup";
-  import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
+  import { openTermsOfServicePopup } from "@/seqta/utils/openers/OpenTermsOfServicePopup";
+  import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/openers/OpenThemeOfTheMonthPopup";
+  import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync";
   import { getStoredOverride, PRODUCTION_API_BASE, setApiBase } from "@/seqta/utils/DevApiBase";
 

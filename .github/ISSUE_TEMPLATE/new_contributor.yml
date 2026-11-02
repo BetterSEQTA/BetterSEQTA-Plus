@@ -46,7 +46,7 @@ body:
     attributes:
       label: Have you read our guides?
       options:
-        - label: "Getting Started Guide (see docs/GETTING_STARTED_CONTRIBUTING.md)"
+        - label: "Contributing guide (see CONTRIBUTING.md)"
           required: true
         - label: "Architecture Guide (see docs/ARCHITECTURE.md)"
           required: true

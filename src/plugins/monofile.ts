@@ -27,10 +27,10 @@ import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
   loadEngageHomePage,
   updateEngageHomeMenuActive,
-} from "@/seqta/utils/Loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
-import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
-import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/Openers/OpenCoursesAssessmentsFixPopup";
+} from "@/seqta/utils/loaders/LoadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
+import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
+import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/OpenCoursesAssessmentsFixPopup";
 
 import {
   syncTimetableUrlMonitoring,

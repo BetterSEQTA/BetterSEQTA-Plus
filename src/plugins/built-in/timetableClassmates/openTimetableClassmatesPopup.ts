@@ -1,6 +1,6 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { createPopupHeroVideo } from "@/seqta/utils/Openers/attachPopupMediaFullscreen";
-import { closePopup, openPopup } from "@/seqta/utils/Openers/PopupManager";
+import { createPopupHeroVideo } from "@/seqta/utils/openers/attachPopupMediaFullscreen";
+import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
 import { mount, unmount } from "svelte";
 import TimetableClassmatesOptInPopup from "./TimetableClassmatesOptInPopup.svelte";
 import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.svelte";

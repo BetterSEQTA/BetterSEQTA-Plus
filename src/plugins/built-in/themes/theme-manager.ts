@@ -39,7 +39,7 @@ import {
   base64ToBlob,
   blobToBase64Data,
   stripBase64Prefix,
-} from "./themeImageUrl";
+} from "@/seqta/utils/base64";
 
 type ThemeContent = {
   id: string;

@@ -12,8 +12,7 @@ export function generateImageId(): string {
 
 /**
  * Handles the upload of a new custom image from a file input event.
- * If a file is selected, it reads the file using FileReader, converts it to a Blob,
- * generates a unique ID and a default variable name for it, and then adds this new image
+ * If a file is selected, it generates a unique ID and a default variable name for it, and then adds this new image
  * to the `CustomImages` array within the provided `theme` object.
  *
  * @param {Event} event The file input change event, typically from an `<input type="file">` element.
@@ -30,23 +29,17 @@ export function handleImageUpload(
   const file = input.files?.[0];
   input.value = "";
   if (file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const imageBlob = await fetch(reader.result as string).then((res) =>
-          res.blob(),
-        );
-        const imageId = generateImageId();
-        const variableName = `custom-image-${theme.CustomImages.length}`;
-        resolve({
-          ...theme,
-          CustomImages: [
-            ...theme.CustomImages,
-            { id: imageId, blob: imageBlob, variableName, url: null },
-          ],
-        });
-      };
-      reader.readAsDataURL(file);
+    return Promise.resolve({
+      ...theme,
+      CustomImages: [
+        ...theme.CustomImages,
+        {
+          id: generateImageId(),
+          blob: file,
+          variableName: `custom-image-${theme.CustomImages.length}`,
+          url: null,
+        },
+      ],
     });
   }
   return theme;
@@ -98,8 +91,7 @@ export function handleImageVariableChange(
 
 /**
  * Handles the upload of a cover image for the theme from a file input event.
- * If a file is selected, it reads the file using FileReader, converts it to a Blob,
- * and then updates the `coverImage` property of the provided `theme` object with this new blob.
+ * If a file is selected, it updates the `coverImage` property of the provided `theme` object with the file.
  *
  * @param {Event} event The file input change event, typically from an `<input type="file">` element.
  * @param {LoadedCustomTheme} theme The current theme object whose cover image will be updated.
@@ -114,17 +106,5 @@ export function handleCoverImageUpload(
   const input = event.target as HTMLInputElement;
   const file = input.files?.[0];
   input.value = "";
-  if (file) {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = async () => {
-        const imageBlob = await fetch(reader.result as string).then((res) =>
-          res.blob(),
-        );
-        resolve({ ...theme, coverImage: imageBlob });
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-  return Promise.resolve(theme);
+  return Promise.resolve(file ? { ...theme, coverImage: file } : theme);
 }

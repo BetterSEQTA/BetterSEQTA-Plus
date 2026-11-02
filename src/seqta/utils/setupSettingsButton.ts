@@ -1,6 +1,6 @@
-import { closeExtensionPopup, getSettingsOpenGeneration } from "./Closers/closeExtensionPopup";
+import { closeExtensionPopup, getSettingsOpenGeneration } from "./closers/closeExtensionPopup";
 import { animateSettingsOpen, isExtensionSettingsOpen, prefetchSettingsShell } from "./settingsPopupAnimation";
-import { renderSettingsIfNeeded } from "./Adders/AddExtensionSettings";
+import { renderSettingsIfNeeded } from "./adders/AddExtensionSettings";
 
 export function setupSettingsButton() {
   const AddedSettings = document.getElementById("AddedSettings");
@@ -33,7 +33,7 @@ export async function openSettingsPopup(): Promise<void> {
     try {
       let host = document.getElementById("ExtensionPopup");
       if (!host) {
-        const { addExtensionSettings } = await import("./Adders/AddExtensionSettings");
+        const { addExtensionSettings } = await import("./adders/AddExtensionSettings");
         addExtensionSettings();
         host = document.getElementById("ExtensionPopup");
       }

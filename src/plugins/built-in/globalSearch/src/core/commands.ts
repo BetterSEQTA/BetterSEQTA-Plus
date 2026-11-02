@@ -1,5 +1,5 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 export interface BaseCommandItem {

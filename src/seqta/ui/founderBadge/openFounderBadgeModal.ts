@@ -1,5 +1,5 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { closePopup, openPopup } from "@/seqta/utils/Openers/PopupManager";
+import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
 import { openFounderBadgeSettings } from "@/seqta/ui/founderBadge/openFounderBadgeSettings";
 import {
   badgeBlobStyle,

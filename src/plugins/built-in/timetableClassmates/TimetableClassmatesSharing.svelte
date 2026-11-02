@@ -1,7 +1,7 @@
 <script lang="ts">
   import Button from "@/interface/components/Button.svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
+  import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
   import { runTimetableClassmatesSync } from "./syncOrchestrator";
   import { loadSession, resolveClassmatesScope } from "./rosterStore";
   import { accountsAvailability } from "./accountsAvailability";

@@ -2,7 +2,7 @@ import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
   loadEngageHomePage,
   updateEngageHomeMenuActive,
-} from "@/seqta/utils/Loaders/LoadEngageHomePage";
+} from "@/seqta/utils/loaders/LoadEngageHomePage";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 let engageHashListenerAttached = false;

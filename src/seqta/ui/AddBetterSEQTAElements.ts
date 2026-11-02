@@ -1,8 +1,8 @@
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
-import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
+import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { loadEngageHomePage } from "@/seqta/utils/Loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { loadEngageHomePage } from "@/seqta/utils/loaders/LoadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
 import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
 import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
@@ -19,7 +19,7 @@ import {
   ensureThemeToggleSurprisePageScript,
   openThemeToggleSurprise,
   THEME_TOGGLE_SURPRISE_TRIGGER_AT,
-} from "@/seqta/utils/Openers/openThemeToggleSurprise";
+} from "@/seqta/utils/openers/openThemeToggleSurprise";
 import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
 import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import { ensureTitlebarFounderBadgeMounted, refreshTitlebarFounderBadge } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";

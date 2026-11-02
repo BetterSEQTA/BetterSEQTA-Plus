@@ -1,4 +1,4 @@
-import { toISODate } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
 import type { CalendarSyncAssessment } from "./eventMapper";
 import type { SyncDateRange } from "./syncDateRange";
 import { isDateInRange, syncWindowRange } from "./syncDateRange";

@@ -19,7 +19,7 @@ import {
   notifyRemoteConfigPageContext,
   ensureKilledModeSettingsAccess,
 } from "@/seqta/utils/remoteConfig/runtime";
-import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
+import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {

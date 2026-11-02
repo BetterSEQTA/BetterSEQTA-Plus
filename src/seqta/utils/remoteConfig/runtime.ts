@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { addExtensionSettings } from "@/seqta/utils/Adders/AddExtensionSettings";
+import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";

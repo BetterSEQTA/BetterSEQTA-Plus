@@ -1,17 +1,17 @@
 import type { SettingsState } from "@/types/storage";
 import { settingsState } from "../listeners/SettingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
-import { ensureAnalyticsMenuOrder } from "@/seqta/utils/Openers/analyticsMenuOrder";
+import { ensureAnalyticsMenuOrder } from "@/seqta/utils/openers/analyticsMenuOrder";
 import {
   isMenuOptionsOpen,
   setMenuOptionsOpen,
-} from "@/seqta/utils/Openers/menuOptionsState";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
+} from "@/seqta/utils/openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
-export { MenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
-export { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
+export { MenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
+export { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 
 function escapeHtmlAttr(value: string): string {
   return value

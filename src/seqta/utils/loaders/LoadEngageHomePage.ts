@@ -4,8 +4,8 @@ import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { renderShortcuts } from "@/seqta/utils/Render/renderShortcuts";
-import { lessonsSubtitleForViewDate } from "@/seqta/utils/Loaders/timetableSubtitle";
+import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
+import { lessonsSubtitleForViewDate } from "@/seqta/utils/loaders/timetableSubtitle";
 import {
   type EngageParentChild,
   type EngageParentTimetableItem,
@@ -14,7 +14,7 @@ import {
   isDateInCachedWeek,
   toISODate,
   weekRangeContaining,
-} from "@/seqta/utils/Loaders/engageParentTimetable";
+} from "@/seqta/utils/loaders/engageParentTimetable";
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
 import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
 
