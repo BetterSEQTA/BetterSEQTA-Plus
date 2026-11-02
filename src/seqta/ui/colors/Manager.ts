@@ -160,7 +160,11 @@ function applyColorsWith(selectedColor: string) {
     "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(selectedColor, 0.95),
   };
 
-  applyProperties({ ...commonProps, ...modeProps, ...dynamicProps });
+  const cssVars: Record<string, string> = { ...commonProps, ...dynamicProps };
+  for (const [key, value] of Object.entries(modeProps)) {
+    if (value != null) cssVars[key] = value;
+  }
+  applyProperties(cssVars);
 
   if (settingsState.selectedTheme) {
     const channels = getRepresentativeRgbChannels(selectedColor);

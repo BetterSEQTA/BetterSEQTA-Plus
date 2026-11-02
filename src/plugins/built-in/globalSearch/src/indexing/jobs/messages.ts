@@ -207,8 +207,8 @@ async function processMessagesInParallel(
   let shouldStop = false;
 
   const messagesToProcess = messages.filter((msg) => {
-    const id = msg.id.toString();
-    const messageDate = new Date(msg.date).getTime();
+    const id = String(msg.id);
+    const messageDate = new Date(String(msg.date)).getTime();
 
     if (messageDate < twoYearsAgo) {
       //! older than 2 years ago
@@ -238,19 +238,20 @@ async function processMessagesInParallel(
     const batchStartTime = Date.now();
 
     const batchPromises = batch.map(async (msg) => {
-      const id = msg.id.toString();
+      const id = String(msg.id);
+      const messageId = Number(msg.id);
 
       try {
-        const full = await fetchMessageContent(msg.id);
+        const full = await fetchMessageContent(messageId);
         const responseTime = Date.now() - batchStartTime;
 
         if (full && full.status === "200") {
           const item: IndexItem = {
             id,
-            text: msg.subject,
+            text: String(msg.subject ?? ""),
             category: "messages",
-            content: `${htmlToPlainText(full.payload.contents)}\nFrom: ${msg.sender}`,
-            dateAdded: new Date(msg.date).getTime(),
+            content: `${htmlToPlainText(full.payload.contents)}\nFrom: ${String(msg.sender ?? "")}`,
+            dateAdded: new Date(String(msg.date)).getTime(),
             metadata: {
               messageId: msg.id,
               author: msg.sender,
@@ -290,7 +291,7 @@ async function processMessagesInParallel(
         batchSuccesses++;
       } else {
         if (updatedProgress.retryQueue.length < 50 && result.messageId) {
-          updatedProgress.retryQueue.push(result.messageId);
+          updatedProgress.retryQueue.push(Number(result.messageId));
         }
         batchFailures++;
       }

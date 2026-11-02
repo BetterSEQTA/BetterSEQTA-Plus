@@ -1,9 +1,9 @@
-import type { Component } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
 
 export interface SettingsList {
   title: string;
   id: number;
   description: string;
-  Component: Component<Record<string, unknown>>;
+  Component: MountableSvelteComponent;
   props?: Record<string, unknown>;
 }

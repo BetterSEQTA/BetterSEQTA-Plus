@@ -78,8 +78,10 @@ async function resolveAssessmentId(
 
   if (!resolvedMarks) {
     try {
-      const state = await ReactFiber.find("[class*='AssessmentList__items___']").getState();
-      resolvedMarks = collectMarksFromFiberState(state);
+      const state = (await ReactFiber.find(
+        "[class*='AssessmentList__items___']",
+      ).getState()) as Record<string, unknown> | null;
+      resolvedMarks = collectMarksFromFiberState(state ?? {});
     } catch {
       resolvedMarks = [];
     }
@@ -794,6 +796,9 @@ async function handleWeightings(mark: AssessmentMark, api: AssessmentsAverageApi
     } else {
       const userInfo = await getUserInfo();
       const userID = userInfo.id;
+      if (userID == null) {
+        throw new Error("Could not resolve student ID from user info");
+      }
 
       const reportFile = await requestStudentAssessmentPdf({
         assessmentID,
@@ -853,7 +858,10 @@ async function handleWeightings(mark: AssessmentMark, api: AssessmentsAverageApi
 }
 
 export async function parseAssessments(api: AssessmentsAverageApi) {
-  const state = await ReactFiber.find("[class*='AssessmentList__items___']").getState();
+  const state = (await ReactFiber.find("[class*='AssessmentList__items___']").getState()) as Record<
+    string,
+    MarkLike[] | undefined
+  >;
 
   const marks = [
     ...(state["marks"] ?? []),
@@ -878,8 +886,10 @@ export async function processAssessments(
 
   let fiberMarks: MarkLike[];
   try {
-    const state = await ReactFiber.find("[class*='AssessmentList__items___']").getState();
-    fiberMarks = collectMarksFromFiberState(state);
+    const state = (await ReactFiber.find(
+      "[class*='AssessmentList__items___']",
+    ).getState()) as Record<string, unknown> | null;
+    fiberMarks = collectMarksFromFiberState(state ?? {});
   } catch {
     fiberMarks = [];
   }

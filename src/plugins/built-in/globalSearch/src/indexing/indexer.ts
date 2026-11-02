@@ -55,8 +55,8 @@ async function ensureSchemaCurrent(): Promise<void> {
 export { ensureSchemaCurrent };
 
 async function loadProgress<T = unknown>(jobId: string): Promise<T | undefined> {
-  const rec = await get(META_STORE, `progress:${jobId}`);
-  return rec?.progress as T | undefined;
+  const rec = (await get(META_STORE, `progress:${jobId}`)) as { progress?: T } | undefined;
+  return rec?.progress;
 }
 
 async function saveProgress<T = unknown>(jobId: string, progress: T): Promise<void> {
@@ -84,7 +84,7 @@ function shouldRun(job: Job, lastRun?: number): boolean {
 }
 
 function getLastRunMeta(jobId: string): Promise<number | undefined> {
-  return get(META_STORE, jobId).then((rec) => rec?.lastRun);
+  return get(META_STORE, jobId).then((rec) => (rec as { lastRun?: number } | undefined)?.lastRun);
 }
 
 function indexItemStorageKey(item: IndexItem): string {
@@ -343,7 +343,8 @@ export async function runIndexing(): Promise<void> {
         continue;
       }
 
-      const getStoredItems = async (storeId?: string) => await getAll(storeId ?? jobId);
+      const getStoredItems = async (storeId?: string) =>
+        (await getAll(storeId ?? jobId)) as IndexItem[];
       const setStoredItems = async (items: IndexItem[], storeId?: string) => {
         const targetStore = storeId ?? jobId;
         await diffAndStoreItems(targetStore, items);
@@ -385,7 +386,7 @@ export async function runIndexing(): Promise<void> {
       verboseDebug(`%c[Indexer] Running job "${jobId}"...`, "color: #4ea1ff");
 
       try {
-        const newItemsRaw = await job.run(ctx);
+        const newItemsRaw = (await job.run(ctx)) as IndexItem[];
         const stored = await getStoredItems();
 
         let merged = mergeItems(stored, newItemsRaw);

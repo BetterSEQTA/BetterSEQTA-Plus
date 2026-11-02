@@ -27,7 +27,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
-    "types": ["vite/client", "node", "chrome"]
+    "types": ["vite/client", "node", "chrome", "jest"]
   },
   "include": [
     "src/**/*.ts",

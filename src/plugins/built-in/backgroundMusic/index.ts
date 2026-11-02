@@ -7,6 +7,7 @@ import {
 } from "@/plugins/core/settingsHelpers";
 import styles from "./styles.css?inline";
 import BackgroundMusicSetting from "./BackgroundMusicSetting.svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 import localforage from "localforage";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { delay } from "@/seqta/utils/delay";
@@ -15,7 +16,7 @@ const settings = defineSettings({
   uploader: componentSetting({
     title: "Background Music",
     description: "Upload a .wav or .mp3 audio file to play in the background",
-    component: BackgroundMusicSetting,
+    component: toMountableComponent(BackgroundMusicSetting),
   }),
   volume: numberSetting({
     title: "Volume",

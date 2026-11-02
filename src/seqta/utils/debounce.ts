@@ -1,9 +1,9 @@
-export default function debounce<T extends (...args: unknown[]) => void>(
-  fn: T,
+export default function debounce<A extends unknown[]>(
+  fn: (...args: A) => void,
   delay: number,
-): (...args: Parameters<T>) => void {
+): (...args: A) => void {
   let timeout: ReturnType<typeof setTimeout>;
-  return function (this: ThisParameterType<T>, ...args: Parameters<T>) {
+  return function (this: unknown, ...args: A) {
     clearTimeout(timeout);
     timeout = setTimeout(() => fn.apply(this, args), delay);
   };

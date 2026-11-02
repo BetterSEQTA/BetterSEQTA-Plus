@@ -81,7 +81,13 @@ function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetad
     );
     try {
       const metadata = JSON.parse(JSON.stringify(item.metadata || {})) as AssessmentMetadata;
-      return { itemClone: { ...item, metadata }, metadata };
+      return {
+        itemClone: {
+          ...item,
+          metadata: metadata as unknown as AssessmentMetadata & Record<string, unknown>,
+        },
+        metadata,
+      };
     } catch (e2) {
       console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
       const metadata = item.metadata || ({} as AssessmentMetadata);
@@ -91,7 +97,7 @@ function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetad
 }
 
 function createMetadataValueReader(metadata: AssessmentMetadata) {
-  const bag = metadata as Record<string, unknown>;
+  const bag = metadata as unknown as Record<string, unknown>;
   return (key: string, altKey?: string): unknown => {
     try {
       const value = bag[key];
@@ -405,11 +411,11 @@ export const actionMap: Record<string, ActionHandler<Record<string, unknown>>> =
     if (button) {
       (button as HTMLElement).click();
     }
-  }) as ActionHandler<Record<string, unknown>>,
+  }) as unknown as ActionHandler<Record<string, unknown>>,
 
   assessment: (async (item: IndexItem & { metadata: AssessmentMetadata }) => {
     await runAssessmentSearchAction(item);
-  }) as ActionHandler<Record<string, unknown>>,
+  }) as unknown as ActionHandler<Record<string, unknown>>,
 
   subjectassessment: ((item: IndexItem) => {
     navigateToHashRoute(`/assessments/${item.metadata.programme}:${item.metadata.subjectId}`);

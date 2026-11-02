@@ -11,7 +11,10 @@ export function renderShortcuts() {
   try {
     addShortcuts(settingsState.shortcuts || []);
   } catch (err: unknown) {
-    console.error("[BetterSEQTA+] Error adding built-in shortcuts:", err?.message || err);
+    console.error(
+      "[BetterSEQTA+] Error adding built-in shortcuts:",
+      err instanceof Error ? err.message : err,
+    );
   }
 
   const custom = settingsState.customshortcuts || [];
@@ -22,7 +25,7 @@ export function renderShortcuts() {
       console.error(
         "[BetterSEQTA+] Error adding custom shortcut:",
         element?.name,
-        err?.message || err,
+        err instanceof Error ? err.message : err,
       );
     }
   }

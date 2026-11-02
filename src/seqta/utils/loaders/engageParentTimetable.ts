@@ -47,19 +47,23 @@ export function isDateInCachedWeek(date: Date, weekFrom: string, weekUntil: stri
   return isInWeekRange(toISODate(date), weekFrom, weekUntil);
 }
 
-async function postParentTimetable(body: object): Promise<unknown> {
+type ParentTimetableJson = {
+  payload?: unknown | { items?: EngageParentTimetableItem[] };
+};
+
+async function postParentTimetable(body: object): Promise<ParentTimetableJson> {
   const res = await fetch(`${location.origin}${TIMETABLE_URL}`, {
     method: "POST",
     headers: { "Content-Type": "application/json; charset=utf-8" },
     credentials: "include",
     body: JSON.stringify(body),
   });
-  return res.json();
+  return res.json() as Promise<ParentTimetableJson>;
 }
 
 export async function fetchEngageParentChildren(): Promise<EngageParentChild[]> {
   const data = await postParentTimetable({ list: true });
-  const raw = data?.payload;
+  const raw = data.payload;
   if (!Array.isArray(raw)) return [];
   return raw.map((row: { name?: string; id?: string | number }) => ({
     name: String(row?.name ?? ""),
@@ -74,6 +78,10 @@ export async function fetchEngageParentTimetableWeek(
 ): Promise<EngageParentTimetableItem[]> {
   const student = /^\d+$/.test(studentId) ? Number(studentId) : studentId;
   const data = await postParentTimetable({ from, until, student });
-  const items = data?.payload?.items;
-  return Array.isArray(items) ? items : [];
+  const payload = data.payload;
+  const items =
+    payload && typeof payload === "object" && "items" in payload
+      ? (payload as { items?: unknown }).items
+      : undefined;
+  return Array.isArray(items) ? (items as EngageParentTimetableItem[]) : [];
 }

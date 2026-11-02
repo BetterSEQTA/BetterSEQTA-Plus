@@ -1,4 +1,5 @@
-import { mount, type Component } from "svelte";
+import { mount } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
 import settingsStyle from "./index.css?inline";
 import contentShadowStyle from "./contentShadow.css?inline";
 
@@ -11,7 +12,7 @@ const shadowStyles = {
 export type ShadowStyleVariant = keyof typeof shadowStyles;
 
 export default function renderSvelte(
-  Component: Component<Record<string, unknown>>,
+  Component: MountableSvelteComponent,
   mountPoint: ShadowRoot | HTMLElement,
   props: Record<string, unknown> = {},
   shadowStyle: ShadowStyleVariant = "settings",

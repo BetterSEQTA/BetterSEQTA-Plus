@@ -23,6 +23,7 @@
     pluginSettingsStore,
     type PluginSettingsEntry,
   } from "./pluginSettingsState.svelte";
+  import { toMountableComponent } from "@/types/mountableComponent";
 
   let {
     section,
@@ -187,7 +188,7 @@
         title="Theme of the Month"
         description="Show the monthly featured theme popup when a new entry is available"
         id={15}
-        Component={Switch}
+        Component={toMountableComponent(Switch)}
         {searchQuery}
         props={{
           state: !($settingsState.themeOfTheMonthDisabled ?? false),

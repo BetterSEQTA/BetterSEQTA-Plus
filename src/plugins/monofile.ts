@@ -596,7 +596,7 @@ export function tryLoad() {
   });
 
   waitForElm(".code", true, 50).then((elm: Element) => {
-    if (!elm.innerText.includes("BetterSEQTA")) LoadPageElements();
+    if (!(elm as HTMLElement).innerText.includes("BetterSEQTA")) LoadPageElements();
   });
 
   updateIframesWithDarkMode();
@@ -821,7 +821,9 @@ export function init() {
             iframe.focus();
             return;
           }
-          const ckeditor = getCkeditorGlobal();
+          const ckeditor = getCkeditorGlobal() as
+            | { instances?: { editor1?: { focus: () => void } } }
+            | undefined;
           if (ckeditor?.instances?.editor1) {
             try {
               ckeditor.instances.editor1.focus();

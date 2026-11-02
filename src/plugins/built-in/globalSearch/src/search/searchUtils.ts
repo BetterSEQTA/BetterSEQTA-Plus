@@ -289,8 +289,8 @@ export function searchDynamicItems(
     for (const item of dynamicIdToItemMap.values()) {
       const textLower = item.text.toLowerCase();
       const contentLower = (item.content || "").toLowerCase();
-      const subjectNameLower = (item.metadata?.subjectName || "").toLowerCase();
-      const subjectCodeLower = (item.metadata?.subjectCode || "").toLowerCase();
+      const subjectNameLower = String(item.metadata?.subjectName ?? "").toLowerCase();
+      const subjectCodeLower = String(item.metadata?.subjectCode ?? "").toLowerCase();
 
       // Check if query appears anywhere in the text, content, or metadata
       if (

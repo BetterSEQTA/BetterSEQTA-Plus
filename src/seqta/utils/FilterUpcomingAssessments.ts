@@ -32,7 +32,7 @@ export function FilterUpcomingAssessments(subjectoptions: Record<string, boolean
             (element.parentNode!.parentNode! as HTMLElement).classList.add("hidden");
           } else {
             AddPlaceHolderToParent(
-              element.parentNode!.parentNode,
+              element.parentNode!.parentNode as HTMLElement,
               element.parentNode!.querySelectorAll(".hidden").length,
             );
           }

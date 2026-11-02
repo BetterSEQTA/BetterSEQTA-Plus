@@ -1,4 +1,4 @@
-import type { Component } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
 
 export interface IndexItem {
   id: string;
@@ -9,7 +9,7 @@ export interface IndexItem {
   metadata: Record<string, unknown>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: Component<Record<string, unknown>>;
+  renderComponent?: MountableSvelteComponent;
 }
 
 export type Frequency =

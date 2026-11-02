@@ -1,6 +1,7 @@
 import { booleanSetting, componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
 import TimetableClassmatesAvatarsSwitch from "./TimetableClassmatesAvatarsSwitch.svelte";
 import TimetableClassmatesSharing from "./TimetableClassmatesSharing.svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 
 export const timetableClassmatesSettings = defineSettings({
   enabled: booleanSetting({
@@ -12,12 +13,12 @@ export const timetableClassmatesSettings = defineSettings({
     title: "Show classmate avatars",
     description:
       "Display avatar stacks on lessons (saved per SEQTA site and student on this device)",
-    component: TimetableClassmatesAvatarsSwitch,
+    component: toMountableComponent(TimetableClassmatesAvatarsSwitch),
   }),
   sharing: componentSetting({
     title: "Classmate sharing",
     description:
       "Encrypted class enrollments sync through BetterSEQTA Cloud. Your full timetable is never stored on our servers.",
-    component: TimetableClassmatesSharing,
+    component: toMountableComponent(TimetableClassmatesSharing),
   }),
 });

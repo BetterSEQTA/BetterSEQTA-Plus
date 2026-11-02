@@ -94,8 +94,9 @@ export async function getAdaptiveColour(): Promise<string | null> {
   let userId: number;
   try {
     const userInfo = await getUserInfo();
-    userId = userInfo?.id;
-    if (typeof userId !== "number") return null;
+    const id = userInfo?.id;
+    if (typeof id !== "number") return null;
+    userId = id;
   } catch {
     return null;
   }

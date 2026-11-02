@@ -155,7 +155,7 @@ export async function loadHomePage() {
   const activeSubjects = activeSubjectsFromLearnPayload(classes);
   const currentAssessments = filterAssessmentsForActiveSubjects(assessments, activeSubjects).sort(
     comparedate,
-  );
+  ) as HomeUpcomingAssessment[];
 
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
@@ -208,7 +208,7 @@ async function renderHomeUpcomingAssessments() {
   const activeSubjects = activeSubjectsFromLearnPayload(classes);
   const currentAssessments = filterAssessmentsForActiveSubjects(assessments, activeSubjects).sort(
     comparedate,
-  );
+  ) as HomeUpcomingAssessment[];
 
   await CreateUpcomingSection(currentAssessments, activeSubjects);
   upcomingItems.classList.remove("loading");
@@ -546,7 +546,8 @@ function applyHomeUpcomingLimits(
   const subjectOrder: string[] = [];
 
   for (const assessment of assessments) {
-    const code = assessment.filterCode;
+    const code = assessment.filterCode ?? assessment.code;
+    if (!code) continue;
     if (!bySubject.has(code)) {
       bySubject.set(code, []);
       subjectOrder.push(code);
@@ -640,7 +641,12 @@ async function CreateUpcomingSection(
   for (const date in upcomingDates) {
     const assessmentdue = new Date(upcomingDates[date].assessments[0].due);
     const specialcase = CheckSpecialDay(Today, assessmentdue);
-    const assessmentDate = createAssessmentDateDiv(date, upcomingDates[date], student, specialcase);
+    const assessmentDate = createAssessmentDateDiv(
+      date,
+      upcomingDates[date],
+      student ?? 0,
+      specialcase,
+    );
 
     if (specialcase === "Yesterday") {
       upcomingitemcontainer!.insertBefore(assessmentDate, upcomingitemcontainer!.firstChild);
@@ -699,7 +705,7 @@ function createAssessmentDateDiv(
     item.classList.add("upcoming-assessment");
     item.setAttribute("data-subject", element.filterCode ?? element.code);
     item.id = `assessment${element.id}`;
-    item.style.cssText = element.colour;
+    item.style.cssText = element.colour ?? "";
 
     const titlediv = document.createElement("div");
     titlediv.classList.add("upcoming-subject-title");

@@ -6,6 +6,7 @@
   import Switch from "@/interface/components/Switch.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { matchesSearch } from "@/interface/pages/settings/shared";
+  import type { SettingsList } from "@/interface/types/SettingsProps";
   import {
     DEFAULT_SIDEBAR_BLUR,
     DEFAULT_SIDEBAR_RADIUS,
@@ -132,7 +133,7 @@
       },
     ];
 
-    if (!transparencyOn) return base;
+    if (!transparencyOn) return base as unknown as SettingsList[];
 
     return [
       ...base,
@@ -149,7 +150,7 @@
           onChange: (value: number) => (settingsState.sidebarBlur = value),
         },
       },
-    ];
+    ] as unknown as SettingsList[];
   });
 
   const visible = $derived(

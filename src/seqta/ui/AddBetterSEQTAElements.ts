@@ -141,26 +141,10 @@ async function handleUserInfoAndStudentData() {
   }
 }
 
-function updateUserInfo(info: {
-  basic: boolean;
-  clientIP: string[] | null;
-  email: string | null;
-  id: number | null;
-  lastAccessedTime: number | null;
-  meta: {
-    code: string | null;
-    governmentID: string | null;
-  };
-  personUUID: string | null;
-  status: number | null;
-  synergeticCommunityUrl: string | null;
-  type: string | null;
-  userCode: string | null;
-  userDesc: string | null;
-  userName: string | null;
-}) {
+function updateUserInfo(info: Awaited<ReturnType<typeof getUserInfo>>) {
   const titlebar = document.getElementsByClassName("titlebar")[0];
-  const metadata = [info.meta.code, info.meta.governmentID]
+  const meta = info.meta as { code?: string | null; governmentID?: string | null } | undefined;
+  const metadata = [meta?.code, meta?.governmentID]
     .filter((value): value is string => Boolean(value))
     .join(" // ");
   const displayName = info.userDesc || info.userName || "";
@@ -202,10 +186,10 @@ async function updateStudentInfo(
   students: StudentPerson[],
   info: Awaited<ReturnType<typeof getUserInfo>>,
 ) {
+  const userDesc = info.userDesc ?? "";
   const index = students.findIndex(
     (person) =>
-      person.firstname == info.userDesc.split(" ")[0] &&
-      person.surname == info.userDesc.split(" ")[1],
+      person.firstname == userDesc.split(" ")[0] && person.surname == userDesc.split(" ")[1],
   );
 
   const houseelement = document.getElementsByClassName("userInfohouse")[0] as
@@ -229,8 +213,8 @@ async function updateStudentInfo(
         // Invalid color format, leave text color as default
       }
     }
-  } else if (student.year) {
-    text = student.year;
+  } else if (student.year != null && student.year !== "") {
+    text = String(student.year);
   }
 
   houseelement.innerText = text;

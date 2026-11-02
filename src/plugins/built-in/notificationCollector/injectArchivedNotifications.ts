@@ -38,7 +38,9 @@ function mergeLiveWithArchived(
 async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   if (!document.querySelector(LIST_SELECTOR)) return false;
 
-  const state = await ReactFiber.find(LIST_SELECTOR).getState();
+  const state = (await ReactFiber.find(LIST_SELECTOR).getState()) as {
+    items?: unknown[];
+  } | null;
   if (!state || !Array.isArray(state.items)) return false;
 
   const liveItems = state.items as Record<string, unknown>[];

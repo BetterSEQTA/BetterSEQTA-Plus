@@ -70,7 +70,7 @@ async function getCurrentLesson() {
   }
 }
 
-async function navigateToSpecificLesson(lesson: HomeTimetableLesson) {
+async function navigateToSpecificLesson(_lesson: HomeTimetableLesson) {
   try {
     await waitForElm(".course .navigator", true, 100, 100);
 
@@ -98,7 +98,7 @@ async function navigateToSpecificLesson(lesson: HomeTimetableLesson) {
         const lessonPeriod = periodElement.textContent?.trim().match(/\d+/)?.[0];
 
         // extract the number from the period
-        const normalizedLessonPeriod = lesson.period?.match(/\d+/)?.[0];
+        const normalizedLessonPeriod = lessonPeriod;
 
         // Check if this lesson matches today's date and the current lesson's period
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {

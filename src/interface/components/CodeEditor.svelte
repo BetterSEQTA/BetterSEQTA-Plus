@@ -7,7 +7,7 @@
   import { indentWithTab, history, defaultKeymap, historyKeymap } from '@codemirror/commands';
   import { indentOnInput, indentUnit, bracketMatching, foldKeymap, syntaxHighlighting, defaultHighlightStyle } from '@codemirror/language';
   import { closeBrackets, autocompletion, closeBracketsKeymap, completionKeymap } from '@codemirror/autocomplete';
-  import { highlightSpecialChars, drawSelection, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, EditorView, dropCursor } from '@codemirror/view';
+  import { highlightSpecialChars, drawSelection, rectangularSelection, crosshairCursor, highlightActiveLine, keymap, EditorView, dropCursor, type KeyBinding } from '@codemirror/view';
   import { color } from '@uiw/codemirror-extensions-color'
   import { Compartment } from '@codemirror/state';
 
@@ -45,7 +45,7 @@
               ...historyKeymap,
               ...foldKeymap,
               ...completionKeymap,
-          ]),
+          ] as KeyBinding[]),
           EditorView.updateListener.of((update) => {
             if (update.docChanged) {
               onChange(update.state.doc.toString())

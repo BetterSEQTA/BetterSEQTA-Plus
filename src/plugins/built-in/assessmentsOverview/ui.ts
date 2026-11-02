@@ -5,6 +5,7 @@ import AssessmentsOverview from "./AssessmentsOverview.svelte";
 import SkeletonLoader from "./SkeletonLoader.svelte";
 import ErrorState from "./ErrorState.svelte";
 import { unmount } from "svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 
 let currentApp: ReturnType<typeof renderSvelte> | null = null;
 let themeObserver: MutationObserver | null = null;
@@ -118,13 +119,13 @@ export function renderGrid(
 ) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(AssessmentsOverview, container, { data });
+  currentApp = renderSvelte(toMountableComponent(AssessmentsOverview), container, { data });
 }
 
 export function renderSkeletonLoader(container: HTMLElement) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(SkeletonLoader, container);
+  currentApp = renderSvelte(toMountableComponent(SkeletonLoader), container);
 }
 
 export function renderLoadingState(container: HTMLElement) {
@@ -134,7 +135,7 @@ export function renderLoadingState(container: HTMLElement) {
 export function renderErrorState(container: HTMLElement, error: string) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(ErrorState, container, { error });
+  currentApp = renderSvelte(toMountableComponent(ErrorState), container, { error });
 }
 
 export function teardownOverviewUi() {

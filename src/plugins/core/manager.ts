@@ -118,7 +118,7 @@ export class PluginManager {
     if (this.plugins.has(plugin.id)) {
       throw new Error(`Plugin with id "${plugin.id}" is already registered`);
     }
-    this.plugins.set(plugin.id, plugin);
+    this.plugins.set(plugin.id, plugin as unknown as Plugin);
   }
 
   public async startPlugin(pluginId: string): Promise<void> {
@@ -328,10 +328,10 @@ export class PluginManager {
         let result: Record<string, unknown>;
         if (settingObj.type === "button" || settingObj.type === "component") {
           // For button or component, keep the functions
-          result = { ...(settingObj as Record<string, unknown>) };
+          result = { ...(settingObj as unknown as Record<string, unknown>) };
         } else {
           result = Object.fromEntries(
-            Object.entries(settingObj as Record<string, unknown>).filter(
+            Object.entries(settingObj as unknown as Record<string, unknown>).filter(
               ([, value]) => typeof value !== "function",
             ),
           );

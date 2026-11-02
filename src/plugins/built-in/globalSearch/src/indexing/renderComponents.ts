@@ -1,4 +1,5 @@
-import type { Component } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
+import { toMountableComponent } from "@/types/mountableComponent";
 import AssessmentItem from "../components/items/AssessmentItem.svelte";
 import ForumItem from "../components/items/ForumItem.svelte";
 import SubjectItem from "../components/items/SubjectItem.svelte";
@@ -7,26 +8,22 @@ import type { IndexItem } from "./types";
 import { jobs } from "./jobs";
 import { loadDynamicItems } from "../utils/dynamicItems";
 
-export const renderComponentMap: Record<string, Component<Record<string, unknown>>> = {
-  assessment: AssessmentItem,
-  message: AssessmentItem,
-  forum: ForumItem,
-  subject: SubjectItem,
-  // New categories share a generic, category-aware row component to keep
-  // the palette consistent without bespoke layouts for every job. The
-  // component reads `item.metadata.icon` and the `category` to pick a
-  // sensible default visual treatment.
-  course: GenericItem,
-  notice: GenericItem,
-  document: GenericItem,
-  folio: GenericItem,
-  portal: GenericItem,
-  report: GenericItem,
-  goal: GenericItem,
-  passive: GenericItem,
+export const renderComponentMap: Record<string, MountableSvelteComponent> = {
+  assessment: toMountableComponent(AssessmentItem),
+  message: toMountableComponent(AssessmentItem),
+  forum: toMountableComponent(ForumItem),
+  subject: toMountableComponent(SubjectItem),
+  course: toMountableComponent(GenericItem),
+  notice: toMountableComponent(GenericItem),
+  document: toMountableComponent(GenericItem),
+  folio: toMountableComponent(GenericItem),
+  portal: toMountableComponent(GenericItem),
+  report: toMountableComponent(GenericItem),
+  goal: toMountableComponent(GenericItem),
+  passive: toMountableComponent(GenericItem),
 };
 
-function resolveRenderComponent(item: IndexItem): Component<Record<string, unknown>> | undefined {
+function resolveRenderComponent(item: IndexItem): MountableSvelteComponent | undefined {
   const jobDef =
     jobs[item.category] ||
     Object.values(jobs).find((j) => j.id === item.category) ||

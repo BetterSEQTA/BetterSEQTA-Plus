@@ -185,18 +185,19 @@ async function loadEngageAssessmentsForStudent(
     else map[task.id] = task;
   });
 
-  const assessments = filterAssessmentsForActiveSubjects(Object.values(map), subjects).map(
-    (assessment) => ({
-      ...assessment,
-      studentId,
-      studentName,
-    }),
-  );
+  const assessments: OverviewAssessment[] = filterAssessmentsForActiveSubjects(
+    Object.values(map),
+    subjects,
+  ).map((assessment) => ({
+    ...assessment,
+    studentId,
+    studentName,
+  }));
 
   const submissions = await loadEngageSubmissions(studentId, assessments);
-  assessments.forEach((assessment) => {
+  for (const assessment of assessments) {
     assessment.submitted = submissions[assessment.id] || false;
-  });
+  }
 
   return assessments;
 }

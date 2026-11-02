@@ -1,4 +1,4 @@
-import type { Plugin } from "../../core/types";
+import type { PluginAPI } from "../../core/types";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 interface TimetableEntryData {
@@ -118,8 +118,13 @@ function showEditModal(
   roomInput?.focus();
 }
 
+interface TimetableEditStorage extends Record<string, unknown> {
+  timetableOverrides?: TimetableOverrides;
+  timetableOverridesBySubject?: TimetableOverridesBySubject;
+}
+
 const timetableEditPlugin = {
-  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
+  run: async (api: PluginAPI<Record<string, never>, TimetableEditStorage>) => {
     await api.storage.loaded;
 
     let observer: MutationObserver | null = null;

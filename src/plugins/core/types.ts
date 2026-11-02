@@ -1,6 +1,6 @@
 import ReactFiber from "@/seqta/utils/ReactFiber";
 
-import type { Component } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
 
 export interface BooleanSetting {
   type: "boolean";
@@ -54,7 +54,7 @@ export interface ComponentSetting {
   type: "component";
   title: string;
   description?: string;
-  component: Component<Record<string, unknown>>;
+  component: MountableSvelteComponent;
 }
 
 export type PluginSetting =
@@ -139,7 +139,7 @@ export interface PluginAPI<T extends PluginSettings, S = unknown> {
 
 export type PluginRunResult = void | (() => void);
 
-export interface Plugin<T extends PluginSettings = PluginSettings, S = unknown> {
+export interface Plugin<T extends PluginSettings = PluginSettings, S = Record<string, unknown>> {
   id: string;
   name: string;
   description: string;

@@ -36,12 +36,12 @@ export const forumsJob: Job = {
     const items: IndexItem[] = [];
 
     for (const forum of list.payload.forums) {
-      const id = forum.id.toString();
+      const id = String(forum.id);
       if (existingIds.has(id)) continue;
 
       items.push({
         id,
-        text: forum.title,
+        text: String(forum.title ?? ""),
         category: "forums",
         content: `${forum.title}`,
         dateAdded: Date.now(),

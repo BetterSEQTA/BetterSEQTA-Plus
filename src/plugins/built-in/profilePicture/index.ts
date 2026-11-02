@@ -1,6 +1,7 @@
 import type { Plugin } from "@/plugins/core/types";
 import { booleanSetting, componentSetting, defineSettings } from "@/plugins/core/settingsHelpers";
 import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "@/lib/browser";
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
@@ -17,7 +18,7 @@ const settings = defineSettings({
   picture: componentSetting({
     title: "Profile Picture",
     description: "Upload or remove your custom profile image",
-    component: ProfilePictureSetting,
+    component: toMountableComponent(ProfilePictureSetting),
   }),
 });
 

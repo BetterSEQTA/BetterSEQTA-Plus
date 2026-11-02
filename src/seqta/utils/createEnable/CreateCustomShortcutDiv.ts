@@ -1,4 +1,5 @@
 import stringToHTML from "../stringToHTML";
+import type { CustomShortcut } from "@/types/storage";
 
 function isSafeShortcutHref(url: string): boolean {
   if (typeof url !== "string" || !url.trim()) return false;
@@ -10,7 +11,7 @@ function isSafeShortcutHref(url: string): boolean {
   }
 }
 
-export function CreateCustomShortcutDiv(element: HTMLElement) {
+export function CreateCustomShortcutDiv(element: CustomShortcut) {
   const container = document.getElementById("shortcuts");
   if (!container) return;
 

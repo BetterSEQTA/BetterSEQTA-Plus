@@ -65,7 +65,7 @@ export async function closePopup() {
     await motionAnimate(
       [popup, background],
       { opacity: [1, 0], scale: [1, 0.95] },
-      { duration: 0.25, easing: [0.22, 0.03, 0.26, 1] },
+      { duration: 0.25, ease: [0.22, 0.03, 0.26, 1] },
     );
   } else {
     await animatePopupClose(background);
@@ -195,7 +195,7 @@ export function openPopup({
           {
             delay: stagger(0.05, { startDelay: 0.1 }),
             duration: 0.5,
-            easing: [0.22, 0.03, 0.26, 1],
+            ease: [0.22, 0.03, 0.26, 1],
           },
         );
       }

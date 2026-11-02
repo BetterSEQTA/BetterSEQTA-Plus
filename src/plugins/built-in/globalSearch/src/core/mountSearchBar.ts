@@ -7,14 +7,14 @@ import { transparencyEnabled } from "@/seqta/utils/performanceMode";
 import renderSvelte from "@/interface/main";
 import type { GlobalSearchApi } from "../../lazy";
 import browser from "@/lib/browser";
+import { toMountableComponent } from "@/types/mountableComponent";
+
+type StorageChangeMap = Record<string, chrome.storage.StorageChange>;
 
 type AppRef = {
   current: ReturnType<typeof renderSvelte> | null;
-  storageChangeHandler?: (
-    changes: Record<string, browser.storage.StorageChange>,
-    area: string,
-  ) => void;
-  progressHandler?: ((event: Event) => void) | null;
+  storageChangeHandler?: (changes: StorageChangeMap, area: string) => void;
+  progressHandler?: EventListener | null;
   clearDoneFlashTimer?: () => void;
   clickHandler?: () => void;
   ownedTrigger?: boolean;
@@ -214,8 +214,8 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
     resetIdleProgressUi();
   };
 
-  const progressHandler = (event: CustomEvent) => {
-    const { completed, total, indexing, status } = event.detail as {
+  const progressHandler: EventListener = (event) => {
+    const { completed, total, indexing, status } = (event as CustomEvent).detail as {
       completed?: number;
       total?: number;
       indexing?: boolean;
@@ -235,7 +235,7 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
     updateProgressDisplay();
   };
 
-  window.addEventListener("indexing-progress", progressHandler as EventListener);
+  window.addEventListener("indexing-progress", progressHandler);
   appRef.progressHandler = progressHandler;
   appRef.clearDoneFlashTimer = clearDoneFlashTimer;
 
@@ -251,10 +251,7 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
   }
   searchWrapper.dataset.bsplusSearchWired = "1";
 
-  const handleStorageChange = (
-    changes: Record<string, browser.storage.StorageChange>,
-    area: string,
-  ) => {
+  const handleStorageChange = (changes: StorageChangeMap, area: string) => {
     if (area !== "local" || !changes["plugin.global-search.settings"]) return;
     const next = changes["plugin.global-search.settings"].newValue as
       | { searchHotkey?: string }
@@ -283,7 +280,7 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
   try {
     const { default: renderSvelte } = await import("@/interface/main");
     appRef.current = renderSvelte(
-      SearchBar,
+      toMountableComponent(SearchBar),
       searchRoot.attachShadow({ mode: "open" }),
       {
         transparencyEffects: transparencyEnabled(),
@@ -349,7 +346,7 @@ export function cleanupSearchBar(appRef: AppRef) {
 
   if (appRef.storageChangeHandler) {
     browser.storage.onChanged.removeListener(appRef.storageChangeHandler);
-    appRef.storageChangeHandler = null;
+    appRef.storageChangeHandler = undefined;
   }
   appRef.ownedTrigger = undefined;
 }

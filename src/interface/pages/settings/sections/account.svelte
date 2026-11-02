@@ -9,6 +9,7 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
+  import { toMountableComponent } from "@/types/mountableComponent";
 
   let {
     showDisclaimer,
@@ -53,7 +54,7 @@
       title="Connect Mobile App"
       description="Link your SEQTA session to DesQTA — the modern desktop and mobile app for SEQTA Learn"
       id={0}
-      Component={ConnectMobileApp}
+      Component={toMountableComponent(ConnectMobileApp)}
       {searchQuery}
       props={{}}
     />
@@ -91,7 +92,7 @@
             title={founderBadgeSetting.title}
             description={founderBadgeSetting.description}
             id={17}
-            Component={Switch}
+            Component={toMountableComponent(Switch)}
             {searchQuery}
             props={{
               state: $settingsState.showTitlebarFounderBadge !== false,

@@ -1,5 +1,7 @@
 /** @jest-environment jsdom */
 
+type MockBrowser = typeof import("@/test/mocks/browser").default;
+
 describe("master extension setting", () => {
   afterEach(() => {
     jest.useRealTimers();
@@ -9,10 +11,10 @@ describe("master extension setting", () => {
     "persists %s and queued preferences before reloading SEQTA tabs",
     async (enabled) => {
       jest.useFakeTimers();
-      let browser: typeof import("@/lib/browser").default;
-      let settings: typeof import("./SettingsState");
+      let browser!: MockBrowser;
+      let settings!: typeof import("./SettingsState");
       jest.isolateModules(() => {
-        browser = require("@/lib/browser").default;
+        browser = require("@/lib/browser").default as MockBrowser;
         settings = require("./SettingsState");
       });
       await browser.storage.local.set({ onoff: !enabled });
@@ -24,7 +26,7 @@ describe("master extension setting", () => {
         (patch: Record<string, unknown>) =>
           new Promise<void>((resolve) => {
             finishWrite = async () => {
-              await originalSet(patch);
+              await originalSet?.(patch);
               resolve();
             };
           }),

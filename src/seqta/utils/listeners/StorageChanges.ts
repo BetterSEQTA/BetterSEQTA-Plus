@@ -22,15 +22,25 @@ export class StorageChangeHandler {
     settingsState.register("adaptiveThemeGradient", () => void updateAllColors());
     settingsState.register("adaptiveThemeColourTransition", () => void updateAllColors());
     settingsState.register("selectedTheme", () => void updateAllColors());
-    settingsState.register("DarkMode", this.handleDarkModeChange.bind(this));
-    settingsState.register("shortcuts", this.handleShortcutsChange.bind(this));
-    settingsState.register("customshortcuts", this.handleCustomShortcutsChange.bind(this));
-    settingsState.register("transparencyEffects", this.handleTransparencyEffectsChange.bind(this));
+    settingsState.register("DarkMode", () => this.handleDarkModeChange());
+    settingsState.register("shortcuts", (newValue) =>
+      this.handleShortcutsChange(newValue as { enabled: boolean; name: string }[] | undefined),
+    );
+    settingsState.register("customshortcuts", (newValue) =>
+      this.handleCustomShortcutsChange(newValue as CustomShortcut[] | undefined),
+    );
+    settingsState.register("transparencyEffects", (newValue) =>
+      this.handleTransparencyEffectsChange(newValue as boolean),
+    );
     settingsState.register("performanceMode", () => syncPerformanceModeEffects());
     settingsState.register("performanceModePluginOverrides", () => syncPerformanceModeEffects());
-    settingsState.register("subjectfilters", FilterUpcomingAssessments.bind(this));
+    settingsState.register("subjectfilters", (newValue) =>
+      FilterUpcomingAssessments(newValue as Record<string, boolean>),
+    );
     registerHomeUpcomingSettingsListeners();
-    settingsState.register("iconOnlySidebar", this.handleIconOnlySidebarChange.bind(this));
+    settingsState.register("iconOnlySidebar", (newValue) =>
+      this.handleIconOnlySidebarChange(newValue as boolean | undefined),
+    );
     settingsState.register("selectedFont", () => applySelectedFont());
     settingsState.register("menuitems", () => scheduleMenuItemVisibility());
     settingsState.register("menuorder", (order) => {

@@ -80,7 +80,7 @@ const fetchPastAssessments = async (student: number, subjects: OverviewSubject[]
         }
       } catch (e) {
         console.warn(
-          `[Assignments job] Failed to fetch past assessments for subject ${subject.code || subject.subject || "unknown"}:`,
+          `[Assignments job] Failed to fetch past assessments for subject ${subject.code || "unknown"}:`,
           e,
         );
       }
@@ -200,7 +200,7 @@ export const assignmentsJob: Job = {
     let score = 0;
 
     if (item.metadata.dueDate) {
-      const dueDate = new Date(item.metadata.dueDate).getTime();
+      const dueDate = new Date(String(item.metadata.dueDate)).getTime();
       const now = Date.now();
       const daysUntilDue = (dueDate - now) / (1000 * 60 * 60 * 24);
 
@@ -225,6 +225,10 @@ export const assignmentsJob: Job = {
     const existingIds = new Set(existingItems.map((i) => i.id));
 
     const { id: student } = await getUserInfo();
+    if (student == null) {
+      verboseDebug("[Assignments job] No student id; skipping run");
+      return [];
+    }
 
     verboseDebug(
       "[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...",
@@ -258,7 +262,7 @@ export const assignmentsJob: Job = {
         let metaclass = a.metaclassID || a.metaclass;
 
         if ((!programme || !metaclass) && a.code) {
-          const subjectInfo = subjectLookup.get(a.code);
+          const subjectInfo = subjectLookup.get(String(a.code));
           if (subjectInfo) {
             programme = programme || subjectInfo.programme;
             metaclass = metaclass || subjectInfo.metaclass;

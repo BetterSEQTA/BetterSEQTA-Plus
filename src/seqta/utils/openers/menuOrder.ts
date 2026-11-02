@@ -10,7 +10,7 @@ export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
 
   for (let i = 0; i < menuList.length; i++) {
     const menu = menuList[i] as HTMLElement;
-    listorder.push(menuorder.indexOf(menu.dataset.key));
+    listorder.push(menuorder.indexOf(menu.dataset.key ?? ""));
   }
 
   const newArr: ChildNode[] = [];

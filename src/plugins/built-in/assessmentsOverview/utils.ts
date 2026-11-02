@@ -186,7 +186,11 @@ export function readStoredList(key: string): unknown[] {
   }
 }
 
-export type OverviewAssessment = Record<string, unknown>;
+export type OverviewAssessment = {
+  id: number;
+  submitted?: boolean;
+  [key: string]: unknown;
+};
 
 function readNumber(value: unknown): number | null {
   if (value === undefined || value === null) return null;

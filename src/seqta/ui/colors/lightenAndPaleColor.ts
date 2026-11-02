@@ -5,6 +5,7 @@ export function lightenAndPaleColor(inputColor: string, lightenFactor = 0.75, pa
 
   if (inputColor.includes("gradient")) {
     const baseColor = findMatchingColor(inputColor);
+    if (!baseColor) return;
 
     return lightenAndPaleColor(baseColor, lightenFactor, paleFactor);
   }

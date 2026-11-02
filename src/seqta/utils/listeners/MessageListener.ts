@@ -7,6 +7,7 @@ import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
 import type { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
+import type { LoadedCustomTheme } from "@/types/CustomThemes";
 
 let themeManagerPromise: Promise<ThemeManager> | null = null;
 
@@ -56,7 +57,7 @@ export class MessageHandler {
           const save = async () => {
             const themeManager = await getThemeManager();
             await themeManager.saveTheme({
-              ...request.body,
+              ...(request.body as LoadedCustomTheme),
               userEdited: true,
             });
             if (request.body?.enableTheme) {
@@ -68,7 +69,9 @@ export class MessageHandler {
           void save();
         } else {
           void getThemeManager().then((themeManager) => {
-            themeManager.updatePreview(request.body);
+            if (request.body) {
+              themeManager.updatePreview(request.body as Partial<LoadedCustomTheme>);
+            }
             sendResponse({ status: "success" });
           });
         }

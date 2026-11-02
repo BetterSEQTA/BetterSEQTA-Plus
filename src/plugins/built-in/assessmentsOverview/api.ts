@@ -179,6 +179,9 @@ export async function getAssessmentsData() {
   }
 
   const studentId = (await getUserInfo()).id;
+  if (typeof studentId !== "number") {
+    return [];
+  }
 
   if (cache && Date.now() - cache.time < CACHE_MS && cache.studentId === studentId) {
     return cache.data;

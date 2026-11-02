@@ -11,15 +11,19 @@ const handleNotificationClick = async (target: HTMLElement) => {
   const buttonType = notificationItem.getAttribute("data-type");
   if (buttonType !== "message") return;
 
-  const notificationList = await ReactFiber.find('[class*="notifications__list___"]').getState();
-  const buttonId = notificationItem.getAttribute("data-id");
-  if (!buttonId) return;
-
   type NotificationListItem = {
     notificationID?: number;
     message?: { messageID?: number };
   };
-  const matchingNotification = (notificationList.items as NotificationListItem[]).find(
+  const notificationList = (await ReactFiber.find(
+    '[class*="notifications__list___"]',
+  ).getState()) as {
+    items?: NotificationListItem[];
+  };
+  const buttonId = notificationItem.getAttribute("data-id");
+  if (!buttonId) return;
+
+  const matchingNotification = notificationList.items?.find(
     (item) => item.notificationID === parseInt(buttonId, 10),
   );
 

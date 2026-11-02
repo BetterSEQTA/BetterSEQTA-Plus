@@ -10,6 +10,7 @@ import {
   applyThemeCreatorLayout,
   clearThemeCreatorLayout,
 } from "@/plugins/built-in/themes/themeCreatorLayout";
+import { toMountableComponent } from "@/types/mountableComponent";
 
 let themeCreatorSvelteApp: Parameters<typeof unmount>[0] | null = null;
 let currentWidthPx = 400;
@@ -45,7 +46,7 @@ export async function OpenThemeCreator(themeID: string = "") {
   }
 
   const shadow = themeCreatorDiv.attachShadow({ mode: "open" });
-  themeCreatorSvelteApp = renderSvelte(ThemeCreatorPage, shadow, {
+  themeCreatorSvelteApp = renderSvelte(toMountableComponent(ThemeCreatorPage), shadow, {
     themeID: editingId,
   });
 

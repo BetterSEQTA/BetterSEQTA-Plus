@@ -51,7 +51,7 @@ function createSEQTAAPI(): SEQTAAPI {
 }
 
 function createSettingsAPI<T extends PluginSettings>(
-  plugin: Plugin<T>,
+  plugin: Pick<Plugin<T>, "id" | "settings" | "disableToggle">,
 ): {
   settings: SettingsAPI<T> & { loaded: Promise<void> };
   dispose: () => void;
@@ -59,11 +59,7 @@ function createSettingsAPI<T extends PluginSettings>(
   const storageKey = `plugin.${plugin.id}.settings`;
   const listeners = new Map<keyof T, Set<(value: SettingValue<T[keyof T]>) => void>>();
 
-  const settingsWithMeta: Record<string, unknown> & {
-    onChange: SettingsAPI<T>["onChange"];
-    offChange: SettingsAPI<T>["offChange"];
-    loaded: Promise<void>;
-  } = {
+  const backing: Record<string, unknown> = {
     onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       if (!listeners.has(key)) {
         listeners.set(key, new Set());
@@ -78,16 +74,15 @@ function createSettingsAPI<T extends PluginSettings>(
     offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       listeners.get(key)?.delete(callback);
     },
-    loaded: Promise.resolve(), // will be replaced below
+    loaded: Promise.resolve(),
   };
 
   for (const key in plugin.settings) {
     if (plugin.settings[key].type !== "component" && plugin.settings[key].type !== "button") {
-      settingsWithMeta[key] = plugin.settings[key].default;
+      backing[key] = plugin.settings[key].default;
     }
   }
 
-  // Load stored settings and override defaults
   const loaded = (async () => {
     try {
       const allSettings = settingsState.getAll() as unknown as Record<string, unknown>;
@@ -96,10 +91,11 @@ function createSettingsAPI<T extends PluginSettings>(
       >;
       if (storedSettings) {
         for (const key in storedSettings) {
-          if (key in settingsWithMeta) {
-            settingsWithMeta[key] = storedSettings[key];
-            listeners.get(key as keyof T)?.forEach((cb) => cb(storedSettings[key]));
-          }
+          if (!(key in backing)) continue;
+          const value = storedSettings[key as keyof T];
+          if (value === undefined) continue;
+          backing[key] = value;
+          listeners.get(key as keyof T)?.forEach((cb) => cb(value));
         }
       }
     } catch (error) {
@@ -107,7 +103,7 @@ function createSettingsAPI<T extends PluginSettings>(
     }
   })();
 
-  settingsWithMeta.loaded = loaded;
+  backing.loaded = loaded;
 
   const handleSettingsChange = (newValue: unknown) => {
     if (!newValue || typeof newValue !== "object") return;
@@ -115,8 +111,10 @@ function createSettingsAPI<T extends PluginSettings>(
     const newSettings = newValue as Partial<Record<keyof T, SettingValue<T[keyof T]>>>;
     for (const key in newSettings) {
       const typedKey = key as keyof T;
-      settingsWithMeta[typedKey] = newSettings[typedKey];
-      listeners.get(typedKey)?.forEach((cb) => cb(newSettings[typedKey]));
+      const value = newSettings[typedKey];
+      if (value === undefined) continue;
+      backing[key] = value;
+      listeners.get(typedKey)?.forEach((cb) => cb(value));
     }
   };
 
@@ -126,22 +124,23 @@ function createSettingsAPI<T extends PluginSettings>(
     settingsState.unregister(storageKey as keyof SettingsState, handleSettingsChange);
   };
 
-  const proxy = new Proxy(settingsWithMeta, {
+  const proxy = new Proxy(backing, {
     get(target, prop) {
-      return target[prop];
+      if (typeof prop === "symbol") return undefined;
+      return target[prop as string];
     },
     set(target, prop, value) {
-      if (["onChange", "offChange", "loaded"].includes(prop as string)) return false;
+      if (typeof prop === "symbol") return false;
+      const key = prop as string;
+      if (["onChange", "offChange", "loaded"].includes(key)) return false;
 
-      target[prop] = value;
+      target[key] = value;
 
-      // Reconstruct just the data keys for storage (excluding metadata methods)
       const dataToStore: Record<string, unknown> = {};
-      for (const key in plugin.settings) {
-        dataToStore[key] = target[key];
+      for (const settingKey in plugin.settings) {
+        dataToStore[settingKey] = target[settingKey];
       }
 
-      // Preserve enabled flag managed separately for disableToggle plugins
       if (plugin.disableToggle) {
         const allSettings = settingsState.getAll() as Record<string, unknown>;
         const existing = allSettings[storageKey] as { enabled?: boolean } | undefined;
@@ -152,7 +151,7 @@ function createSettingsAPI<T extends PluginSettings>(
 
       browser.storage.local.set({ [storageKey]: dataToStore });
 
-      listeners.get(prop as keyof T)?.forEach((cb) => cb(value));
+      listeners.get(key as keyof T)?.forEach((cb) => cb(value as SettingValue<T[keyof T]>));
       return true;
     },
   }) as SettingsAPI<T> & { loaded: Promise<void> };
@@ -209,17 +208,17 @@ function createStorageAPI<T extends Record<string, unknown> = Record<string, unk
           if (!listeners.has(key as string)) {
             listeners.set(key as string, new Set());
           }
-          listeners.get(key as string)!.add(callback);
+          listeners.get(key as string)!.add(callback as (value: unknown) => void);
           return {
             unregister: () => {
-              listeners.get(key as string)?.delete(callback);
+              listeners.get(key as string)?.delete(callback as (value: unknown) => void);
             },
           };
         };
       }
       if (prop === "offChange") {
         return (key: keyof T, callback: (value: T[keyof T]) => void) => {
-          listeners.get(key as string)?.delete(callback);
+          listeners.get(key as string)?.delete(callback as (value: unknown) => void);
         };
       }
       if (prop === "loaded") {
