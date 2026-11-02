@@ -191,7 +191,40 @@ async function runAssessmentSearchAction(item: IndexItem & { metadata: Assessmen
   }
 }
 
-function runPassiveSearchAction(item: IndexItem): void {
+type PassiveRouteContext = {
+  route: string;
+  sourcePage: string;
+  tail: string;
+  child: string;
+  programme?: number;
+  metaclass?: number;
+  portalUuid?: string;
+  forumId?: number;
+  year?: number;
+  assessmentId?: number;
+};
+
+function readPassiveMetadataNumber(
+  md: Record<string, unknown>,
+  key: string,
+): number | undefined {
+  const value = md[key];
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value && Number.isFinite(Number(value))) {
+    return Number(value);
+  }
+  return undefined;
+}
+
+function readPassiveMetadataString(
+  md: Record<string, unknown>,
+  key: string,
+): string | undefined {
+  const value = md[key];
+  return typeof value === "string" && value ? value : undefined;
+}
+
+function parsePassiveRouteContext(item: IndexItem): PassiveRouteContext {
   const md = (item.metadata ?? {}) as Record<string, unknown>;
   const route = typeof md.route === "string" ? md.route : "";
   const sourcePage = typeof md.sourcePage === "string" ? md.sourcePage : "";
@@ -201,105 +234,149 @@ function runPassiveSearchAction(item: IndexItem): void {
     .split("/")
     .filter(Boolean)
     .map((part) => part.toLowerCase());
-  const tail = routeParts[0] ?? "";
-  const child = routeParts[1] ?? "";
 
-  const num = (key: string): number | undefined => {
-    const value = md[key];
-    if (typeof value === "number" && Number.isFinite(value)) return value;
-    if (typeof value === "string" && value && Number.isFinite(Number(value))) {
-      return Number(value);
-    }
-    return undefined;
+  const num = (key: string) => readPassiveMetadataNumber(md, key);
+  const str = (key: string) => readPassiveMetadataString(md, key);
+
+  return {
+    route,
+    sourcePage,
+    tail: routeParts[0] ?? "",
+    child: routeParts[1] ?? "",
+    programme: num("programme") ?? num("programmeId") ?? num("programmeID"),
+    metaclass: num("metaclass") ?? num("metaclassId") ?? num("metaclassID"),
+    portalUuid: str("portalUuid") ?? str("uuid"),
+    forumId: num("forumId") ?? num("forum"),
+    year: num("year"),
+    assessmentId:
+      num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id"),
   };
-  const str = (key: string): string | undefined => {
-    const value = md[key];
-    return typeof value === "string" && value ? value : undefined;
-  };
+}
 
-  const programme = num("programme") ?? num("programmeId") ?? num("programmeID");
-  const metaclass = num("metaclass") ?? num("metaclassId") ?? num("metaclassID");
-  const portalUuid = str("portalUuid") ?? str("uuid");
-  const forumId = num("forumId") ?? num("forum");
-  const year = num("year");
-  const assessmentId = num("assessmentId") ?? num("assessmentID") ?? num("entityId") ?? num("id");
+function navigatePassiveAssessment(ctx: PassiveRouteContext): void {
+  const { programme, metaclass, assessmentId } = ctx;
+  if (programme !== undefined && metaclass !== undefined) {
+    const itemSuffix = assessmentId !== undefined ? `&item=${assessmentId}` : "";
+    navigateToHashRoute(`/assessments/${programme}:${metaclass}${itemSuffix}`);
+    return;
+  }
+  if (assessmentId !== undefined) {
+    navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
+    return;
+  }
+  navigateToHashRoute("/assessments/upcoming");
+}
 
-  const navigateToAssessment = (): void => {
-    if (programme !== undefined && metaclass !== undefined) {
-      const itemSuffix = assessmentId !== undefined ? `&item=${assessmentId}` : "";
-      navigateToHashRoute(`/assessments/${programme}:${metaclass}${itemSuffix}`);
-      return;
-    }
-    if (assessmentId !== undefined) {
-      navigateToHashRoute(`/assessments/upcoming&item=${assessmentId}`);
-      return;
-    }
-    navigateToHashRoute("/assessments/upcoming");
-  };
+type PassiveTailHandler = (ctx: PassiveRouteContext) => boolean;
 
-  if (sourcePage === "/messages") {
+function passiveTailCourses(ctx: PassiveRouteContext): boolean {
+  const { programme, metaclass } = ctx;
+  if (programme === undefined || metaclass === undefined) return false;
+  navigateToHashRoute(`/courses/${programme}:${metaclass}`);
+  return true;
+}
+
+function passiveTailForums(ctx: PassiveRouteContext): boolean {
+  if (ctx.forumId === undefined) return false;
+  navigateToHashRoute(`/forums/${ctx.forumId}`);
+  return true;
+}
+
+function passiveTailPortals(ctx: PassiveRouteContext): boolean {
+  if (!ctx.portalUuid) return false;
+  navigateToHashRoute(`/portals/${ctx.portalUuid}`);
+  return true;
+}
+
+function passiveTailGoals(ctx: PassiveRouteContext): boolean {
+  navigateToHashRoute(ctx.year !== undefined ? `/goals/${ctx.year}` : "/goals");
+  return true;
+}
+
+function passiveTailPeople(ctx: PassiveRouteContext): boolean {
+  if (!ctx.route.includes("/load/message/people") && ctx.child !== "people") return false;
+  navigateInCurrentSeqtaApp("/messages");
+  return true;
+}
+
+const PASSIVE_TAIL_HANDLERS: Record<string, PassiveTailHandler> = {
+  courses: passiveTailCourses,
+  assessments: (ctx) => {
+    navigatePassiveAssessment(ctx);
+    return true;
+  },
+  assessment: (ctx) => {
+    navigatePassiveAssessment(ctx);
+    return true;
+  },
+  forums: passiveTailForums,
+  forum: passiveTailForums,
+  portals: passiveTailPortals,
+  portal: passiveTailPortals,
+  goals: passiveTailGoals,
+  goal: passiveTailGoals,
+  folio: () => {
+    navigateToHashRoute("/folios/read");
+    return true;
+  },
+  folios: () => {
+    navigateToHashRoute("/folios/read");
+    return true;
+  },
+  notices: () => {
+    navigateToHashRoute("/notices");
+    return true;
+  },
+  notice: () => {
+    navigateToHashRoute("/notices");
+    return true;
+  },
+  documents: () => {
+    navigateToHashRoute("/documents");
+    return true;
+  },
+  document: () => {
+    navigateToHashRoute("/documents");
+    return true;
+  },
+  reports: () => {
+    navigateToHashRoute("/reports");
+    return true;
+  },
+  report: () => {
+    navigateToHashRoute("/reports");
+    return true;
+  },
+  messages: () => {
+    navigateInCurrentSeqtaApp("/messages");
+    return true;
+  },
+  message: () => {
+    navigateInCurrentSeqtaApp("/messages");
+    return true;
+  },
+  people: passiveTailPeople,
+  timetable: () => {
+    navigateToHashRoute("/timetable");
+    return true;
+  },
+};
+
+function passiveRouteHandled(ctx: PassiveRouteContext): boolean {
+  const handler = PASSIVE_TAIL_HANDLERS[ctx.tail];
+  return handler ? handler(ctx) : false;
+}
+
+function runPassiveSearchAction(item: IndexItem): void {
+  const ctx = parsePassiveRouteContext(item);
+
+  if (ctx.sourcePage === "/messages") {
     navigateInCurrentSeqtaApp("/messages");
     return;
   }
 
-  switch (tail) {
-    case "courses":
-      if (programme !== undefined && metaclass !== undefined) {
-        navigateToHashRoute(`/courses/${programme}:${metaclass}`);
-        return;
-      }
-      break;
-    case "assessments":
-    case "assessment":
-      navigateToAssessment();
-      return;
-    case "forums":
-    case "forum":
-      if (forumId !== undefined) {
-        navigateToHashRoute(`/forums/${forumId}`);
-        return;
-      }
-      break;
-    case "portals":
-    case "portal":
-      if (portalUuid) {
-        navigateToHashRoute(`/portals/${portalUuid}`);
-        return;
-      }
-      break;
-    case "goals":
-    case "goal":
-      navigateToHashRoute(year !== undefined ? `/goals/${year}` : "/goals");
-      return;
-    case "folio":
-    case "folios":
-      navigateToHashRoute("/folios/read");
-      return;
-    case "notices":
-    case "notice":
-      navigateToHashRoute("/notices");
-      return;
-    case "documents":
-    case "document":
-      navigateToHashRoute("/documents");
-      return;
-    case "reports":
-    case "report":
-      navigateToHashRoute("/reports");
-      return;
-    case "messages":
-    case "message":
-      navigateInCurrentSeqtaApp("/messages");
-      return;
-    case "people":
-      if (route.includes("/load/message/people") || child === "people") {
-        navigateInCurrentSeqtaApp("/messages");
-        return;
-      }
-      break;
-    case "timetable":
-      navigateToHashRoute("/timetable");
-      return;
+  if (passiveRouteHandled(ctx)) {
+    return;
   }
 
   navigateToHashRoute(FALLBACK_ROUTE);
