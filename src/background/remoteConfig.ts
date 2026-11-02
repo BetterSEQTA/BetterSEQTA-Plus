@@ -30,6 +30,7 @@ const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 
 async function linkCloudInstall(token: string, installId: string): Promise<void> {
   try {
+    const extension = bsplusExtensionPayload();
     const r = await fetch(`${ACCOUNTS_BASE}/api/bsplus/installs/link`, {
       method: "POST",
       headers: {
@@ -39,7 +40,8 @@ async function linkCloudInstall(token: string, installId: string): Promise<void>
       },
       body: JSON.stringify({
         installId,
-        extension: bsplusExtensionPayload(),
+        extensionVersion: extension.version,
+        extension,
         deviceName: await getBsplusDeviceName(),
         lastSeenAt: new Date().toISOString(),
       }),
@@ -104,6 +106,7 @@ async function registerInstall(
   if (!force && Date.now() - last < REGISTER_INTERVAL_MS) return;
 
   const installId = await getOrCreateInstallId();
+  const extension = bsplusExtensionPayload();
   const { bsplus_token, bsplus_user } = await browser.storage.local.get([
     "bsplus_token",
     "bsplus_user",
@@ -119,7 +122,8 @@ async function registerInstall(
 
   const body = {
     installId,
-    extension: bsplusExtensionPayload(),
+    extensionVersion: extension.version,
+    extension,
     userId,
     lastSeenAt: new Date().toISOString(),
     ...(hostname ? { hostname } : {}),
