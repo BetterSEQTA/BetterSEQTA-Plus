@@ -281,12 +281,12 @@
     void themeManager.updatePreviewDebounced(snapshot);
   });
 
-  type SettingType = 'switch' | 'button' | 'slider' | 'colourPicker' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
+  type SettingType = 'switch' | 'button' | 'slider' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
 
   type SwitchProps = { state: boolean; onChange: (value: boolean) => void };
   type ButtonProps = { onClick: () => void; text: string };
   type SliderProps = { state: number; onChange: (value: number) => void; min?: number; max?: number };
-  type ColourPickerProps = { color: string; onChange: (color: string) => void };
+
   type SelectProps = { options: Array<{ value: string; label: string }>; value: string; onChange: (value: string) => void };
   type CodeEditorProps = { value: string; onChange: (value: string) => void };
   type LightDarkToggleProps = { state: boolean; onChange: (value: boolean) => void };
@@ -296,7 +296,7 @@
     children: SettingItem;
   };
 
-  type ComponentProps = SwitchProps | ButtonProps | SliderProps | ColourPickerProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
+  type ComponentProps = SwitchProps | ButtonProps | SliderProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
 
   type SettingItem = {
     type: SettingType;
@@ -349,10 +349,7 @@
             <Button {...(item.props as ButtonProps)} />
           {:else if item.type === 'slider'}
             <Slider {...(item.props as SliderProps)} />
-          {:else if item.type === 'colourPicker'}
-            {#key themeLoaded}
-              <ColourPicker savePresets={false} standalone={true} {...(item.props)} />
-            {/key}
+
           {:else if item.type === 'codeEditor'}
             {#if !codeEditorFullscreen}
               {#key themeLoaded}
