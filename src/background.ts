@@ -26,6 +26,7 @@ import {
   refreshRemoteConfig,
 } from "./background/remoteConfig";
 import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
+import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackground";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
@@ -790,6 +791,7 @@ browser.runtime.onInstalled.addListener(function (event) {
 
   if (event.reason === "install") {
     void refreshRemoteConfig(apiBase);
+    void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
   }
 });
 

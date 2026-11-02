@@ -10,6 +10,7 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
+import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { updateAllColors } from "./colors/Manager";
@@ -155,7 +156,12 @@ export async function AddBetterSEQTAElements() {
     menuList.insertBefore(fragment, menuList.firstChild);
 
     try {
-      await Promise.all([appendBackgroundToUI(), handleUserInfoAndStudentData()]);
+      await Promise.all([
+        applyDefaultBackgroundOnce()
+          .catch((error) => console.warn("[BetterSEQTA+] Default background failed:", error))
+          .then(appendBackgroundToUI),
+        handleUserInfoAndStudentData(),
+      ]);
     } catch (error) {
       console.error("[BetterSEQTA+] Failed to initialize UI elements:", error);
     }

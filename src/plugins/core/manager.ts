@@ -553,7 +553,9 @@ export class PluginManager {
           if (!plugin?.disableToggle) continue;
 
           const enabled =
-            (change.newValue as PluginSettingsStorage)?.enabled ?? true;
+            (change.newValue as PluginSettingsStorage)?.enabled ??
+            plugin.defaultEnabled ??
+            true;
           const wasEnabled =
             (change.oldValue as PluginSettingsStorage)?.enabled ??
             plugin.defaultEnabled ??

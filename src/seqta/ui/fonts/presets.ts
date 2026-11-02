@@ -1,4 +1,4 @@
-export const DEFAULT_FONT_ID = "rubik";
+export const DEFAULT_FONT_ID = "inter";
 
 export interface FontPreset {
   id: string;
@@ -10,19 +10,19 @@ export interface FontPreset {
 
 export const FONT_PRESETS: FontPreset[] = [
   {
-    id: "rubik",
-    name: "Rubik",
-    stack: "Rubik, sans-serif",
-    googleUrl:
-      "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap",
-    sample: "Assessment due tomorrow at 3:30pm",
-  },
-  {
     id: "inter",
     name: "Inter",
     stack: "Inter, sans-serif",
     googleUrl:
       "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap",
+    sample: "Assessment due tomorrow at 3:30pm",
+  },
+  {
+    id: "rubik",
+    name: "Rubik",
+    stack: "Rubik, sans-serif",
+    googleUrl:
+      "https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap",
     sample: "Assessment due tomorrow at 3:30pm",
   },
   {
