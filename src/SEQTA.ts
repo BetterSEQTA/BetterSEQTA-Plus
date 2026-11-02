@@ -2,6 +2,8 @@
 // is SEQTA and loads the rest of the extension on demand. Importing seqta/boot
 // statically here made every site download and parse the whole bundle.
 
+import { recoverFromStaleDevModuleGraph } from "@/seqta/devModuleGraphRecovery";
+
 let hasSEQTAText = false;
 let isSeqtaPage = false;
 
@@ -18,7 +20,7 @@ if (document.childNodes[1]) {
 }
 
 if (hasSEQTAText) {
-  void import("@/seqta/boot").then(({ boot }) => boot(isSeqtaPage));
+  void import("@/seqta/boot").then(({ boot }) => boot());
 }
 
 // Standalone 404 documents never pass the SEQTA SPA gate above.
@@ -26,4 +28,10 @@ if (!isSeqtaPage) {
   void import("@/seqta/bootErrorPage").then(({ bootErrorPage }) =>
     bootErrorPage(),
   );
+}
+
+if (import.meta.env.DEV) {
+  window.addEventListener("unhandledrejection", (event) => {
+    recoverFromStaleDevModuleGraph(event.reason);
+  });
 }

@@ -20,6 +20,7 @@ import {
   ensureKilledModeSettingsAccess,
 } from "@/seqta/utils/remoteConfig/runtime";
 import { runStartupPopupQueue } from "@/seqta/utils/Openers/StartupPopupQueue";
+import { recoverFromStaleDevModuleGraph } from "@/seqta/devModuleGraphRecovery";
 
 function registerFetchSeqtaAppLinkListener() {
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
@@ -47,24 +48,24 @@ function registerFetchSeqtaAppLinkListener() {
 
 var IsSEQTAPage = false;
 
-/**
- * Loaded on demand by SEQTA.ts for pages with the SEQTA copyright comment.
- * `isSeqtaPage` is true when the title also matched SEQTA Learn/Engage.
- */
-export function boot(isSeqtaPage: boolean) {
+/** Loaded on demand by SEQTA.ts for pages with the SEQTA copyright comment. */
+export function boot() {
   installSeqtaMenuColourPatch();
   installThemeImagePagePatch();
-  if (isSeqtaPage) init();
-}
-
-if (import.meta.env.DEV) {
-  window.addEventListener("unhandledrejection", (event) => {
-    recoverFromStaleDevModuleGraph(event.reason);
-  });
+  void init();
 }
 
 async function init() {
-  if (!IsSEQTAPage) {
+  const hasSEQTAText =
+    document.childNodes[1]?.textContent?.includes(
+      "Copyright (c) SEQTA Software",
+    ) ?? false;
+  if (
+    hasSEQTAText &&
+    (document.title.includes("SEQTA Learn") ||
+      document.title.includes("SEQTA Engage")) &&
+    !IsSEQTAPage
+  ) {
     IsSEQTAPage = true;
     verboseInfo("[BetterSEQTA+] Verified SEQTA Page");
 
@@ -158,27 +159,4 @@ function replaceIcons() {
         link.href = icon48;
       }
     });
-}
-
-/** Vite/CRX HMR can leave modules with missing named exports until the graph is cleared. */
-function recoverFromStaleDevModuleGraph(error: unknown) {
-  if (!import.meta.env.DEV) return;
-
-  const message = error instanceof Error ? error.message : String(error);
-  if (!/does not provide an export named/.test(message)) return;
-
-  const key = "bsplus-dev-export-recovery";
-  if (!sessionStorage.getItem(key)) {
-    sessionStorage.setItem(key, "1");
-    import.meta.hot?.send("bsplus:reset-module-graph");
-    setTimeout(() => {
-      location.reload();
-    }, 80);
-    return;
-  }
-
-  sessionStorage.removeItem(key);
-  console.error(
-    "[BetterSEQTA+] Dev module graph is still stale after recovery. Restart `npm run dev`, then reload this page.",
-  );
 }
