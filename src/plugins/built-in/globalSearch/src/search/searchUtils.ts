@@ -1,4 +1,4 @@
-import Fuse, { type FuseResult } from "fuse.js";
+import Fuse, { type FuseResult, type IFuseOptions } from "fuse.js";
 import { getStaticCommands, type StaticCommandItem } from "../core/commands";
 import { getDynamicItems } from "../utils/dynamicItems";
 import type { CombinedResult } from "../core/types";
@@ -120,7 +120,7 @@ export const DYNAMIC_FUSE_OPTIONS = {
   ignoreLocation: true,
   findAllMatches: true,
   shouldSort: true,
-} as const;
+} satisfies IFuseOptions<IndexItem>;
 
 export interface DynamicItemsUpdatedDetail {
   incremental?: boolean;
@@ -136,10 +136,7 @@ export interface DynamicItemsUpdatedDetail {
 export function createDynamicContentFuse(
   items: IndexItem[],
 ): Fuse<IndexItem> {
-  return new Fuse(
-    dedupeIndexItemsForSearch(items),
-    DYNAMIC_FUSE_OPTIONS,
-  ) as Fuse<IndexItem>;
+  return new Fuse(dedupeIndexItemsForSearch(items), DYNAMIC_FUSE_OPTIONS);
 }
 
 /**

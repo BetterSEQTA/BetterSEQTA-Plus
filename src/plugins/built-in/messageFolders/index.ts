@@ -1,4 +1,5 @@
 import type { Plugin } from "../../core/types";
+import type { MessageFoldersSettings } from "./lazy";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 interface Folder {
@@ -86,8 +87,8 @@ function appendFolderBadgeContent(badge: HTMLElement, folder: Folder): void {
 const MESSAGE_LIST_ITEM_SELECTOR =
   "[class*='MessageList__MessageList___'] ol > li[data-message]";
 
-function getMessageListItems(): NodeListOf<Element> {
-  return document.querySelectorAll(MESSAGE_LIST_ITEM_SELECTOR);
+function getMessageListItems(): NodeListOf<HTMLElement> {
+  return document.querySelectorAll<HTMLElement>(MESSAGE_LIST_ITEM_SELECTOR);
 }
 
 function clearMessageListBadges(
@@ -155,8 +156,13 @@ function createFolderBadge(
   return badge;
 }
 
-const messageFoldersPlugin = {
-  run: async (api: Parameters<NonNullable<Plugin["run"]>>[0]) => {
+type MessageFoldersStorage = {
+  folders?: Folder[];
+  messageAssignments?: Record<string, string[]>;
+};
+
+const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersStorage>, "run"> = {
+  run: async (api) => {
     await api.storage.loaded;
 
     if (!api.storage.folders) api.storage.folders = [];

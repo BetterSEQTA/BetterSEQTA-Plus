@@ -9,7 +9,6 @@
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
   import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
-  import { closeExtensionPopup } from '@/seqta/utils/closers/closeExtensionPopup'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
   import { getRemoteConfigSnapshot, resolveEffectiveRemoteTheme } from '@/seqta/utils/remoteConfig/runtime'
 
@@ -20,10 +19,10 @@
   );
 
   let themes = $state<ThemeList | null>(null);
-  let { isEditMode, showNavigation = true } = $props<{
+  let { isEditMode, showNavigation = true }: {
     isEditMode: boolean;
     showNavigation?: boolean;
-  }>();
+  } = $props();
   let favoriteStatus = $state<Record<string, boolean>>({});
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
   let prevLoggedIn = $state(false);

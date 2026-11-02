@@ -505,7 +505,6 @@ function CheckNoticeTextColour(notice: Element) {
       for (const m of mutations)
         for (const node of m.removedNodes)
           if (node instanceof Element && noticeContainers.has(node)) {
-            noticeColourObserver!.unobserve(node);
             noticeContainers.delete(node);
           }
     });

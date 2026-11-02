@@ -19,7 +19,7 @@
   let view: EditorView | null = null;
   let unsubSettings: (() => void) | undefined;
   let editorTheme = new Compartment();
-  let { value, onChange, className } = $props<{value: string, onChange: (value: string) => void, className?: string}>()
+  let { value, onChange, className }: {value: string, onChange: (value: string) => void, className?: string} = $props()
 
   function createEditorState(initialContents: string) {
       let extensions = [

@@ -11,7 +11,7 @@ export interface LazyPlugin<T extends PluginSettings = PluginSettings, S = any> 
   disableToggle?: boolean;
   defaultEnabled?: boolean;
   beta?: boolean;
-  loader: () => Promise<{ default: Plugin<T, S> }>;
+  loader: () => Promise<{ default: Pick<Plugin<T, S>, "run"> }>;
 }
 
 const ASSET_LOAD_ERRORS = ["MIME type", "NS_ERROR_CORRUPTED_CONTENT", "preload CSS"];

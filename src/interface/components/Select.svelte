@@ -1,9 +1,9 @@
 <script lang="ts">
-  let { value, onChange, options } = $props<{
+  let { value, onChange, options }: {
     value: string,
     onChange: (newValue: string) => void,
     options: Array<{ value: string, label: string }>
-  }>();
+  } = $props();
 
   const listboxId = $props.id();
 

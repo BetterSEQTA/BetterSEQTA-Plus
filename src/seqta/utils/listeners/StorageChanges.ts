@@ -5,7 +5,7 @@ import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
 import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
 import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/LoadHomePage";
-import { applyMenuItemVisibility, scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
+import { scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
 

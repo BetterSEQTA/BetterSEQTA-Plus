@@ -20,10 +20,10 @@
   const { 
     transparencyEffects, 
     searchHotkey: initialSearchHotkey
-  } = $props<{ 
+  }: { 
     transparencyEffects: boolean, 
     searchHotkey: string
-  }>();
+  } = $props();
 
   let currentSearchHotkey = $derived(initialSearchHotkey);
 

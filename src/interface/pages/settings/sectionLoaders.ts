@@ -3,7 +3,7 @@ import type { SettingsSectionId } from "./shared";
 
 export const SECTION_LOADERS: Record<
   SettingsSectionId,
-  () => Promise<{ default: Component }>
+  () => Promise<{ default: Component<any> }>
 > = {
   account: () => import("./sections/account.svelte"),
   general: () => import("./sections/generalOptions.svelte"),

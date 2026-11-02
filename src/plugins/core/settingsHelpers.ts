@@ -4,7 +4,6 @@ import type {
   ComponentSetting,
   HotkeySetting,
   NumberSetting,
-  PluginSettings,
   SelectSetting,
   StringSetting,
 } from "./types";

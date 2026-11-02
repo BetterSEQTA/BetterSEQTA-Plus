@@ -5,7 +5,7 @@ import { VectorWorkerManager } from "../worker/vectorWorkerManager";
 import { loadAllStoredItems } from "../indexer";
 import { publishDynamicItemsUpdate } from "../renderComponents";
 
-import { verboseDebug, verboseInfo, verboseLog } from '@/utils/verboseLog';
+import { verboseInfo, verboseLog } from '@/utils/verboseLog';
 const RATE_LIMIT_CONFIG = {
   minDelay: 30,
   maxDelay: 3000,

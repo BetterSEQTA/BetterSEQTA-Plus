@@ -104,7 +104,15 @@ export type BadgeItem = {
   awarded_at?: number;
 };
 
-type BadgeVisual = (typeof BADGE_TIERS)[number] | (typeof ACHIEVEMENT_BADGES)[number];
+type BadgeVisual = {
+  key: string;
+  label: string;
+  rankLabel: string;
+  description: string;
+  base: string;
+  blobs: readonly string[];
+  icon: string;
+};
 
 const TIER_BY_KEY = new Map(BADGE_TIERS.map((t) => [t.key, t]));
 const VISUAL_BY_KEY = new Map<string, BadgeVisual>([

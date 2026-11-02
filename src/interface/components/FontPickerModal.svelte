@@ -12,7 +12,7 @@
   import { syncPageThemeToElement } from "@/interface/utils/syncPageTheme";
   import fontPickerStyles from "./fontPickerModal.css?inline";
 
-  let { hidePicker } = $props<{ hidePicker: () => void }>();
+  let { hidePicker }: { hidePicker: () => void } = $props();
 
   let rootEl = $state<HTMLElement | null>(null);
   let selectedId = $state(getFontPreset($settingsState.selectedFont).id);

@@ -31,7 +31,7 @@ selectedThemeId = '',
 installedThemeColors = {},
 variant = 'official',
 adminPreviewMode = false,
-} = $props<{
+}: {
 theme: Theme | null
 currentThemes: string[]
 setDisplayTheme: (theme: Theme | null) => void
@@ -49,7 +49,7 @@ selectedThemeId?: string
 installedThemeColors?: Record<string, string>
 variant?: 'official' | 'community'
 adminPreviewMode?: boolean
-}>()
+} = $props()
 const installActionLabel = $derived(adminPreviewMode ? 'Preview & apply' : 'Install')
 const isCommunity = $derived(variant === 'community')
 const themeStoreInstallLocked = $derived(isRemoteThemeStoreDisabled() && !adminPreviewMode)
@@ -142,7 +142,7 @@ damping: 20,
 )
 }
 })
-const hideModal = (relatedTheme = null) => {
+const hideModal = (relatedTheme: Theme | null = null) => {
 animate(
 modalElement,
 { y: [0, 16], opacity: [1, 0], scale: [1, 0.98] },

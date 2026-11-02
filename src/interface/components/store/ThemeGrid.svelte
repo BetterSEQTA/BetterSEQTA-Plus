@@ -12,7 +12,7 @@
     allStoreThemeRows,
     installedThemeIds = [],
     variant = 'official',
-  } = $props<{
+  }: {
     themes: Theme[];
     searchTerm: string;
     setDisplayTheme: (theme: Theme) => void;
@@ -23,7 +23,7 @@
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
     variant?: 'official' | 'community';
-  }>();
+  } = $props();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) => {
     const q = searchTerm.toLowerCase();

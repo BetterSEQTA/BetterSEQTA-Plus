@@ -40,14 +40,14 @@
     saveGradeInferenceSettings,
   } from "./storage";
 
-  let { simpleMode = false } = $props<{ simpleMode?: boolean }>();
+  let { simpleMode = false }: { simpleMode?: boolean } = $props();
 
   const LOAD_ERROR =
     "Unable to load analytics. Check your connection, then select Refresh data.";
   const SYNC_ERROR_WITH_DATA =
     "Unable to sync. Showing saved data. Select Refresh data to try again.";
 
-  let analyticsData: Assessment[] | null = $state(null);
+  let analyticsData = $state<Assessment[] | null>(null);
   let loading = $state(true);
   let syncing = $state(false);
   let lastUpdated: Date | null = $state(null);
@@ -56,7 +56,7 @@
 
   let filterSubjects: string[] = $state([]);
   let filterSearch = $state("");
-  let gradeRange = $state([0, 100]);
+  let gradeRange = $state<[number, number]>([0, 100]);
   let showSubjectsDropdown = $state(false);
   let showTimeRangeDropdown = $state(false);
   let timeRange: TimeRange = $state("all");

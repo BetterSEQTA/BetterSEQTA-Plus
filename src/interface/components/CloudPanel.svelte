@@ -7,9 +7,9 @@
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import Button from "./Button.svelte";
 
-  const { hidePanel } = $props<{
+  const { hidePanel }: {
     hidePanel: () => void;
-  }>();
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   let background = $state<HTMLDivElement | null>(null);

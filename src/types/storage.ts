@@ -1,4 +1,4 @@
-export interface SettingsState {
+export type SettingsState = {
   DarkMode: boolean;
   selectedTheme: string;
   customshortcuts: CustomShortcut[];
@@ -110,7 +110,8 @@ export interface SettingsState {
   autoCloudSettingsSync?: boolean;
   /** When not `false`, show Cloud badges in the SEQTA titlebar (default-on). */
   showTitlebarFounderBadge?: boolean;
-}
+  [pluginKey: `plugin.${string}`]: unknown;
+};
 
 interface ToggleItem {
   toggle: boolean;

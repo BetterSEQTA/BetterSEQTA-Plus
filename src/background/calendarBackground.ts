@@ -71,6 +71,7 @@ type StoredTokens = {
   expiresAt?: number;
   lastSyncAt?: number;
   lastSyncOrigin?: string;
+  calendarId?: string;
 };
 
 type OAuthTabFlowOptions = {

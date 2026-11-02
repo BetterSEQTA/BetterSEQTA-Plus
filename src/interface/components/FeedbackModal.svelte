@@ -25,10 +25,10 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import Spinner from "./Spinner.svelte";
 
-  let { onClose, initialFeedbackId = null } = $props<{
+  let { onClose, initialFeedbackId = null }: {
     onClose: () => void;
     initialFeedbackId?: string | null;
-  }>();
+  } = $props();
 
   let tab = $derived<"send" | "status">(
     typeof initialFeedbackId === "string" && initialFeedbackId ? "status" : "send",

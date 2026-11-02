@@ -1,6 +1,6 @@
 import type { Plugin } from "@/plugins/core/types";
+import type { GlobalSearchSettings } from "../../lazy";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";
-import styles from "./styles.css?inline";
 import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";
 import { runIndexing, ensureSchemaCurrent } from "../indexing/indexer";
 import { installResetIndexMessageListener } from "../indexing/resetIndexes";
@@ -22,16 +22,7 @@ function scheduleIdleIndexing(run: () => void): void {
   setTimeout(run, 2000);
 }
 
-const globalSearchPlugin: Plugin<{}> = {
-  id: "global-search",
-  name: "Global Search",
-  description: "Quick search for everything in SEQTA",
-  version: "1.0.0",
-  settings: {},
-  disableToggle: true,
-  defaultEnabled: false,
-  styles,
-
+const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
   run: async (api) => {
     const appRef = { current: null };
 

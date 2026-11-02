@@ -8,8 +8,7 @@ let ortWasmBase: string | null = null;
 
 async function configureOrtWasm(base: string): Promise<void> {
   const { env } = await import("@huggingface/transformers");
-  env.backends.onnx.wasm = env.backends.onnx.wasm ?? {};
-  env.backends.onnx.wasm.wasmPaths = base.endsWith("/") ? base : `${base}/`;
+  if (env.backends.onnx.wasm) env.backends.onnx.wasm.wasmPaths = base.endsWith("/") ? base : `${base}/`;
 }
 let vectorIndex: EmbeddingIndex | null = null;
 let isInitialized = false;

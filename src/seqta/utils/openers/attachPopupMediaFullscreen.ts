@@ -29,7 +29,7 @@ export function attachPopupMediaFullscreen(el: HTMLImageElement | HTMLVideoEleme
   };
 
   el.addEventListener("click", open);
-  el.addEventListener("keydown", (e) => {
+  (el as HTMLElement).addEventListener("keydown", (e) => {
     if (e.key === "Enter" || e.key === " ") {
       open(e);
     }

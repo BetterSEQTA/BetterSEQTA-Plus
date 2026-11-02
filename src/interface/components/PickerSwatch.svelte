@@ -1,7 +1,7 @@
 <script lang="ts">
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
 
-  let { onClick } = $props<{ onClick: () => void }>();
+  let { onClick }: { onClick: () => void } = $props();
 </script>
 
 <button

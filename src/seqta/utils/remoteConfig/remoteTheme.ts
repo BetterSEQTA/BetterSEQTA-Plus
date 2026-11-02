@@ -173,6 +173,7 @@ async function applyRemoteTheme(
   snapshot: RemoteConfigSnapshot,
   directive: RemoteThemeDirective,
 ): Promise<void> {
+  if (directive.mode === "off") return;
   const key = directiveKey(snapshot, directive);
   const prior = await loadActiveState();
   if (prior?.directiveKey === key) return;

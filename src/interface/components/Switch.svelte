@@ -3,7 +3,7 @@
   import { standalone } from '../utils/standalone.svelte';
   import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
 
-  let { state: checked, onChange } = $props<{ state: boolean, onChange: (newState: boolean) => void }>();
+  let { state: checked, onChange }: { state: boolean, onChange: (newState: boolean) => void } = $props();
 
   let motionReady = $state(false);
   onMount(() => {

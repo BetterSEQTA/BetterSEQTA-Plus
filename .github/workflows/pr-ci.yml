@@ -22,6 +22,9 @@ jobs:
       - name: Run lint
         uses: ./.github/actions/run-lint
 
+      - name: Type check
+        run: npm run typecheck
+
   unit-tests:
     runs-on: windows-latest
     defaults:

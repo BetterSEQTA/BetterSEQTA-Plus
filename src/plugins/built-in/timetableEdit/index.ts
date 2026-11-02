@@ -16,10 +16,6 @@ interface TimetableOverridesBySubject {
   [description: string]: { room?: string; staff?: string };
 }
 
-interface TimetableStorage {
-  timetableOverrides?: TimetableOverrides;
-  timetableOverridesBySubject?: TimetableOverridesBySubject;
-}
 
 /** SEQTA timetable entries use .teacher and .room as direct children, and data-instance for ci */
 function getRoomAndTeacherElements(entry: HTMLElement): {

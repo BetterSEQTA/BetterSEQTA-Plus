@@ -632,25 +632,14 @@ async function CreateUpcomingSection(assessments: any, activeSubjects: any) {
     }
   }
 
-  const filterSubjects = subjectsWithUpcomingAssessments(
-    assessments,
-    activeSubjects,
+  const filterSubjects = subjectsWithUpcomingAssessments(assessments, activeSubjects).map(
+    (subject) => {
+      const colour = colours.find(
+        (c: any) => c.name === `timetable.subject.colour.${subject.code}`,
+      );
+      return { code: subject.code, colour: `--item-colour: ${colour?.value ?? "#8e8e8e"};` };
+    },
   );
-
-  for (let i = 0; i < filterSubjects.length; i++) {
-    const element = filterSubjects[i];
-    const colour = colours.find(
-      (c: any) => c.name === `timetable.subject.colour.${element.code}`,
-    );
-    if (!colour) {
-      element.colour = "--item-colour: #8e8e8e;";
-    } else {
-      element.colour = `--item-colour: ${colour.value};`;
-      if (GetThresholdOfColor(colour.value) > 300) {
-        element.invert = true;
-      }
-    }
-  }
 
   CreateFilters(filterSubjects);
 
@@ -828,7 +817,7 @@ async function GetLessonColours() {
   }
 }
 
-function CreateFilters(subjects: { code: string }[]) {
+function CreateFilters(subjects: { code: string; colour: string }[]) {
   const filteroptions = { ...settingsState.subjectfilters };
   const filterdiv = document.querySelector("#upcoming-filters");
   if (!filterdiv) return;

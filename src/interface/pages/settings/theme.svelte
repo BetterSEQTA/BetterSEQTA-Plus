@@ -4,9 +4,9 @@
   import Button from "@/interface/components/Button.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
 
-  let { section = "all" } = $props<{
+  let { section = "all" }: {
     section?: "all" | "themes" | "backgrounds";
-  }>();
+  } = $props();
   
   let selectedBackground = $state<string | null>(null);
   let selectNoBackground = $state<() => void>(() => { });

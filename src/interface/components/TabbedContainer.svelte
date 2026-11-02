@@ -6,15 +6,15 @@
 
   type TabDef = {
     title: string;
-    Content?: Component;
-    loader?: () => Promise<{ default: Component }>;
+    Content?: Component<any>;
+    loader?: () => Promise<{ default: Component<any> }>;
     props?: Record<string, unknown>;
   };
 
-  let { tabs, activeTab = $bindable(0) } = $props<{
+  let { tabs, activeTab = $bindable(0) }: {
     tabs: TabDef[];
     activeTab?: number;
-  }>();
+  } = $props();
 
   onMount(() => {
     const handleMessage = (event: MessageEvent) => {

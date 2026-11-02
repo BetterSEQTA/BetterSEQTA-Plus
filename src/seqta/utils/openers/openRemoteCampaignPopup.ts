@@ -64,7 +64,7 @@ export function openRemoteCampaignPopup(
       if (btn.action === "url" && btn.url) {
         window.open(btn.url, "_blank", "noopener,noreferrer");
       } else if (btn.action === "openSettingsSection" && btn.section) {
-        requestSettingsDestination({ section: btn.section });
+        requestSettingsDestination({ page: "settings", section: btn.section });
         await openSettingsPopup();
       }
       if (campaign.requireAcknowledge) acknowledged = true;

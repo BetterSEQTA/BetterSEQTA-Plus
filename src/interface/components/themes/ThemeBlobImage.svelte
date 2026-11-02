@@ -1,11 +1,11 @@
 <script lang="ts">
   import { blobToDataUrl } from '@/seqta/utils/base64'
 
-  let { source, alt = '', class: className = '' } = $props<{
+  let { source, alt = '', class: className = '' }: {
     source: string | Blob | null | undefined
     alt?: string
     class?: string
-  }>()
+  } = $props()
 
   let src = $state('')
 

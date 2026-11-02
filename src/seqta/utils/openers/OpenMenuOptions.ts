@@ -136,8 +136,7 @@ function createMenuSortable(): Sortable | undefined {
   try {
     const el = document.querySelector("#menu > ul");
     if (!el) return undefined;
-    let sortable: Sortable | undefined;
-    sortable = Sortable.create(el as HTMLElement, {
+    const sortable: Sortable = Sortable.create(el as HTMLElement, {
       draggable: ".draggable",
       dataIdAttr: "data-key",
       animation: 150,

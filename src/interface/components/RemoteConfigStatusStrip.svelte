@@ -46,7 +46,7 @@
   }
 
   function openGeneralSettings() {
-    requestSettingsDestination({ section: "general" });
+    requestSettingsDestination({ page: "settings", section: "general" });
   }
 </script>
 

@@ -38,13 +38,12 @@
     defaultThemeCreatorMeta,
     mergeThemeWithCreatorMeta,
     snapshotSidebarSettings,
-    type ThemeCreatorSidebarMeta,
   } from '@/interface/utils/themeCreatorMeta'
   import { ensureThemeCoverImage } from '@/interface/utils/themePlaceholderCover'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import type { ThemeCreatorMeta } from '@/types/CustomThemes'
 
-  const { themeID } = $props<{ themeID: string }>()
+  const { themeID }: { themeID: string } = $props()
   const themeManager = ThemeManager.getInstance();
 
   let theme = $state<LoadedCustomTheme>({
@@ -71,8 +70,6 @@
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
   let panelDark = $state(Boolean(settingsState.DarkMode));
   let creatorMeta = $state<ThemeCreatorMeta>(defaultThemeCreatorMeta());
-  let originalSidebar = $state<ThemeCreatorSidebarMeta | null>(null);
-  let originalFontId = $state<string | null>(null);
   /** When true, generated font/background CSS is merged for live preview and save. */
   let composeVisuals = $state(false);
 
@@ -169,7 +166,7 @@
     return await ensureThemeCoverImage(merged);
   }
 
-  onMount(async () => {
+  onMount(() => {
     const unsubCloud = cloudAuth.subscribe((s) => {
       cloudLoggedIn = s.isLoggedIn;
     });
@@ -178,9 +175,15 @@
     });
 
     void ensureFontPickerFontsLoaded();
-    originalSidebar = snapshotSidebarSettings();
-    originalFontId = settingsState.selectedFont ?? DEFAULT_FONT_ID;
+    void loadTheme();
 
+    return () => {
+      unsubCloud();
+      unsubSettings();
+    };
+  });
+
+  async function loadTheme() {
     if (themeID) {
       const tempTheme = await themeManager.getTheme(themeID);
       if (!tempTheme) return;
@@ -208,14 +211,7 @@
     applySelectedFont(creatorMeta.fontId);
     themeLoaded = true;
     themeUpdates.triggerUpdate();
-
-    return () => {
-      unsubCloud();
-      unsubSettings();
-      if (originalSidebar) applySidebarSettings(originalSidebar);
-      if (originalFontId) applySelectedFont(originalFontId);
-    };
-  });
+  }
 
   function onImageUpload(event: Event) {
     const updated = handleImageUpload(event, theme);

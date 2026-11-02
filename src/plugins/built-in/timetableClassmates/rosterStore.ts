@@ -1,4 +1,4 @@
-import localforage, { type LocalForage } from "localforage";
+import localforage from "localforage";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
 import type { ArchivedMembers, ClassRosterIndex } from "./rosterMerge";
 import { getStudentId } from "@/seqta/utils/userInfo";

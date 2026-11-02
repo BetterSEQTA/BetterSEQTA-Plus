@@ -3,12 +3,12 @@
   import { animate } from 'motion';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState';
 
-  let { onConfirm, onCancel, title, message } = $props<{
+  let { onConfirm, onCancel, title, message }: {
     onConfirm: () => void;
     onCancel: () => void;
     title: string;
     message: string;
-  }>();
+  } = $props();
 
   let modalElement: HTMLElement;
 

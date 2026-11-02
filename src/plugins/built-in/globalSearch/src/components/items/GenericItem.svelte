@@ -3,13 +3,13 @@
   import type { DynamicContentItem } from '../../utils/dynamicItems';
   import type { FuseResultMatch } from '../../core/types';
 
-  const { item, isSelected, searchTerm, matches, onclick } = $props<{
+  const { item, isSelected, searchTerm, matches, onclick }: {
     item: DynamicContentItem;
     isSelected: boolean;
     searchTerm: string;
     matches?: readonly FuseResultMatch[];
     onclick: () => void;
-  }>();
+  } = $props();
 
   const categoryLabel = (category: string): string => {
     if (!category) return '';

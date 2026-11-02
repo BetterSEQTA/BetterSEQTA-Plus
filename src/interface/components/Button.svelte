@@ -6,14 +6,14 @@
     variant = "secondary",
     icon,
     class: className = "",
-  } = $props<{
+  }: {
     onClick: () => void;
     text: string;
     disabled?: boolean;
     variant?: "primary" | "secondary" | "ghost";
     icon?: string;
     class?: string;
-  }>();
+  } = $props();
 
   const variants = {
     primary: "bg-zinc-100 text-zinc-900 border-transparent enabled:hover:bg-white",

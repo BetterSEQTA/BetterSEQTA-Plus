@@ -4,7 +4,7 @@ import {
   GOOGLE_CALENDAR_API,
 } from "@/config/googleCalendar";
 
-type GoogleCalendarResource = { id?: string; summary?: string };
+type GoogleCalendarResource = { id?: string; summary?: string } & GoogleApiError;
 type GoogleCalendarListResponse = { items?: GoogleCalendarResource[] };
 type GoogleApiError = { error?: { message?: string } };
 

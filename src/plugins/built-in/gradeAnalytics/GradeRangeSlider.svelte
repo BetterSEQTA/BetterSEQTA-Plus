@@ -7,12 +7,12 @@
     min = 0,
     max = 100,
     step = 1,
-  } = $props<{
+  }: {
     value?: [number, number];
     min?: number;
     max?: number;
     step?: number;
-  }>();
+  } = $props();
 
   let dragging: "min" | "max" | null = $state(null);
 
@@ -157,7 +157,7 @@
         class="bsplus-analytics-range-value"
         value={value[0]}
         oninput={(e) => onInput(e, "min", true)}
-        placeholder={min}
+        placeholder={String(min)}
         min={min}
         max={max}
         step={step}
@@ -171,7 +171,7 @@
         class="bsplus-analytics-range-value"
         value={value[1]}
         oninput={(e) => onInput(e, "max", true)}
-        placeholder={max}
+        placeholder={String(max)}
         min={min}
         max={max}
         step={step}

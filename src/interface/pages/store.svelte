@@ -27,14 +27,14 @@
     setActiveTab,
     setSearchTerm,
     setBackgroundCategories,
-  } = $props<{
+  }: {
     activeTab: StoreTab;
     searchTerm: string;
     selectedBackgroundCategory: string;
     setActiveTab: (tab: StoreTab) => void;
     setSearchTerm: (term: string) => void;
     setBackgroundCategories: (categories: string[]) => void;
-  }>();
+  } = $props();
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
   $effect(() => {
@@ -178,7 +178,7 @@
     }
   }
 
-  onMount(async () => {
+  onMount(() => {
     window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
     themeUpdates.addListener(fetchCurrentThemes);
 

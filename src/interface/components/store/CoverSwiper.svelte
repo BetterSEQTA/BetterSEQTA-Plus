@@ -4,10 +4,10 @@
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
 
-  let { slides, setDisplayTheme } = $props<{
+  let { slides, setDisplayTheme }: {
     slides: ThemeCoverSlide[];
     setDisplayTheme: (theme: import('@/interface/types/Theme').Theme) => void;
-  }>();
+  } = $props();
   let emblaApi = $state();
 
   const options = $derived({ loop: slides.length > 1 });

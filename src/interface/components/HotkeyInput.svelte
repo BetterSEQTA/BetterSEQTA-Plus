@@ -1,10 +1,10 @@
 <script lang="ts">
   import { isValidHotkey, parseHotkey } from '@/plugins/built-in/globalSearch/src/utils/hotkeyUtils';
 
-  let { value, onChange } = $props<{ 
+  let { value, onChange }: { 
     value: string, 
     onChange: (newValue: string) => void 
-  }>();
+  } = $props();
 
   let isRecording = $state(false);
   let recordedKeys = $state<Set<string>>(new Set());

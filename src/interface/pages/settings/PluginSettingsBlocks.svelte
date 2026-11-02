@@ -28,7 +28,9 @@
     section,
     showDisclaimer,
     searchQuery = "",
-  }: SettingsSectionSharedProps & { section: SettingsSectionId } = $props();
+  }: Pick<SettingsSectionSharedProps, "showDisclaimer" | "searchQuery"> & {
+    section: SettingsSectionId;
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   $effect(() => {

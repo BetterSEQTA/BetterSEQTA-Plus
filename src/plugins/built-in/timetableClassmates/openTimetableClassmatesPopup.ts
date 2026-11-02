@@ -1,7 +1,7 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { createPopupHeroVideo } from "@/seqta/utils/openers/attachPopupMediaFullscreen";
 import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
-import { mount, unmount } from "svelte";
+import { mount, unmount, type Component } from "svelte";
 import TimetableClassmatesOptInPopup from "./TimetableClassmatesOptInPopup.svelte";
 import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.svelte";
 import popupStyles from "./consentPopup.css?inline";
@@ -31,11 +31,16 @@ type ConsentPopupOptions = {
   heroVideo?: boolean;
 };
 
-function openConsentPopup(
+type ConsentPopupControls = {
+  onCancel: () => void;
+  onComplete: () => void;
+};
+
+function openConsentPopup<P extends Record<string, unknown>>(
   title: string,
   subtitle: string,
-  component: typeof TimetableClassmatesOptInPopup | typeof TimetableClassmatesOptOutPopup,
-  props: Record<string, unknown>,
+  component: Component<P & ConsentPopupControls>,
+  props: P,
   options?: ConsentPopupOptions,
 ): void {
   if (document.getElementById("whatsnewbk")) return;

@@ -52,10 +52,7 @@ function reloadSeqtaPages() {
   const result = browser.tabs.query({});
   function open(tabs: any) {
     for (let tab of tabs) {
-      if (
-        tab.title?.includes("SEQTA Learn") ||
-        tab.title?.includes("SEQTA Engage")
-      ) {
+      if (tab.title?.includes("SEQTA Learn") || tab.title?.includes("SEQTA Engage")) {
         browser.tabs.reload(tab.id);
       }
     }
@@ -104,7 +101,7 @@ function normalizeFetchThemesResponse(json: unknown): {
   return { success: true, data: { themes } };
 }
 
-function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
+function handleFetchThemes(_request: unknown, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
     const params = await bsplusApiQueryParams();
@@ -120,7 +117,10 @@ function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
         const json = await r.json();
         if (!r.ok) {
           throw new Error(
-            (json && typeof json === "object" && "error" in json && typeof (json as { error?: string }).error === "string"
+            (json &&
+            typeof json === "object" &&
+            "error" in json &&
+            typeof (json as { error?: string }).error === "string"
               ? (json as { error: string }).error
               : null) ?? `Themes API HTTP ${r.status}`,
           );
@@ -177,13 +177,12 @@ function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
 
   const urls = [sender.url, sender.tab?.url].filter(Boolean) as string[];
   for (const pageUrl of urls) {
-    if (/^chrome-extension:\/\//.test(pageUrl) || /^moz-extension:\/\//.test(pageUrl)) {
+    if (pageUrl.startsWith("chrome-extension://") || pageUrl.startsWith("moz-extension://")) {
       return true;
     }
     try {
       if (isSeqtaOrigin(new URL(pageUrl).origin)) return true;
-    } catch {
-    }
+    } catch {}
   }
   return false;
 }
@@ -249,7 +248,8 @@ async function parseJsonResponse(r: Response): Promise<any> {
 }
 
 function handleCloudReserveClient(request: any, sendResponse: MessageSender): boolean {
-  const redirect_uri = request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
+  const redirect_uri =
+    request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
   fetch("https://accounts.betterseqta.org/api/bsplus/client/reserve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -287,7 +287,7 @@ function handleCloudLogin(
       redirect_uri,
       login,
       password,
-      device_name: device_name ?? await getBsplusDeviceName(),
+      device_name: device_name ?? (await getBsplusDeviceName()),
     };
     try {
       const r = await fetch("https://accounts.betterseqta.org/api/bsplus/login", {
@@ -313,19 +313,22 @@ function handleCloudStartLogin(request: any, sendResponse: MessageSender): boole
     return true;
   }
   const authorizeUrl = `https://accounts.betterseqta.org/login?redirect=${encodeURIComponent(`/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}`)}`;
-  browser.tabs.create({ url: authorizeUrl }).then(() => {
-    sendResponse({ success: true });
-  }).catch((err) => {
-    console.error("[Background] cloudStartLogin error:", err);
-    sendResponse({ error: err?.message ?? "Failed to open login page" });
-  });
+  browser.tabs
+    .create({ url: authorizeUrl })
+    .then(() => {
+      sendResponse({ success: true });
+    })
+    .catch((err) => {
+      console.error("[Background] cloudStartLogin error:", err);
+      sendResponse({ error: err?.message ?? "Failed to open login page" });
+    });
   return true;
 }
 
 const CALLBACK_URL_PREFIX = "https://accounts.betterseqta.org/auth/bsplus/callback";
 
 function initCloudLoginCallbackListener() {
-  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.url && changeInfo.url.startsWith(CALLBACK_URL_PREFIX)) {
       try {
         const url = new URL(changeInfo.url);
@@ -394,7 +397,7 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
 }
 
 function handleCloudSettingsUpload(
-  request: any,
+  _request: unknown,
   sendResponse: MessageSender,
   sender?: chrome.runtime.MessageSender,
 ): boolean {
@@ -427,7 +430,7 @@ function handleCloudSettingsUpload(
 }
 
 function handleCloudSettingsDownload(
-  request: any,
+  _request: unknown,
   sendResponse: MessageSender,
   sender?: chrome.runtime.MessageSender,
 ): boolean {
@@ -489,7 +492,11 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
 
 /** Handler for a message type; receives request, sendResponse, and optional sender (for tab routing) */
 type MessageHandler = {
-  (request: any, sendResponse: MessageSender, sender?: chrome.runtime.MessageSender): boolean | void;
+  (
+    request: any,
+    sendResponse: MessageSender,
+    sender?: chrome.runtime.MessageSender,
+  ): boolean | void;
 };
 
 function isSeqtaOrigin(origin: string): boolean {
@@ -585,7 +592,11 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     requestCloudSettingsDebouncedUpload();
     return false;
   },
-  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: chrome.runtime.MessageSender) => {
+  getSeqtaSession: (
+    req: { baseUrl?: string },
+    sendResponse: MessageSender,
+    sender?: chrome.runtime.MessageSender,
+  ) => {
     (async () => {
       try {
         let tabId = sender?.tab?.id;
@@ -612,7 +623,8 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         const reply = (await browser.tabs.sendMessage(tabId, { type: "fetchSeqtaAppLink" })) as
           | { appLink?: string | null }
           | undefined;
-        const appLink = typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
+        const appLink =
+          typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
         sendResponse({ appLink });
       } catch (err) {
         console.error("[Background] getSeqtaSession error:", err);
@@ -651,9 +663,7 @@ function SetStorageValue(object: SettingsState) {
 const GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY = "plugin.global-search.settings";
 const GLOBAL_SEARCH_MIGRATION_VERSION = "3.6.5";
 
-async function migrateGlobalSearchDefaultsFor365Upgrade(
-  previousVersion: string,
-): Promise<void> {
+async function migrateGlobalSearchDefaultsFor365Upgrade(previousVersion: string): Promise<void> {
   try {
     const currRaw = browser.runtime.getManifest().version;
     const prev = semver.coerce(previousVersion);
@@ -668,10 +678,7 @@ async function migrateGlobalSearchDefaultsFor365Upgrade(
     }
 
     const got = await browser.storage.local.get(GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY);
-    const existing = (got[GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY] ?? {}) as Record<
-      string,
-      unknown
-    >;
+    const existing = (got[GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY] ?? {}) as Record<string, unknown>;
 
     await browser.storage.local.set({
       [GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY]: {
@@ -694,9 +701,7 @@ async function migrateGlobalSearchDefaultsFor365Upgrade(
 /** One-time reset for 3.6.6: re-enable Theme of the Month for existing users. */
 const THEME_OF_THE_MONTH_RESET_VERSION = "3.6.6";
 
-async function resetThemeOfTheMonthDisabledFor366Upgrade(
-  previousVersion: string,
-): Promise<void> {
+async function resetThemeOfTheMonthDisabledFor366Upgrade(previousVersion: string): Promise<void> {
   try {
     const currRaw = browser.runtime.getManifest().version;
     const prev = semver.coerce(previousVersion);
@@ -719,19 +724,14 @@ async function resetThemeOfTheMonthDisabledFor366Upgrade(
       `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RESET_VERSION}: Theme of the Month re-enabled (from ${previousVersion}).`,
     );
   } catch (e) {
-    console.warn(
-      "[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:",
-      e,
-    );
+    console.warn("[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:", e);
   }
 }
 
 /** 3.7.0: Close no longer marks entries seen — clear legacy dismissal keys. */
 const THEME_OF_THE_MONTH_RELOAD_VERSION = "3.7.0";
 
-async function resetThemeOfTheMonthDismissalFor370Upgrade(
-  previousVersion: string,
-): Promise<void> {
+async function resetThemeOfTheMonthDismissalFor370Upgrade(previousVersion: string): Promise<void> {
   try {
     const currRaw = browser.runtime.getManifest().version;
     const prev = semver.coerce(previousVersion);
@@ -754,10 +754,7 @@ async function resetThemeOfTheMonthDismissalFor370Upgrade(
       `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RELOAD_VERSION}: Theme of the Month shows again until dismissed for the month (from ${previousVersion}).`,
     );
   } catch (e) {
-    console.warn(
-      "[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:",
-      e,
-    );
+    console.warn("[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:", e);
   }
 }
 

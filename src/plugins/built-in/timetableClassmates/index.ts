@@ -141,7 +141,7 @@ const timetableClassmatesPlugin: Plugin<typeof timetableClassmatesSettings> = {
             const title = quickbar.querySelector(".title")?.textContent?.trim() ?? "";
             const host =
               (quickbar.querySelector(".meta") as HTMLElement | null) ?? (quickbar as HTMLElement);
-            paints.push(paintHost(host, ciOf(findClassEntryByTitle(page, title))));
+            paints.push(paintHost(host, classKeyFromCi(ciOf(findClassEntryByTitle(page, title)), ciMap)));
           }
         }
 

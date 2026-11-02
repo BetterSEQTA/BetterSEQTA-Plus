@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
 
-  let { onClose } = $props<{ onClose: () => void }>();
+  let { onClose }: { onClose: () => void } = $props();
   let modalElement: HTMLElement;
 
   onMount(() => {

@@ -72,6 +72,8 @@ const settings = defineSettings({
   }),
 });
 
+export type GlobalSearchSettings = typeof settings;
+
 /**
  * Shell loads immediately so the Quick Search chip can show in the title bar.
  * Heavy indexing / SearchBar chunk stays in the lazy core loader.
@@ -102,7 +104,7 @@ globalSearchPlugin.run = async (api) => {
   titleBarState.showSearch = true;
 
   let heavyCleanup: (() => void) | void;
-  const heavyPromise = runGlobalSearch(api).then((cleanup) => {
+  const heavyPromise = Promise.resolve(runGlobalSearch(api)).then((cleanup) => {
     heavyCleanup = cleanup;
   });
 

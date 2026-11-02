@@ -145,9 +145,6 @@ function getMinutesOfDay(now: Date = new Date()): number {
   return now.getHours() * 60 + now.getMinutes();
 }
 
-function getTimeState(now: Date = new Date()): TimeState {
-  return timeStateForMinutes(getMinutesOfDay(now));
-}
 
 function clamp01(value: number): number {
   return Math.max(0, Math.min(1, value));

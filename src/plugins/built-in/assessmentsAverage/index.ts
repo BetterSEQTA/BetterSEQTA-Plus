@@ -9,15 +9,9 @@ import {
   letterToNumber,
   parseAssessments,
   processAssessments,
-  type WeightingEntry,
 } from "./utils.ts";
 import { injectRubricCopyButtons, teardownRubricCopyButtons } from "./rubricCopy.ts";
 
-interface weightingsStorage {
-  weightings: Record<string, WeightingEntry>;
-  assessments: Record<string, string>;
-  weightingOverrides: Record<string, string>;
-}
 
 let overrideListenerController: AbortController | null = null;
 let wrapperColourObserver: MutationObserver | null = null;
@@ -156,7 +150,7 @@ async function renderSubjectAverage(api: any) {
     );
 
     const assessmentItems = Array.from(
-      assessmentsList.querySelectorAll(
+      assessmentsList.querySelectorAll<HTMLElement>(
         `[class*='AssessmentItem__AssessmentItem___']`,
       ),
     ).filter(

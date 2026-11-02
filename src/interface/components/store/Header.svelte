@@ -18,7 +18,7 @@
     onLogoClick,
     onClose,
     onToggleSize,
-  } = $props<{
+  }: {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
     activePage: SettingsPage;
@@ -27,7 +27,7 @@
     onLogoClick: () => void;
     onClose: () => void;
     onToggleSize?: () => void;
-  }>();
+  } = $props();
 
   const tabs: { id: SettingsPage; title: string }[] = [
     { id: "settings", title: "Settings" },

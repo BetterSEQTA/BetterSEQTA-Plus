@@ -6,13 +6,13 @@
     props = {},
     remountKey = "default",
   }: {
-    loader: () => Promise<{ default: Component }>;
+    loader: () => Promise<{ default: Component<any> }>;
     props?: Record<string, unknown>;
     /** Change to force a fresh import (e.g. different panel). Props-only updates reuse the component. */
     remountKey?: string;
   } = $props();
 
-  let Comp = $state<Component | null>(null);
+  let Comp = $state<Component<any> | null>(null);
   let loadedKey = $state("");
 
   $effect(() => {

@@ -349,7 +349,7 @@ function updateWeightLabelContent(
 }
 
 function createWeightLabel(
-  assessmentItem: Element,
+  assessmentItem: HTMLElement,
   weighting: string | undefined,
   api: any,
   refreshing = false,
@@ -662,7 +662,6 @@ export async function extractPDFText(url: string): Promise<string> {
       useSystemFonts: true,
       verbosity: 0,
       useWorkerFetch: false,
-      isEvalSupported: false,
     }).promise;
 
     let text = "";
@@ -909,7 +908,7 @@ export async function parseAssessments(api: any) {
   await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
 }
 
-export async function processAssessments(api: any, assessmentItems: Element[]) {
+export async function processAssessments(api: any, assessmentItems: HTMLElement[]) {
   let weightedTotal = 0;
   let totalWeight = 0;
   let hasInaccurateWeighting = false;
@@ -937,8 +936,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
 
     const assessmentID = await resolveAssessmentId(api, title, fiberMarks);
     if (assessmentID) {
-      (assessmentItem as HTMLElement).dataset.betterseqtaAssessmentId =
-        assessmentID;
+      assessmentItem.dataset.betterseqtaAssessmentId = assessmentID;
     }
     const entry = assessmentID
       ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
@@ -1054,7 +1052,7 @@ function resolveTabSetClasses(): Record<string, string> {
 
 interface WeightingTabContext {
   assessmentID?: string;
-  autoWeight?: number;
+  autoWeight?: string;
   override?: number | string;
   weightingUnavailable: boolean;
   statusNote: string;

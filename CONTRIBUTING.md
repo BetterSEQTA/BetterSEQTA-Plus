@@ -44,6 +44,7 @@ The [architecture guide](https://docs.betterseqta.org/architecture/) goes into m
 
    ```bash
    npm run lint
+   npm run typecheck
    npm test
    npm run build
    ```

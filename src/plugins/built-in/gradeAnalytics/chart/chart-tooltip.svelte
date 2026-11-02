@@ -1,7 +1,6 @@
 <script lang="ts">
   import type { HTMLAttributes } from "svelte/elements";
   import { getChartContext, Tooltip as TooltipPrimitive } from "layerchart";
-  import { cn } from "../utils/cn";
   import { useChart } from "./chart-utils";
 
   let {
@@ -37,10 +36,10 @@
 
 <TooltipPrimitive.Root variant="none" portal={false}>
   <div
-    class={cn(
+    class={[
       "grid min-w-36 items-start gap-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 px-2.5 py-1.5 text-xs shadow-xl text-zinc-900 dark:text-white",
       className,
-    )}
+    ]}
     {...restProps}
   >
     {#if !nestLabel}
@@ -50,25 +49,25 @@
       {#each items as item (item.key)}
         {@const indicatorColor = item.color}
         <div
-          class={cn(
+          class={[
             "flex w-full flex-wrap items-stretch gap-2",
             indicator === "dot" && "items-center",
-          )}
+          ]}
         >
           <div
             style="background: {indicatorColor}; border-color: {indicatorColor};"
-            class={cn("shrink-0 rounded-[2px] border", {
+            class={["shrink-0 rounded-[2px] border", {
               "size-2.5": indicator === "dot",
               "h-full w-1": indicator === "line",
               "w-0 border-[1.5px] border-dashed bg-transparent":
                 indicator === "dashed",
-            })}
+            }]}
           ></div>
           <div
-            class={cn(
+            class={[
               "flex flex-1 shrink-0 justify-between leading-none",
               nestLabel ? "items-end" : "items-center",
-            )}
+            ]}
           >
             <div class="grid gap-1.5">
               {#if nestLabel}

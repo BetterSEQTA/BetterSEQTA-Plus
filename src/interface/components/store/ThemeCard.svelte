@@ -7,7 +7,7 @@
   import { isStoreThemeInstalled } from '@/interface/utils/themeListFilters'
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
-  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' } = $props<{
+  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' }: {
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
@@ -17,7 +17,7 @@
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
     variant?: 'official' | 'community';
-  }>();
+  } = $props();
 
   const displayDownloadCount = $derived(
     allStoreThemeRows != null

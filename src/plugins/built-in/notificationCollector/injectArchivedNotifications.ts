@@ -1,4 +1,4 @@
-import type { PluginAPI } from "../../core/types";
+import type { PluginAPI, PluginSettings } from "../../core/types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
 import {
@@ -89,7 +89,7 @@ export function applyBackupBadges(archive: ArchiveMap) {
 }
 
 export function mountArchivedNotificationInjection(
-  api: PluginAPI<Record<string, never>, { archivesByUser?: ArchivesByUser }>,
+  api: Pick<PluginAPI<PluginSettings, { archivesByUser?: ArchivesByUser }>, "seqta" | "storage">,
   getUserKey: () => Promise<string | null>,
 ) {
   let observer: MutationObserver | null = null;

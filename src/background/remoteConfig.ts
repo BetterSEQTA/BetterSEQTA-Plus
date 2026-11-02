@@ -287,8 +287,9 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
     return true;
   }
 
-  function handleSetPageContext(req: { hostname?: string }, sendResponse: MessageSender): boolean {
-    const hostname = typeof req.hostname === "string" ? req.hostname.trim() : "";
+  function handleSetPageContext(req: unknown, sendResponse: MessageSender): boolean {
+    const { hostname: rawHostname } = req as { hostname?: unknown };
+    const hostname = typeof rawHostname === "string" ? rawHostname.trim() : "";
     if (hostname) {
       void browser.storage.local
         .set({ [BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY]: hostname })
@@ -300,10 +301,11 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
   }
 
   function handleFetchRemoteThemePackage(
-    req: { packageId?: string },
+    req: unknown,
     sendResponse: MessageSender,
   ): boolean {
-    const packageId = typeof req.packageId === "string" ? req.packageId.trim() : "";
+    const { packageId: rawPackageId } = req as { packageId?: unknown };
+    const packageId = typeof rawPackageId === "string" ? rawPackageId.trim() : "";
     if (!packageId) {
       sendResponse({ error: "Missing packageId" });
       return false;
@@ -340,10 +342,11 @@ export function createRemoteConfigHandlers(apiBase: () => string): Record<
   }
 
   function handleFetchRemoteThemePackageUrl(
-    req: { url?: string },
+    req: unknown,
     sendResponse: MessageSender,
   ): boolean {
-    const url = typeof req.url === "string" ? req.url.trim() : "";
+    const { url: rawUrl } = req as { url?: unknown };
+    const url = typeof rawUrl === "string" ? rawUrl.trim() : "";
     if (!url || !isAllowedFetchUrl(url)) {
       sendResponse({ error: "URL not allowed" });
       return false;

@@ -5,9 +5,9 @@
   import Button from "./Button.svelte";
   import Switch from "./Switch.svelte";
 
-  let { showDisclaimer } = $props<{
+  let { showDisclaimer }: {
     showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
-  }>();
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   let busy = $state(false);

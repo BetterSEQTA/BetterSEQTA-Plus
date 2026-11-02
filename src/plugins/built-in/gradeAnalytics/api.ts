@@ -15,7 +15,6 @@ import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
 const PAST_FETCH_CONCURRENCY = 8;
-const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 interface Subject {
   code: string;
@@ -102,11 +101,6 @@ export function parseAssessment(data: unknown): Assessment | null {
   }
 }
 
-function jsonGradeToString(grade: unknown): string | undefined {
-  if (typeof grade === "string") return grade.trim() || undefined;
-  if (typeof grade === "number") return String(grade);
-  return undefined;
-}
 
 function applyResolvedGrade(
   raw: Record<string, unknown>,
@@ -118,26 +112,6 @@ function applyResolvedGrade(
   if (resolved.source) raw.gradeSource = resolved.source;
 }
 
-function extractLetterGrade(
-  assessment: Record<string, unknown>,
-): string | undefined {
-  if (assessment.status !== "MARKS_RELEASED") return undefined;
-
-  const criteria = assessment.criteria as
-    | { results?: { grade?: unknown } }[]
-    | undefined;
-  const c0 = criteria?.[0]?.results?.grade;
-  const fromCriteria = jsonGradeToString(c0);
-  if (fromCriteria) return fromCriteria;
-
-  const results = assessment.results as { grade?: unknown } | undefined;
-  const fromResults = jsonGradeToString(results?.grade);
-  if (fromResults) return fromResults;
-
-  return extractLetterGradeStringFromPayload(
-    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
-  );
-}
 
 function classKey(programme: number, metaclass: number): string {
   return `${programme}-${metaclass}`;
@@ -332,7 +306,6 @@ function mergeRawAssessments(
     applyResolvedGrade(raw, inference);
     const finalGrade =
       raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
-    const letterGrade = extractLetterGrade(raw);
 
     const existingItem = existingMap.get(id);
     if (

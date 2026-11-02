@@ -197,11 +197,11 @@
 
   const handleDevModeToggle = () => armDevModeUnlock();
 
-  let ColourPickerComponent = $state<Component | null>(null);
-  let FontPickerComponent = $state<Component | null>(null);
-  let CloudPanelComponent = $state<Component | null>(null);
-  let DisclaimerModalComponent = $state<Component | null>(null);
-  let FeedbackModalComponent = $state<Component | null>(null);
+  let ColourPickerComponent = $state<Component<any> | null>(null);
+  let FontPickerComponent = $state<Component<any> | null>(null);
+  let CloudPanelComponent = $state<Component<any> | null>(null);
+  let DisclaimerModalComponent = $state<Component<any> | null>(null);
+  let FeedbackModalComponent = $state<Component<any> | null>(null);
 
   const openColourPicker = async () => {
     if (!ColourPickerComponent) {
@@ -232,7 +232,7 @@
     closeExtensionPopup();
   };
 
-  let { standalone } = $props<{ standalone?: boolean }>();
+  let { standalone }: { standalone?: boolean } = $props();
   let showColourPicker = $state<boolean>(false);
   let showFontPicker = $state<boolean>(false);
   let showCloudPanel = $state<boolean>(false);

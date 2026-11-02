@@ -173,7 +173,7 @@ async function maybeHeartbeat(instanceHost: string): Promise<void> {
 async function applyRelaySnapshot(
   instanceHost: string,
   shares: RelaySnapshotShare[],
-  bundleKey: Uint8Array,
+  bundleKey: Uint8Array<ArrayBuffer>,
   allowedSeqtaIds: ReadonlySet<number>,
 ): Promise<void> {
   let index = await loadRosterIndex();

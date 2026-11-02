@@ -6,14 +6,14 @@
     emphasized = false,
     trackId,
     onclick,
-  } = $props<{
+  }: {
     label: string;
     active?: boolean;
     nested?: boolean;
     emphasized?: boolean;
     trackId?: string;
     onclick: () => void;
-  }>();
+  } = $props();
 </script>
 
 <button

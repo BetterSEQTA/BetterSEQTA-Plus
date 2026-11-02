@@ -144,6 +144,8 @@ export interface PluginAPI<T extends PluginSettings, S = any> {
   dispose: () => void;
 }
 
+export type PluginRunResult = void | (() => void);
+
 export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   id: string;
   name: string;
@@ -154,7 +156,5 @@ export interface Plugin<T extends PluginSettings = PluginSettings, S = any> {
   disableToggle?: boolean; // Optional flag to show/hide the plugin's enable/disable toggle in settings
   defaultEnabled?: boolean; // Optional flag to set the plugin's default enabled state
   beta?: boolean; // Optional flag to mark the plugin as beta
-  run: (
-    api: PluginAPI<T, S>,
-  ) => void | Promise<void> | (() => void) | Promise<() => void>;
+  run: (api: PluginAPI<T, S>) => PluginRunResult | Promise<PluginRunResult>;
 }

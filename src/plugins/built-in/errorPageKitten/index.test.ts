@@ -86,7 +86,7 @@ describe("errorPageKitten", () => {
     document.title = "SEQTA Learn";
     document.body.innerHTML = '<div id="container"></div>';
 
-    const cleanup = await errorPageKittenPlugin.run();
+    const cleanup = await errorPageKittenPlugin.run({} as Parameters<typeof errorPageKittenPlugin.run>[0]);
 
     expect(getCard()).toBeNull();
     expect(cleanup).toBeDefined();

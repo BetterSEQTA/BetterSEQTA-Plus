@@ -4,11 +4,11 @@
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 
-  let { alwaysShowUserName = false, onClick = undefined, compact = false } = $props<{
+  let { alwaysShowUserName = false, onClick = undefined, compact = false }: {
     alwaysShowUserName?: boolean;
     onClick?: () => void;
     compact?: boolean;
-  }>();
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   let open = $state(false);

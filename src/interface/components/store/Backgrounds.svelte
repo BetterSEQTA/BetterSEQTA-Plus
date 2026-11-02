@@ -8,11 +8,11 @@
   const themeManager = ThemeManager.getInstance();
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
-  let { searchTerm, selectedCategory, onCategoriesChange } = $props<{
+  let { searchTerm, selectedCategory, onCategoriesChange }: {
     searchTerm: string;
     selectedCategory: string;
     onCategoriesChange: (categories: string[]) => void;
-  }>();
+  } = $props();
 
   let backgrounds = $state<Background[]>([]);
   let error = $state<string | null>(null);

@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Chart from "./chart/index";
   import { scaleLinear } from "d3-scale";
-  import { Area, AreaChart, ChartClipPath, Spline } from "layerchart";
+  import { Area, AreaChart, ChartClipPath, Spline, type ChartState } from "layerchart";
   import { curveMonotoneX } from "d3-shape";
   import { cubicInOut } from "svelte/easing";
   import type { Assessment } from "./types";
@@ -37,6 +37,9 @@
 
   const chartUid = $props.id();
 
+  const hasAverage = (p: TrendPoint): p is TrendPoint & { average: number } =>
+    p.average != null && !Number.isNaN(p.average);
+
   const chartResult = $derived.by(() =>
     buildGradeTrendChart(data, timeRange, {
       showPerSubject: showSubjectTrends,
@@ -55,7 +58,7 @@
     if (!showPrediction) return null;
     const points = aggregateToMonthlyPoints(
       historicalData
-        .filter((p) => !Number.isNaN(p.average))
+        .filter(hasAverage)
         .map((p) => ({ date: p.date, average: p.average })),
     );
     return computeGradeForecast(points, predictionMonths);
@@ -134,11 +137,11 @@
   });
 
   const trend = $derived.by(() => {
-    if (historicalData.length < 2) {
+    const recent = historicalData.filter(hasAverage).slice(-2);
+    if (recent.length < 2) {
       return { percentage: "0", direction: "neutral" as const };
     }
 
-    const recent = historicalData.slice(-2);
     const change = recent[1].average - recent[0].average;
 
     return {
@@ -169,7 +172,7 @@
   const canForecast = $derived.by(() => {
     const monthly = aggregateToMonthlyPoints(
       historicalData
-        .filter((p) => !Number.isNaN(p.average))
+        .filter(hasAverage)
         .map((p) => ({ date: p.date, average: p.average })),
     );
     return monthly.length >= 3;
@@ -184,7 +187,7 @@
     }
 
     const points = historicalData.map((p) => ({ ...p }));
-    const validHist = points.filter((p) => !Number.isNaN(p.average));
+    const validHist = points.filter(hasAverage);
     const last = validHist[validHist.length - 1];
 
     if (last) {
@@ -266,7 +269,7 @@
             },
           }}
         >
-          {#snippet marks({ context })}
+          {#snippet marks({ context }: { context: ChartState<TrendPoint> })}
             <defs>
               <linearGradient id={chartUid} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stop-color={accentColor} stop-opacity="0.55" />

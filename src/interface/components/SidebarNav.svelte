@@ -14,11 +14,11 @@
     }[];
   };
 
-  let { groups, selectedId, onselect } = $props<{
+  let { groups, selectedId, onselect }: {
     groups: NavGroup[];
     selectedId: string;
     onselect: (id: string) => void;
-  }>();
+  } = $props();
 
   let trackEl = $state<HTMLElement | null>(null);
   let indicatorX = $state(0);

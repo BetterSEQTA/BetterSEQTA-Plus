@@ -1,8 +1,8 @@
 <script lang="ts">
-  let { onclick, label = "Close" } = $props<{
+  let { onclick, label = "Close" }: {
     onclick: () => void;
     label?: string;
-  }>();
+  } = $props();
 </script>
 
 <button

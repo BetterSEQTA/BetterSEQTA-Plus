@@ -6,7 +6,7 @@
   import { onMount } from 'svelte';
   import Shortcuts from "@/seqta/content/links.json"
 
-  let { searchQuery = "" } = $props<{ searchQuery?: string }>();
+  let { searchQuery = "" }: { searchQuery?: string } = $props();
   const q = $derived(searchQuery.trim().toLowerCase());
 
   let isLoaded = $state(false);

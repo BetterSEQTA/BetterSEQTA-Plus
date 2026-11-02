@@ -1,3 +1,4 @@
+import type { Plugin } from "@/plugins/core/types";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 import { booleanSetting } from "@/plugins/core/settingsHelpers";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";

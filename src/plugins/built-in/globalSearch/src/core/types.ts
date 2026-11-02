@@ -1,10 +1,7 @@
 import type { StaticCommandItem } from "./commands";
 import type { IndexItem } from "../indexing/types";
 
-export interface MatchIndices {
-  readonly 0: number;
-  readonly 1: number;
-}
+export type MatchIndices = readonly [number, number];
 
 export interface FuseResultMatch {
   key?: string;
