@@ -682,11 +682,9 @@ browser.runtime.onMessage.addListener(
     sendResponse: MessageSender,
   ) => {
     const handler = MESSAGE_HANDLERS[request.type as string];
-    if (handler) {
-      const result = handler(request, sendResponse, sender);
-      return result === true;
-    }
-    console.log("Unknown request type");
+    if (!handler) return false;
+    if (handler(request, sendResponse, sender) === true) return true;
+    sendResponse();
     return false;
   },
 );

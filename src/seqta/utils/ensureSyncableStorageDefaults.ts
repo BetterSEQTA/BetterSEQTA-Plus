@@ -28,6 +28,7 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
 
   "coursesAssessmentsFixPopupShown",
   "themeOfTheMonthDismissedMonth",
+  "themeOfTheMonthLastSeenId",
 
   "justupdated",
   "devMode",

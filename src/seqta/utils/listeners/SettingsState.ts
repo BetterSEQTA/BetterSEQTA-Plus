@@ -37,6 +37,7 @@ const SETTINGS_STORAGE_KEYS = [
     "privacyStatementLastUpdated",
     "termsOfServiceLastAccepted",
     "themeOfTheMonthDismissedMonth",
+    "themeOfTheMonthLastSeenId",
 
     ...PLUGIN_SETTINGS_KEYS,
     ...PLUGIN_STORAGE_KEYS,
