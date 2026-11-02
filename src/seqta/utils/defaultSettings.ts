@@ -80,7 +80,7 @@ export function getDefaultSettingsState(): SettingsState {
     selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,
-    bsCloudAutoSyncAnnouncementShown: false,
+
     coursesAssessmentsFixPopupShown: false,
   };
 }

@@ -582,14 +582,6 @@ Keys (from `SettingsState`):
 | **Format**  | `"YYYY-MM"` calendar month |
 | **Example** | `"2026-06"`                |
 
-#### `themeOfTheMonthLastSeenId`
-
-|            |                                             |
-| ---------- | ------------------------------------------- |
-| **Type**   | `string`                                    |
-| **Status** | Deprecated; may still exist in old profiles |
-| **Synced** | Yes if present                              |
-
 ### One-time announcements & privacy
 
 #### `privacyStatementShown`
@@ -605,20 +597,6 @@ Keys (from `SettingsState`):
 | ---------- | ----------------------------- |
 | **Type**   | `string`                      |
 | **Format** | ISO date, e.g. `"2025-12-20"` |
-
-#### `engageParentsAnnouncementShown`
-
-|             |                                             |
-| ----------- | ------------------------------------------- |
-| **Type**    | `boolean`                                   |
-| **Purpose** | SEQTA Engage parents announcement dismissed |
-
-#### `bsCloudAutoSyncAnnouncementShown`
-
-|             |                                        |
-| ----------- | -------------------------------------- |
-| **Type**    | `boolean`                              |
-| **Purpose** | Cloud auto-sync announcement dismissed |
 
 ### Update & developer flags
 
@@ -1165,18 +1143,17 @@ Animated background selection uses `BackgroundSelector` (local/custom background
 
 ### Automatic / popup-only (synced, no dedicated settings control)
 
-| Storage key / path                                     | How it changes                                     |
-| ------------------------------------------------------ | -------------------------------------------------- |
-| `lessonalert`                                          | Default only — **no UI** (read by home loader)     |
-| `privacyStatementShown`, `privacyStatementLastUpdated` | Privacy popup on first run (dev can reset)         |
-| `engageParentsAnnouncementShown`                       | Dismiss Engage parents announcement                |
-| `bsCloudAutoSyncAnnouncementShown`                     | Dismiss cloud sync announcement                    |
-| `themeOfTheMonthDismissedMonth`                        | Dismiss Theme of the Month popup                   |
-| `justupdated`                                          | Set `true` after extension update                  |
-| `lastSeenNightlyPublishedAt`                           | Dismiss / acknowledge GitHub nightly update badge  |
-| `profile_picture_revision`                             | Incremented when profile picture changes           |
-| `plugin.notificationCollector.storage.*`               | Written by notification poll loop                  |
-| Legacy `animatedbk`, `bksliderinput`, etc.             | Migrated to plugin settings; no longer shown in UI |
+| Storage key / path                                     | How it changes                                 |
+| ------------------------------------------------------ | ---------------------------------------------- |
+| `lessonalert`                                          | Default only — **no UI** (read by home loader) |
+| `privacyStatementShown`, `privacyStatementLastUpdated` | Privacy popup on first run (dev can reset)     |
+
+| `themeOfTheMonthDismissedMonth` | Dismiss Theme of the Month popup |
+| `justupdated` | Set `true` after extension update |
+| `lastSeenNightlyPublishedAt` | Dismiss / acknowledge GitHub nightly update badge |
+| `profile_picture_revision` | Incremented when profile picture changes |
+| `plugin.notificationCollector.storage.*` | Written by notification poll loop |
+| Legacy `animatedbk`, `bksliderinput`, etc. | Migrated to plugin settings; no longer shown in UI |
 
 ### Synced plugin prefs with UI vs storage-only side effects
 

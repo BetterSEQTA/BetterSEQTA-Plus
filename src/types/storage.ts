@@ -38,8 +38,7 @@ export type SettingsState = {
   privacyStatementLastUpdated?: string;
   /** ISO timestamp from `GET /api/terms` `last_updated` when the user accepted ToS. */
   termsOfServiceLastAccepted?: string;
-  /** One-time announcement: BS Cloud automatic settings sync (last in startup popup queue). */
-  bsCloudAutoSyncAnnouncementShown?: boolean;
+
   /** One-time notice when BetterSEQTA features are off after the Courses/Assessments fix. */
   coursesAssessmentsFixPopupShown?: boolean;
   /**
@@ -47,8 +46,7 @@ export type SettingsState = {
    * Cleared automatically when a new month's entry is fetched (different `month`).
    */
   themeOfTheMonthDismissedMonth?: string;
-  /** @deprecated Migrated away; no longer read. */
-  themeOfTheMonthLastSeenId?: string;
+
   /** Permanently disables Theme of the Month startup prompts. */
   themeOfTheMonthDisabled?: boolean;
   timeFormat?: string;
