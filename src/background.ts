@@ -569,7 +569,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       sendResponse({ error: "Unauthorized sender" });
       return false;
     }
-    fetchNews(req.source ?? "australia", sendResponse);
+    void fetchNews(req.source).then((news) => sendResponse({ news }));
     return true;
   },
   fetchThemes: handleFetchThemes,

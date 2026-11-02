@@ -7,6 +7,7 @@ import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
 import { verboseInfo } from "@/utils/verboseLog";
+import { toNewsArticles, type NewsPayload } from "@/seqta/utils/newsFeed";
 import {
   applyPageFeatureGateEarly,
   injectPageFeatureBanner,
@@ -67,12 +68,12 @@ export async function SendNewsPage() {
   const response = (await browser.runtime.sendMessage({
     type: "sendNews",
     source: settingsState.newsSource,
-  })) as any;
+  })) as { news?: NewsPayload } | undefined;
   const newscontainer = document.querySelector("#news-container");
   document.getElementById("newsloading")?.remove();
 
-  const articles = response?.news?.articles;
-  if (!Array.isArray(articles) || articles.length === 0) {
+  const articles = toNewsArticles(response?.news);
+  if (articles.length === 0) {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
@@ -86,7 +87,7 @@ export async function SendNewsPage() {
 
   const fragment = document.createDocumentFragment();
 
-  articles.forEach((article: any) => {
+  for (const article of articles) {
     const newsarticle = document.createElement("a");
     newsarticle.classList.add("NewsArticle");
     newsarticle.href = article.url;
@@ -95,14 +96,14 @@ export async function SendNewsPage() {
     const articleimage = document.createElement("div");
     articleimage.classList.add("articleimage");
 
-    if (article.urlToImage == "null" || article.urlToImage == null) {
+    if (article.imageUrl) {
+      articleimage.style.backgroundImage = `url(${JSON.stringify(article.imageUrl)})`;
+    } else {
       articleimage.style.cssText = `
         background-image: url(${resolveExtensionAssetUrl(LogoLightOutline)});
         width: 20%;
         margin: 0 7.5%;
       `;
-    } else {
-      articleimage.style.backgroundImage = `url(${article.urlToImage})`;
     }
 
     const articletext = document.createElement("div");
@@ -114,19 +115,16 @@ export async function SendNewsPage() {
     title.target = "_blank";
 
     const description = document.createElement("p");
-    const articleDescription = typeof article.description === "string"
-      ? article.description
-      : "No description available.";
-
+    const articleDescription = article.description || "No description available.";
     description.textContent =
       articleDescription.length > 400
-        ? articleDescription.substring(0, 400) + "..."
+        ? `${articleDescription.slice(0, 400)}…`
         : articleDescription;
 
     articletext.append(title, description);
     newsarticle.append(articleimage, articletext);
     fragment.append(newsarticle);
-  });
+  }
 
   newscontainer?.append(fragment);
 
