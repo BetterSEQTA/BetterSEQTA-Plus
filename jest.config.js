@@ -1,10 +1,12 @@
 export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  roots: ['<rootDir>/src'],
+  roots: ['<rootDir>/src', '<rootDir>/scripts'],
   testMatch: [
     '**/__tests__/**/*.ts',
-    '**/?(*.)+(spec|test).ts'
+    '**/?(*.)+(spec|test).ts',
+    '**/scripts/agent-audit/lib/**/*.test.js',
+    '**/scripts/agent-audit/report-html.test.js'
   ],
   transform: {
     '^.+\\.ts$': 'ts-jest',

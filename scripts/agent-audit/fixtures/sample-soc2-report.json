@@ -1,0 +1,69 @@
+{
+  "requiresAction": true,
+  "overallPosture": "yellow",
+  "summary": "Sample SOC 2 gap review for dashboard preview.",
+  "gaps": [
+    {
+      "id": "G1",
+      "criterion": "CC6.1",
+      "status": "fail",
+      "severity": "high",
+      "title": "Access review not documented",
+      "ownerHint": "Platform admin",
+      "effort": "medium",
+      "evidence": "No quarterly access review record in repo.",
+      "mitigation": "Run quarterly review and store attestation."
+    },
+    {
+      "id": "G2",
+      "criterion": "CC7.2",
+      "status": "partial",
+      "severity": "medium",
+      "title": "Incident runbook incomplete",
+      "effort": "low"
+    },
+    {
+      "id": "G3",
+      "criterion": "CC8.1",
+      "status": "pass",
+      "severity": "info",
+      "title": "Change management via PRs",
+      "effort": "n/a"
+    }
+  ],
+  "strengths": ["Migrations tracked in server/db/migrations", "Audit logs for admin actions"],
+  "attestationNeeded": ["Vendor SOC 2 report for hosting provider", "Pen test attestation 2026"],
+  "limitations": ["Fixture data only."],
+  "scratchNotes": [
+    {
+      "name": "checklist",
+      "content": "- CC6.1 access: fail (documented in G1)\n- CC7.2 monitoring: partial (G2)\n- CC8.1 change mgmt: pass (G3)\n- CC9.1 risk: checked\n- vendor / subprocessors: attestation needed"
+    },
+    {
+      "name": "open-questions",
+      "content": "Confirm hosting provider SOC 2 report date with ops.\nPen test scope for 2026 not in repo."
+    }
+  ],
+  "scratchRevisions": [
+    {
+      "ts": "2026-09-28T10:00:24.000Z",
+      "turn": 2,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- CC6.1 access: in progress",
+      "bytes": 28,
+      "revisionIndex": 1
+    },
+    {
+      "ts": "2026-09-28T10:00:30.000Z",
+      "turn": 4,
+      "name": "checklist",
+      "action": "write",
+      "append": false,
+      "content": "- CC6.1 access: fail (documented in G1)\n- CC7.2 monitoring: partial (G2)\n- CC8.1 change mgmt: pass (G3)\n- CC9.1 risk: checked\n- vendor / subprocessors: attestation needed",
+      "bytes": 180,
+      "revisionIndex": 2
+    }
+  ]
+}
