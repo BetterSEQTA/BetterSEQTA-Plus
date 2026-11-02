@@ -30,10 +30,8 @@ export async function runStorageMigrations(previousVersion: string): Promise<voi
 
   if (crossedUpgrade(previousVersion, "3.6.6")) {
     try {
-      await browser.storage.local.set({
-        themeOfTheMonthDisabled: false,
-        themeOfTheMonthLastSeenId: undefined,
-      });
+      await browser.storage.local.set({ themeOfTheMonthDisabled: false });
+      await browser.storage.local.remove("themeOfTheMonthLastSeenId");
     } catch (e) {
       console.warn("[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:", e);
     }
@@ -41,10 +39,10 @@ export async function runStorageMigrations(previousVersion: string): Promise<voi
 
   if (crossedUpgrade(previousVersion, "3.7.0")) {
     try {
-      await browser.storage.local.set({
-        themeOfTheMonthLastSeenId: undefined,
-        themeOfTheMonthDismissedMonth: undefined,
-      });
+      await browser.storage.local.remove([
+        "themeOfTheMonthLastSeenId",
+        "themeOfTheMonthDismissedMonth",
+      ]);
     } catch (e) {
       console.warn("[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:", e);
     }

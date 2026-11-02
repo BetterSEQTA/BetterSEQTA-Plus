@@ -18,6 +18,7 @@ src/public/resources/pdfjs/pdf.worker.min.mjs
 .env.submit
 
 # Editors and OS
+.claude/
 .cursor/
 .idea/
 .vscode/
