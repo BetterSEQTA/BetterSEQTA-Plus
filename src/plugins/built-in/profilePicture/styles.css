@@ -8,12 +8,11 @@
   object-fit: cover;
   z-index: 4;
   box-shadow: 0 0 0 3px #000000;
-  transition: box-shadow 0.05s ease-in-out;
+  transition: box-shadow 200ms;
 }
 
 .dark .userInfoImg {
   box-shadow: 0 0 0 3px #ffffff;
-  transition: box-shadow 0.05s ease-in-out;
 }
 
 @media (prefers-reduced-motion: reduce) {

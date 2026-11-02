@@ -235,11 +235,11 @@ html:not(.dark) .legacy-root {
   background: transparent;
 }
 #AddedSettings {
-  top: 17.5px !important;
   z-index: 21 !important;
 }
 .addedButton {
   position: absolute !important;
+  top: 17.5px !important;
   right: 105px;
   display: flex !important;
   align-items: center !important;
@@ -3746,16 +3746,15 @@ div.day-empty {
   transition: 200ms;
   color: var(--text-primary);
   display: flex;
-  min-height: 32px;
-  height: 64px;
+  height: 70px;
   justify-content: space-between;
   z-index: 21;
   position: absolute;
-  right: 250px;
+  top: 0;
+  right: 190px;
 }
 .engage-titlebar {
-  right: 250px;
-  top: 0;
+  right: 190px;
 }
 
 /* Engage parent home: same timetable DOM as Learn; title+student replace the lone h2 — give the cluster Learn’s h2 margin/inset. */
@@ -3852,13 +3851,12 @@ div.day-empty {
 .userInfo {
   display: flex;
   align-items: center;
-  padding: 4px 0;
 }
 .userInfoText {
   text-align: end;
-  padding: 2px 0;
 }
 .userInfoName {
+  grid-area: name;
   margin: 0 !important;
   font-size: 20px;
   font-weight: 700;
@@ -3869,33 +3867,29 @@ div.day-empty {
   line-height: 1.2;
 }
 .userInfoNameRow {
-  display: inline-flex;
+  display: grid;
+  grid-template-areas:
+    "house name"
+    "badge code";
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
+  justify-items: end;
+  column-gap: 10px;
+  row-gap: 2px;
 }
+.userInfoHouseWrap,
 .userInfoDetails {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
+  display: contents;
 }
-.userInfoHouseWrap {
-  display: inline-block;
-  margin: 0 8px;
-  text-align: center;
+.userInfoDetails > .userInfoCode {
+  grid-area: code;
 }
-.userInfoHouseWrap .userInfohouse {
-  display: block;
-  margin: 0 !important;
-  padding: 0 6px !important;
-  box-sizing: border-box;
+.userInfoNameRow .userInfohouse {
+  grid-area: house;
+  justify-self: stretch;
 }
-.userInfoHouseWrap .bsplus-founder-badge-slot {
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  margin-top: 4px;
+.userInfoNameRow .bsplus-founder-badge-slot {
+  grid-area: badge;
+  justify-self: stretch;
   box-sizing: border-box;
 }
 .bsplus-founder-badge-carousel {
@@ -4254,12 +4248,12 @@ div.day-empty {
 .userInfosvgdiv {
   width: 50px !important;
   height: 50px !important;
+  flex-shrink: 0;
+  order: 1;
   color: var(--better-main);
-  margin: 10px;
+  margin-left: 10px;
   z-index: 3;
-  position: absolute !important;
-  right: -70px !important;
-  top: -2px !important;
+  position: relative !important;
 }
 .userInfosvgdiv::before {
   content: "";
@@ -4270,27 +4264,26 @@ div.day-empty {
   border-radius: 16000px;
   top: 15%;
   left: 15%;
+  transition: background 200ms;
 }
-.userInfosvg::after {
-  width: 35px;
-  height: 35px;
-  background: antiquewhite;
-  position: absolute;
+.userInfosvg path {
+  transition: fill 200ms;
 }
 .userInfohouse {
-  padding: 0px 10px;
-  font-size: 15px;
-  margin: 0 8px !important;
-  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 0 !important;
+  border-radius: 6px;
   color: var(--text-primary);
   background: var(--auto-background);
-  outline: solid 1px black;
   text-align: center;
+  white-space: nowrap;
 }
 .DarkLightButton {
   right: 145px !important;
   z-index: 21 !important;
-  top: 17.5px;
 }
 .whatsnewContainer {
   position: absolute;
