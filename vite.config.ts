@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from "vite";
+import { defaultClientConditions, defineConfig, loadEnv } from "vite";
 import { join, resolve } from "node:path";
 
 import touchGlobalCSSPlugin from "./lib/touchGlobalCSS.ts";
@@ -9,7 +9,7 @@ import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload.ts";
 import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr.ts";
 import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe.ts";
 import { extensionChunkUrls } from "./lib/extensionChunkUrls.ts";
-import dedupePublicAssets from "./lib/dedupePublicAssets.ts";
+
 
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
@@ -96,18 +96,14 @@ export default defineConfig(({ command, mode: viteMode }) => {
     fixCrxWorkerLiveReload(),
     stabilizeCrxDevHmr(),
     touchGlobalCSSPlugin(),
-    ...(command === "build"
-      ? [
-          dedupePublicAssets(),
-          firefoxStripFunctionProbe(),
-        ]
-      : []),
+    ...(command === "build" ? [firefoxStripFunctionProbe()] : []),
   ],
   root: resolve(repoRoot, "./src"),
   resolve: {
     alias: {
       "@": resolve(repoRoot, "./src"),
     },
+    conditions: ["onnxruntime-web-use-extern-wasm", ...defaultClientConditions],
     dedupe: [
       "@huggingface/transformers",
       "onnxruntime-common",

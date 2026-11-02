@@ -46,13 +46,10 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "resources/error-page/*",
-        "resources/icons/*",
         "resources/pdfjs/pdf.worker.min.mjs",
         "resources/pdfjs/pdf.legacy.min.mjs",
         "resources/themeToggleSurprisePage.js",
         "resources/ort/*",
-        "assets/*.css",
         "assets/*"
       ],
       "matches": ["*://*/*"]

@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import { resetSearchIndexes } from "../indexing/resetIndexes";
+import { clearSearchCache } from "../search/searchUtils";
 import { verboseDebug, verboseLog } from "@/utils/verboseLog";
 
 const VERSION_STORAGE_KEY = "betterseqta-global-search-version";
@@ -79,10 +80,9 @@ export async function clearAllCaches(): Promise<void> {
 
     setTimeout(async () => {
       try {
-        const { clearSearchCache } = await import("../search/searchUtils");
         clearSearchCache();
       } catch (e) {
-        if (!isAssetLoadError(e)) verboseDebug("[Version Check] Could not clear search cache:", e);
+        verboseDebug("[Version Check] Could not clear search cache:", e);
       }
 
       try {
