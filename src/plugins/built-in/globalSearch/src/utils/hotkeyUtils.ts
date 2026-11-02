@@ -88,7 +88,7 @@ export function formatHotkeyForDisplay(hotkeyString: string): string {
     }
 
     return parts.join(isMac ? " " : "+");
-  } catch (error) {
+  } catch {
     console.warn("Invalid hotkey string:", hotkeyString);
     return "Ctrl+K";
   }
@@ -125,7 +125,7 @@ export function isValidHotkey(hotkeyString: string): boolean {
   try {
     const parsed = parseHotkey(hotkeyString);
     return parsed.key.length > 0 && isAllowedHotkeyKey(parsed.key);
-  } catch (error) {
+  } catch {
     return false;
   }
 }

@@ -810,7 +810,7 @@ export function init() {
               }
               return true;
             }
-          } catch (_) {}
+          } catch {}
           return false;
         };
 
@@ -827,7 +827,7 @@ export function init() {
           if (ckeditor?.instances?.editor1) {
             try {
               ckeditor.instances.editor1.focus();
-            } catch (_) {}
+            } catch {}
           }
         };
 
