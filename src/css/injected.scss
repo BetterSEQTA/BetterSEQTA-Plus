@@ -4868,6 +4868,7 @@ div.day-empty {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
   text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 .themeOfTheMonthCardExpanded .themeOfTheMonthCardHeroEmbossVariants {
@@ -4965,6 +4966,7 @@ div.day-empty {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: unset;
+  line-clamp: unset;
 }
 .themeOfTheMonthCard::before {
   content: "";
@@ -5100,10 +5102,12 @@ div.day-empty {
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  line-clamp: 3;
 }
 .themeOfTheMonthCardDescriptionExpanded {
   display: block;
   -webkit-line-clamp: unset;
+  line-clamp: unset;
 }
 .themeOfTheMonthCardExpanding:not(.themeOfTheMonthCardExpandedShell)
   .themeOfTheMonthCardDescriptionExpanded {
