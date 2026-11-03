@@ -45,7 +45,7 @@ describe("resolveGradeFromAssessmentPayload", () => {
     const resolved = resolveGradeFromAssessmentPayload(
       {
         status: "MARKS_RELEASED",
-        results: { percentage: 88 },
+        results: { percentage: 88, score: 22 },
       },
       DEFAULT_ANALYTICS_GRADE_INFERENCE,
     );
@@ -56,7 +56,10 @@ describe("resolveGradeFromAssessmentPayload", () => {
   it("does not rollup criteria unless the option is enabled", () => {
     const payload = {
       status: "MARKS_RELEASED",
-      criteria: [{ results: { percentage: 70 } }, { results: { percentage: 90 } }],
+      criteria: [
+        { results: { percentage: 70, score: 7 } },
+        { results: { percentage: 90, score: 9 } },
+      ],
     };
     expect(
       resolveGradeFromAssessmentPayload(payload, DEFAULT_ANALYTICS_GRADE_INFERENCE).finalGrade,

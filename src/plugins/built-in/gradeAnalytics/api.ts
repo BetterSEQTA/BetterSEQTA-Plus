@@ -295,9 +295,11 @@ function mergeRawAssessments(
     const finalGrade = raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
 
     const existingItem = existingMap.get(id);
+    const isAuthoritative = raw.status === "MARKS_RELEASED";
     if (
       existingItem?.finalGrade !== undefined &&
       finalGrade === undefined &&
+      !isAuthoritative &&
       (!existingItem.gradeSource || existingItem.gradeSource === "seqta")
     ) {
       continue;

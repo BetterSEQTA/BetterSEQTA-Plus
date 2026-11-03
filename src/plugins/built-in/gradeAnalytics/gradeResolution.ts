@@ -104,9 +104,14 @@ export function resolveGradeFromAssessmentPayload(
 
   const criteria = assessment.criteria as CriterionRow[] | undefined;
 
-  const topPercent = parsePercent(
-    (assessment.results as { percentage?: unknown } | undefined)?.percentage,
-  );
+  const results = assessment.results as
+    | { percentage?: unknown; score?: unknown; grade?: unknown }
+    | undefined;
+
+  const topPercent =
+    results?.percentage !== undefined && results?.score !== undefined
+      ? parsePercent(results.percentage)
+      : undefined;
   if (topPercent !== undefined) {
     return {
       finalGrade: topPercent,
@@ -124,6 +129,7 @@ export function resolveGradeFromAssessmentPayload(
     };
   }
 
+  const c0 = criteria?.[0]?.results;
   if (settings.rollupCriteriaGrades) {
     const rolled = rollupPercentFromCriteria(criteria, settings);
     if (rolled !== undefined) {
@@ -134,7 +140,10 @@ export function resolveGradeFromAssessmentPayload(
       };
     }
   } else {
-    const firstCriterionPercent = parsePercent(criteria?.[0]?.results?.percentage);
+    const firstCriterionPercent =
+      c0?.percentage !== undefined && c0?.score !== undefined
+        ? parsePercent(c0.percentage)
+        : undefined;
     if (firstCriterionPercent !== undefined) {
       return {
         finalGrade: firstCriterionPercent,
@@ -144,6 +153,9 @@ export function resolveGradeFromAssessmentPayload(
     }
   }
 
+  if (c0?.percentage !== undefined || results?.percentage !== undefined) {
+    return { letterGrade: extractLetterFromPayload(assessment) };
+  }
   const letter = extractLetterFromPayload(assessment);
   if (letter) {
     const custom = settings.useCustomGradeBands
