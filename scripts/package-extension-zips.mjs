@@ -2,7 +2,14 @@
  * Package Chrome/Firefox build folders into Windows-friendly zip files.
  */
 import { execFileSync } from "node:child_process";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, unlinkSync } from "node:fs";
+import {
+  appendFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+} from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -19,7 +26,9 @@ function zipDirectory(sourceRel, outRel) {
   if (existsSync(outZip)) unlinkSync(outZip);
 
   if (process.platform === "win32") {
-    execFileSync("tar", ["-a", "-cf", outZip, "-C", sourceDir, "."], { stdio: "inherit" });
+    execFileSync("tar", ["-a", "-cf", outZip, "-C", sourceDir, "--", ...readdirSync(sourceDir)], {
+      stdio: "inherit",
+    });
   } else {
     execFileSync("zip", ["-r", "-q", outZip, "."], { cwd: sourceDir, stdio: "inherit" });
   }
