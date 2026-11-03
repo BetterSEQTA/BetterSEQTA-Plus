@@ -11,7 +11,7 @@ function isSafeShortcutHref(url: string): boolean {
   }
 }
 
-export function CreateCustomShortcutDiv(element: CustomShortcut) {
+export function createCustomShortcutDiv(element: CustomShortcut) {
   const container = document.getElementById("shortcuts");
   if (!container) return;
 

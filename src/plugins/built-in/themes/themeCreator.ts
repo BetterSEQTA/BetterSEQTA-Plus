@@ -18,8 +18,8 @@ let currentWidthPx = 400;
 /**
  * Open the interactive theme builder docked to the right of the SEQTA page (not inside settings).
  */
-export async function OpenThemeCreator(themeID: string = "") {
-  await CloseThemeCreator();
+export async function openThemeCreator(themeID: string = "") {
+  await closeThemeCreator();
 
   themeBuilderPanel.open(themeID || null);
   persistThemeCreatorSession(themeID || null);
@@ -96,7 +96,7 @@ function positionResizeBar(widthPx: number, resizeBar: HTMLDivElement) {
   resizeBar.style.right = `${widthPx - 2.5}px`;
 }
 
-export async function CloseThemeCreator(options?: { restoreTheme?: boolean }) {
+export async function closeThemeCreator(options?: { restoreTheme?: boolean }) {
   const themeManager = ThemeManager.getInstance();
   if (options?.restoreTheme === false) {
     themeManager.discardThemeCreatorRestore();

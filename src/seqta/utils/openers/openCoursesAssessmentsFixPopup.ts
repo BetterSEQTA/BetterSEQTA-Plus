@@ -221,7 +221,7 @@ function setPopupButtonsDisabled(disabled: boolean) {
   if (dismiss) dismiss.disabled = disabled;
 }
 
-export function OpenCoursesAssessmentsFixPopup(onDismissed?: () => void) {
+export function openCoursesAssessmentsFixPopup(onDismissed?: () => void) {
   if (document.getElementById("whatsnewbk")) {
     onDismissed?.();
     return;

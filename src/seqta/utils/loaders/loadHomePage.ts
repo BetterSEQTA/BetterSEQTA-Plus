@@ -3,13 +3,13 @@ import { BookOpen, ChevronLeft, ChevronRight, ClipboardList } from "lucide-stati
 import { animate, stagger } from "motion";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { convertTo12HourFormat } from "../convertTo12HourFormat";
 import { delay } from "../delay";
 import { settingsState } from "../listeners/settingsState";
 import stringToHTML from "../stringToHTML";
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
-import { CreateElement } from "@/seqta/utils/createEnable/createElement";
+import { createElement } from "@/seqta/utils/createEnable/createElement";
 import { setupTooltips } from "@/seqta/utils/tooltip";
 import { verboseInfo } from "@/utils/verboseLog";
 import { getUserInfo } from "@/seqta/utils/userInfo";
@@ -126,8 +126,8 @@ export async function loadHomePage() {
   const TodayFormatted = formatDate(new Date());
 
   const [assessments, classes, prefs] = await Promise.all([
-    GetUpcomingAssessments(),
-    GetActiveClasses(),
+    getUpcomingAssessments(),
+    getActiveClasses(),
     fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -144,7 +144,7 @@ export async function loadHomePage() {
 
   const upcomingItems = document.getElementById("upcoming-items");
   if (upcomingItems) {
-    await CreateUpcomingSection(currentAssessments, activeSubjects);
+    await createUpcomingSection(currentAssessments, activeSubjects);
     upcomingItems.classList.remove("loading");
   }
 
@@ -185,14 +185,14 @@ async function renderHomeUpcomingAssessments() {
   upcomingItems.classList.add("loading");
   upcomingItems.innerHTML = "";
 
-  const [assessments, classes] = await Promise.all([GetUpcomingAssessments(), GetActiveClasses()]);
+  const [assessments, classes] = await Promise.all([getUpcomingAssessments(), getActiveClasses()]);
 
   const activeSubjects = activeSubjectsFromLearnPayload(classes);
   const currentAssessments = filterAssessmentsForActiveSubjects(assessments, activeSubjects).sort(
     comparedate,
   ) as HomeUpcomingAssessment[];
 
-  await CreateUpcomingSection(currentAssessments, activeSubjects);
+  await createUpcomingSection(currentAssessments, activeSubjects);
   upcomingItems.classList.remove("loading");
 }
 
@@ -208,7 +208,7 @@ export function registerHomeUpcomingSettingsListeners() {
   }
 }
 
-async function GetUpcomingAssessments() {
+async function getUpcomingAssessments() {
   try {
     const { id: student } = await getUserInfo();
     const response = await fetch(`${location.origin}/seqta/student/assessment/list/upcoming?`, {
@@ -244,7 +244,7 @@ function setupTimetableListeners() {
     currentSelectedDate.setDate(currentSelectedDate.getDate() + value);
     const formattedDate = formatDate(currentSelectedDate);
     callHomeTimetable(formattedDate, true);
-    SetTimetableSubtitle();
+    setTimetableSubtitle();
   }
 
   const backHandler = () => changeTimetable(-1);
@@ -268,7 +268,7 @@ function formatDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-async function GetActiveClasses() {
+async function getActiveClasses() {
   try {
     const response = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
       method: "POST",
@@ -314,7 +314,7 @@ async function callHomeTimetable(date: string, change?: boolean) {
         a.from.localeCompare(b.from),
       );
 
-      GetLessonColours().then((colours) => {
+      getLessonColours().then((colours) => {
         for (let i = 0; i < lessonArray.length; i++) {
           const subjectname =
             lessonArray[i].type == "tutorial"
@@ -326,7 +326,7 @@ async function callHomeTimetable(date: string, change?: boolean) {
             lessonArray[i].colour = "--item-colour: #8e8e8e;";
           } else {
             lessonArray[i].colour = `--item-colour: ${subject.value};`;
-            if (GetThresholdOfColor(subject.value) > 300) {
+            if (getThresholdOfColor(subject.value) > 300) {
               lessonArray[i].invert = true;
             }
           }
@@ -339,7 +339,7 @@ async function callHomeTimetable(date: string, change?: boolean) {
             lessonArray[i].until = convertTo12HourFormat(lessonArray[i].until);
           }
 
-          lessonArray[i].attendanceTitle = CheckUnmarkedAttendance(lessonArray[i].attendance);
+          lessonArray[i].attendanceTitle = checkUnmarkedAttendance(lessonArray[i].attendance);
         }
 
         DayContainer.innerText = "";
@@ -356,9 +356,9 @@ async function callHomeTimetable(date: string, change?: boolean) {
         const today = new Date();
         if (currentSelectedDate.getDate() == today.getDate()) {
           for (let i = 0; i < lessonArray.length; i++) {
-            CheckCurrentLesson(lessonArray[i], i + 1);
+            checkCurrentLesson(lessonArray[i], i + 1);
           }
-          CheckCurrentLessonAll(lessonArray);
+          checkCurrentLessonAll(lessonArray);
         }
       });
     }
@@ -376,16 +376,16 @@ async function callHomeTimetable(date: string, change?: boolean) {
   }
 }
 
-function CheckCurrentLessonAll(lessons: HomeTimetableLesson[]) {
+function checkCurrentLessonAll(lessons: HomeTimetableLesson[]) {
   clearLessonInterval();
   lessonInterval = setInterval(() => {
     for (let i = 0; i < lessons.length; i++) {
-      CheckCurrentLesson(lessons[i], i + 1);
+      checkCurrentLesson(lessons[i], i + 1);
     }
   }, 60000);
 }
 
-async function CheckCurrentLesson(lesson: HomeTimetableLesson, num: number) {
+async function checkCurrentLesson(lesson: HomeTimetableLesson, num: number) {
   const { from: startTime, until: endTime, code, description, room, staff } = lesson;
   const currentDate = new Date();
 
@@ -506,7 +506,7 @@ function buildAssessmentURL(
     : `${base}${programmeID}:${metaID}`;
 }
 
-function CheckUnmarkedAttendance(lessonattendance: { label?: string } | null | undefined) {
+function checkUnmarkedAttendance(lessonattendance: { label?: string } | null | undefined) {
   return lessonattendance ? lessonattendance.label : " ";
 }
 
@@ -559,7 +559,7 @@ function applyHomeUpcomingLimits(
   assessments.splice(0, assessments.length, ...limited);
 }
 
-async function CreateUpcomingSection(
+async function createUpcomingSection(
   assessments: HomeUpcomingAssessment[],
   activeSubjects: ActiveSubjectLike[],
 ) {
@@ -580,7 +580,7 @@ async function CreateUpcomingSection(
 
   applyHomeUpcomingLimits(assessments, activeSubjects);
 
-  const colours = await GetLessonColours();
+  const colours = await getLessonColours();
 
   for (let i = 0; i < assessments.length; i++) {
     const subject = colours.find(
@@ -598,7 +598,7 @@ async function CreateUpcomingSection(
     const element = assessments[i];
     if (!upcomingDates[element.due]) {
       const dateObj: UpcomingDateBucket = {
-        div: CreateElement("div", "upcoming-date-container") as HTMLElement,
+        div: createElement("div", "upcoming-date-container") as HTMLElement,
         assessments: [],
       };
       upcomingDates[element.due] = dateObj;
@@ -609,7 +609,7 @@ async function CreateUpcomingSection(
 
   for (const date in upcomingDates) {
     const assessmentdue = new Date(upcomingDates[date].assessments[0].due);
-    const specialcase = CheckSpecialDay(Today, assessmentdue);
+    const specialcase = checkSpecialDay(Today, assessmentdue);
     const assessmentDate = createAssessmentDateDiv(
       date,
       upcomingDates[date],
@@ -721,7 +721,7 @@ function createAssessmentDateDiv(
   return container;
 }
 
-function CheckSpecialDay(date1: Date, date2: Date) {
+function checkSpecialDay(date1: Date, date2: Date) {
   if (
     date1.getFullYear() === date2.getFullYear() &&
     date1.getMonth() === date2.getMonth() &&
@@ -745,7 +745,7 @@ function CheckSpecialDay(date1: Date, date2: Date) {
   }
 }
 
-async function GetLessonColours() {
+async function getLessonColours() {
   try {
     const { id: user } = await getUserInfo();
     const response = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
@@ -760,7 +760,7 @@ async function GetLessonColours() {
   }
 }
 
-function SetTimetableSubtitle() {
+function setTimetableSubtitle() {
   const homelessonsubtitle = document.getElementById("home-lesson-subtitle");
   if (!homelessonsubtitle) return;
   homelessonsubtitle.innerText = lessonsSubtitleForViewDate(currentSelectedDate);

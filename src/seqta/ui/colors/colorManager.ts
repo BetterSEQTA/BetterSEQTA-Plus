@@ -1,7 +1,7 @@
 import Color from "color";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { lightenAndPaleColor } from "./lightenAndPaleColor";
-import ColorLuminance from "./colorLuminance";
+import colorLuminance from "./colorLuminance";
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
@@ -153,11 +153,11 @@ function applyColorsWith(selectedColor: string) {
   applyBetterseqtaLogoBackground(settingsState.DarkMode);
 
   // Dynamic properties, always applied
-  const rgbThreshold = GetThresholdOfColor(selectedColor);
+  const rgbThreshold = getThresholdOfColor(selectedColor);
   const isBright = rgbThreshold > 210;
   const dynamicProps = {
     "--text-color": isBright ? "black" : "white",
-    "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : ColorLuminance(selectedColor, 0.95),
+    "--better-light": selectedColor === "#ffffff" ? "#b7b7b7" : colorLuminance(selectedColor, 0.95),
   };
 
   const cssVars: Record<string, string> = { ...commonProps, ...dynamicProps };

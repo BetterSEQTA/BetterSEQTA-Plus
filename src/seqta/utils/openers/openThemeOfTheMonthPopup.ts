@@ -653,7 +653,7 @@ function attachPopupImages(root: ParentNode): void {
 // Main entry point
 // ---------------------------------------------------------------------------
 
-export async function OpenThemeOfTheMonthPopup(
+export async function openThemeOfTheMonthPopup(
   entry: ThemeOfTheMonthEntry,
   onDismissed?: () => void,
 ): Promise<void> {
@@ -879,5 +879,5 @@ export async function showThemeOfTheMonthPopupNow(): Promise<void> {
     await delay(150);
   }
 
-  await OpenThemeOfTheMonthPopup(entry);
+  await openThemeOfTheMonthPopup(entry);
 }

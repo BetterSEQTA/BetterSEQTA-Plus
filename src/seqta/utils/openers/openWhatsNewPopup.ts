@@ -8,7 +8,7 @@ import { renderWhatsNewChangelogHtml } from "./whatsNewChangelog";
 const UPDATE_VIDEO_URL =
   "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/update-video.webm";
 
-export function OpenWhatsNewPopup(onDismissed?: () => void) {
+export function openWhatsNewPopup(onDismissed?: () => void) {
   const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">

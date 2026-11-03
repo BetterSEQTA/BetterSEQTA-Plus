@@ -1,7 +1,7 @@
 import { animate } from "motion";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { noticeMatchesLabelFilter } from "@/seqta/utils/notices/noticeLabelFilters";
@@ -109,7 +109,7 @@ function elementScale(el: HTMLElement) {
 
 export function processNoticeColor(colour: unknown): string | undefined {
   if (typeof colour !== "string") return undefined;
-  const rgb = GetThresholdOfColor(colour);
+  const rgb = getThresholdOfColor(colour);
   if (rgb < 100 && settingsState.DarkMode) return undefined;
   return colour;
 }

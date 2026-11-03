@@ -110,8 +110,7 @@
   };
 
   const openStorePage = async () => {
-    const { OpenStorePage } = await import("@/seqta/ui/renderStore");
-    await OpenStorePage();
+    await (await import("@/seqta/ui/renderStore")).openStorePage();
   };
 
   const openThemeCreator = async (themeId?: string) => {

@@ -5,12 +5,12 @@ import { addExtensionSettings } from "@/seqta/utils/adders/addExtensionSettings"
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { loadEngageHomePage } from "@/seqta/utils/loaders/loadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
-import { SendNewsPage } from "@/seqta/utils/sendNewsPage";
+import { sendNewsPage } from "@/seqta/utils/sendNewsPage";
 import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./imageBackgrounds";
 import { attachTooltip } from "@/seqta/utils/tooltip";
 import { pageIcon } from "@/seqta/utils/pageIcons";
@@ -47,7 +47,7 @@ let sidebarAccessibilityListenersAttached = false;
 /** Marks menu rows that are off-screen in the drill stack (CSS blocks clicks). */
 const BSPLUS_SIDEBAR_OFFSCREEN = "bsplus-sidebar-offscreen";
 
-export async function AddBetterSEQTAElements() {
+export async function addBetterSEQTAElements() {
   if (isSeqtaEngageExperience()) {
     await waitForElm("#content");
     addExtensionSettings();
@@ -217,7 +217,7 @@ async function updateStudentInfo(
     if (student.house_colour) {
       houseelement.style.background = student.house_colour;
       try {
-        const colorresult = GetThresholdOfColor(student.house_colour);
+        const colorresult = getThresholdOfColor(student.house_colour);
         houseelement.style.color = colorresult && colorresult > 300 ? "black" : "white";
       } catch {
         // Invalid color format, leave text color as default
@@ -263,7 +263,7 @@ function setupEventListeners() {
   });
 
   newsbutton?.addEventListener("click", () => {
-    activateMenuAction(newsbutton, SendNewsPage);
+    activateMenuAction(newsbutton, sendNewsPage);
   });
 
   menuCover?.addEventListener("click", () => {
@@ -448,7 +448,7 @@ async function setupEngageSettingsButton() {
   observer.observe(content, { childList: true, subtree: !isPerformanceMode() });
 }
 
-function GetLightDarkModeString() {
+function getLightDarkModeString() {
   return settingsState.DarkMode ? "Switch to light theme" : "Switch to dark theme";
 }
 
@@ -456,7 +456,7 @@ async function addDarkLightToggle(parent?: Element) {
   const toggleTarget = parent ?? document.getElementById("content")!;
   toggleTarget.append(
     stringToHTML(/* html */ `
-      <button class="addedButton DarkLightButton" id="LightDarkModeButton" type="button" aria-label="${GetLightDarkModeString()}">
+      <button class="addedButton DarkLightButton" id="LightDarkModeButton" type="button" aria-label="${getLightDarkModeString()}">
         ${icon(settingsState.DarkMode ? Sun : Moon)}
       </button>
     `).firstChild!,
@@ -485,7 +485,7 @@ async function addDarkLightToggle(parent?: Element) {
     updateAllColors();
 
     lightDarkModeButtonElement.innerHTML = icon(settingsState.DarkMode ? Sun : Moon);
-    lightDarkModeButtonElement.setAttribute("aria-label", GetLightDarkModeString());
+    lightDarkModeButtonElement.setAttribute("aria-label", getLightDarkModeString());
   });
 }
 

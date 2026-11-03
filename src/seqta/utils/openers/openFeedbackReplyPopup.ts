@@ -17,7 +17,7 @@ function esc(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-export function OpenFeedbackReplyPopup(
+export function openFeedbackReplyPopup(
   items: FeedbackStatusItem[],
   onDismissed?: () => void,
 ): void {
@@ -75,7 +75,7 @@ export async function maybeQueueFeedbackReplyPopup(): Promise<
   try {
     const items = await findPendingFeedbackWithReplies();
     if (!items.length) return null;
-    return (goNext) => OpenFeedbackReplyPopup(items, goNext);
+    return (goNext) => openFeedbackReplyPopup(items, goNext);
   } catch {
     return null;
   }

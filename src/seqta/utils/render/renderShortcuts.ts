@@ -1,6 +1,6 @@
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { addShortcuts } from "@/seqta/utils/adders/addShortcuts";
-import { CreateCustomShortcutDiv } from "@/seqta/utils/createEnable/createCustomShortcutDiv";
+import { createCustomShortcutDiv } from "@/seqta/utils/createEnable/createCustomShortcutDiv";
 
 export function renderShortcuts() {
   const container = document.getElementById("shortcuts");
@@ -20,7 +20,7 @@ export function renderShortcuts() {
   const custom = settingsState.customshortcuts || [];
   for (const element of custom) {
     try {
-      CreateCustomShortcutDiv(element);
+      createCustomShortcutDiv(element);
     } catch (err: unknown) {
       console.error(
         "[BetterSEQTA+] Error adding custom shortcut:",

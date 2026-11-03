@@ -13,7 +13,7 @@ jest.mock("@/seqta/utils/menuItemVisibility", () => ({
   scheduleMenuItemVisibility: jest.fn(),
 }));
 jest.mock("@/seqta/utils/openers/menuOrder", () => ({
-  ChangeMenuItemPositions: jest.fn(),
+  changeMenuItemPositions: jest.fn(),
 }));
 jest.mock("@/seqta/utils/performanceMode", () => ({
   syncPerformanceModeEffects: jest.fn(),

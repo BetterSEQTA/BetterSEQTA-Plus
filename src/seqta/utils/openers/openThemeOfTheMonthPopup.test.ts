@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { OpenThemeOfTheMonthPopup } from "./openThemeOfTheMonthPopup";
+import { openThemeOfTheMonthPopup } from "./openThemeOfTheMonthPopup";
 import { settingsState } from "../listeners/settingsState";
 
 jest.mock("./popupManager", () => ({ closePopup: jest.fn() }));
@@ -35,7 +35,7 @@ it.each([false, true])(
   "click-away dismisses and records the month once (expanded: %s)",
   async (expanded) => {
     const onDismissed = jest.fn();
-    await OpenThemeOfTheMonthPopup(entry, onDismissed);
+    await openThemeOfTheMonthPopup(entry, onDismissed);
     if (expanded) document.querySelector<HTMLButtonElement>(".themeOfTheMonthCardPopout")!.click();
     const outside = expanded
       ? document.getElementById("theme-of-the-month-backdrop")!
@@ -51,7 +51,7 @@ it.each([false, true])(
 );
 
 it("keeps the card open while interacting with it and its fullscreen preview", async () => {
-  await OpenThemeOfTheMonthPopup(entry);
+  await openThemeOfTheMonthPopup(entry);
   document.querySelector<HTMLElement>(".themeOfTheMonthCardBody")!.click();
   document.querySelector<HTMLImageElement>(".themeOfTheMonthCardImage")!.click();
   const overlay = document.getElementById("bsplus-popup-media-overlay")!;
@@ -70,11 +70,11 @@ it("ignores the opening click and cleans up an existing card when replaced", asy
   const opener = document.createElement("button");
   document.body.append(opener);
   const oldDismissed = jest.fn();
-  opener.addEventListener("click", () => void OpenThemeOfTheMonthPopup(entry, oldDismissed));
+  opener.addEventListener("click", () => void openThemeOfTheMonthPopup(entry, oldDismissed));
   opener.click();
   expect(document.getElementById("theme-of-the-month-card")).not.toBeNull();
   const newDismissed = jest.fn();
-  await OpenThemeOfTheMonthPopup({ ...entry, month: "2026-11" }, newDismissed);
+  await openThemeOfTheMonthPopup({ ...entry, month: "2026-11" }, newDismissed);
   document.body.click();
   jest.advanceTimersByTime(30_000);
   expect(settingsState.themeOfTheMonthDismissedMonth).toBe("2026-11");

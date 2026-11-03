@@ -107,8 +107,8 @@ async function init() {
       if (settingsState.onoff !== false && !isPaused()) {
         await main();
 
-        const { init: Monofile } = await import("@/plugins/monofile");
-        Monofile();
+        const { init: initMonofile } = await import("@/plugins/monofile");
+        initMonofile();
 
         if (settingsState.onoff) {
           const { initializePlugins } = await import("@/plugins/index");

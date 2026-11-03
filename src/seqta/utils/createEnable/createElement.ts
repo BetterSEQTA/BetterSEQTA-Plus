@@ -1,4 +1,4 @@
-export function CreateElement(
+export function createElement(
   type: string,
   class_?: string,
   id?: string,

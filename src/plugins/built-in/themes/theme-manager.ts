@@ -234,10 +234,10 @@ export class ThemeManager {
       const creatorSession = readThemeCreatorSession();
       if (creatorSession.open) {
         verboseDebug("[BetterSEQTA+] ThemeManager: Restoring theme creator after navigation");
-        const { OpenThemeCreator, isThemeCreatorOpen } =
+        const { openThemeCreator, isThemeCreatorOpen } =
           await import("@/plugins/built-in/themes/themeCreator");
         if (!isThemeCreatorOpen()) {
-          void OpenThemeCreator(creatorSession.editingThemeId);
+          void openThemeCreator(creatorSession.editingThemeId);
         }
       }
 

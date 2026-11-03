@@ -274,7 +274,7 @@ function startCanvasForRoot(host: HTMLElement, shadow: ShadowRoot, variant: Load
   stopCanvas = canvas ? startLoadingCanvas(canvas, host, variant) : null;
 }
 
-export function AppendLoadingSymbol(givenID: string, position: string) {
+export function appendLoadingSymbol(givenID: string, position: string) {
   const loadingsymbol = stringToHTML(/* html */ `
       <div id="${givenID}" class="bkloading-inline">
         ${loadingSpinner}

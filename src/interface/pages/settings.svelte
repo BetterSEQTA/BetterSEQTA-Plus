@@ -18,8 +18,8 @@
   import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
-  import { OpenAboutPage } from "@/seqta/utils/openers/openAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/openers/openWhatsNewPopup";
+  import { openAboutPage } from "@/seqta/utils/openers/openAboutPage";
+  import { openWhatsNewPopup } from "@/seqta/utils/openers/openWhatsNewPopup";
 
   import type { Component } from "svelte";
   import SidebarNav from "../components/SidebarNav.svelte";
@@ -228,12 +228,12 @@
   };
 
   const openChangelog = () => {
-    OpenWhatsNewPopup();
+    openWhatsNewPopup();
     closeExtensionPopup();
   };
 
   const openAbout = () => {
-    OpenAboutPage();
+    openAboutPage();
     closeExtensionPopup();
   };
 

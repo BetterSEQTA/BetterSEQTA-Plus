@@ -7,10 +7,10 @@ async function openThemesDestination(view: "store" | "community"): Promise<void>
   await openSettingsPopup();
 }
 
-export async function OpenStorePage(): Promise<void> {
+export async function openStorePage(): Promise<void> {
   await openThemesDestination("store");
 }
 
-export async function OpenCommunityThemesPage(): Promise<void> {
+export async function openCommunityThemesPage(): Promise<void> {
   await openThemesDestination("community");
 }

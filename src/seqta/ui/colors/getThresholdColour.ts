@@ -1,5 +1,5 @@
 import Color from "color";
-export function GetThresholdOfColor(color: string) {
+export function getThresholdOfColor(color: string) {
   if (!color) return 0;
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;

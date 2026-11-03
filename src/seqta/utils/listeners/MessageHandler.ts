@@ -1,7 +1,7 @@
 import browser from "@/lib/browser";
 
 import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
-import { OpenMenuOptions } from "@/seqta/utils/openers/openMenuOptions";
+import { openMenuOptions } from "@/seqta/utils/openers/openMenuOptions";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
@@ -119,8 +119,8 @@ export class MessageHandler {
 
       case "OpenThemeCreator": {
         const themeID = request?.body?.themeID;
-        void import("@/plugins/built-in/themes/themeCreator").then(({ OpenThemeCreator }) => {
-          void OpenThemeCreator(themeID ? String(themeID) : "");
+        void import("@/plugins/built-in/themes/themeCreator").then(({ openThemeCreator }) => {
+          void openThemeCreator(themeID ? String(themeID) : "");
         });
         closeExtensionPopup();
         sendResponse({ status: "success" });
@@ -136,9 +136,9 @@ export class MessageHandler {
         return true;
 
       case "CloseThemeCreator":
-        void import("@/plugins/built-in/themes/themeCreator").then(({ CloseThemeCreator }) => {
+        void import("@/plugins/built-in/themes/themeCreator").then(({ closeThemeCreator }) => {
           try {
-            CloseThemeCreator();
+            closeThemeCreator();
             sendResponse({ status: "success" });
           } catch (error) {
             console.error("Error closing theme creator:", error);
@@ -159,7 +159,7 @@ export class MessageHandler {
 
   editSidebar() {
     if (!isMenuOptionsOpen()) {
-      OpenMenuOptions();
+      openMenuOptions();
     }
   }
 }

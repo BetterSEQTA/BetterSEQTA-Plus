@@ -1,4 +1,4 @@
-import { AppendLoadingSymbol } from "@/seqta/ui/loading";
+import { appendLoadingSymbol } from "@/seqta/ui/loading";
 import stringToHTML from "./stringToHTML";
 import { delay } from "./delay";
 import { settingsState } from "./listeners/settingsState";
@@ -11,7 +11,7 @@ import { verboseInfo } from "@/utils/verboseLog";
 import { toNewsArticles, type NewsPayload } from "@/seqta/utils/newsFeed";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
-export async function SendNewsPage() {
+export async function sendNewsPage() {
   if (isFeatureDisabled("page.news")) return;
 
   verboseInfo("[BetterSEQTA+] Started Loading News Page");
@@ -63,7 +63,7 @@ export async function SendNewsPage() {
     const titleBar = document.getElementById("title")?.firstChild;
     if (titleBar instanceof HTMLElement) titleBar.innerText = "News";
   }
-  AppendLoadingSymbol("newsloading", "#news-container");
+  appendLoadingSymbol("newsloading", "#news-container");
 
   const response = (await browser.runtime.sendMessage({
     type: "sendNews",

@@ -3,12 +3,12 @@ import { settingsState } from "../listeners/settingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
 import { ensureAnalyticsMenuOrder } from "@/seqta/utils/openers/analyticsMenuOrder";
 import { isMenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import stringToHTML from "../stringToHTML";
 import Sortable from "sortablejs";
 
 export { MenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
-export { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+export { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 
 function escapeHtmlAttr(value: string): string {
   return value
@@ -179,7 +179,7 @@ function restoreMenuItemsFromEditMode(menu: HTMLElement, listItems: NodeListOf<C
   menu.querySelectorAll(".onoffswitch").forEach((toggle) => toggle.remove());
 }
 
-export function OpenMenuOptions() {
+export function openMenuOptions() {
   if (isMenuOptionsOpen()) return;
 
   const container = document.getElementById("container");
@@ -232,7 +232,7 @@ export function OpenMenuOptions() {
 
   defaultbutton.addEventListener("click", () => {
     settingsState.menuorder = settingsState.defaultmenuorder;
-    ChangeMenuItemPositions(settingsState.defaultmenuorder);
+    changeMenuItemPositions(settingsState.defaultmenuorder);
 
     const restored: Record<string, { toggle: boolean }> = {};
     for (let i = 0; i < menubuttons.length; i++) {

@@ -27,7 +27,7 @@
   } from "../utils/themeImageHandlers";
   import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
   import { themeUpdates } from "../hooks/themeUpdates";
-  import { CloseThemeCreator } from "@/plugins/built-in/themes/themeCreator";
+  import { closeThemeCreator } from "@/plugins/built-in/themes/themeCreator";
   import { submitLocalThemeToCommunity } from "@/seqta/utils/customThemes/submitLocalTheme";
   import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
   import { cloudAuth } from "@/seqta/utils/cloudAuth";
@@ -243,7 +243,7 @@
     await themeManager.saveTheme(themeClone);
     await themeManager.setTheme(themeClone.id);
     themeUpdates.triggerUpdate();
-    await CloseThemeCreator({ restoreTheme: false });
+    await closeThemeCreator({ restoreTheme: false });
   }
 
   async function submitThemeToCommunity() {
@@ -264,7 +264,7 @@
       await themeManager.setTheme(themeClone.id);
       await submitLocalThemeToCommunity(themeClone, theme.description?.trim() || undefined);
       themeUpdates.triggerUpdate();
-      await CloseThemeCreator({ restoreTheme: false });
+      await closeThemeCreator({ restoreTheme: false });
     } catch (err) {
       communityError = formatCustomThemeApiError(err);
     } finally {
@@ -517,7 +517,7 @@
         type="button"
         class="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-200 dark:hover:bg-zinc-700"
         aria-label="Close theme creator"
-        onclick={() => void CloseThemeCreator()}
+        onclick={() => void closeThemeCreator()}
       >
         <XIcon size="1em" />
       </button>

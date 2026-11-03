@@ -5,7 +5,7 @@ import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
 import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/loadHomePage";
 import { scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
 
 import type { CustomShortcut } from "@/types/storage";
@@ -41,7 +41,7 @@ export class StorageChangeHandler {
     settingsState.register("menuitems", () => scheduleMenuItemVisibility());
     settingsState.register("menuorder", (order) => {
       if (Array.isArray(order) && order.length > 0) {
-        ChangeMenuItemPositions(order);
+        changeMenuItemPositions(order);
       }
     });
   }

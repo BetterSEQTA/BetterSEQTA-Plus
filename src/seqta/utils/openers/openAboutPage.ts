@@ -6,7 +6,7 @@ import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import brandingDark from "@/resources/branding/dark.jpg";
 import brandingLight from "@/resources/branding/light.jpg";
 
-export function OpenAboutPage() {
+export function openAboutPage() {
   const header = stringToHTML(
     /* html */
     `<div class="whatsnewHeader">

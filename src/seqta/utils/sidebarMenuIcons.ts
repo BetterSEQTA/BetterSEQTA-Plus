@@ -1,5 +1,5 @@
 import { pageIcon } from "@/seqta/utils/pageIcons";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
@@ -83,7 +83,7 @@ function processTopLevelMenuItems(reorder = !isSeqtaEngageExperience()) {
   }
 
   if (reorder) {
-    ChangeMenuItemPositions(settingsState.menuorder);
+    changeMenuItemPositions(settingsState.menuorder);
   }
 }
 
@@ -139,7 +139,7 @@ export async function observeMenuItemPosition() {
 
       if (!isMenuOptionsOpen()) {
         processMenuItemNode(node);
-        ChangeMenuItemPositions(settingsState.menuorder);
+        changeMenuItemPositions(settingsState.menuorder);
         (element as Element & Record<symbol, boolean>)[processedSymbol] = true;
       }
     },

@@ -1,5 +1,5 @@
 import { getCkeditorGlobal } from "@/seqta/utils/ckeditorGlobal";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
 import stringToHTML from "@/seqta/utils/stringToHTML";
@@ -17,13 +17,13 @@ import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import debounce from "@/seqta/utils/debounce";
 
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
-import RegisterClickListeners from "@/seqta/utils/listeners/clickListeners";
-import { AddBetterSEQTAElements } from "@/seqta/ui/addBetterSEQTAElements";
+import registerClickListeners from "@/seqta/utils/listeners/clickListeners";
+import { addBetterSEQTAElements } from "@/seqta/ui/addBetterSEQTAElements";
 import { updateAllColors } from "@/seqta/ui/colors/colorManager";
 import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 import { verboseInfo, verboseLog } from "@/utils/verboseLog";
 import loading, { stopLoadingAnimation } from "@/seqta/ui/loading";
-import { SendNewsPage } from "@/seqta/utils/sendNewsPage";
+import { sendNewsPage } from "@/seqta/utils/sendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
   loadEngageHomePage,
@@ -32,7 +32,7 @@ import {
 import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { runStartupPopupQueue } from "@/seqta/utils/openers/startupPopupQueue";
-import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/openCoursesAssessmentsFixPopup";
+import { openCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/openCoursesAssessmentsFixPopup";
 
 import {
   syncTimetableUrlMonitoring,
@@ -108,7 +108,7 @@ export async function finishLoad() {
   void runStartupPopupQueue();
 }
 
-export function GetCSSElement(file: string) {
+export function getCSSElement(file: string) {
   const cssFile = resolveExtensionAssetUrl(file);
   const fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
@@ -182,7 +182,7 @@ function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElem
   }
 }
 
-function SortMessagePageItems() {
+function sortMessagePageItems() {
   try {
     const filterbutton = document.createElement("div");
     filterbutton.classList.add("messages-filterbutton");
@@ -195,8 +195,8 @@ function SortMessagePageItems() {
   }
 }
 
-async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements();
+async function loadPageElements(): Promise<void> {
+  await addBetterSEQTAElements();
   if (!isFeatureDisabled("ui.sidebar.styled")) {
     void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
       void mod.applyNativeSidebar();
@@ -222,7 +222,7 @@ async function LoadPageElements(): Promise<void> {
 
   eventManager.register("messagesAdded", { selector: "div.messages" }, handleMessages);
 
-  eventManager.register("noticesAdded", { selector: "div.notices" }, CheckNoticeTextColour);
+  eventManager.register("noticesAdded", { selector: "div.notices" }, checkNoticeTextColour);
 
   eventManager.register("dashboardAdded", { selector: "div.dashboard" }, handleDashboard);
 
@@ -237,7 +237,7 @@ async function LoadPageElements(): Promise<void> {
 
   eventManager.register("noticesAdded", { selector: "div.notice" }, handleNotices);
 
-  RegisterClickListeners();
+  registerClickListeners();
 
   await handleSublink(sublink);
 }
@@ -341,7 +341,7 @@ async function handleNewsPage(): Promise<void> {
 
   verboseInfo("[BetterSEQTA+] Started Init");
   try {
-    await SendNewsPage();
+    await sendNewsPage();
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to load news page:", error);
   }
@@ -365,7 +365,7 @@ async function handleMessages(node: Element): Promise<void> {
     if (legacy instanceof HTMLElement) legacy.innerText = titleText;
   }
   document.title = "Direct Messages ― SEQTA Learn";
-  SortMessagePageItems();
+  sortMessagePageItems();
 
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
@@ -476,7 +476,7 @@ let noticeColourObserver: MutationObserver | null = null;
 
 const adjustNoticeColor = (node: Element) => {
   const hex = (node as HTMLElement).style.cssText.split(" ")[1];
-  if (!hex || !settingsState.DarkMode || GetThresholdOfColor(hex.slice(0, -1)) >= 100) return;
+  if (!hex || !settingsState.DarkMode || getThresholdOfColor(hex.slice(0, -1)) >= 100) return;
   (node as HTMLElement).style.cssText = "--color: undefined;";
 };
 
@@ -490,7 +490,7 @@ const scanAddedNotices = debounce((mutations: MutationRecord[]) => {
     for (const node of m.addedNodes) if (node instanceof Element) scanNotices(node);
 }, 50);
 
-function CheckNoticeTextColour(notice: Element) {
+function checkNoticeTextColour(notice: Element) {
   scanNotices(notice);
   if (noticeContainers.has(notice)) return;
   if (!noticeColourObserver) {
@@ -571,10 +571,10 @@ export function tryLoad() {
       }
       if (mode === "timeout") {
         finishLoad();
-        void waitForElm("#content").then(() => void LoadPageElements());
+        void waitForElm("#content").then(() => void loadPageElements());
         return;
       }
-      await LoadPageElements();
+      await loadPageElements();
     };
 
     if (document.readyState === "complete") {
@@ -605,7 +605,7 @@ export function tryLoad() {
   });
 
   waitForElm(".code", true, 50).then((elm: Element) => {
-    if (!(elm as HTMLElement).innerText.includes("BetterSEQTA")) LoadPageElements();
+    if (!(elm as HTMLElement).innerText.includes("BetterSEQTA")) loadPageElements();
   });
 
   updateIframesWithDarkMode();
@@ -696,8 +696,8 @@ export function init() {
       }
     }
 
-    AppendElementsToDisabledPage();
-    OpenCoursesAssessmentsFixPopup();
+    appendElementsToDisabledPage();
+    openCoursesAssessmentsFixPopup();
   };
 
   const handleDisabled = () => {
@@ -859,11 +859,11 @@ export function init() {
   }
 }
 
-export function AppendElementsToDisabledPage() {
+export function appendElementsToDisabledPage() {
   if (document.getElementById("AddedSettings")) return;
 
   verboseInfo("[BetterSEQTA+] Appending elements to disabled page");
-  AddBetterSEQTAElements();
+  addBetterSEQTAElements();
 
   const settingsStyle = document.createElement("style");
   settingsStyle.innerHTML = /* css */ `

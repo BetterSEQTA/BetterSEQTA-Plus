@@ -6,7 +6,7 @@ import {
   insertMenuItemAfterKey,
 } from "@/seqta/utils/openers/analyticsMenuOrder";
 import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
@@ -72,7 +72,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
 
     ensureAnalyticsMenuOrder();
     if (settingsState.menuorder.length > 0) {
-      ChangeMenuItemPositions(settingsState.menuorder);
+      changeMenuItemPositions(settingsState.menuorder);
     }
     processMenuItemNode(analyticsItem);
     applyMenuItemVisibility();

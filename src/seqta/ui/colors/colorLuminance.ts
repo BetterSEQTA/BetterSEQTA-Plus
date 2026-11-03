@@ -13,7 +13,7 @@ function adjustLuminance(color: string, lum: number) {
   return adjustedColor.string();
 }
 
-export default function ColorLuminance(color: string, lum = 0) {
+export default function colorLuminance(color: string, lum = 0) {
   if (color == "" || color == null) {
     // light cyan blue
     return "#00bfff";

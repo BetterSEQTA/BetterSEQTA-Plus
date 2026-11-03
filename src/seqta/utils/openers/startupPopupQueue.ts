@@ -1,13 +1,13 @@
 import { settingsState } from "../listeners/settingsState";
-import { OpenWhatsNewPopup } from "./openWhatsNewPopup";
+import { openWhatsNewPopup } from "./openWhatsNewPopup";
 import {
   fetchThemeOfTheMonth,
-  OpenThemeOfTheMonthPopup,
+  openThemeOfTheMonthPopup,
   shouldShowThemeOfTheMonth,
 } from "./openThemeOfTheMonthPopup";
 import { maybeQueueFeedbackReplyPopup } from "./openFeedbackReplyPopup";
 import {
-  OpenCoursesAssessmentsFixPopup,
+  openCoursesAssessmentsFixPopup,
   shouldShowCoursesAssessmentsFixPopup,
 } from "./openCoursesAssessmentsFixPopup";
 import { cloudAuth } from "../cloudAuth";
@@ -23,17 +23,17 @@ export async function runStartupPopupQueue() {
   const steps: QueueStep[] = [];
 
   if (settingsState.justupdated) {
-    steps.push((goNext) => OpenWhatsNewPopup(goNext));
+    steps.push((goNext) => openWhatsNewPopup(goNext));
   }
 
   if (shouldShowCoursesAssessmentsFixPopup(settingsState)) {
-    steps.push((goNext) => OpenCoursesAssessmentsFixPopup(goNext));
+    steps.push((goNext) => openCoursesAssessmentsFixPopup(goNext));
   }
 
   const themeOfTheMonth = await fetchThemeOfTheMonth();
   if (shouldShowThemeOfTheMonth(themeOfTheMonth)) {
     steps.push((goNext) => {
-      void OpenThemeOfTheMonthPopup(themeOfTheMonth!, goNext);
+      void openThemeOfTheMonthPopup(themeOfTheMonth!, goNext);
     });
   }
 
