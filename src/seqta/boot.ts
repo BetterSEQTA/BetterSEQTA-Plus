@@ -10,13 +10,13 @@ import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateC
 import { installThemeImagePagePatch } from "@/seqta/utils/patchThemeImagesPageContext";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 import {
-  hydrateRemoteConfigFromStorage,
-  installRemoteConfigStorageListener,
-  isEffectiveBsplusEnabled,
-  notifyRemoteConfigPageContext,
-  ensureKilledModeSettingsAccess,
-} from "@/seqta/utils/remoteConfig/runtime";
-import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
+  hasSeenPause,
+  isPaused,
+  loadRemoteStatus,
+  refreshRemoteStatus,
+} from "@/seqta/utils/remoteStatus";
+import { showPauseNotice } from "@/seqta/utils/pauseNotice";
+import { ensureSettingsAccess } from "@/seqta/utils/ensureSettingsAccess";
 import { recoverFromStaleDevModuleGraph } from "@/seqta/devModuleGraphRecovery";
 
 function registerFetchSeqtaAppLinkListener() {
@@ -101,15 +101,10 @@ async function init() {
         await delay(5);
       }
 
-      await hydrateRemoteConfigFromStorage();
-      notifyRemoteConfigPageContext(location.hostname);
-      installRemoteConfigStorageListener(() => {
-        location.reload();
-      });
+      await loadRemoteStatus();
+      void refreshRemoteStatus();
 
-      const bsplusEnabled = isEffectiveBsplusEnabled();
-
-      if (bsplusEnabled) {
+      if (settingsState.onoff !== false && !isPaused()) {
         await main();
 
         const { init: Monofile } = await import("@/plugins/monofile");
@@ -120,8 +115,8 @@ async function init() {
           await initializePlugins();
         }
       } else {
-        await ensureKilledModeSettingsAccess();
-        void runStartupPopupQueue();
+        await ensureSettingsAccess();
+        if (settingsState.onoff !== false && !hasSeenPause()) showPauseNotice();
       }
 
       if (settingsState.devMode) {

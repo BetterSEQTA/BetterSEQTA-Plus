@@ -27,8 +27,8 @@
   import { settingsPopup } from "@/seqta/utils/settingsPopup";
   import { armDevModeUnlock } from "@/seqta/utils/devModeUnlock";
   import { consumeOpenFeedbackRequest } from "@/seqta/utils/feedback/client";
-  import RemoteConfigStatusStrip from "../components/RemoteConfigStatusStrip.svelte";
-  import { isRemoteSettingsSectionVisible } from "@/seqta/utils/remoteConfig/runtime";
+  import RemoteStatusStrip from "../components/RemoteStatusStrip.svelte";
+  import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
   import {
     consumeSettingsDestination,
     SETTINGS_NAVIGATION_EVENT,
@@ -94,11 +94,14 @@
   const ghReleaseChannelLabel = getInstalledGhReleaseChannelLabel();
   let ghReleaseUpdate = $state<GhReleaseUpdateInfo | null>(null);
 
+  const isSectionVisible = (id: string) =>
+    !isFeatureDisabled(id === "account" ? "settings.nav.cloud" : `settings.section.${id}`);
+
   const userNav: NavItem[] = [
     { id: "account", label: "My Account" },
     { id: "general", label: "General" },
     { id: "appearance", label: "Appearance" },
-  ].filter((item) => isRemoteSettingsSectionVisible(item.id));
+  ].filter((item) => isSectionVisible(item.id));
 
   $effect(() => {
     if (!$settingsState.devMode && activeSection === "advanced") activeSection = "general";
@@ -110,7 +113,7 @@
     { id: "features", label: "Features" },
     ...($settingsState.devMode ? [{ id: "advanced", label: "Advanced" }] : []),
     { id: "shortcuts", label: "Shortcuts" },
-  ].filter((item) => isRemoteSettingsSectionVisible(item.id)));
+  ].filter((item) => isSectionVisible(item.id)));
 
   const settingsNavGroups = $derived([
     { label: "User Settings", items: userNav },
@@ -559,7 +562,7 @@
       onToggleSize={standalone ? undefined : toggleExpanded}
     />
 
-    <RemoteConfigStatusStrip />
+    <RemoteStatusStrip />
 
     <!-- Body: left nav + content -->
     <div class="flex flex-1 min-h-0 overflow-hidden">
@@ -716,7 +719,7 @@
   <div
     class="flex h-full min-h-0 flex-col gap-2 overflow-hidden bg-white dark:bg-zinc-800 dark:text-white"
   >
-    <RemoteConfigStatusStrip />
+    <RemoteStatusStrip />
     <div
       class="grid shrink-0 items-center border-b border-zinc-200/40 dark:border-zinc-700/40 {standalone ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_44px] gap-2 px-2'}"
     >

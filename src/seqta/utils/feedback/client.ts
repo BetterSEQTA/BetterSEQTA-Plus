@@ -1,5 +1,5 @@
 import browser from "@/lib/browser";
-import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { API_BASE } from "@/config/apiBase";
 import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -16,7 +16,7 @@ import {
   type FeedbackProduct,
 } from "./constants";
 import { getOrCreateInstallId } from "./installId";
-import { isRemoteFeedbackSubmitDisabled } from "@/seqta/utils/remoteConfig/runtime";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
 export class FeedbackApiError extends Error {
   constructor(
@@ -115,7 +115,7 @@ function channel(): FeedbackChannel {
 
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   try {
-    return await fetch(`${getApiBase()}${path}`, {
+    return await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: { Accept: "application/json", ...init?.headers },
     });
@@ -149,7 +149,7 @@ export async function submitFeedback(form: FeedbackFormInput): Promise<{ id: str
   const err = validateFeedbackForm(form);
   if (err) throw new FeedbackApiError(err, 422);
 
-  if (isRemoteFeedbackSubmitDisabled()) {
+  if (isFeatureDisabled("feedback.submit")) {
     throw new FeedbackApiError(
       "Feedback submissions are temporarily disabled.",
       503,

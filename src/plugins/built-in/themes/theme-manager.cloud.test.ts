@@ -17,9 +17,6 @@ jest.mock("@/seqta/utils/listeners/SettingsState", () => ({
 jest.mock("@/seqta/utils/performanceMode", () => ({
   fullMotionEffectsEnabled: () => false,
 }));
-jest.mock("@/seqta/utils/DevApiBase", () => ({
-  getApiBase: () => "https://betterseqta.org",
-}));
 jest.mock("@/seqta/ui/colors/Manager", () => ({ updateAllColors: jest.fn() }));
 jest.mock("@/seqta/ui/colors/customThemeAdaptiveBindings", () => ({}));
 jest.mock("@/seqta/utils/patchThemeImagesPageContext", () => ({}));
@@ -48,11 +45,7 @@ describe("cloud theme restoration", () => {
   it.each(["themes", "custom-themes"])("installs a missing %s catalog theme", async (catalog) => {
     const jsonUrl = "https://betterseqta.org/storage/theme.json";
     (browser.runtime.sendMessage as jest.Mock).mockImplementation(async ({ url }) => {
-      if (
-        typeof url === "string" &&
-        url.includes(`/api/${catalog}/catalog-id/download`) &&
-        url.includes("extensionVersion=")
-      ) {
+      if (url === `https://betterseqta.org/api/${catalog}/catalog-id/download`) {
         return {
           data: { success: true, data: { theme_json_url: jsonUrl } },
         };

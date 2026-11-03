@@ -133,6 +133,9 @@ export default defineConfig(({ command, mode: viteMode }) => {
         },
         output: {
           assetFileNames: "assets/[name]-[hash][extname]",
+          // Extension packages are versioned; stable chunk names keep source rebuilds identical.
+          entryFileNames: "assets/[name].js",
+          chunkFileNames: "assets/[name].js",
           manualChunks(id) {
             const normalized = id.replace(/\\/g, "/");
             // Keep the Svelte mount helper out of the settings entry chunk so

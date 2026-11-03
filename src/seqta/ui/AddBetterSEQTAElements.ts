@@ -28,8 +28,7 @@ import {
   refreshTitlebarFounderBadge,
 } from "@/seqta/ui/founderBadge/mountTitlebarFounderBadge";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
-import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
-import { remoteChromeGateAllowed } from "@/seqta/utils/remoteConfig/routeGate";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
 import {
   installSidebarDrillReturn,
@@ -69,10 +68,10 @@ export async function AddBetterSEQTAElements() {
     const menu = document.getElementById("menu")!;
     const menuList = menu.firstChild as HTMLElement;
 
-    if (!checkRemoteFeature("page.home").hide) {
+    if (!isFeatureDisabled("page.home")) {
       createHomeButton(fragment);
     }
-    if (!checkRemoteFeature("page.news").hide) {
+    if (!isFeatureDisabled("page.news")) {
       createNewsButton(fragment, menu);
     }
 
@@ -92,7 +91,7 @@ export async function AddBetterSEQTAElements() {
     setupEventListeners();
     await addDarkLightToggle();
     customizeMenuToggle();
-    if (remoteChromeGateAllowed("ui.sidebar.styled")) {
+    if (!isFeatureDisabled("ui.sidebar.styled")) {
       maybeSetupSidebarAccessibility();
     }
   }

@@ -1,6 +1,6 @@
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
-import { getApiBase } from "../DevApiBase";
+import { API_BASE } from "@/config/apiBase";
 import { closePopup, openPopup } from "./PopupManager";
 import fallbackTerms from "@/exampletermsresponse.json";
 import type { SettingsState } from "@/types/storage";
@@ -33,7 +33,7 @@ export function getFallbackTermsOfService(): LegalDocumentPayload {
 /** Loads Terms of Service body from `GET /api/terms`. */
 export async function fetchTermsOfService(): Promise<LegalDocumentPayload> {
   try {
-    const res = await fetch(`${getApiBase()}/api/terms`, {
+    const res = await fetch(`${API_BASE}/api/terms`, {
       cache: "no-store",
       signal: AbortSignal.timeout(TERMS_FETCH_TIMEOUT_MS),
     });

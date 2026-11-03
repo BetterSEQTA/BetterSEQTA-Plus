@@ -1,20 +1,6 @@
 import browser from "@/lib/browser";
 import isEqual from "@/seqta/utils/isEqual";
 import { BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY } from "@/seqta/utils/calendarSync/settings";
-import {
-  BSPLUS_CAMPAIGN_SEEN_KEY,
-  BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY,
-  BSPLUS_INSTALL_REGISTERED_AT_KEY,
-  BSPLUS_LOCAL_OVERRIDE_ONOFF_KEY,
-  BSPLUS_REMOTE_CONFIG_ETAG_KEY,
-  BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY,
-  BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY,
-  BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY,
-  BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY,
-  BSPLUS_REMOTE_THEME_BEFORE_V1_KEY,
-  BSPLUS_REMOTE_THEME_STATE_V1_KEY,
-  BSPLUS_REMOTE_THEME_USER_OFF_KEY,
-} from "@/seqta/utils/remoteConfig/storageKeys";
 
 /** Matches the contract in docs/CLOUD_SETTINGS_SYNC_SERVER.md */
 export const CLOUD_SETTINGS_SYNC_SCHEMA_VERSION = 1;
@@ -58,18 +44,7 @@ export const KEYS_OMITTED_FROM_CLOUD_UPLOAD = [
   "bsplus_install_id",
   /** Pending feedback ids awaiting a reply notification — device-local. */
   "bsplus_pending_feedback_ids",
-  BSPLUS_REMOTE_CONFIG_SNAPSHOT_KEY,
-  BSPLUS_REMOTE_CONFIG_ETAG_KEY,
-  BSPLUS_CAMPAIGN_SEEN_KEY,
-  BSPLUS_LOCAL_OVERRIDE_ONOFF_KEY,
-  BSPLUS_FEATURES_HIDDEN_UNTIL_VERSION_KEY,
-  BSPLUS_INSTALL_REGISTERED_AT_KEY,
-  BSPLUS_REMOTE_CONFIG_FETCHED_AT_KEY,
-  BSPLUS_REMOTE_CONFIG_LAST_HOSTNAME_KEY,
-  BSPLUS_REMOTE_LAST_PRIMARY_OK_KEY,
-  BSPLUS_REMOTE_THEME_BEFORE_V1_KEY,
-  BSPLUS_REMOTE_THEME_STATE_V1_KEY,
-  BSPLUS_REMOTE_THEME_USER_OFF_KEY,
+  "bsplus_remote_status",
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
 ] as const;
 
@@ -94,9 +69,6 @@ const CLIENT_ONLY_CLOUD_KEYS_EXACT = [
   "bsplus_lastCloudPoll",
   BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY,
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
-  "bsplus_remote_theme_before_v1",
-  "bsplus_remote_theme_state_v1",
-  "bsplus_remote_theme_user_off",
 ] as const;
 
 /** After restoring from cloud, keep local session so the user stays signed in. */
@@ -116,7 +88,6 @@ const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   "devMode",
   "devGhReleaseVersionOverride",
   "devDelayLoadingScreen",
-  "bsplus_dev_api_base",
   "bsplus_dev_accounts_base",
   "bsplus_dev_oauth_client_id",
   "bsplus_dev_oauth_client_secret",

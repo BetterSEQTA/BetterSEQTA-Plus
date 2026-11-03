@@ -1,6 +1,7 @@
 import Settings from "./pages/settings.svelte";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { loadRemoteStatus } from "@/seqta/utils/remoteStatus";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 
 const mountPoint = document.getElementById("app");
@@ -12,9 +13,8 @@ if (!mountPoint) {
 } else {
   void (async () => {
     await initializeSettingsState();
+    await loadRemoteStatus();
     initVerboseLogging();
-    const { syncApiBaseToBackground } = await import("@/seqta/utils/DevApiBase");
-    syncApiBaseToBackground();
     renderSvelte(Settings, mountPoint, { standalone: true });
   })();
 }

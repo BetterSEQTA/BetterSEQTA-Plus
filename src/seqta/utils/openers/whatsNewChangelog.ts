@@ -5,20 +5,15 @@ export type WhatsNewRelease = {
 
 export const WHATS_NEW_CHANGELOG: WhatsNewRelease[] = [
   {
-    title: "3.7.7 - Startup performance & reliability",
-    items: [
-      "Lazy-loads plugin code on first use for faster SEQTA startup, plus background and stability fixes from the latest maintenance release.",
-    ],
+    title: "3.7.7 - Faster Startup",
+    items: ["SEQTA now loads faster with BetterSEQTA+.", "Stability fixes."],
   },
   {
-    title:
-      "3.7.6 - Timetable Sharing Fixes, Better Update resilience & Community Theme Submitter Badges,",
+    title: "3.7.6 - Timetable Sharing Fixes & Theme Submitter Badges",
     items: [
-      "Improved releiability of opening the connection for Timetable Sharing.",
-      "Added a new submitter badge for community theme submitters.",
-      "Added ability for Admin's to view unreleased community themes for QA.",
-      "Added ability for BetterSEQTA+ features to be dynamically configured remotly to negate compatability issues.",
-      "Added ability to set BetterSEQTA Cloud Profile Picture from Extension Settings.",
+      "Timetable Sharing now connects more reliably.",
+      "Community theme submitters now get a badge.",
+      "Set your BetterSEQTA Cloud profile picture from Settings.",
     ],
   },
   {

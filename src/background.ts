@@ -19,35 +19,12 @@ import {
   registerOutlookCalendarMessageHandlers,
   type CalendarMessageHandlerMap,
 } from "./background/calendarBackground";
+import { API_BASE } from "./config/apiBase";
 import { createCustomThemesHandlers } from "./background/customThemesHandlers";
-import {
-  createRemoteConfigHandlers,
-  initRemoteConfigBackground,
-  refreshRemoteConfig,
-} from "./background/remoteConfig";
-import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
-import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 import { runStorageMigrations } from "./background/storageMigrations";
-
-/**
- * Session-only dev-mode override of the content API base.
- *
- * Stored in a module-level variable (not `chrome.storage`) so it is wiped
- * automatically when the browser/service-worker process restarts. Content
- * scripts re-sync this on every page load via `setDevApiBase` so the value
- * survives transient service-worker terminations within the same browser
- * session.
- */
-const DEFAULT_API_BASE = "https://betterseqta.org";
-let DEV_API_BASE: string | null = null;
-function apiBase(): string {
-  // Extension dev builds always hit production (see DevApiBase.ts).
-  if (import.meta.env.DEV) return DEFAULT_API_BASE;
-  return DEV_API_BASE ?? DEFAULT_API_BASE;
-}
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
@@ -113,11 +90,7 @@ function normalizeFetchThemesResponse(json: unknown): {
 function handleFetchThemes(_request: unknown, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
-    const params = await bsplusApiQueryParams();
-    params.set("type", "betterseqta");
-    params.set("limit", "100");
-    params.set("nocache", String(Date.now()));
-    const apiUrl = `${apiBase()}/api/themes?${params}`;
+    const apiUrl = `${API_BASE}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
     const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -166,10 +139,7 @@ function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: Messa
     const token = await getAccessTokenFromStorage();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    const detailUrl = await withBsplusApiQuery(
-      `${apiBase()}/api/themes/${encodeURIComponent(themeId)}`,
-    );
-    fetch(detailUrl, { cache: "no-store", headers })
+    fetch(`${API_BASE}/api/themes/${themeId}`, { cache: "no-store", headers })
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
@@ -196,6 +166,8 @@ function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
   return false;
 }
 
+const AUTH_FETCH_ORIGINS = [API_BASE, "https://accounts.betterseqta.org"];
+
 function handleFetchFromUrl(
   request: BackgroundRequest,
   sendResponse: MessageSender,
@@ -211,6 +183,10 @@ function handleFetchFromUrl(
     return false;
   }
   if (!isAllowedFetchUrl(url)) {
+    sendResponse({ error: "URL not allowed" });
+    return false;
+  }
+  if (request.auth === true && !AUTH_FETCH_ORIGINS.includes(new URL(url).origin)) {
     sendResponse({ error: "URL not allowed" });
     return false;
   }
@@ -505,7 +481,7 @@ function handleCloudFavorite(request: BackgroundRequest, sendResponse: MessageSe
       return;
     }
     const isFavorite = action === "favorite";
-    fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
+    fetch(`${API_BASE}/api/themes/${themeId}/favorite`, {
       method: isFavorite ? "POST" : "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -537,38 +513,12 @@ function isSeqtaOrigin(origin: string): boolean {
   }
 }
 
-function handleSetDevApiBase(
-  request: BackgroundRequest,
-  _sendResponse: MessageSender,
-  sender?: chrome.runtime.MessageSender,
-): boolean {
-  if (!isTrustedSender(sender)) return false;
-  if (import.meta.env.DEV) {
-    DEV_API_BASE = null;
-    return false;
-  }
-  const url = typeof request?.url === "string" ? request.url.trim() : null;
-  if (url && /^https?:\/\//.test(url)) {
-    DEV_API_BASE = url.replace(/\/$/, "");
-  } else {
-    DEV_API_BASE = null;
-  }
-  return false;
-}
-
-const customThemesHandlers = createCustomThemesHandlers({
-  apiBase,
-  getAccessTokenFromStorage,
-});
-
-const remoteConfigHandlers = createRemoteConfigHandlers(apiBase);
+const customThemesHandlers = createCustomThemesHandlers({ getAccessTokenFromStorage });
 
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   ...customThemesHandlers,
-  ...remoteConfigHandlers,
   searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
-  setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {
     browser.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
@@ -710,14 +660,10 @@ browser.runtime.onInstalled.addListener(function (event) {
 
   if (event.reason === "update" && event.previousVersion) {
     void runStorageMigrations(event.previousVersion);
-    void browser.storage.local.remove(BSPLUS_INSTALL_REGISTERED_AT_KEY).then(() => {
-      void refreshRemoteConfig(apiBase);
-    });
     reloadSeqtaPages();
   }
 
   if (event.reason === "install") {
-    void refreshRemoteConfig(apiBase);
     void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
     void defaultsReady
       .catch(() => undefined)
@@ -734,6 +680,5 @@ browser.runtime.onStartup.addListener(() => {
 });
 
 initCloudSettingsAutoSync({ reloadSeqtaPages });
-initRemoteConfigBackground(apiBase);
 initTimetableClassmatesBackgroundSync();
 void ensureSyncableStorageDefaults();

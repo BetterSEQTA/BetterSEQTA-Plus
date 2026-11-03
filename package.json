@@ -31,7 +31,7 @@
     "test:unit": "cross-env NODE_OPTIONS=--no-experimental-webstorage jest",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:ci": "npm run test:unit && npm run build && npm run test:smoke",
-    "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus ./dist/*.zip --generate-notes",
+    "release": "gh release create $npm_package_version --repo BetterSEQTA/BetterSEQTA-Plus --generate-notes",
     "publish": "node lib/publish.js --b",
     "zip": "node scripts/package-extension-zips.mjs"
   },

@@ -1,5 +1,5 @@
+import { API_BASE } from "@/config/apiBase";
 import { normalizeCustomThemeApiResponse } from "@/seqta/utils/customThemes/parseApiEnvelope";
-import { bsplusApiQueryParams } from "@/seqta/utils/bsplusClientContext";
 import { base64ToBlob } from "@/seqta/utils/base64";
 
 type MessageSender = { (response?: unknown): void };
@@ -33,7 +33,6 @@ function buildFormDataFromPayload(payload: UploadPayload): FormData {
 }
 
 export function createCustomThemesHandlers(deps: {
-  apiBase: () => string;
   getAccessTokenFromStorage: () => Promise<string | null>;
 }): Record<string, (request: Record<string, unknown>, sendResponse: MessageSender) => boolean> {
   async function readCustomThemesResponse(r: Response): Promise<Record<string, unknown>> {
@@ -67,7 +66,7 @@ export function createCustomThemesHandlers(deps: {
       }
       headers.Authorization = `Bearer ${token}`;
     }
-    const url = `${deps.apiBase()}${path}`;
+    const url = `${API_BASE}${path}`;
     const r = await fetch(url, {
       ...init,
       headers,
@@ -85,7 +84,7 @@ export function createCustomThemesHandlers(deps: {
       return { success: false, error: "Not authenticated", httpStatus: 401 };
     }
     const form = buildFormDataFromPayload(payload);
-    const url = `${deps.apiBase()}${path}`;
+    const url = `${API_BASE}${path}`;
     const r = await fetch(url, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
@@ -105,7 +104,6 @@ export function createCustomThemesHandlers(deps: {
         params.set("type", "betterseqta");
         params.set("page", String(request.page ?? 1));
         params.set("limit", String(request.limit ?? 20));
-        (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.sort) params.set("sort", String(request.sort));
         const searchRaw = request.search;
         const search = typeof searchRaw === "string" ? searchRaw.trim() : "";
@@ -134,7 +132,6 @@ export function createCustomThemesHandlers(deps: {
         params.set("page", String(request.page ?? 1));
         params.set("limit", String(request.limit ?? 20));
         params.set("type", "betterseqta");
-        (await bsplusApiQueryParams()).forEach((value, key) => params.set(key, value));
         if (request.status) params.set("status", String(request.status));
         sendResponse(await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true));
       } catch (err) {

@@ -1,7 +1,3 @@
-jest.mock("@/seqta/utils/DevApiBase", () => ({
-  getApiBase: () => "https://example.test",
-}));
-
 import browser from "@/lib/browser";
 import {
   addPendingFeedbackId,

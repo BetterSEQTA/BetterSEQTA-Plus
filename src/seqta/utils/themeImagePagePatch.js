@@ -6,10 +6,7 @@ const PAYLOAD_ID = "bsplus-theme-image-payload";
 const IMAGES_STYLE_ID = "bsplus-theme-images";
 const THEME_STYLE_ID = "custom-theme";
 const PREVIEW_STYLE_ID = "custom-theme-preview";
-const OVERLAY_STYLE_ID = "bsplus-remote-theme-overlay";
-const OVERLAY_IMAGES_STYLE_ID = "bsplus-remote-theme-overlay-images";
 const urlCache = new Set();
-const overlayUrlCache = new Set();
 let headObserver = null;
 
 function log(event, detail) {
@@ -32,13 +29,6 @@ function styleEl(id) {
   return el;
 }
 
-function keepOverlayStylesLast() {
-  for (const id of [OVERLAY_IMAGES_STYLE_ID, OVERLAY_STYLE_ID]) {
-    const el = document.getElementById(id);
-    if (el && document.head.contains(el)) document.head.appendChild(el);
-  }
-}
-
 function keepThemeStyleLast() {
   const themeStyle = document.getElementById(THEME_STYLE_ID);
   if (
@@ -48,7 +38,6 @@ function keepThemeStyleLast() {
   ) {
     document.head.appendChild(themeStyle);
   }
-  keepOverlayStylesLast();
 }
 
 function watchHead() {
@@ -69,10 +58,10 @@ function setStyleText(id, text, watchThemeOrder) {
   }
 }
 
-function applyRootImages(images, styleId, cache, afterApply) {
-  releaseCache(cache);
+function applyThemeImages(images) {
+  releaseCache(urlCache);
   if (!images?.length) {
-    document.getElementById(styleId)?.remove();
+    setStyleText(IMAGES_STYLE_ID, "");
     return;
   }
   const lines = [":root {"];
@@ -80,23 +69,15 @@ function applyRootImages(images, styleId, cache, afterApply) {
     if (!img?.variableName || !img.data) continue;
     try {
       const url = URL.createObjectURL(base64ToBlob(img.data, img.mime || "image/png"));
-      cache.add(url);
+      urlCache.add(url);
       lines.push(`  --${img.variableName}: url("${url}");`);
     } catch (e) {
       console.warn(LOG, "skip image", img.variableName, e);
     }
   }
   lines.push("}");
-  styleEl(styleId).textContent = lines.join("\n");
-  afterApply?.();
-  log("images applied", { styleId, count: images.length });
-}
-
-function clearOverlayOnly() {
-  releaseCache(overlayUrlCache);
-  document.getElementById(OVERLAY_STYLE_ID)?.remove();
-  document.getElementById(OVERLAY_IMAGES_STYLE_ID)?.remove();
-  log("overlay cleared");
+  styleEl(IMAGES_STYLE_ID).textContent = lines.join("\n");
+  log("images applied", { count: images.length });
 }
 
 function clearAll() {
@@ -122,30 +103,11 @@ function processPayload() {
       clearAll();
       return;
     }
-    if (payload.clearOverlay) {
-      clearOverlayOnly();
-      return;
-    }
 
-    if (payload.images !== undefined) {
-      applyRootImages(payload.images, IMAGES_STYLE_ID, urlCache);
-    }
+    if (payload.images !== undefined) applyThemeImages(payload.images);
     if (payload.customCss !== undefined) {
       setStyleText(THEME_STYLE_ID, payload.customCss || "", true);
       log("custom css applied");
-    }
-    if (payload.overlayImages !== undefined) {
-      applyRootImages(
-        payload.overlayImages,
-        OVERLAY_IMAGES_STYLE_ID,
-        overlayUrlCache,
-        keepOverlayStylesLast,
-      );
-    }
-    if (payload.overlayCss !== undefined) {
-      setStyleText(OVERLAY_STYLE_ID, payload.overlayCss || "", false);
-      keepOverlayStylesLast();
-      log("overlay css applied");
     }
     if (payload.previewCss !== undefined) {
       setStyleText(PREVIEW_STYLE_ID, payload.previewCss || "");

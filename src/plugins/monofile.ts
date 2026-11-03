@@ -30,6 +30,7 @@ import {
   updateEngageHomeMenuActive,
 } from "@/seqta/utils/loaders/LoadEngageHomePage";
 import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
 import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/OpenCoursesAssessmentsFixPopup";
 
@@ -196,8 +197,16 @@ function SortMessagePageItems() {
 
 async function LoadPageElements(): Promise<void> {
   await AddBetterSEQTAElements();
-  const { syncRouteEnhancementChrome } = await import("@/seqta/utils/remoteConfig/routeGate");
-  await syncRouteEnhancementChrome();
+  if (!isFeatureDisabled("ui.sidebar.styled")) {
+    void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
+      void mod.applyNativeSidebar();
+    });
+  }
+  if (!isFeatureDisabled("ui.titlebar.custom")) {
+    void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
+      void mod.mountCustomTitleBar();
+    });
+  }
   const sublink: string | undefined = getEngageRoutePage();
 
   if (isSeqtaEngageExperience() && !engageHashListenerAttached) {
@@ -715,17 +724,16 @@ export function init() {
     // Learn only: apply sidebar CSS vars early; Engage keeps its native React menu.
     if (!onLogin && !isSeqtaEngageExperience()) {
       document.documentElement.classList.add("bsplus-custom-title-pending");
-      void import("@/seqta/utils/remoteConfig/routeGate").then(async (gate) => {
-        if (gate.isRemoteRouteEnhancementsStripped()) return;
-        if (gate.remoteChromeGateAllowed("ui.sidebar.styled")) {
-          const mod = await import("@/seqta/ui/sidebar/applyNativeSidebar");
+      if (!isFeatureDisabled("ui.sidebar.styled")) {
+        void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
           mod.prepareNativeSidebarEarly();
-        }
-        if (gate.remoteChromeGateAllowed("ui.titlebar.custom")) {
-          const mod = await import("@/seqta/ui/titlebar/mountCustomTitleBar");
+        });
+      }
+      if (!isFeatureDisabled("ui.titlebar.custom")) {
+        void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
           mod.prepareCustomTitleBarEarly();
-        }
-      });
+        });
+      }
     } else {
       document.documentElement.classList.remove("bsplus-custom-title-pending");
     }
@@ -750,15 +758,7 @@ export function init() {
     });
 
     let hashColorTimer: ReturnType<typeof setTimeout> | null = null;
-    let routeChromeTimer: ReturnType<typeof setTimeout> | null = null;
     window.addEventListener("hashchange", () => {
-      if (routeChromeTimer) clearTimeout(routeChromeTimer);
-      routeChromeTimer = setTimeout(() => {
-        routeChromeTimer = null;
-        void import("@/seqta/utils/remoteConfig/routeGate").then((m) =>
-          m.syncRouteEnhancementChrome(),
-        );
-      }, 120);
       if (!settingsState.adaptiveThemeColour) return;
       if (hashColorTimer) clearTimeout(hashColorTimer);
       hashColorTimer = setTimeout(

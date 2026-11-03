@@ -14,11 +14,7 @@ import { createPluginAPI } from "./createAPI";
 import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
-import { isRemotePluginStartAllowed } from "@/seqta/utils/remoteConfig/runtime";
-import {
-  isRemoteRouteEnhancementsStripped,
-  ROUTE_STRIP_KEEP_PLUGINS,
-} from "@/seqta/utils/remoteConfig/routeGate";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
@@ -194,10 +190,7 @@ export class PluginManager {
     if (settingsState.onoff === false || !isPluginAllowedInPerformanceMode(plugin.id)) {
       return false;
     }
-    if (!isRemotePluginStartAllowed(plugin.id)) {
-      return false;
-    }
-    if (isRemoteRouteEnhancementsStripped() && !ROUTE_STRIP_KEEP_PLUGINS.has(plugin.id)) {
+    if (isFeatureDisabled(`plugin.${plugin.id}`)) {
       return false;
     }
     if (!plugin.disableToggle) return true;
@@ -275,13 +268,6 @@ export class PluginManager {
    */
   public stopAllPlugins(): void {
     Array.from(this.plugins.keys()).forEach((id) => this.stopPlugin(id));
-  }
-
-  public async stopPluginsExcept(keepIds: ReadonlySet<string>): Promise<void> {
-    const stops = Array.from(this.plugins.keys())
-      .filter((id) => !keepIds.has(id))
-      .map((id) => this.stopPlugin(id));
-    await Promise.allSettled(stops);
   }
 
   public getPlugin(pluginId: string): Plugin | undefined {
