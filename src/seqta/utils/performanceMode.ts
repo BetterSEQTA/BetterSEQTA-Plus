@@ -1,4 +1,3 @@
-import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { removeAnimatedBackgroundLayers } from "@/plugins/built-in/animatedBackground/backgroundLayers";
 import { applySidebarLook } from "@/seqta/ui/sidebar/sidebarStyles";
@@ -101,20 +100,6 @@ async function syncPerformanceModePlugins(): Promise<void> {
     if (isPerformanceMode()) {
       removeAnimatedBackgroundLayers();
       window.dispatchEvent(new CustomEvent("betterseqta-background-music-stop"));
-    } else {
-      const searchSettings = await browser.storage.local.get("plugin.global-search.settings");
-      const gs = searchSettings["plugin.global-search.settings"] as
-        | { runIndexingOnLoad?: boolean }
-        | undefined;
-      if (gs?.runIndexingOnLoad && isPluginAllowedInPerformanceMode("global-search")) {
-        const { runIndexing } =
-          await import("@/plugins/built-in/globalSearch/src/indexing/indexer");
-        if (typeof requestIdleCallback === "function") {
-          requestIdleCallback(() => void runIndexing(), { timeout: 5000 });
-        } else {
-          setTimeout(() => void runIndexing(), 2000);
-        }
-      }
     }
   } catch (error) {
     console.warn("[BetterSEQTA+] Performance mode plugin sync failed:", error);
