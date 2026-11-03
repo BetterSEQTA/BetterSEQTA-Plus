@@ -1,3 +1,4 @@
+import { API_BASE } from "@/config/apiBase";
 import { normalizeCustomThemeApiResponse } from "@/seqta/utils/customThemes/parseApiEnvelope";
 import { base64ToBlob } from "@/seqta/utils/base64";
 
@@ -32,7 +33,6 @@ function buildFormDataFromPayload(payload: UploadPayload): FormData {
 }
 
 export function createCustomThemesHandlers(deps: {
-  apiBase: () => string;
   getAccessTokenFromStorage: () => Promise<string | null>;
 }): Record<string, (request: Record<string, unknown>, sendResponse: MessageSender) => boolean> {
   async function readCustomThemesResponse(r: Response): Promise<Record<string, unknown>> {
@@ -66,7 +66,7 @@ export function createCustomThemesHandlers(deps: {
       }
       headers.Authorization = `Bearer ${token}`;
     }
-    const url = `${deps.apiBase()}${path}`;
+    const url = `${API_BASE}${path}`;
     const r = await fetch(url, {
       ...init,
       headers,
@@ -84,7 +84,7 @@ export function createCustomThemesHandlers(deps: {
       return { success: false, error: "Not authenticated", httpStatus: 401 };
     }
     const form = buildFormDataFromPayload(payload);
-    const url = `${deps.apiBase()}${path}`;
+    const url = `${API_BASE}${path}`;
     const r = await fetch(url, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },

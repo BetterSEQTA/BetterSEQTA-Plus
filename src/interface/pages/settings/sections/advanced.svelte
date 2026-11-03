@@ -7,36 +7,10 @@
   import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/openers/OpenThemeOfTheMonthPopup";
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync";
-  import { getStoredOverride, PRODUCTION_API_BASE, setApiBase } from "@/seqta/utils/DevApiBase";
 
-  const isExtensionDevBuild = import.meta.env.DEV;
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
 
   let { searchQuery = "" }: SettingsSectionSharedProps = $props();
-
-  let devApiBaseInput = $state<string>(getStoredOverride() ?? "");
-  let devApiBaseActive = $state<string | null>(getStoredOverride());
-
-  function applyDevApiBase() {
-    const trimmed = devApiBaseInput.trim();
-    if (trimmed === "") {
-      setApiBase(null);
-      devApiBaseActive = null;
-      return;
-    }
-    if (!/^https?:\/\//.test(trimmed)) {
-      alert("Please enter a full URL starting with http:// or https://");
-      return;
-    }
-    setApiBase(trimmed);
-    devApiBaseActive = trimmed.replace(/\/$/, "");
-  }
-
-  function clearDevApiBase() {
-    devApiBaseInput = "";
-    setApiBase(null);
-    devApiBaseActive = null;
-  }
 
   async function exportCloudSettingsJsonToFile() {
     const payload = await getSnapshotForUpload();
@@ -188,43 +162,6 @@
       <div>
         <Button onClick={exportCloudSettingsJsonToFile} text="Export to file" />
       </div>
-    </div>
-    <div class="flex flex-col gap-2 px-4 py-3">
-      <div class="flex justify-between items-start gap-3">
-        <div class="pr-4">
-          <h2 class="text-sm font-bold">API Base URL (session only)</h2>
-          {#if isExtensionDevBuild}
-            <p class="text-xs text-zinc-600 dark:text-zinc-300">
-              Extension dev builds always use production ({PRODUCTION_API_BASE}) for the theme store,
-              community submit, and related APIs. Build a release package to test a staging host override.
-            </p>
-          {:else}
-            <p class="text-xs text-zinc-600 dark:text-zinc-300">
-              Override the content API host for this browser session. Cleared on restart. Affects
-              themes, theme of the month, and other server-driven content.
-            </p>
-            {#if devApiBaseActive}
-              <p class="text-xs mt-1 text-amber-600 dark:text-amber-400">
-                Override active: <span class="font-mono">{devApiBaseActive}</span>
-              </p>
-            {/if}
-          {/if}
-        </div>
-      </div>
-      {#if !isExtensionDevBuild}
-        <div class="flex gap-2 items-center">
-          <input
-            type="text"
-            placeholder="https://betterseqta.org"
-            bind:value={devApiBaseInput}
-            class="flex-1 px-2 py-1 text-xs rounded-sm border bg-white dark:bg-zinc-800 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100"
-          />
-          <Button onClick={applyDevApiBase} text="Apply" />
-          {#if devApiBaseActive}
-            <Button onClick={clearDevApiBase} text="Clear" />
-          {/if}
-        </div>
-      {/if}
     </div>
     <div class="flex flex-col gap-2 px-4 py-3">
       <div>

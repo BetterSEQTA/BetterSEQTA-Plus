@@ -11,7 +11,7 @@ import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import debounce from "@/seqta/utils/debounce";
 import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
-import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { API_BASE } from "@/config/apiBase";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
 import { updateAllColors } from "@/seqta/ui/colors/Manager";
 import {
@@ -544,10 +544,7 @@ export class ThemeManager {
     }
   }
 
-  /** Use a getter so dev-mode session-only base URL overrides take effect immediately. */
-  private get THEME_API_BASE(): string {
-    return `${getApiBase()}/api`;
-  }
+  private readonly THEME_API_BASE = `${API_BASE}/api`;
   private readonly GITHUB_THEMES_BASE =
     "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes";
 

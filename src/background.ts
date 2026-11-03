@@ -19,28 +19,12 @@ import {
   registerOutlookCalendarMessageHandlers,
   type CalendarMessageHandlerMap,
 } from "./background/calendarBackground";
+import { API_BASE } from "./config/apiBase";
 import { createCustomThemesHandlers } from "./background/customThemesHandlers";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 import { runStorageMigrations } from "./background/storageMigrations";
-
-/**
- * Session-only dev-mode override of the content API base.
- *
- * Stored in a module-level variable (not `chrome.storage`) so it is wiped
- * automatically when the browser/service-worker process restarts. Content
- * scripts re-sync this on every page load via `setDevApiBase` so the value
- * survives transient service-worker terminations within the same browser
- * session.
- */
-const DEFAULT_API_BASE = "https://betterseqta.org";
-let DEV_API_BASE: string | null = null;
-function apiBase(): string {
-  // Extension dev builds always hit production (see DevApiBase.ts).
-  if (import.meta.env.DEV) return DEFAULT_API_BASE;
-  return DEV_API_BASE ?? DEFAULT_API_BASE;
-}
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
@@ -106,7 +90,7 @@ function normalizeFetchThemesResponse(json: unknown): {
 function handleFetchThemes(_request: unknown, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
-    const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+    const apiUrl = `${API_BASE}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
     const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -155,7 +139,7 @@ function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: Messa
     const token = await getAccessTokenFromStorage();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
+    fetch(`${API_BASE}/api/themes/${themeId}`, { cache: "no-store", headers })
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
@@ -182,6 +166,8 @@ function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
   return false;
 }
 
+const AUTH_FETCH_ORIGINS = [API_BASE, "https://accounts.betterseqta.org"];
+
 function handleFetchFromUrl(
   request: BackgroundRequest,
   sendResponse: MessageSender,
@@ -197,6 +183,10 @@ function handleFetchFromUrl(
     return false;
   }
   if (!isAllowedFetchUrl(url)) {
+    sendResponse({ error: "URL not allowed" });
+    return false;
+  }
+  if (request.auth === true && !AUTH_FETCH_ORIGINS.includes(new URL(url).origin)) {
     sendResponse({ error: "URL not allowed" });
     return false;
   }
@@ -491,7 +481,7 @@ function handleCloudFavorite(request: BackgroundRequest, sendResponse: MessageSe
       return;
     }
     const isFavorite = action === "favorite";
-    fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
+    fetch(`${API_BASE}/api/themes/${themeId}/favorite`, {
       method: isFavorite ? "POST" : "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -523,35 +513,12 @@ function isSeqtaOrigin(origin: string): boolean {
   }
 }
 
-function handleSetDevApiBase(
-  request: BackgroundRequest,
-  _sendResponse: MessageSender,
-  sender?: chrome.runtime.MessageSender,
-): boolean {
-  if (!isTrustedSender(sender)) return false;
-  if (import.meta.env.DEV) {
-    DEV_API_BASE = null;
-    return false;
-  }
-  const url = typeof request?.url === "string" ? request.url.trim() : null;
-  if (url && /^https?:\/\//.test(url)) {
-    DEV_API_BASE = url.replace(/\/$/, "");
-  } else {
-    DEV_API_BASE = null;
-  }
-  return false;
-}
-
-const customThemesHandlers = createCustomThemesHandlers({
-  apiBase,
-  getAccessTokenFromStorage,
-});
+const customThemesHandlers = createCustomThemesHandlers({ getAccessTokenFromStorage });
 
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   ...customThemesHandlers,
   searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
-  setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {
     browser.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {

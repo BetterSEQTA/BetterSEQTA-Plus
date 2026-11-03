@@ -1,10 +1,6 @@
 /**
  * @jest-environment jsdom
  */
-jest.mock("../DevApiBase", () => ({
-  getApiBase: () => "https://betterseqta.org",
-}));
-
 import {
   getFallbackTermsOfService,
   markTermsOfServiceAccepted,

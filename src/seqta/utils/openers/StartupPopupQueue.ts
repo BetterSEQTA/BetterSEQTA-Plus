@@ -10,7 +10,6 @@ import {
   OpenCoursesAssessmentsFixPopup,
   shouldShowCoursesAssessmentsFixPopup,
 } from "./OpenCoursesAssessmentsFixPopup";
-import { syncApiBaseToBackground } from "../DevApiBase";
 import { cloudAuth } from "../CloudAuth";
 import {
   fetchTermsOfService,
@@ -21,8 +20,6 @@ import {
 type QueueStep = (goNext: () => void) => void;
 
 export async function runStartupPopupQueue() {
-  syncApiBaseToBackground();
-
   const steps: QueueStep[] = [];
 
   if (settingsState.justupdated) {

@@ -480,8 +480,8 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
   if (type == "class") {
     if (programmeID !== 0) {
       lessonString += `
-        <div class="day-button clickable" style="right: 5px;" onclick="location.href='${buildAssessmentURL(programmeID, metaID)}'">${assessmentsicon}</div>
-        <div class="day-button clickable" style="right: 35px;" onclick="location.href='../#?page=/courses/${programmeID}:${metaID}'">${coursesicon}</div>
+        <div class="day-button clickable" style="right: 5px;" data-href="${buildAssessmentURL(programmeID, metaID)}">${assessmentsicon}</div>
+        <div class="day-button clickable" style="right: 35px;" data-href="../#?page=/courses/${programmeID}:${metaID}">${coursesicon}</div>
       `;
     }
 
@@ -489,7 +489,7 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
       const assessmentString = assessments
         .map(
           (element: HomeLessonAssessmentLink) =>
-            `<p onclick="location.href = '${buildAssessmentURL(programmeID, metaID, element.id)}';">${element.title}</p>`,
+            `<p data-href="${buildAssessmentURL(programmeID, metaID, element.id)}">${element.title}</p>`,
         )
         .join("");
 
@@ -506,6 +506,11 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
 
   lessonString += "</div>";
   const element = stringToHTML(lessonString);
+  element.querySelectorAll<HTMLElement>("[data-href]").forEach((el) => {
+    el.addEventListener("click", () => {
+      location.href = el.dataset.href!;
+    });
+  });
   setupFixedTooltips(element);
   return element;
 }

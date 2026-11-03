@@ -1,10 +1,6 @@
 import browser from "@/lib/browser";
 import { fetchThemeOfTheMonth } from "./OpenThemeOfTheMonthPopup";
 
-jest.mock("../DevApiBase", () => ({
-  getApiBase: () => "https://example.test",
-}));
-
 const CACHE_KEY = "bsplus_theme_of_the_month_cache";
 
 const sampleEntry = {

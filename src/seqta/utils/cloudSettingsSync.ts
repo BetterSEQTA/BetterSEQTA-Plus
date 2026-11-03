@@ -88,7 +88,6 @@ const OMIT_FROM_UPLOAD_EXACT = new Set<string>([
   "devMode",
   "devGhReleaseVersionOverride",
   "devDelayLoadingScreen",
-  "bsplus_dev_api_base",
   "bsplus_dev_accounts_base",
   "bsplus_dev_oauth_client_id",
   "bsplus_dev_oauth_client_secret",

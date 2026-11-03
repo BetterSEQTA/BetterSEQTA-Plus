@@ -2,9 +2,6 @@
 import { OpenThemeOfTheMonthPopup } from "./OpenThemeOfTheMonthPopup";
 import { settingsState } from "../listeners/SettingsState";
 
-jest.mock("../DevApiBase", () => ({
-  getApiBase: () => "https://example.test",
-}));
 jest.mock("./PopupManager", () => ({ closePopup: jest.fn() }));
 jest.mock("../listeners/SettingsState", () => ({
   settingsState: { animations: false },

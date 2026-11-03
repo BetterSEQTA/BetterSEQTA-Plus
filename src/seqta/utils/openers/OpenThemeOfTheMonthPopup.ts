@@ -2,7 +2,7 @@ import browser from "@/lib/browser";
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { closePopup } from "./PopupManager";
-import { getApiBase } from "../DevApiBase";
+import { API_BASE } from "@/config/apiBase";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
 import type { Theme } from "@/interface/types/Theme";
 import { buildModalHeroSlides, normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
@@ -58,7 +58,7 @@ async function writeCachedThemeOfTheMonth(entry: ThemeOfTheMonthEntry): Promise<
  */
 export async function fetchThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | null> {
   try {
-    const res = await fetch(`${getApiBase()}/api/theme-of-the-month/current`, {
+    const res = await fetch(`${API_BASE}/api/theme-of-the-month/current`, {
       cache: "no-store",
       signal: AbortSignal.timeout(TOTM_FETCH_TIMEOUT_MS),
     });

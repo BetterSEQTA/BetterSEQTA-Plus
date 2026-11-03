@@ -1,5 +1,5 @@
 import browser from "@/lib/browser";
-import { getApiBase } from "@/seqta/utils/DevApiBase";
+import { API_BASE } from "@/config/apiBase";
 import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -115,7 +115,7 @@ function channel(): FeedbackChannel {
 
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   try {
-    return await fetch(`${getApiBase()}${path}`, {
+    return await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: { Accept: "application/json", ...init?.headers },
     });

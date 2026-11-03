@@ -17,9 +17,6 @@ jest.mock("@/seqta/utils/listeners/SettingsState", () => ({
 jest.mock("@/seqta/utils/performanceMode", () => ({
   fullMotionEffectsEnabled: () => false,
 }));
-jest.mock("@/seqta/utils/DevApiBase", () => ({
-  getApiBase: () => "https://betterseqta.org",
-}));
 jest.mock("@/seqta/ui/colors/Manager", () => ({ updateAllColors: jest.fn() }));
 jest.mock("@/seqta/ui/colors/customThemeAdaptiveBindings", () => ({}));
 jest.mock("@/seqta/utils/patchThemeImagesPageContext", () => ({}));
