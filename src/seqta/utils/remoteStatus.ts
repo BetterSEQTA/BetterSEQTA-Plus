@@ -4,20 +4,27 @@ export type RemoteStatus = {
   off: boolean;
   message: string | null;
   disabledFeatures: string[];
+  sites: Record<string, string[]>;
 };
 
 const STATUS_URL =
   "https://raw.githubusercontent.com/BetterSEQTA/BS-Status/main/config/status.json";
 export const REMOTE_STATUS_KEY = "bsplus_remote_status";
 
+function stringList(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((key): key is string => typeof key === "string") : [];
+}
+
 export function normalizeRemoteStatus(raw: unknown): RemoteStatus {
   const r = (raw && typeof raw === "object" ? raw : {}) as Record<string, unknown>;
+  const sites = r.sites && typeof r.sites === "object" ? r.sites : {};
   return {
     off: r.off === true,
     message: typeof r.message === "string" && r.message.trim() ? r.message : null,
-    disabledFeatures: Array.isArray(r.disabledFeatures)
-      ? r.disabledFeatures.filter((key): key is string => typeof key === "string")
-      : [],
+    disabledFeatures: stringList(r.disabledFeatures),
+    sites: Object.fromEntries(
+      Object.entries(sites).map(([host, keys]) => [host.toLowerCase(), stringList(keys)]),
+    ),
   };
 }
 
@@ -30,7 +37,9 @@ let status = normalizeRemoteStatus(null);
 
 export const getRemoteStatus = (): RemoteStatus => status;
 
-export const isFeatureDisabled = (key: string): boolean => status.disabledFeatures.includes(key);
+export const isFeatureDisabled = (key: string): boolean =>
+  status.disabledFeatures.includes(key) ||
+  !!status.sites[location.hostname.toLowerCase()]?.includes(key);
 
 export async function loadRemoteStatus(): Promise<void> {
   status = await readRemoteStatus();

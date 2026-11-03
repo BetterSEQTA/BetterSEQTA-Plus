@@ -2,7 +2,7 @@ import { normalizeRemoteStatus } from "./remoteStatus";
 
 describe("normalizeRemoteStatus", () => {
   it("falls back to working defaults for missing or malformed data", () => {
-    const defaults = { off: false, message: null, disabledFeatures: [] };
+    const defaults = { off: false, message: null, disabledFeatures: [], sites: {} };
     expect(normalizeRemoteStatus(null)).toEqual(defaults);
     expect(
       normalizeRemoteStatus({ off: "yes", message: 4, disabledFeatures: "page.news" }),
@@ -15,7 +15,13 @@ describe("normalizeRemoteStatus", () => {
         off: true,
         message: "Back soon",
         disabledFeatures: ["page.news", 1],
+        sites: { "Learn.School.edu.au": ["plugin.timetable-classmates", 2] },
       }),
-    ).toEqual({ off: true, message: "Back soon", disabledFeatures: ["page.news"] });
+    ).toEqual({
+      off: true,
+      message: "Back soon",
+      disabledFeatures: ["page.news"],
+      sites: { "learn.school.edu.au": ["plugin.timetable-classmates"] },
+    });
   });
 });
