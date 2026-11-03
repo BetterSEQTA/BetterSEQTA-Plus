@@ -17,8 +17,6 @@ export function addShortcuts(shortcuts: Shortcut[]) {
           linkDetails.viewBox,
           linkDetails.DisplayName || currentShortcut?.name,
         );
-      } else {
-        console.warn(`No link details found for '${Itemname}'`);
       }
     }
   }

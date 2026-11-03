@@ -488,13 +488,13 @@ Keys (from `SettingsState`):
 
 #### `shortcuts`
 
-|                |                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------- |
-| **Type**       | `array`                                                                               |
-| **Default**    | Outlook, Office, Google — each `enabled: true`                                        |
-| **UI**         | Settings → Shortcuts                                                                  |
-| **Item shape** | `{ "name": string, "enabled": boolean }`                                              |
-| **Notes**      | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"YouTube"`) |
+|                |                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Type**       | `array`                                                                              |
+| **Default**    | Outlook, Office, Google — each `enabled: true`                                       |
+| **UI**         | Settings → Shortcuts                                                                 |
+| **Item shape** | `{ "name": string, "enabled": boolean }`                                             |
+| **Notes**      | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"Google"`) |
 
 **Example:**
 

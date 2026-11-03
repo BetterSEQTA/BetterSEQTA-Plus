@@ -7,10 +7,10 @@ import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
-import darkLogo from "@/resources/icons/betterseqta-light-full.png";
-import lightLogo from "@/resources/icons/betterseqta-dark-full.png";
-import darkIcon from "@/resources/icons/betterseqta-light-icon.png";
-import lightIcon from "@/resources/icons/betterseqta-dark-icon.png";
+import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
+import lightLogo from "@/resources/icons/betterseqta-light-full.png";
+import darkIcon from "@/resources/icons/betterseqta-dark-icon.png";
+import lightIcon from "@/resources/icons/betterseqta-light-icon.png";
 
 const ADAPTIVE_THEME_TRANSITION_MS = 400;
 const LOGO_STYLE_ID = "bsplus-logo-style";
@@ -84,8 +84,8 @@ function cancelColorTransition() {
 
 /** Chromium does not always resolve extension URLs inside CSS variables on ::before. */
 function applyBetterseqtaLogoBackground(isDark: boolean) {
-  const fullUrl = resolveExtensionAssetUrl(isDark ? darkLogo : lightLogo);
-  const iconUrl = resolveExtensionAssetUrl(isDark ? darkIcon : lightIcon);
+  const fullUrl = resolveExtensionAssetUrl(isDark ? lightLogo : darkLogo);
+  const iconUrl = resolveExtensionAssetUrl(isDark ? lightIcon : darkIcon);
   let styleEl = document.getElementById(LOGO_STYLE_ID);
   if (!styleEl) {
     styleEl = document.createElement("style");
@@ -136,11 +136,11 @@ function applyColorsWith(selectedColor: string) {
   // Mode-based properties, applied if storedSetting is provided
   const modeProps = settingsState.DarkMode
     ? {
-        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(darkLogo)})`,
+        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(lightLogo)})`,
       }
     : {
         "--better-pale": lightenAndPaleColor(selectedColor),
-        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(lightLogo)})`,
+        "--betterseqta-logo": `url(${resolveExtensionAssetUrl(darkLogo)})`,
       };
 
   if (settingsState.DarkMode) {

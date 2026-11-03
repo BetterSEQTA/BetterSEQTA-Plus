@@ -3,6 +3,7 @@ import stringToHTML from "./stringToHTML";
 import { delay } from "./delay";
 import { settingsState } from "./listeners/SettingsState";
 import browser from "@/lib/browser";
+import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
@@ -80,7 +81,7 @@ export async function SendNewsPage() {
     const emptyState = document.createElement("div");
     emptyState.classList.add("day-empty");
     const img = document.createElement("img");
-    img.src = resolveExtensionAssetUrl(LogoLightOutline);
+    img.src = resolveExtensionAssetUrl(LogoLight);
     const text = document.createElement("p");
     text.innerText = "No news articles available right now.";
     emptyState.append(img, text);

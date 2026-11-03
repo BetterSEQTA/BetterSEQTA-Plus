@@ -2,6 +2,9 @@ import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/SettingsState";
 import { openPopup } from "./PopupManager";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";
+import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
+import brandingDark from "@/resources/branding/dark.jpg";
+import brandingLight from "@/resources/branding/light.jpg";
 
 export function OpenAboutPage() {
   const header = stringToHTML(
@@ -14,7 +17,7 @@ export function OpenAboutPage() {
 
   const text = stringToHTML(/* html */ `
       <div class="whatsnewTextContainer" style="overflow-y: hidden;">
-        <img src="${settingsState.DarkMode ? "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/dark.jpg" : "https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Plus/main/src/resources/branding/light.jpg"}" class="aboutImg" />
+        <img src="${resolveExtensionAssetUrl(settingsState.DarkMode ? brandingDark : brandingLight)}" class="aboutImg" alt="BetterSEQTA+" />
         <p>BetterSEQTA+ is a fork of BetterSEQTA (originally developed by Nulkem), which was discontinued. BetterSEQTA+ continued development of BetterSEQTA, while incorporating a plethora of features. </p>
         <p>We are currently working on fixing bugs and adding useful features. If you want to make a feature request or report a bug, you can do so on GitHub (find icon below). We are always looking for more contributors!</p>
         <h1>Credits:</h1>
