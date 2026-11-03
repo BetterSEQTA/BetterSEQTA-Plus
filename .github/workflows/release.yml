@@ -1,0 +1,120 @@
+name: Publish Stores
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: store-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.event_name == 'workflow_dispatch' || !github.event.release.prerelease
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    outputs:
+      publisher_version: ${{ steps.publisher.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check release version
+        if: github.event_name == 'release'
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: test "${RELEASE_TAG#v}" = "$(node -p "require('./package.json').version")"
+
+      - name: Build store packages
+        id: build
+        uses: ./.github/actions/build-extension
+        with:
+          include_sources: "true"
+
+      - name: Check build
+        run: npm run lint && npm run test:unit && npm run test:smoke
+
+      - name: Verify Firefox source rebuild
+        env:
+          SOURCES_ZIP: ${{ steps.build.outputs.sources_zip }}
+        run: |
+          mkdir "$RUNNER_TEMP/source-rebuild"
+          tar -xf "$SOURCES_ZIP" -C "$RUNNER_TEMP/source-rebuild"
+          cd "$RUNNER_TEMP/source-rebuild"
+          npm ci
+          npm run build:firefox
+          diff -qr "$GITHUB_WORKSPACE/dist/firefox" dist/firefox
+
+      - name: Record publisher version and package checksums
+        id: publisher
+        run: |
+          echo "version=$(node -p "require('./node_modules/publish-browser-extension/package.json').version")" >> "$GITHUB_OUTPUT"
+          echo "Commit: $GITHUB_SHA" >> "$GITHUB_STEP_SUMMARY"
+          sha256sum dist/*.zip | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: store-packages
+          path: dist/*.zip
+          if-no-files-found: error
+
+      - name: Attach packages to release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: gh release upload "$RELEASE_TAG" dist/*.zip --clobber
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: store-publishing
+    strategy:
+      fail-fast: false
+      matrix:
+        store: [chrome, firefox]
+    env:
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26.x
+
+      - uses: actions/download-artifact@v8
+        with:
+          name: store-packages
+          path: dist
+
+      - name: Install publisher without lifecycle scripts
+        env:
+          PUBLISHER_VERSION: ${{ needs.build.outputs.publisher_version }}
+        run: npm install --prefix "$RUNNER_TEMP/publisher" --ignore-scripts --no-audit --no-fund "publish-browser-extension@$PUBLISHER_VERSION"
+
+      - name: Submit Chrome
+        if: matrix.store == 'chrome'
+        env:
+          CHROME_API_VERSION: v2
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
+          CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL: ${{ secrets.CHROME_SERVICE_ACCOUNT_CLIENT_EMAIL }}
+          CHROME_SERVICE_ACCOUNT_PRIVATE_KEY: ${{ secrets.CHROME_SERVICE_ACCOUNT_PRIVATE_KEY }}
+        run: '"$RUNNER_TEMP/publisher/node_modules/.bin/publish-extension" --chrome-zip dist/*-chrome.zip --dry-run "$DRY_RUN"'
+
+      - name: Submit Firefox with sources
+        if: matrix.store == 'firefox'
+        env:
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          FIREFOX_CHANNEL: listed
+        run: '"$RUNNER_TEMP/publisher/node_modules/.bin/publish-extension" --firefox-zip dist/*-firefox.zip --firefox-sources-zip dist/*-sources.zip --dry-run "$DRY_RUN"'
