@@ -26,9 +26,11 @@ function zipDirectory(sourceRel, outRel) {
   if (existsSync(outZip)) unlinkSync(outZip);
 
   if (process.platform === "win32") {
-    execFileSync("tar", ["-a", "-cf", outZip, "-C", sourceDir, "--", ...readdirSync(sourceDir)], {
-      stdio: "inherit",
-    });
+    execFileSync(
+      join(process.env.SystemRoot, "System32", "tar.exe"),
+      ["-a", "-cf", outZip, "-C", sourceDir, "--", ...readdirSync(sourceDir)],
+      { stdio: "inherit" },
+    );
   } else {
     execFileSync("zip", ["-r", "-q", outZip, "."], { cwd: sourceDir, stdio: "inherit" });
   }

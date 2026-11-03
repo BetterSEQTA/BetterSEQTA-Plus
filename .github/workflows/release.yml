@@ -48,7 +48,7 @@ jobs:
           SOURCES_ZIP: ${{ steps.build.outputs.sources_zip }}
         run: |
           mkdir "$RUNNER_TEMP/source-rebuild"
-          tar -xf "$SOURCES_ZIP" -C "$RUNNER_TEMP/source-rebuild"
+          powershell -NoProfile -Command 'Expand-Archive -LiteralPath $env:SOURCES_ZIP -DestinationPath "$env:RUNNER_TEMP/source-rebuild"'
           cd "$RUNNER_TEMP/source-rebuild"
           npm ci
           npm run build:firefox
