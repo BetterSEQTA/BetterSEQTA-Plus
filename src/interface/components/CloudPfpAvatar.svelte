@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
+  import { resolveCloudPfp, defaultAccountsPfpUrl, revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
   import type { CloudUser } from "@/seqta/utils/CloudAuth";
 
   const { user, class: className = "" }: {
@@ -7,36 +7,24 @@
     class?: string;
   } = $props();
 
-  let avatarSrc = $state<string | undefined>(undefined);
-  let revokeUrl: string | undefined;
+  let avatarSrc = $state<string | null>(null);
 
   $effect(() => {
     const u = user;
-    if (revokeUrl) {
-      URL.revokeObjectURL(revokeUrl);
-      revokeUrl = undefined;
-    }
-    avatarSrc = undefined;
-
+    avatarSrc = null;
     if (!u?.id) return;
 
-    const pfpUrl = u.pfpUrl ?? defaultAccountsPfpUrl(u.id);
-
     let cancelled = false;
-    void resolveCloudPfp(u.id, pfpUrl).then((resolved) => {
-      if (cancelled || !resolved) return;
-      if (resolved.fromCache) {
-        revokeUrl = resolved.src;
-      }
-      avatarSrc = resolved.src;
+    let resolved: string | null = null;
+    void resolveCloudPfp(u.id, u.pfpUrl ?? defaultAccountsPfpUrl(u.id)).then((src) => {
+      resolved = src;
+      if (cancelled) return revokePfpUrl(src);
+      avatarSrc = src;
     });
 
     return () => {
       cancelled = true;
-      if (revokeUrl) {
-        URL.revokeObjectURL(revokeUrl);
-        revokeUrl = undefined;
-      }
+      revokePfpUrl(resolved);
     };
   });
 </script>
