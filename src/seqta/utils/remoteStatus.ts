@@ -10,6 +10,9 @@ export type RemoteStatus = {
 const STATUS_URL =
   "https://raw.githubusercontent.com/BetterSEQTA/BS-Status/main/config/status.json";
 export const REMOTE_STATUS_KEY = "bsplus_remote_status";
+const PAUSE_CHOICE_KEY = "bsplus_pause_choice";
+
+type PauseChoice = { message: string; runAnyway: boolean };
 
 function stringList(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((key): key is string => typeof key === "string") : [];
@@ -34,6 +37,9 @@ export async function readRemoteStatus(): Promise<RemoteStatus> {
 }
 
 let status = normalizeRemoteStatus(null);
+let pauseChoice: PauseChoice | null = null;
+
+export const pauseMessage = (): string => status.message ?? "BetterSEQTA+ is paused for now.";
 
 export const getRemoteStatus = (): RemoteStatus => status;
 
@@ -41,8 +47,22 @@ export const isFeatureDisabled = (key: string): boolean =>
   status.disabledFeatures.includes(key) ||
   !!status.sites[location.hostname.toLowerCase()]?.includes(key);
 
+const currentPauseChoice = (): PauseChoice | null =>
+  status.off && pauseChoice?.message === pauseMessage() ? pauseChoice : null;
+
+export const isPaused = (): boolean => status.off && !currentPauseChoice()?.runAnyway;
+
+export const hasSeenPause = (): boolean => currentPauseChoice() !== null;
+
+export async function choosePause(runAnyway: boolean): Promise<void> {
+  pauseChoice = { message: pauseMessage(), runAnyway };
+  await browser.storage.local.set({ [PAUSE_CHOICE_KEY]: pauseChoice });
+}
+
 export async function loadRemoteStatus(): Promise<void> {
   status = await readRemoteStatus();
+  const stored = await browser.storage.local.get(PAUSE_CHOICE_KEY);
+  pauseChoice = (stored[PAUSE_CHOICE_KEY] as PauseChoice | undefined) ?? null;
 }
 
 export async function refreshRemoteStatus(): Promise<void> {

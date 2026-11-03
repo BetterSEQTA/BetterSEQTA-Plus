@@ -9,7 +9,13 @@ import { initializeHideSensitiveToggle } from "@/seqta/utils/hideSensitiveToggle
 import { installSeqtaMenuColourPatch } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 import { installThemeImagePagePatch } from "@/seqta/utils/patchThemeImagesPageContext";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
-import { getRemoteStatus, loadRemoteStatus, refreshRemoteStatus } from "@/seqta/utils/remoteStatus";
+import {
+  hasSeenPause,
+  isPaused,
+  loadRemoteStatus,
+  refreshRemoteStatus,
+} from "@/seqta/utils/remoteStatus";
+import { showPauseNotice } from "@/seqta/utils/pauseNotice";
 import { ensureSettingsAccess } from "@/seqta/utils/ensureSettingsAccess";
 import { recoverFromStaleDevModuleGraph } from "@/seqta/devModuleGraphRecovery";
 
@@ -98,7 +104,7 @@ async function init() {
       await loadRemoteStatus();
       void refreshRemoteStatus();
 
-      if (settingsState.onoff !== false && !getRemoteStatus().off) {
+      if (settingsState.onoff !== false && !isPaused()) {
         await main();
 
         const { init: Monofile } = await import("@/plugins/monofile");
@@ -110,6 +116,7 @@ async function init() {
         }
       } else {
         await ensureSettingsAccess();
+        if (settingsState.onoff !== false && !hasSeenPause()) showPauseNotice();
       }
 
       if (settingsState.devMode) {
