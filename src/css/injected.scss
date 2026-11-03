@@ -258,7 +258,20 @@ html:not(.dark) .legacy-root {
   height: 35px;
   width: 35px !important;
   padding: 0;
-  box-shadow: none;
+}
+.addedButton,
+.connectedNotificationsWrapper > div > button {
+  border: none !important;
+  box-shadow: none !important;
+
+  &::after {
+    content: none !important;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--better-main);
+    outline-offset: 2px;
+  }
 }
 
 /* Engage toolbar: keep settings/theme buttons above React chrome */
