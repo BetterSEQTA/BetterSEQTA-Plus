@@ -1,25 +1,23 @@
-import { defineConfig, loadEnv } from "vite";
-import { join, resolve } from "path";
+import { defaultClientConditions, defineConfig, loadEnv } from "vite";
+import { join, resolve } from "node:path";
 
-import touchGlobalCSSPlugin from "./lib/touchGlobalCSS";
-import InlineWorkerPlugin from "./lib/inlineWorker";
-import { base64Loader } from "./lib/base64loader";
-import type { BuildTarget, Manifest } from "./lib/types";
-import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload";
-import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr";
-import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe";
-import { extensionChunkUrls } from "./lib/extensionChunkUrls";
-import dedupePublicAssets from "./lib/dedupePublicAssets";
+import InlineWorkerPlugin from "./lib/inlineWorker.ts";
+import { base64Loader } from "./lib/base64loader.ts";
+import type { BuildTarget, Manifest } from "./lib/types.ts";
+import fixCrxWorkerLiveReload from "./lib/fixCrxWorkerLiveReload.ts";
+import stabilizeCrxDevHmr from "./lib/stabilizeCrxDevHmr.ts";
+import { firefoxStripFunctionProbe } from "./lib/firefoxStripFunctionProbe.ts";
+import { extensionChunkUrls } from "./lib/extensionChunkUrls.ts";
 
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 
-import { chrome } from "./src/manifests/chrome";
-import { brave } from "./src/manifests/brave";
-import { edge } from "./src/manifests/edge";
-import { firefox } from "./src/manifests/firefox";
-import { opera } from "./src/manifests/opera";
-import { safari } from "./src/manifests/safari";
-import { crx } from "@crxjs/vite-plugin";
+import { chrome } from "./src/manifests/chrome.ts";
+import { brave } from "./src/manifests/brave.ts";
+import { edge } from "./src/manifests/edge.ts";
+import { firefox } from "./src/manifests/firefox.ts";
+import { opera } from "./src/manifests/opera.ts";
+import { safari } from "./src/manifests/safari.ts";
+import { crx, type CrxPlugin } from "@crxjs/vite-plugin";
 
 const targets: BuildTarget[] = [chrome, brave, edge, firefox, opera, safari];
 
@@ -42,10 +40,7 @@ function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
     content_security_policy: {
       ...manifest.content_security_policy,
       extension_pages: extensionPages
-        .replace(
-          "script-src 'self'",
-          `script-src 'self' ${localhost} ${loopback}`,
-        )
+        .replace("script-src 'self'", `script-src 'self' ${localhost} ${loopback}`)
         .replace(
           /connect-src ([^;]+)/,
           `connect-src $1 ${localhost} ${localhostWs} ${loopback} ${loopbackWs}`,
@@ -54,129 +49,119 @@ function withDevManifestCsp(manifest: Manifest, command: string): Manifest {
   };
 }
 
-const mode = process.env.MODE || "chrome"; // Check the environment variable to determine which build type to use.
-//const sourcemap = (process.env.SOURCEMAP === "true") || false; // Check whether we want sourcemaps.
-const repoRoot = __dirname;
+const mode = process.env.MODE || "chrome";
+const repoRoot = import.meta.dirname;
 
 export default defineConfig(({ command, mode: viteMode }) => {
   // `.env` lives at repo root (not `src/`). Required for `npm run dev` and builds.
   const env = loadEnv(viteMode, repoRoot, "");
 
   return {
-  base: command === "build" ? "./" : "/",
-  define: {
-    __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(
-      process.env.GH_RELEASE_UPDATE_CHECK === "true",
-    ),
-    __GH_RELEASE_REPO__: JSON.stringify(
-      process.env.GH_RELEASE_REPO ?? "BetterSEQTA/BetterSEQTA-Plus",
-    ),
-    __UPDATE_CHANNEL__: JSON.stringify(process.env.UPDATE_CHANNEL ?? "stable"),
-    __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
-    __GOOGLE_OAUTH_CLIENT_ID__: JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID ?? ""),
-    __OUTLOOK_OAUTH_CLIENT_ID__: JSON.stringify(env.OUTLOOK_OAUTH_CLIENT_ID ?? ""),
-  },
-  envDir: repoRoot,
-  plugins: [
-    svelte({
-      emitCss: false,
-      configFile: join(__dirname, "src", "svelte.config.js"),
-    }),
-    extensionChunkUrls(),
-    base64Loader,
-    InlineWorkerPlugin(),
-    crx({
-      manifest: withDevManifestCsp(
-        targets.find((t) => t.browser === mode.toLowerCase())?.manifest ??
-          chrome.manifest,
-        command,
+    base: command === "build" ? "./" : "/",
+    define: {
+      __ENABLE_GH_RELEASE_UPDATE_CHECK__: JSON.stringify(
+        process.env.GH_RELEASE_UPDATE_CHECK === "true",
       ),
-      browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
-    }),
-    fixCrxWorkerLiveReload(),
-    stabilizeCrxDevHmr(),
-    touchGlobalCSSPlugin(),
-    ...(command === "build"
-      ? [
-          dedupePublicAssets(),
-          firefoxStripFunctionProbe(),
-        ]
-      : []),
-  ],
-  root: resolve(__dirname, "./src"),
-  resolve: {
-    alias: {
-      "@": resolve(__dirname, "./src"),
+      __GH_RELEASE_REPO__: JSON.stringify(
+        process.env.GH_RELEASE_REPO ?? "BetterSEQTA/BetterSEQTA-Plus",
+      ),
+      __UPDATE_CHANNEL__: JSON.stringify(process.env.UPDATE_CHANNEL ?? "stable"),
+      __BUILD_LABEL__: JSON.stringify(process.env.BUILD_LABEL ?? ""),
+      __GOOGLE_OAUTH_CLIENT_ID__: JSON.stringify(env.GOOGLE_OAUTH_CLIENT_ID ?? ""),
+      __OUTLOOK_OAUTH_CLIENT_ID__: JSON.stringify(env.OUTLOOK_OAUTH_CLIENT_ID ?? ""),
     },
-    dedupe: [
-      "@huggingface/transformers",
-      "onnxruntime-common",
-      "onnxruntime-web",
+    envDir: repoRoot,
+    plugins: [
+      svelte({
+        emitCss: false,
+        configFile: join(repoRoot, "src", "svelte.config.js"),
+      }),
+      extensionChunkUrls(),
+      base64Loader,
+      InlineWorkerPlugin(),
+      crx({
+        manifest: withDevManifestCsp(
+          targets.find((t) => t.browser === mode.toLowerCase())?.manifest ?? chrome.manifest,
+          command,
+        ),
+        browser: mode.toLowerCase() === "firefox" ? "firefox" : "chrome",
+      }),
+      fixCrxWorkerLiveReload(),
+      stabilizeCrxDevHmr(),
+      ...(command === "build" ? [firefoxStripFunctionProbe()] : []),
+      {
+        name: "stable-manifest-resources",
+        enforce: "post",
+        renderCrxManifest(manifest) {
+          for (const group of manifest.web_accessible_resources ?? []) group.resources.sort();
+          return manifest;
+        },
+      } satisfies CrxPlugin,
     ],
-  },
-  server: {
-    port: DEV_SERVER_PORT,
-    strictPort: true,
-    hmr: {
-      host: "localhost",
-      protocol: "ws",
-      port: DEV_SERVER_PORT,
-    },
-  },
-  css: {
-    preprocessorOptions: {
-      scss: {},
-    },
-  },
-  optimizeDeps: {
-    include: [
-      "@babel/runtime/helpers/extends",
-      "@babel/runtime/helpers/interopRequireDefault",
-      "layerchart",
-      "d3-scale",
-      "d3-shape",
-      "d3-array",
-      "d3-format",
-      "d3-time",
-    ],
-  },
-  legacy: {
-    skipWebSocketTokenCheck: true,
-  },
-  worker: {
-    format: "es",
-  },
-  build: {
-    outDir: resolve(__dirname, "dist", mode),
-    emptyOutDir: true,
-    minify: true,
-    //sourcemap: sourcemap,
-    chunkSizeWarningLimit: 4000,
-    rollupOptions: {
-      input: {
-        settings: join(__dirname, "src", "interface", "index.html"),
-        pageState: join(__dirname, "src", "pageState.js"),
+    root: resolve(repoRoot, "./src"),
+    resolve: {
+      alias: {
+        "@": resolve(repoRoot, "./src"),
       },
-      output: {
-        assetFileNames: "assets/[name]-[hash][extname]",
-        manualChunks(id) {
-          const normalized = id.replace(/\\/g, "/");
-          // Keep the Svelte mount helper out of the settings entry chunk so
-          // content-script `import("@/interface/main")` does not execute
-          // settings-page bootstrap (which requires #app).
-          if (
-            normalized.endsWith("/interface/main.ts") ||
-            normalized.endsWith("/interface/main.js")
-          ) {
-            return "interface-main";
-          }
+      conditions: ["onnxruntime-web-use-extern-wasm", ...defaultClientConditions],
+      dedupe: ["@huggingface/transformers", "onnxruntime-common", "onnxruntime-web"],
+    },
+    server: {
+      port: DEV_SERVER_PORT,
+      strictPort: true,
+      hmr: {
+        host: "localhost",
+        protocol: "ws",
+        port: DEV_SERVER_PORT,
+      },
+    },
+    css: {
+      preprocessorOptions: {
+        scss: {},
+      },
+    },
+    optimizeDeps: {
+      include: ["layerchart", "d3-scale", "d3-shape", "d3-array", "d3-format", "d3-time"],
+    },
+    legacy: {
+      skipWebSocketTokenCheck: true,
+    },
+    worker: {
+      format: "es",
+    },
+    build: {
+      outDir: resolve(repoRoot, "dist", mode),
+      emptyOutDir: true,
+      minify: true,
+      chunkSizeWarningLimit: 4000,
+      rollupOptions: {
+        input: {
+          settings: join(repoRoot, "src", "interface", "index.html"),
+          pageState: join(repoRoot, "src", "pageState.js"),
+        },
+        output: {
+          assetFileNames: "assets/[name]-[hash][extname]",
+          // Extension packages are versioned; stable chunk names keep source rebuilds identical.
+          entryFileNames: "assets/[name].js",
+          chunkFileNames: "assets/[name].js",
+          manualChunks(id) {
+            const normalized = id.replace(/\\/g, "/");
+            // Keep the Svelte mount helper out of the settings entry chunk so
+            // content-script `import("@/interface/main")` does not execute
+            // settings-page bootstrap (which requires #app).
+            if (
+              normalized.endsWith("/interface/main.ts") ||
+              normalized.endsWith("/interface/main.js")
+            ) {
+              return "interface-main";
+            }
+          },
+        },
+        onwarn(warning, warn) {
+          if (warning.code === "FILE_NAME_CONFLICT") return;
+          warn(warning);
         },
       },
-      onwarn(warning, warn) {
-        if (warning.code === "FILE_NAME_CONFLICT") return;
-        warn(warning);
-      },
     },
-  },
-};
+  };
 });

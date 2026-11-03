@@ -12,7 +12,7 @@
   import { syncPageThemeToElement } from "@/interface/utils/syncPageTheme";
   import fontPickerStyles from "./fontPickerModal.css?inline";
 
-  let { hidePicker } = $props<{ hidePicker: () => void }>();
+  let { hidePicker }: { hidePicker: () => void } = $props();
 
   let rootEl = $state<HTMLElement | null>(null);
   let selectedId = $state(getFontPreset($settingsState.selectedFont).id);
@@ -87,6 +87,7 @@
     onclick={(event) => event.stopPropagation()}
     onkeydown={(event) => event.stopPropagation()}
     role="dialog"
+    tabindex="-1"
     aria-modal="true"
     aria-labelledby="font-picker-title"
   >

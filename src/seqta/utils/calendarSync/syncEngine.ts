@@ -1,7 +1,7 @@
 import { isGoogleCalendarConfigured } from "@/config/googleCalendar";
 import { isOutlookCalendarConfigured } from "@/config/outlookCalendar";
 import { getSyncWeeksAhead } from "@/seqta/utils/calendarSync/settings";
-import { eventMapKey } from "@/seqta/utils/calendarSync/eventMap";
+import { eventMapKey, normalizeEventMapEntry } from "@/seqta/utils/calendarSync/eventMap";
 import type { EventMapRecord } from "@/seqta/utils/calendarSync/eventMap";
 import {
   buildDeleteSyncResult,
@@ -18,6 +18,7 @@ import {
   reportSyncProgress,
   upsertLessonEvents,
 } from "@/seqta/utils/calendarSync/lessonSyncShared";
+import { mapAssessmentsToGoogleEvents } from "@/seqta/utils/googleCalendar/eventMapper";
 import {
   deleteGoogleCalendarEvent,
   deleteOutlookCalendarEvent,
@@ -39,6 +40,7 @@ import {
   writeGoogleCalendarState,
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
+  isDateInRange,
   syncWindowRange,
   trailingWeekRange,
   wideCleanupRange,
@@ -171,7 +173,14 @@ export async function syncLessonsToCalendar(
   const mode = request.mode ?? "full";
   const weeksAhead = request.weeksAhead ?? (await getSyncWeeksAhead());
   const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-  const events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
+  const syncAssessmentDueDates = request.syncAssessmentDueDates === true;
+  let events = mapLessonsToGoogleEvents(request.origin, request.lessons, timeZone);
+  if (syncAssessmentDueDates && request.assessments?.length) {
+    events = [
+      ...events,
+      ...mapAssessmentsToGoogleEvents(request.origin, request.assessments, timeZone),
+    ];
+  }
 
   reportSyncProgress(options.onProgress, {
     phase: "preparing",
@@ -180,7 +189,7 @@ export async function syncLessonsToCalendar(
     message: mode === "incremental" ? "Preparing weekly sync…" : "Preparing sync…",
   });
 
-  const eventMap = { ...(state.eventMap ?? {}) };
+  const eventMap = { ...state.eventMap };
   let accessToken = await getAccessToken();
   const refreshAccessToken = async () => {
     accessToken = await getAccessToken();
@@ -191,6 +200,9 @@ export async function syncLessonsToCalendar(
     syncWindowRange,
     trailingWeekRange,
   });
+  const currentMapKeys = new Set(
+    events.map((event) => eventMapKey(request.origin, event.seqtaKey)),
+  );
 
   try {
     const remoteEvents = await provider.listSyncedEvents(
@@ -199,12 +211,33 @@ export async function syncLessonsToCalendar(
       refreshAccessToken,
     );
     mergeRemoteEventsIntoMap(eventMap, request.origin, remoteEvents, eventMapKey);
+    const remoteIds = new Set(remoteEvents.map((event) => event.id));
+    for (const key of currentMapKeys) {
+      const entry = normalizeEventMapEntry(eventMap[key]);
+      if (entry?.date && isDateInRange(entry.date, reconcileRange) && !remoteIds.has(entry.id)) {
+        delete eventMap[key];
+      }
+    }
   } catch (err) {
     verboseLog(`[BetterSEQTA+] ${provider.label} remote event list failed:`, err);
   }
 
-  const currentMapKeys = new Set(events.map((event) => eventMapKey(request.origin, event.seqtaKey)));
-  const staleEntries = entriesToPrune(eventMap, request.origin, mode, weeksAhead, currentMapKeys);
+  const staleEntries = entriesToPrune(
+    eventMap,
+    request.origin,
+    mode,
+    weeksAhead,
+    currentMapKeys,
+    syncAssessmentDueDates,
+  );
+  if (!syncAssessmentDueDates && mode === "full") {
+    const prefix = `${request.origin}::`;
+    for (const [mapKey, raw] of Object.entries(eventMap)) {
+      if (!mapKey.startsWith(prefix) || !mapKey.includes(":assessment:")) continue;
+      const entry = normalizeEventMapEntry(raw);
+      if (entry) staleEntries.push([mapKey, entry.id]);
+    }
+  }
   const totalSteps = Math.max(staleEntries.length + events.length, 1);
   const lastSyncAt = Date.now();
 
@@ -298,7 +331,12 @@ export async function deleteSyncedEventsFromCalendar(
 
   const state = await provider.readState();
   if (!state.refreshToken && !state.accessToken) {
-    return { success: false, configured: true, connected: false, error: provider.notConnectedError };
+    return {
+      success: false,
+      configured: true,
+      connected: false,
+      error: provider.notConnectedError,
+    };
   }
 
   reportSyncProgress(options.onProgress, {
@@ -308,7 +346,7 @@ export async function deleteSyncedEventsFromCalendar(
     message: "Preparing removal…",
   });
 
-  const eventMap = { ...(state.eventMap ?? {}) };
+  const eventMap = { ...state.eventMap };
   let accessToken = await getAccessToken();
   const refreshAccessToken = async () => {
     accessToken = await getAccessToken();

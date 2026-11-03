@@ -1,5 +1,4 @@
-import browser from "webextension-polyfill";
-import semver from "semver";
+import browser from "@/lib/browser";
 import type { SettingsState } from "@/types/storage";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import { ensureSyncableStorageDefaults } from "@/seqta/utils/ensureSyncableStorageDefaults";
@@ -14,35 +13,24 @@ import {
 } from "./background/cloudSettingsAutoSync";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
-import { initCalendarBackground } from "./background/calendarBackground";
 import {
+  initCalendarBackground,
   registerGoogleCalendarMessageHandlers,
   registerOutlookCalendarMessageHandlers,
+  type CalendarMessageHandlerMap,
 } from "./background/calendarBackground";
-
-/**
- * Session-only dev-mode override of the content API base.
- *
- * Stored in a module-level variable (not `chrome.storage`) so it is wiped
- * automatically when the browser/service-worker process restarts. Content
- * scripts re-sync this on every page load via `setDevApiBase` so the value
- * survives transient service-worker terminations within the same browser
- * session.
- */
-const DEFAULT_API_BASE = "https://betterseqta.org";
-let DEV_API_BASE: string | null = null;
-function apiBase(): string {
-  return DEV_API_BASE ?? DEFAULT_API_BASE;
-}
+import { API_BASE } from "./config/apiBase";
+import { createCustomThemesHandlers } from "./background/customThemesHandlers";
+import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey";
+import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
+import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
+import { runStorageMigrations } from "./background/storageMigrations";
 
 function reloadSeqtaPages() {
   const result = browser.tabs.query({});
-  function open(tabs: any) {
-    for (let tab of tabs) {
-      if (
-        tab.title?.includes("SEQTA Learn") ||
-        tab.title?.includes("SEQTA Engage")
-      ) {
+  function open(tabs: chrome.tabs.Tab[]) {
+    for (const tab of tabs) {
+      if (tab.title?.includes("SEQTA Learn") || tab.title?.includes("SEQTA Engage")) {
         browser.tabs.reload(tab.id);
       }
     }
@@ -52,6 +40,14 @@ function reloadSeqtaPages() {
 
 /** Callback for sending a response back to the message sender */
 type MessageSender = { (response?: unknown): void };
+
+/** Runtime message payloads from extension pages / content scripts */
+type BackgroundRequest = Record<string, unknown>;
+
+function reqString(req: BackgroundRequest, key: string): string | undefined {
+  const value = req[key];
+  return typeof value === "string" ? value : undefined;
+}
 
 async function getAccessTokenFromStorage(): Promise<string | null> {
   const { bsplus_token } = await browser.storage.local.get("bsplus_token");
@@ -91,10 +87,10 @@ function normalizeFetchThemesResponse(json: unknown): {
   return { success: true, data: { themes } };
 }
 
-function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
+function handleFetchThemes(_request: unknown, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
-    const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
+    const apiUrl = `${API_BASE}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
     const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -103,7 +99,10 @@ function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
         const json = await r.json();
         if (!r.ok) {
           throw new Error(
-            (json && typeof json === "object" && "error" in json && typeof (json as { error?: string }).error === "string"
+            (json &&
+            typeof json === "object" &&
+            "error" in json &&
+            typeof (json as { error?: string }).error === "string"
               ? (json as { error: string }).error
               : null) ?? `Themes API HTTP ${r.status}`,
           );
@@ -130,7 +129,7 @@ function handleFetchThemes(request: any, sendResponse: MessageSender): boolean {
   return true;
 }
 
-function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boolean {
+function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { themeId } = request;
   if (!themeId || typeof themeId !== "string") {
     sendResponse({ success: false, error: "Missing themeId" });
@@ -140,7 +139,7 @@ function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boo
     const token = await getAccessTokenFromStorage();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
+    fetch(`${API_BASE}/api/themes/${themeId}`, { cache: "no-store", headers })
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
@@ -151,28 +150,28 @@ function handleFetchThemeDetails(request: any, sendResponse: MessageSender): boo
   return true;
 }
 
-function isTrustedSender(sender?: browser.Runtime.MessageSender): boolean {
+function isTrustedSender(sender?: chrome.runtime.MessageSender): boolean {
   if (!sender) return false;
   if (sender.id && sender.id !== browser.runtime.id) return false;
 
   const urls = [sender.url, sender.tab?.url].filter(Boolean) as string[];
   for (const pageUrl of urls) {
-    if (/^chrome-extension:\/\//.test(pageUrl) || /^moz-extension:\/\//.test(pageUrl)) {
+    if (pageUrl.startsWith("chrome-extension://") || pageUrl.startsWith("moz-extension://")) {
       return true;
     }
     try {
       if (isSeqtaOrigin(new URL(pageUrl).origin)) return true;
-    } catch {
-      // try next URL
-    }
+    } catch {}
   }
   return false;
 }
 
+const AUTH_FETCH_ORIGINS = [API_BASE, "https://accounts.betterseqta.org"];
+
 function handleFetchFromUrl(
-  request: any,
+  request: BackgroundRequest,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ error: "Unauthorized sender" });
@@ -187,17 +186,44 @@ function handleFetchFromUrl(
     sendResponse({ error: "URL not allowed" });
     return false;
   }
-  fetch(url, { cache: "no-store" })
-    .then((r) => r.json())
-    .then((data) => sendResponse({ data }))
-    .catch((err) => {
+  if (request.auth === true && !AUTH_FETCH_ORIGINS.includes(new URL(url).origin)) {
+    sendResponse({ error: "URL not allowed" });
+    return false;
+  }
+  void (async () => {
+    try {
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (request.auth === true) {
+        const token = await getAccessTokenFromStorage();
+        if (!token) {
+          sendResponse({ error: "Not authenticated" });
+          return;
+        }
+        headers.Authorization = `Bearer ${token}`;
+      }
+      const r = await fetch(url, { cache: "no-store", headers });
+      const text = await r.text();
+      if (!r.ok) {
+        sendResponse({
+          error: text?.slice(0, 200) || `HTTP ${r.status}`,
+          httpStatus: r.status,
+        });
+        return;
+      }
+      try {
+        sendResponse({ data: text ? JSON.parse(text) : {} });
+      } catch {
+        sendResponse({ error: "Invalid JSON response" });
+      }
+    } catch (err) {
       console.error("[Background] fetchFromUrl error:", err);
-      sendResponse({ error: err?.message });
-    });
+      sendResponse({ error: (err as Error)?.message });
+    }
+  })();
   return true;
 }
 
-async function parseJsonResponse(r: Response): Promise<any> {
+async function parseJsonResponse(r: Response): Promise<unknown> {
   const text = await r.text();
   try {
     return text ? JSON.parse(text) : {};
@@ -206,8 +232,12 @@ async function parseJsonResponse(r: Response): Promise<any> {
   }
 }
 
-function handleCloudReserveClient(request: any, sendResponse: MessageSender): boolean {
-  const redirect_uri = request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
+function handleCloudReserveClient(
+  request: BackgroundRequest,
+  sendResponse: MessageSender,
+): boolean {
+  const redirect_uri =
+    request.redirect_uri ?? "https://accounts.betterseqta.org/auth/bsplus/callback";
   fetch("https://accounts.betterseqta.org/api/bsplus/client/reserve", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -215,7 +245,11 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
   })
     .then(async (r) => {
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? `Reserve failed (${r.status})` });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? `Reserve failed (${r.status})` });
       else sendResponse(data);
     })
     .catch((err) => {
@@ -226,15 +260,19 @@ function handleCloudReserveClient(request: any, sendResponse: MessageSender): bo
 }
 
 function handleCloudLogin(
-  request: any,
+  request: BackgroundRequest,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ error: "Unauthorized sender" });
     return false;
   }
-  const { client_id, redirect_uri, login, password, device_name } = request;
+  const client_id = reqString(request, "client_id");
+  const redirect_uri = reqString(request, "redirect_uri");
+  const login = reqString(request, "login");
+  const password = reqString(request, "password");
+  const device_name = reqString(request, "device_name");
   if (!client_id || !redirect_uri || !login || !password) {
     sendResponse({ error: "Missing client_id, redirect_uri, login, or password" });
     return false;
@@ -245,7 +283,7 @@ function handleCloudLogin(
       redirect_uri,
       login,
       password,
-      device_name: device_name ?? await getBsplusDeviceName(),
+      device_name: device_name ?? (await getBsplusDeviceName()),
     };
     try {
       const r = await fetch("https://accounts.betterseqta.org/api/bsplus/login", {
@@ -254,7 +292,11 @@ function handleCloudLogin(
         body: JSON.stringify(loginBody),
       });
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? "Login failed" });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? "Login failed" });
       else sendResponse(data);
     } catch (err) {
       console.error("[Background] cloudLogin error:", err);
@@ -264,26 +306,30 @@ function handleCloudLogin(
   return true;
 }
 
-function handleCloudStartLogin(request: any, sendResponse: MessageSender): boolean {
-  const { client_id, redirect_uri } = request;
+function handleCloudStartLogin(request: BackgroundRequest, sendResponse: MessageSender): boolean {
+  const client_id = reqString(request, "client_id");
+  const redirect_uri = reqString(request, "redirect_uri");
   if (!client_id || !redirect_uri) {
     sendResponse({ error: "Missing client_id or redirect_uri" });
     return true;
   }
   const authorizeUrl = `https://accounts.betterseqta.org/login?redirect=${encodeURIComponent(`/oauth/authorize?client_id=${client_id}&redirect_uri=${encodeURIComponent(redirect_uri)}`)}`;
-  browser.tabs.create({ url: authorizeUrl }).then(() => {
-    sendResponse({ success: true });
-  }).catch((err) => {
-    console.error("[Background] cloudStartLogin error:", err);
-    sendResponse({ error: err?.message ?? "Failed to open login page" });
-  });
+  browser.tabs
+    .create({ url: authorizeUrl })
+    .then(() => {
+      sendResponse({ success: true });
+    })
+    .catch((err) => {
+      console.error("[Background] cloudStartLogin error:", err);
+      sendResponse({ error: err?.message ?? "Failed to open login page" });
+    });
   return true;
 }
 
 const CALLBACK_URL_PREFIX = "https://accounts.betterseqta.org/auth/bsplus/callback";
 
 function initCloudLoginCallbackListener() {
-  browser.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  browser.tabs.onUpdated.addListener((tabId, changeInfo) => {
     if (changeInfo.url && changeInfo.url.startsWith(CALLBACK_URL_PREFIX)) {
       try {
         const url = new URL(changeInfo.url);
@@ -292,7 +338,6 @@ function initCloudLoginCallbackListener() {
         const userId = url.searchParams.get("user_id");
 
         if (token && refreshToken) {
-          // Store tokens
           void (async () => {
             try {
               await browser.storage.local.set({
@@ -300,7 +345,6 @@ function initCloudLoginCallbackListener() {
                 bsplus_refresh_token: refreshToken,
               });
 
-              // Fetch full user info
               const userRes = await fetch("https://accounts.betterseqta.org/api/auth/me", {
                 headers: { Authorization: `Bearer ${token}` },
               });
@@ -311,7 +355,6 @@ function initCloudLoginCallbackListener() {
                 await browser.storage.local.set({ bsplus_user: { id: userId } });
               }
 
-              // Trigger cloud settings download
               void performCloudSettingsDownloadWithRetry(token).catch((err) => {
                 console.warn("[Background] Cloud settings download after login:", err);
               });
@@ -320,7 +363,6 @@ function initCloudLoginCallbackListener() {
             }
           })();
 
-          // Close the callback tab
           void browser.tabs.remove(tabId);
         }
       } catch (err) {
@@ -332,7 +374,7 @@ function initCloudLoginCallbackListener() {
 
 initCloudLoginCallbackListener();
 
-function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean {
+function handleCloudRefresh(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { refresh_token, client_id } = request;
   if (!refresh_token || !client_id) {
     sendResponse({ error: "Missing refresh_token or client_id" });
@@ -345,7 +387,11 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
   })
     .then(async (r) => {
       const data = await parseJsonResponse(r);
-      if (!r.ok) sendResponse({ error: data?.error ?? "Refresh failed" });
+      const errorText =
+        data && typeof data === "object" && "error" in data
+          ? String((data as { error?: unknown }).error)
+          : undefined;
+      if (!r.ok) sendResponse({ error: errorText ?? "Refresh failed" });
       else sendResponse(data);
     })
     .catch((err) => {
@@ -356,9 +402,9 @@ function handleCloudRefresh(request: any, sendResponse: MessageSender): boolean 
 }
 
 function handleCloudSettingsUpload(
-  request: any,
+  _request: unknown,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ success: false, error: "Unauthorized sender" });
@@ -389,9 +435,9 @@ function handleCloudSettingsUpload(
 }
 
 function handleCloudSettingsDownload(
-  request: any,
+  _request: unknown,
   sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ): boolean {
   if (!isTrustedSender(sender)) {
     sendResponse({ success: false, error: "Unauthorized sender" });
@@ -422,7 +468,7 @@ function handleCloudSettingsDownload(
   return true;
 }
 
-function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean {
+function handleCloudFavorite(request: BackgroundRequest, sendResponse: MessageSender): boolean {
   const { themeId, action } = request;
   if (!themeId) {
     sendResponse({ success: false, error: "Theme ID required" });
@@ -435,7 +481,7 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
       return;
     }
     const isFavorite = action === "favorite";
-    fetch(`${apiBase()}/api/themes/${themeId}/favorite`, {
+    fetch(`${API_BASE}/api/themes/${themeId}/favorite`, {
       method: isFavorite ? "POST" : "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     })
@@ -451,7 +497,11 @@ function handleCloudFavorite(request: any, sendResponse: MessageSender): boolean
 
 /** Handler for a message type; receives request, sendResponse, and optional sender (for tab routing) */
 type MessageHandler = {
-  (request: any, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender): boolean | void;
+  (
+    request: BackgroundRequest,
+    sendResponse: MessageSender,
+    sender?: chrome.runtime.MessageSender,
+  ): boolean | void;
 };
 
 function isSeqtaOrigin(origin: string): boolean {
@@ -463,24 +513,12 @@ function isSeqtaOrigin(origin: string): boolean {
   }
 }
 
-function handleSetDevApiBase(
-  request: any,
-  _sendResponse: MessageSender,
-  sender?: browser.Runtime.MessageSender,
-): boolean {
-  if (!isTrustedSender(sender)) return false;
-  const url = typeof request?.url === "string" ? request.url.trim() : null;
-  if (url && /^https?:\/\//.test(url)) {
-    DEV_API_BASE = url.replace(/\/$/, "");
-  } else {
-    DEV_API_BASE = null;
-  }
-  return false;
-}
+const customThemesHandlers = createCustomThemesHandlers({ getAccessTokenFromStorage });
 
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
+  ...customThemesHandlers,
+  searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
-  setDevApiBase: handleSetDevApiBase,
   extensionPages: (req) => {
     browser.tabs.query({}).then((tabs) => {
       for (const tab of tabs) {
@@ -512,7 +550,8 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
       sendResponse({ error: "Unauthorized sender" });
       return false;
     }
-    fetchNews(req.source ?? "australia", sendResponse);
+    const source = typeof req.source === "string" ? req.source : undefined;
+    void fetchNews(source).then((news) => sendResponse({ news }));
     return true;
   },
   fetchThemes: handleFetchThemes,
@@ -533,7 +572,11 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
     requestCloudSettingsDebouncedUpload();
     return false;
   },
-  getSeqtaSession: (req: { baseUrl?: string }, sendResponse: MessageSender, sender?: browser.Runtime.MessageSender) => {
+  getSeqtaSession: (
+    req: { baseUrl?: string },
+    sendResponse: MessageSender,
+    sender?: chrome.runtime.MessageSender,
+  ) => {
     (async () => {
       try {
         let tabId = sender?.tab?.id;
@@ -560,7 +603,8 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
         const reply = (await browser.tabs.sendMessage(tabId, { type: "fetchSeqtaAppLink" })) as
           | { appLink?: string | null }
           | undefined;
-        const appLink = typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
+        const appLink =
+          typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
         sendResponse({ appLink });
       } catch (err) {
         console.error("[Background] getSeqtaSession error:", err);
@@ -571,19 +615,26 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   },
 };
 
-registerGoogleCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
-registerOutlookCalendarMessageHandlers(MESSAGE_HANDLERS, isTrustedSender);
+registerGoogleCalendarMessageHandlers(
+  MESSAGE_HANDLERS as CalendarMessageHandlerMap,
+  isTrustedSender,
+);
+registerOutlookCalendarMessageHandlers(
+  MESSAGE_HANDLERS as CalendarMessageHandlerMap,
+  isTrustedSender,
+);
 initCalendarBackground();
 
 browser.runtime.onMessage.addListener(
-  // @ts-ignore - OnMessageListener expects literal true for async, we return boolean
-  (request: any, sender: browser.Runtime.MessageSender, sendResponse: MessageSender) => {
-    const handler = MESSAGE_HANDLERS[request.type];
-    if (handler) {
-      const result = handler(request, sendResponse, sender);
-      return result === true;
-    }
-    console.log("Unknown request type");
+  (
+    request: BackgroundRequest,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: MessageSender,
+  ) => {
+    const handler = MESSAGE_HANDLERS[request.type as string];
+    if (!handler) return false;
+    if (handler(request, sendResponse, sender) === true) return true;
+    sendResponse();
     return false;
   },
 );
@@ -598,135 +649,29 @@ function SetStorageValue(object: SettingsState) {
   );
 }
 
-/** One-time migration for 3.6.5: opt upgraders into Global Search + indexing + transparency defaults. */
-const GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY = "plugin.global-search.settings";
-const GLOBAL_SEARCH_MIGRATION_VERSION = "3.6.5";
-
-async function migrateGlobalSearchDefaultsFor365Upgrade(
-  previousVersion: string,
-): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, GLOBAL_SEARCH_MIGRATION_VERSION) ||
-      !semver.lt(prev, GLOBAL_SEARCH_MIGRATION_VERSION)
-    ) {
-      return;
-    }
-
-    const got = await browser.storage.local.get(GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY);
-    const existing = (got[GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY] ?? {}) as Record<
-      string,
-      unknown
-    >;
-
-    await browser.storage.local.set({
-      [GLOBAL_SEARCH_PLUGIN_SETTINGS_KEY]: {
-        ...existing,
-        enabled: true,
-        transparencyEffects: true,
-        runIndexingOnLoad: true,
-        passiveIndexing: true,
-      },
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${GLOBAL_SEARCH_MIGRATION_VERSION}: Global Search and related settings enabled (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn("[BetterSEQTA+] Global Search 3.6.5 settings migration failed:", e);
-  }
-}
-
-/** One-time reset for 3.6.6: re-enable Theme of the Month for existing users. */
-const THEME_OF_THE_MONTH_RESET_VERSION = "3.6.6";
-
-async function resetThemeOfTheMonthDisabledFor366Upgrade(
-  previousVersion: string,
-): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, THEME_OF_THE_MONTH_RESET_VERSION) ||
-      !semver.lt(prev, THEME_OF_THE_MONTH_RESET_VERSION)
-    ) {
-      return;
-    }
-
-    await browser.storage.local.set({
-      themeOfTheMonthDisabled: false,
-      themeOfTheMonthLastSeenId: undefined,
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RESET_VERSION}: Theme of the Month re-enabled (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn(
-      "[BetterSEQTA+] Theme of the Month 3.6.6 reset migration failed:",
-      e,
-    );
-  }
-}
-
-/** 3.7.0: Close no longer marks entries seen — clear legacy dismissal keys. */
-const THEME_OF_THE_MONTH_RELOAD_VERSION = "3.7.0";
-
-async function resetThemeOfTheMonthDismissalFor370Upgrade(
-  previousVersion: string,
-): Promise<void> {
-  try {
-    const currRaw = browser.runtime.getManifest().version;
-    const prev = semver.coerce(previousVersion);
-    const curr = semver.coerce(currRaw);
-    if (
-      prev == null ||
-      curr == null ||
-      semver.lt(curr, THEME_OF_THE_MONTH_RELOAD_VERSION) ||
-      !semver.lt(prev, THEME_OF_THE_MONTH_RELOAD_VERSION)
-    ) {
-      return;
-    }
-
-    await browser.storage.local.set({
-      themeOfTheMonthLastSeenId: undefined,
-      themeOfTheMonthDismissedMonth: undefined,
-    });
-
-    console.info(
-      `[BetterSEQTA+] Migration ${THEME_OF_THE_MONTH_RELOAD_VERSION}: Theme of the Month shows again until dismissed for the month (from ${previousVersion}).`,
-    );
-  } catch (e) {
-    console.warn(
-      "[BetterSEQTA+] Theme of the Month 3.7.0 dismissal migration failed:",
-      e,
-    );
-  }
-}
-
 browser.runtime.onInstalled.addListener(function (event) {
-  browser.storage.local.remove(["justupdated"]);
-  browser.storage.local.remove(["data"]);
+  browser.storage.local.remove(["justupdated", "data"]);
 
-  void ensureSyncableStorageDefaults();
+  const defaultsReady = ensureSyncableStorageDefaults();
 
   if (event.reason == "install" || event.reason == "update") {
     browser.storage.local.set({ justupdated: true });
   }
 
   if (event.reason === "update" && event.previousVersion) {
-    void migrateGlobalSearchDefaultsFor365Upgrade(event.previousVersion);
-    void resetThemeOfTheMonthDisabledFor366Upgrade(event.previousVersion);
-    void resetThemeOfTheMonthDismissalFor370Upgrade(event.previousVersion);
+    void runStorageMigrations(event.previousVersion);
     reloadSeqtaPages();
+  }
+
+  if (event.reason === "install") {
+    void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
+    void defaultsReady
+      .catch(() => undefined)
+      .then(async () => {
+        const key = "plugin.animated-background.settings";
+        const { [key]: settings } = await browser.storage.local.get(key);
+        await browser.storage.local.set({ [key]: { ...(settings as object), enabled: false } });
+      });
   }
 });
 
@@ -735,4 +680,5 @@ browser.runtime.onStartup.addListener(() => {
 });
 
 initCloudSettingsAutoSync({ reloadSeqtaPages });
+initTimetableClassmatesBackgroundSync();
 void ensureSyncableStorageDefaults();

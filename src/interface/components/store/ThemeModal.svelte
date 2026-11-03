@@ -9,24 +9,35 @@ flavourCarouselImageUrl,
 masterCarouselImageUrl,
 masterGridDisplayDownloadCount,
 } from '@/interface/utils/themeStoreFlavours'
+import {
+getThemeApplyButtonStyles,
+resolveStoreVariantAccentColor,
+} from '@/interface/utils/themeListFilters'
+import { isFeatureDisabled } from '@/seqta/utils/remoteStatus'
 let {
 theme,
 currentThemes,
 setDisplayTheme,
 onInstall,
 onRemove,
+onApply,
 allThemes,
 allStoreThemeRows,
 displayTheme,
 toggleFavorite,
 isLoggedIn,
 onRequestSignIn,
-} = $props<{
+selectedThemeId = '',
+installedThemeColors = {},
+variant = 'official',
+adminPreviewMode = false,
+}: {
 theme: Theme | null
 currentThemes: string[]
 setDisplayTheme: (theme: Theme | null) => void
 onInstall: (themeId: string) => void | Promise<void>
 onRemove: (themeId: string) => void | Promise<void>
+onApply: (themeId: string) => void | Promise<void>
 allThemes: Theme[]
 /** Raw API themes (includes slaves) — same aggregation as grid download count */
 allStoreThemeRows?: Theme[]
@@ -34,7 +45,23 @@ displayTheme: Theme | null
 toggleFavorite?: (theme: Theme) => void
 isLoggedIn?: boolean
 onRequestSignIn?: () => void
-}>()
+selectedThemeId?: string
+installedThemeColors?: Record<string, string>
+variant?: 'official' | 'community'
+adminPreviewMode?: boolean
+} = $props()
+const installActionLabel = $derived(adminPreviewMode ? 'Preview & apply' : 'Install')
+const isCommunity = $derived(variant === 'community')
+const themeStoreInstallLocked = $derived(isFeatureDisabled('themeStore.install') && !adminPreviewMode)
+const showFavorites = $derived(!isCommunity)
+function variantApplyStyles(variantId: string) {
+if (!theme) {
+return getThemeApplyButtonStyles(undefined)
+}
+return getThemeApplyButtonStyles(
+resolveStoreVariantAccentColor(theme, variantId, installedThemeColors),
+)
+}
 const modalDisplayDownloadCount = $derived.by(() => {
 const t = theme
 if (!t) return 0
@@ -106,7 +133,7 @@ $effect(() => {
 if (displayTheme && modalElement) {
 animate(
 modalElement,
-{ y: [500, 0], opacity: [0, 1] },
+{ y: [16, 0], opacity: [0, 1], scale: [0.98, 1] },
 {
 type: 'spring',
 stiffness: 150,
@@ -115,10 +142,10 @@ damping: 20,
 )
 }
 })
-const hideModal = (relatedTheme = null) => {
+const hideModal = (relatedTheme: Theme | null = null) => {
 animate(
 modalElement,
-{ y: [10, 500], opacity: [1, 0] },
+{ y: [0, 16], opacity: [1, 0], scale: [1, 0.98] },
 {
 type: 'spring',
 stiffness: 150,
@@ -130,6 +157,7 @@ setDisplayTheme(relatedTheme ?? null)
 }, 100)
 }
 async function runInstall(id: string) {
+if (themeStoreInstallLocked) return
 installingId = id
 try {
 await onInstall(id)
@@ -138,9 +166,18 @@ installingId = null
 }
 }
 async function runRemove(id: string) {
+if (themeStoreInstallLocked) return
 installingId = id
 try {
 await onRemove(id)
+} finally {
+installingId = null
+}
+}
+async function runApply(id: string) {
+installingId = id
+try {
+await onApply(id)
 } finally {
 installingId = null
 }
@@ -158,7 +195,7 @@ else await runRemove(theme.id)
 }
 </script>
 <div
-class="flex fixed inset-0 z-50 justify-center items-end bg-black/70 backdrop-blur-sm"
+class="flex fixed inset-0 z-50 items-center justify-center bg-black/70 backdrop-blur-xs p-4 sm:p-6"
 onclick={(e) => {
 if (e.target === e.currentTarget) hideModal()
 }}
@@ -171,7 +208,7 @@ transition:fade
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
 bind:this={modalElement}
-class="w-full max-w-[600px] h-[95%] p-4 bg-white rounded-t-2xl dark:bg-zinc-800 overflow-y-auto overflow-x-hidden rounded-xl border border-zinc-200 dark:border-zinc-700 cursor-auto transition-colors duration-200"
+class="flex w-full max-w-[600px] h-fit max-h-[calc(100dvh-3rem)] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-2xl shadow-black/30 dark:border-zinc-700 dark:bg-zinc-800 cursor-auto transition-colors duration-200"
 onclick={(e) => e.stopPropagation()}
 onkeydown={(e) => e.stopPropagation()}
 role="dialog"
@@ -179,11 +216,11 @@ aria-modal="true"
 tabindex="-1"
 >
 {#if theme}
-<div class="relative h-auto">
+<div class="relative flex max-h-[calc(100dvh-3rem)] flex-col overflow-y-auto overflow-x-hidden p-5 pb-8">
 <div class="absolute top-0 right-0 flex gap-1 items-center">
 <button
 type="button"
-class="p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200 transition-colors duration-200 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
+class="p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200 transition-colors duration-200 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
 onclick={() => hideModal()}
 aria-label="Close"
 >
@@ -194,6 +231,14 @@ aria-label="Close"
 <h2 class="text-2xl font-bold text-zinc-900 dark:text-white">
 {theme.name}
 </h2>
+{#if isCommunity}
+<span
+class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-100"
+aria-label="Community theme"
+>
+Community
+</span>
+{/if}
 {#if theme.featured === true}
 <span
 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100"
@@ -216,18 +261,24 @@ By {theme.author}
 </p>
 {/if}
 <div class="flex gap-4 mb-4 text-sm text-zinc-600 dark:text-zinc-400">
+{#if !adminPreviewMode}
 <span class="flex items-center gap-1.5">
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
 <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
 </svg>
 {modalDisplayDownloadCount.toLocaleString()} downloads
 </span>
+{:else}
+<span class="text-amber-700 dark:text-amber-300">Admin preview — does not count as a public download</span>
+{/if}
+{#if showFavorites}
 <span class="flex items-center gap-1.5">
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
 <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
 </svg>
 {(theme.favorite_count ?? 0).toLocaleString()} favorites
 </span>
+{/if}
 </div>
 {#if heroSlides.length > 0}
 {#key theme?.id}
@@ -250,7 +301,7 @@ onemblaInit={heroInit}
 <button
 type="button"
 onclick={heroPrev}
-class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
 aria-label="Previous hero slide"
 >
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-5 h-5">
@@ -260,7 +311,7 @@ aria-label="Previous hero slide"
 <button
 type="button"
 onclick={heroNext}
-class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
 aria-label="Next hero slide"
 >
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-5 h-5">
@@ -277,12 +328,8 @@ aria-label="Next hero slide"
 <p class="mb-2 text-sm font-semibold text-zinc-800 dark:text-zinc-100">Variants</p>
 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 w-full">
 {#if currentThemes.includes(theme.id)}
-<button
-type="button"
-onclick={() => onMasterVariantClick('remove')}
-disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
-title="Remove {theme.name} (master)"
+<div
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 group ring-1 ring-black/10 dark:ring-white/10"
 >
 {#if masterThumb}
                   <img src={masterThumb} alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" draggable="false" />
@@ -290,24 +337,45 @@ title="Remove {theme.name} (master)"
                   <div class="absolute inset-0 bg-zinc-700" role="presentation"></div>
                 {/if}
                 <div class="absolute inset-0 bg-neutral-950/50" role="presentation"></div>
-<div class="relative z-10 flex flex-col justify-end min-h-[9.5rem] sm:min-h-[11rem] p-5">
+<div class="relative z-10 flex flex-col justify-end min-h-38 sm:min-h-44 p-5">
 {#if installingId === theme.id}
 <span class="flex justify-center mb-3">
 <span class="inline-block w-10 h-10 animate-spin rounded-full border-2 border-white border-t-transparent align-middle"></span>
 </span>
 {/if}
 <span class="text-lg sm:text-xl font-bold text-white drop-shadow-md tracking-tight leading-snug">
-Remove · {theme.name}
+{theme.id === selectedThemeId ? 'Applied · ' : ''}{theme.name}
 </span>
-<span class="mt-1 text-sm font-medium text-white/85">Master</span>
-</div>
+<span class="mt-1 text-sm font-medium text-white/85">Master · Installed</span>
+<div class="mt-3 flex flex-wrap gap-2">
+{#if theme.id !== selectedThemeId}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void runApply(theme.id) }}
+disabled={installingId !== null}
+style={variantApplyStyles(theme.id).apply}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg hover:brightness-90 disabled:opacity-70"
+>
+Apply
 </button>
+{/if}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void onMasterVariantClick('remove') }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-white/20 text-white hover:bg-white/30 disabled:opacity-70"
+>
+Remove
+</button>
+</div>
+</div>
+</div>
 {:else}
 <button
 type="button"
 onclick={() => onMasterVariantClick('install')}
 disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
 title="Install {theme.name} (master)"
 >
 {#if masterThumb}
@@ -316,7 +384,7 @@ title="Install {theme.name} (master)"
                   <div class="absolute inset-0 bg-zinc-600" role="presentation"></div>
                 {/if}
                 <div class="absolute inset-0 bg-neutral-950/50" role="presentation"></div>
-<div class="relative z-10 flex flex-col justify-end min-h-[9.5rem] sm:min-h-[11rem] p-5">
+<div class="relative z-10 flex flex-col justify-end min-h-38 sm:min-h-44 p-5">
 {#if installingId === theme.id}
 <span class="flex justify-center mb-3">
 <span class="inline-block w-10 h-10 animate-spin rounded-full border-2 border-white border-t-transparent align-middle"></span>
@@ -330,12 +398,8 @@ title="Install {theme.name} (master)"
 {#each theme.flavours ?? [] as f, flavourIdx (f.id)}
 {@const thumb = flavourCarouselImageUrl(f)}
 {#if currentThemes.includes(f.id)}
-<button
-type="button"
-onclick={() => onFlavourClick(flavourIdx, f.id, 'remove')}
-disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
-title="Remove {f.name}"
+<div
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md border border-zinc-400/70 dark:border-zinc-500 group ring-1 ring-black/10 dark:ring-white/10"
 >
 {#if thumb}
                     <img src={thumb} alt="" class="absolute inset-0 w-full h-full object-cover transition-transform duration-200 group-hover:scale-[1.03]" draggable="false" />
@@ -343,23 +407,45 @@ title="Remove {f.name}"
                     <div class="absolute inset-0 bg-zinc-700" role="presentation"></div>
                   {/if}
                   <div class="absolute inset-0 bg-neutral-950/50" role="presentation"></div>
-<div class="relative z-10 flex flex-col justify-end min-h-[9.5rem] sm:min-h-[11rem] p-5">
+<div class="relative z-10 flex flex-col justify-end min-h-38 sm:min-h-44 p-5">
 {#if installingId === f.id}
 <span class="flex justify-center mb-3">
 <span class="inline-block w-10 h-10 animate-spin rounded-full border-2 border-white border-t-transparent align-middle"></span>
 </span>
 {/if}
 <span class="text-lg sm:text-xl font-bold text-white drop-shadow-md tracking-tight leading-snug">
-Remove · {f.name}
+{f.id === selectedThemeId ? 'Applied · ' : ''}{f.name}
 </span>
-</div>
+<span class="mt-1 text-sm font-medium text-white/85">Installed</span>
+<div class="mt-3 flex flex-wrap gap-2">
+{#if f.id !== selectedThemeId}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); scrollHeroToFlavourIndex(flavourIdx); void runApply(f.id) }}
+disabled={installingId !== null}
+style={variantApplyStyles(f.id).apply}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg hover:brightness-90 disabled:opacity-70"
+>
+Apply
 </button>
+{/if}
+<button
+type="button"
+onclick={(e) => { e.stopPropagation(); void onFlavourClick(flavourIdx, f.id, 'remove') }}
+disabled={installingId !== null}
+class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-white/20 text-white hover:bg-white/30 disabled:opacity-70"
+>
+Remove
+</button>
+</div>
+</div>
+</div>
 {:else}
 <button
 type="button"
 onclick={() => onFlavourClick(flavourIdx, f.id, 'install')}
 disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-[9.5rem] sm:min-h-[11rem] text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
 title="Install {f.name}"
 >
 {#if thumb}
@@ -368,7 +454,7 @@ title="Install {f.name}"
                     <div class="absolute inset-0 bg-zinc-600" role="presentation"></div>
                   {/if}
                   <div class="absolute inset-0 bg-neutral-950/50" role="presentation"></div>
-<div class="relative z-10 flex flex-col justify-end min-h-[9.5rem] sm:min-h-[11rem] p-5">
+<div class="relative z-10 flex flex-col justify-end min-h-38 sm:min-h-44 p-5">
 {#if installingId === f.id}
 <span class="flex justify-center mb-3">
 <span class="inline-block w-10 h-10 animate-spin rounded-full border-2 border-white border-t-transparent align-middle"></span>
@@ -385,10 +471,10 @@ title="Install {f.name}"
 {theme.description}
 </p>
 <div class="flex flex-wrap gap-2 mt-4 justify-start sm:justify-end items-center">
-{#if toggleFavorite && theme}
+{#if showFavorites && toggleFavorite && theme}
 <button
 type="button"
-class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 {theme.is_favorited ? 'text-red-500 bg-red-500/10 dark:bg-red-500/20' : 'bg-zinc-200 dark:bg-zinc-700 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600'}"
+class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 {theme.is_favorited ? 'text-red-500 bg-red-500/10 dark:bg-red-500/20' : 'bg-zinc-200 dark:bg-zinc-700 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600'}"
 onclick={handleFavoriteClick}
 title={isLoggedIn ? (theme.is_favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
 aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
@@ -401,11 +487,36 @@ aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
 {/if}
 {#if !hasFlavours}
 {#if currentThemes.includes(theme.id)}
+{#if theme.id === selectedThemeId}
+<button
+type="button"
+disabled
+style={variantApplyStyles(theme.id).applied}
+class="relative flex justify-center items-center px-4 py-2 min-w-32 rounded-lg opacity-90"
+>
+Applied
+</button>
+{:else}
+<button
+type="button"
+onclick={() => runApply(theme.id)}
+disabled={installingId !== null}
+style={variantApplyStyles(theme.id).apply}
+class="relative flex justify-center items-center px-4 py-2 min-w-32 rounded-lg transition-all duration-200 hover:brightness-90 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:opacity-70"
+>
+{#if installingId === theme.id}
+<svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
+</svg>
+{/if}
+<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Apply</span>
+</button>
+{/if}
 <button
 type="button"
 onclick={() => runRemove(theme.id)}
 disabled={installingId !== null}
-class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
 >
 {#if installingId === theme.id}
 <svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -419,24 +530,24 @@ class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-bla
 type="button"
 onclick={() => runInstall(theme.id)}
 disabled={installingId !== null}
-class="relative flex justify-center items-center px-4 py-2 min-w-[8rem] text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
 >
 {#if installingId === theme.id}
 <svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
 <path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
 </svg>
 {/if}
-<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Install</span>
+<span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">{installActionLabel}</span>
 </button>
 {/if}
 {/if}
 </div>
 {#if relatedThemes.length > 0}
-<div class="my-8 border-b border-zinc-200 dark:border-zinc-700"></div>
+<div class="pt-6 mt-6 border-t border-zinc-200 dark:border-zinc-700"></div>
 <h3 class="mb-4 text-lg font-bold text-zinc-900 dark:text-white">
 Related themes
 </h3>
-<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+<div class="grid grid-cols-1 gap-4 pb-2 sm:grid-cols-2">
 {#each relatedThemes as relatedTheme (relatedTheme.id)}
 <button
 type="button"
@@ -445,7 +556,7 @@ hideModal(relatedTheme)
 }}
 class="relative z-0 hover:z-20 w-full cursor-pointer rounded-xl overflow-hidden transition-all duration-200 hover:scale-[1.02]"
 >
-<div class="bg-gray-50 w-full transition-all duration-500 ease-out relative group group/card flex flex-col hover:shadow-xl dark:hover:shadow-white/[0.1] hover:shadow-white/[0.8] dark:bg-zinc-800 dark:border-white/[0.1] h-auto rounded-xl overflow-clip border border-zinc-200 dark:border-zinc-700">
+<div class="bg-gray-50 w-full transition-all duration-500 ease-out relative group group/card flex flex-col hover:shadow-xl dark:hover:shadow-white/10 hover:shadow-white/80 dark:bg-zinc-800 dark:border-white/10 h-auto rounded-xl overflow-clip border border-zinc-200 dark:border-zinc-700">
 <div class="absolute bottom-1 left-3 z-10 mb-1 text-xl font-bold text-white transition-all duration-500 group-hover:-translate-y-0.5">
 {relatedTheme.name}
 </div>
@@ -458,10 +569,10 @@ class="relative z-0 hover:z-20 w-full cursor-pointer rounded-xl overflow-hidden 
 {/if}
 </div>
 {:else}
-<div class="flex justify-center items-center h-full text-zinc-600 dark:text-zinc-300">
+<div class="flex justify-center items-center p-8 text-zinc-600 dark:text-zinc-300">
 <button
 type="button"
-class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
+class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
 onclick={() => hideModal()}
 >
 Close

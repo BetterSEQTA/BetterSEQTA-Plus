@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { getBsplusDeviceName } from "@/seqta/utils/bsplusDeviceName";
 import { clearCloudPfpCache } from "@/seqta/utils/cloudPfpCache";
 import { clearLastUploadedSnapshot } from "@/seqta/utils/cloudSettingsSync";
@@ -25,6 +25,7 @@ export type CloudUser = {
   displayName?: string;
   pfpUrl?: string;
   pfpHash?: string | null;
+  pfpHistory?: { id: string; r2Key: string; createdAt: number }[];
   admin_level?: number;
   signup_number?: number | null;
   badges?: CloudBadge[];
@@ -35,6 +36,10 @@ export type CloudAuthState = {
   isLoggedIn: boolean;
   user: CloudUser | null;
 };
+
+export function isCloudAdmin(user: CloudUser | null | undefined): boolean {
+  return (user?.admin_level ?? 0) >= 1;
+}
 
 /** Callback invoked when auth state changes */
 type Listener = { (state: CloudAuthState): void };
@@ -76,10 +81,7 @@ class CloudAuthService {
   }
 
   private async loadFromStorage(): Promise<void> {
-    const result = await browser.storage.local.get([
-      STORAGE_KEYS.accessToken,
-      STORAGE_KEYS.user,
-    ]);
+    const result = await browser.storage.local.get([STORAGE_KEYS.accessToken, STORAGE_KEYS.user]);
     const token = result[STORAGE_KEYS.accessToken] as string | undefined;
     const user = result[STORAGE_KEYS.user] as CloudUser | undefined;
     this._state = {
@@ -167,7 +169,7 @@ class CloudAuthService {
 
   public async login(
     login: string,
-    password: string
+    password: string,
   ): Promise<{ success: boolean; error?: string }> {
     try {
       const clientId = await this.getClientId();

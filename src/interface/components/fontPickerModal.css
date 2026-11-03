@@ -21,11 +21,7 @@
   --bsplus-analytics-surface: var(--background-primary, #ffffff);
   --bsplus-analytics-surface-2: var(--background-secondary, #f8fafc);
   --bsplus-analytics-text: var(--text-primary, #1a1a1a);
-  --bsplus-analytics-muted: color-mix(
-    in srgb,
-    var(--bsplus-analytics-text) 55%,
-    transparent
-  );
+  --bsplus-analytics-muted: color-mix(in srgb, var(--bsplus-analytics-text) 55%, transparent);
   --bsplus-analytics-border: color-mix(
     in srgb,
     var(--theme-offset-bg, var(--background-secondary, #e2e8f0)) 78%,
@@ -142,11 +138,7 @@
 
 .bsplus-font-picker-reset:hover:not(:disabled) {
   transform: scale(1.02);
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-surface-2) 80%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-surface-2) 80%, transparent);
 }
 
 .bsplus-font-picker-reset:active:not(:disabled) {
@@ -155,8 +147,7 @@
 
 .bsplus-font-picker-reset:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
 }
 
 .bsplus-font-picker-reset:disabled {
@@ -180,8 +171,7 @@
   cursor: pointer;
   background: var(--bsplus-analytics-accent);
   color: var(--text-color, #ffffff);
-  box-shadow: 0 2px 8px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--bsplus-analytics-accent) 40%, transparent);
   transition:
     transform 0.2s var(--bsplus-analytics-ease),
     box-shadow 0.2s var(--bsplus-analytics-ease);
@@ -189,8 +179,7 @@
 
 .bsplus-font-picker-done:hover {
   transform: scale(1.03);
-  box-shadow: 0 4px 14px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--bsplus-analytics-accent) 45%, transparent);
 }
 
 .bsplus-font-picker-done:active {
@@ -199,8 +188,7 @@
 
 .bsplus-font-picker-done:focus-visible {
   outline: none;
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
 }
 
 .bsplus-font-picker-list {
@@ -213,8 +201,7 @@
   flex-direction: column;
   gap: 0.65rem;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent)
-    transparent;
+  scrollbar-color: color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent) transparent;
 }
 
 .bsplus-font-picker-list::-webkit-scrollbar {
@@ -272,8 +259,7 @@
     var(--bsplus-analytics-accent) 10%,
     var(--bsplus-analytics-surface)
   );
-  box-shadow: 0 4px 16px
-    color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--bsplus-analytics-accent) 22%, transparent);
 }
 
 .bsplus-font-picker-option-head {
@@ -302,10 +288,6 @@
   border-radius: 999px;
   font-size: 0.7rem;
   font-weight: 600;
-  background: color-mix(
-    in srgb,
-    var(--bsplus-analytics-accent) 18%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-analytics-accent) 18%, transparent);
   color: var(--bsplus-analytics-accent);
 }

@@ -51,9 +51,7 @@ describe("eventFingerprint", () => {
       timeZone: "Australia/Adelaide",
     };
     expect(eventFingerprint(base)).toBe(eventFingerprint({ ...base }));
-    expect(eventFingerprint(base)).not.toBe(
-      eventFingerprint({ ...base, summary: "English" }),
-    );
+    expect(eventFingerprint(base)).not.toBe(eventFingerprint({ ...base, summary: "English" }));
   });
 });
 
@@ -110,6 +108,19 @@ describe("entriesToPrune", () => {
       new Set(),
     );
     expect(pruned).toEqual([[staleKey, "evt-old"]]);
+  });
+
+  it("skips assessment keys when assessment sync is disabled", () => {
+    const assessmentKey = `${origin}::${origin}:assessment:99`;
+    const pruned = entriesToPrune(
+      { [assessmentKey]: { id: "evt-a", date: syncDate } },
+      origin,
+      "full",
+      weeksAhead,
+      new Set(),
+      false,
+    );
+    expect(pruned).toEqual([]);
   });
 });
 

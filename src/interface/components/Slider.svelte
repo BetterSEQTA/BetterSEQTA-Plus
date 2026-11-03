@@ -1,11 +1,11 @@
 <script lang="ts">
-  let { state = $bindable(), onChange, min = 0, max = 100, step = 1 } = $props<{ 
+  let { state = $bindable(), onChange, min = 0, max = 100, step = 1 }: { 
     state: number, 
     onChange: (value: number) => void,
     min?: number,
     max?: number,
     step?: number
-  }>();
+  } = $props();
   let percentage = $derived(((state - min) / (max - min)) * 100);
 </script>
 
@@ -17,6 +17,7 @@
     step={step}
     bind:value={state}
     style={`background: linear-gradient(to right, #30d259ad 0%, #30D259 ${percentage}%, #dddddd ${percentage}%)`}
+    oninput={(e) => onChange(Number(e.currentTarget.value))}
     onchange={(e) => onChange(Number(e.currentTarget.value))}
     class="w-full h-1 rounded-full appearance-none cursor-pointer slider"
   />

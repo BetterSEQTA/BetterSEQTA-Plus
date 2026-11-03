@@ -1,12 +1,13 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
-import { closeExtensionPopup } from "@/seqta/utils/Closers/closeExtensionPopup";
-import { OpenMenuOptions } from "@/seqta/utils/Openers/OpenMenuOptions";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
+import { OpenMenuOptions } from "@/seqta/utils/openers/OpenMenuOptions";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
 import type { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
+import type { LoadedCustomTheme } from "@/types/CustomThemes";
 
 let themeManagerPromise: Promise<ThemeManager> | null = null;
 
@@ -19,12 +20,29 @@ function getThemeManager(): Promise<ThemeManager> {
   return themeManagerPromise;
 }
 
+type SendResponse = (response?: unknown) => void;
+
+type ThemeMessageBody = Record<string, unknown> & {
+  themeID?: string;
+  id?: string;
+  enableTheme?: boolean;
+};
+
+type ContentScriptMessage = {
+  info?: string;
+  save?: boolean;
+  body?: ThemeMessageBody;
+};
+
 export class MessageHandler {
   constructor() {
-    // @ts-ignore
     browser.runtime.onMessage.addListener(this.routeMessage.bind(this));
   }
-  routeMessage(request: any, _sender: any, sendResponse: any) {
+  routeMessage(
+    request: ContentScriptMessage,
+    _sender: chrome.runtime.MessageSender,
+    sendResponse: SendResponse,
+  ) {
     console.debug("Message received:", request);
 
     switch (request.info) {
@@ -39,11 +57,11 @@ export class MessageHandler {
           const save = async () => {
             const themeManager = await getThemeManager();
             await themeManager.saveTheme({
-              ...request.body,
+              ...(request.body as LoadedCustomTheme),
               userEdited: true,
             });
-            if (request.body.enableTheme) {
-              await themeManager.setTheme(request.body.id);
+            if (request.body?.enableTheme) {
+              await themeManager.setTheme(request.body.id as string);
             }
             sendResponse({ status: "success" });
             sendThemeUpdate();
@@ -51,7 +69,9 @@ export class MessageHandler {
           void save();
         } else {
           void getThemeManager().then((themeManager) => {
-            themeManager.updatePreview(request.body);
+            if (request.body) {
+              themeManager.updatePreview(request.body as Partial<LoadedCustomTheme>);
+            }
             sendResponse({ status: "success" });
           });
         }
@@ -59,7 +79,7 @@ export class MessageHandler {
 
       case "GetTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.getTheme(request.body.themeID).then((theme) => {
+          themeManager.getTheme(request.body!.themeID as string).then((theme) => {
             sendResponse(theme);
           });
         });
@@ -67,7 +87,7 @@ export class MessageHandler {
 
       case "SetTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.setTheme(request.body.themeID).then(() => {
+          themeManager.setTheme(request.body!.themeID as string).then(() => {
             sendResponse({ status: "success" });
           });
         });
@@ -83,7 +103,7 @@ export class MessageHandler {
 
       case "DeleteTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.deleteTheme(request.body.themeID).then(() => {
+          themeManager.deleteTheme(request.body!.themeID as string).then(() => {
             sendResponse({ status: "success" });
           });
         });
@@ -99,11 +119,9 @@ export class MessageHandler {
 
       case "OpenThemeCreator": {
         const themeID = request?.body?.themeID;
-        void import("@/plugins/built-in/themes/ThemeCreator").then(
-          ({ OpenThemeCreator }) => {
-            void OpenThemeCreator(themeID ? themeID : "");
-          },
-        );
+        void import("@/plugins/built-in/themes/ThemeCreator").then(({ OpenThemeCreator }) => {
+          void OpenThemeCreator(themeID ? String(themeID) : "");
+        });
         closeExtensionPopup();
         sendResponse({ status: "success" });
         break;
@@ -111,24 +129,22 @@ export class MessageHandler {
 
       case "ShareTheme":
         void getThemeManager().then((themeManager) => {
-          themeManager.shareTheme(request.body.themeID).then((id) => {
+          themeManager.shareTheme(request.body!.themeID as string).then((id) => {
             sendResponse({ status: "success", id });
           });
         });
         return true;
 
       case "CloseThemeCreator":
-        void import("@/plugins/built-in/themes/ThemeCreator").then(
-          ({ CloseThemeCreator }) => {
-            try {
-              CloseThemeCreator();
-              sendResponse({ status: "success" });
-            } catch (error) {
-              console.error("Error closing theme creator:", error);
-              sendResponse({ status: "error" });
-            }
-          },
-        );
+        void import("@/plugins/built-in/themes/ThemeCreator").then(({ CloseThemeCreator }) => {
+          try {
+            CloseThemeCreator();
+            sendResponse({ status: "success" });
+          } catch (error) {
+            console.error("Error closing theme creator:", error);
+            sendResponse({ status: "error" });
+          }
+        });
         return true;
 
       case "HideSensitive":

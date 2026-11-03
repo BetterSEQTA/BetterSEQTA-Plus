@@ -1,5 +1,6 @@
+import type { HomeTimetableLesson } from "@/seqta/utils/loaders/homePageTypes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { loadHomePage } from "@/seqta/utils/Loaders/LoadHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 export interface BaseCommandItem {
@@ -17,11 +18,10 @@ export interface StaticCommandItem extends BaseCommandItem {
   keybindLabel?: string[];
 }
 
-// Function to get current lesson
 async function getCurrentLesson() {
   const date = new Date();
   const todayFormatted = formatDate(date);
-  
+
   try {
     const response = await fetch(`${location.origin}/seqta/student/load/timetable?`, {
       method: "POST",
@@ -32,35 +32,35 @@ async function getCurrentLesson() {
         until: todayFormatted,
       }),
     });
-    
+
     const timetableData = await response.json();
-    
+
     if (!timetableData.payload.items.length) {
       alert("No lessons today!");
       return null;
     }
-    
-    const lessons = timetableData.payload.items.sort((a: any, b: any) =>
-      a.from.localeCompare(b.from)
+
+    const lessons = (timetableData.payload.items as HomeTimetableLesson[]).sort((a, b) =>
+      a.from.localeCompare(b.from),
     );
-    
+
     const currentTime = new Date();
-    
+
     for (const lesson of lessons) {
       const [startHour, startMinute] = lesson.from.split(":").map(Number);
       const [endHour, endMinute] = lesson.until.split(":").map(Number);
-      
+
       const startDate = new Date(currentTime);
       startDate.setHours(startHour, startMinute, 0);
-      
+
       const endDate = new Date(currentTime);
       endDate.setHours(endHour, endMinute, 0);
-      
+
       if (startDate <= currentTime && endDate > currentTime) {
         return lesson;
       }
     }
-    
+
     alert("There is no current lesson!");
     return null;
   } catch (error) {
@@ -70,37 +70,36 @@ async function getCurrentLesson() {
   }
 }
 
-async function navigateToSpecificLesson(lesson: any) {
+async function navigateToSpecificLesson(_lesson: HomeTimetableLesson) {
   try {
     await waitForElm(".course .navigator", true, 100, 100);
-    
+
     const today = new Date();
-    const todayDateString = today.toLocaleDateString('en-GB', { 
-      day: 'numeric', 
-      month: 'short' 
+    const todayDateString = today.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
     });
-    
+
     const weeks = document.querySelectorAll(".course .navigator .week");
-    
+
     for (const week of weeks) {
-      // Look for lessons in this week
       const lessons = week.querySelectorAll(".lesson");
-      
+
       for (const lessonElement of lessons) {
         const metaElement = lessonElement.querySelector(".meta");
         if (!metaElement) continue;
-        
+
         const dateElement = metaElement.querySelector(".date");
         const periodElement = metaElement.querySelector(".period");
-        
+
         if (!dateElement || !periodElement) continue;
-        
+
         const lessonDate = dateElement.textContent?.trim();
         const lessonPeriod = periodElement.textContent?.trim().match(/\d+/)?.[0];
-        
+
         // extract the number from the period
-        const normalizedLessonPeriod = lesson.period?.match(/\d+/)?.[0];
-        
+        const normalizedLessonPeriod = lessonPeriod;
+
         // Check if this lesson matches today's date and the current lesson's period
         if (lessonDate === todayDateString && lessonPeriod === normalizedLessonPeriod) {
           // Found the exact matching lesson, click it
@@ -109,10 +108,11 @@ async function navigateToSpecificLesson(lesson: any) {
         }
       }
     }
-        
-    const todayButton = Array.from(document.querySelectorAll('#toolbar .uiButton'))
-      .find(button => button.textContent?.trim() === 'Today') as HTMLElement;
-    
+
+    const todayButton = Array.from(document.querySelectorAll("#toolbar .uiButton")).find(
+      (button) => button.textContent?.trim() === "Today",
+    ) as HTMLElement;
+
     if (todayButton) {
       todayButton.click();
     }
@@ -172,9 +172,8 @@ const staticCommands: StaticCommandItem[] = [
     action: async () => {
       const currentLesson = await getCurrentLesson();
       if (currentLesson && currentLesson.programmeID !== 0) {
-        // Navigate to course page first
         window.location.hash = `?page=/courses/${currentLesson.programmeID}:${currentLesson.metaID}`;
-        
+
         await navigateToSpecificLesson(currentLesson);
       }
     },
@@ -207,13 +206,16 @@ const staticCommands: StaticCommandItem[] = [
     category: "action",
     text: "Compose Message",
     action: () => {
-      window.postMessage({
-        type: "triggerKeyboardEvent",
-        key: 'm',
-        code: 'KeyM',
-        keyCode: 77,
-        altKey: true
-      }, location.origin);
+      window.postMessage(
+        {
+          type: "triggerKeyboardEvent",
+          key: "m",
+          code: "KeyM",
+          keyCode: 77,
+          altKey: true,
+        },
+        location.origin,
+      );
     },
     keywords: ["compose", "message", "dm", "direct message", "new message"],
     priority: 3,

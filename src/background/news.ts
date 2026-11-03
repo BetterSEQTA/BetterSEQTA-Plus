@@ -1,57 +1,16 @@
-import Parser from "rss-parser";
+import type { NewsFeed, NewsPayload } from "@/seqta/utils/newsFeed";
 
+const NEWS_API_KEY = "17c0da766ba347c89d094449504e3080";
 const MAX_RATE_LIMIT_RETRIES = 3;
+const REQUEST_TIMEOUT_MS = 10_000;
+const DAY_MS = 86_400_000;
 
-/**
- * Fetches news articles specifically for Australia from the NewsAPI.
- *
- * This function handles a specific case for fetching Australian news. It includes a
- * mechanism to retry the fetch operation by appending "%00" to the URL if a
- * rate limit error (`response.code == "rateLimited"`) is encountered. This is
- * likely a workaround for cache-busting or bypassing certain rate-limiting measures.
- *
- * @param {string} url The NewsAPI URL to fetch Australian news from.
- * @param {any} sendResponse A callback function (likely from a browser extension message listener)
- *                           to send the fetched news data back to the caller.
- *                           It's called with an object like `{ news: responseData }`.
- */
-const fetchAustraliaNews = async (
-  url: string,
-  sendResponse: any,
-  rateLimitRetryCount = 0,
-) => {
-  fetch(url)
-    .then((result) => result.json())
-    .then((response) => {
-      if (response.code == "rateLimited" && rateLimitRetryCount < MAX_RATE_LIMIT_RETRIES) {
-        fetchAustraliaNews(`${url}%00`, sendResponse, rateLimitRetryCount + 1);
-      } else {
-        sendResponse({ news: response });
-      }
-    })
-    .catch((error) => {
-      console.error("[BetterSEQTA+] Failed to fetch Australia news", error);
-      sendResponse({ news: { articles: [] } });
-    });
-};
-
-/**
- * A record mapping lowercase country codes (e.g., "usa", "canada") to an array
- * of RSS feed URLs for news sources in that country.
- *
- * @type {Record<string, string[]>}
- */
 const rssFeedsByCountry: Record<string, string[]> = {
   usa: [
     "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml",
-    "https://www.huffpost.com/section/front-page/feed",
-    "https://www.npr.org/rss/rss.php",
+    "https://feeds.npr.org/1001/rss.xml",
   ],
-  taiwan: [
-    "https://news.ltn.com.tw/rss/all.xml",
-    "https://www.taipeitimes.com/xml/index.rss",
-    "https://international.thenewslens.com/rss",
-  ],
+  taiwan: ["https://news.ltn.com.tw/rss/all.xml", "https://www.taipeitimes.com/xml/index.rss"],
   hong_kong: [
     "https://rthk9.rthk.hk/rthk/news/rss/e_expressnews_elocal.xml",
     "https://www.scmp.com/rss/91/feed",
@@ -60,106 +19,68 @@ const rssFeedsByCountry: Record<string, string[]> = {
     "https://critica.com.pa/rss.xml",
     "https://www.panamaamerica.com.pa/rss.xml",
     "https://noticiassin.com/feed/",
-    "https://elcapitalfinanciero.com/feed/",
   ],
   canada: [
     "https://www.cbc.ca/cmlink/rss-topstories",
     "https://calgaryherald.com/feed",
     "https://ottawacitizen.com/feed",
-    "https://www.montrealgazette.com/feed",
   ],
   singapore: [
     "https://www.straitstimes.com/news/singapore/rss.xml",
     "https://www.channelnewsasia.com/rssfeeds/8395986",
   ],
-  uk: [
-    "http://feeds.bbci.co.uk/news/rss.xml",
-    "https://www.theguardian.com/uk/rss",
-  ],
+  uk: ["https://feeds.bbci.co.uk/news/rss.xml", "https://www.theguardian.com/uk/rss"],
   japan: [
-    "https://www3.nhk.or.jp/nhkworld/en/news/feeds/",
+    "https://www3.nhk.or.jp/rss/news/cat0.xml",
     "https://news.livedoor.com/topics/rss/int.xml",
   ],
   netherlands: ["https://www.dutchnews.nl/feed/", "https://www.nrc.nl/rss/"],
 };
 
-/**
- * Fetches news articles based on a specified source.
- *
- * The source can be:
- * 1. The string "australia": Fetches news from Australian sources via NewsAPI,
- *    handled by the `fetchAustraliaNews` function.
- * 2. A lowercase country code (e.g., "usa", "canada"): Fetches news from a predefined
- *    list of RSS feeds for that country, as specified in `rssFeedsByCountry`.
- * 3. A direct RSS feed URL (starting with "http"): Fetches news directly from this URL.
- *
- * The fetched articles are then sent back to the caller using the `sendResponse` callback.
- *
- * @param {string} source The news source identifier. This can be "australia", a
- *                        lowercase country code, or a direct RSS feed URL.
- * @param {any} sendResponse A callback function (typically from a browser extension
- *                           message listener, like `chrome.runtime.onMessage`)
- *                           used to send the fetched news data back to the caller.
- *                           It's called with an object like `{ news: { articles: [...] } }`.
- */
-export async function fetchNews(source: string | undefined, sendResponse: any) {
-  const normalizedSource = typeof source === "string" && source.trim()
-    ? source.trim()
-    : "australia";
+async function fetchAustraliaNews(): Promise<NewsPayload> {
+  const from = new Date(Date.now() - 5 * DAY_MS).toISOString().slice(0, 10);
+  let url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=${NEWS_API_KEY}`;
 
-  if (normalizedSource === "australia") {
-    const date = new Date();
-    date.setDate(date.getDate() - 5);
-
-    const from =
-      date.getFullYear() +
-      "-" +
-      String(date.getMonth() + 1).padStart(2, "0") +
-      "-" +
-      String(date.getDate()).padStart(2, "0");
-
-    const url = `https://newsapi.org/v2/everything?domains=abc.net.au&from=${from}&apiKey=17c0da766ba347c89d094449504e3080`;
-    fetchAustraliaNews(url, sendResponse);
-
-    return;
-  }
-
-  const parser = new Parser();
-  let feeds: string[];
-
-  if (rssFeedsByCountry[normalizedSource.toLowerCase()]) {
-    feeds = rssFeedsByCountry[normalizedSource.toLowerCase()];
-  } else if (normalizedSource.startsWith("http")) {
-    feeds = [normalizedSource];
-  } else {
-    console.warn("[BetterSEQTA+] Invalid news source, falling back to Australia", normalizedSource);
-    return fetchNews("australia", sendResponse);
-  }
-
-  const articlesPromises = feeds.map(async (feedUrl) => {
-    try {
-      const response = await fetch(feedUrl);
-      if (!response.ok) {
-        console.error(`Failed to fetch RSS feed: ${feedUrl} (${response.status})`);
-        return [];
-      }
-      const feedString = await response.text();
-      const feed = await parser.parseString(feedString);
-
-      return feed.items.map((item) => ({
-        title: item.title || "",
-        description: item.contentSnippet || "",
-        url: item.link || "",
-        urlToImage: null,
-      }));
-    } catch (error) {
-      console.error(`Failed to fetch RSS feed: ${feedUrl}`, error);
-      return [];
+  try {
+    for (let attempt = 0; attempt <= MAX_RATE_LIMIT_RETRIES; attempt++) {
+      const response = await fetch(url, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+      const data = await response.json();
+      if (data.code !== "rateLimited") return { articles: data.articles ?? [] };
+      url += "%00";
     }
+  } catch (error) {
+    console.error("[BetterSEQTA+] Failed to fetch Australia news", error);
+  }
+  return { articles: [] };
+}
+
+async function fetchFeed(url: string): Promise<NewsFeed> {
+  const response = await fetch(url, { signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS) });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  return { url: response.url || url, xml: await response.text() };
+}
+
+function feedsForSource(source: string): string[] | null {
+  const preset = rssFeedsByCountry[source.toLowerCase()];
+  if (preset) return preset;
+  return /^https?:\/\//i.test(source) ? [source] : null;
+}
+
+export async function fetchNews(source?: string): Promise<NewsPayload> {
+  const normalizedSource = source?.trim() || "australia";
+  if (normalizedSource === "australia") return fetchAustraliaNews();
+
+  const feedUrls = feedsForSource(normalizedSource);
+  if (!feedUrls) {
+    console.warn("[BetterSEQTA+] Invalid news source, falling back to Australia", normalizedSource);
+    return fetchAustraliaNews();
+  }
+
+  const results = await Promise.allSettled(feedUrls.map(fetchFeed));
+  const feeds = results.flatMap((result, i) => {
+    if (result.status === "fulfilled") return [result.value];
+    console.error("[BetterSEQTA+] Failed to fetch RSS feed:", feedUrls[i], result.reason);
+    return [];
   });
-
-  const articlesArray = await Promise.all(articlesPromises);
-  const articles = articlesArray.flat();
-
-  sendResponse({ news: { articles } });
+  return { feeds };
 }

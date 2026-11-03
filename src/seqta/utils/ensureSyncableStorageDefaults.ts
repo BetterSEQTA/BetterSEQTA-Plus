@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { SYNCABLE_PLUGIN_SETTING_DEFAULTS } from "@/plugins/syncablePluginDefaults";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import {
@@ -24,10 +24,12 @@ const OPTIONAL_UNSET_MEANS_DEFAULT_KEYS = [
   "selectedFont",
   "privacyStatementShown",
   "privacyStatementLastUpdated",
-  "bsCloudAutoSyncAnnouncementShown",
+  "termsOfServiceLastAccepted",
+
   "coursesAssessmentsFixPopupShown",
   "themeOfTheMonthDismissedMonth",
   "themeOfTheMonthLastSeenId",
+
   "justupdated",
   "devMode",
   "verboseLogging",
@@ -59,9 +61,7 @@ export function getSyncableStorageDefaults(): Record<string, unknown> {
     delete flat[key];
   }
 
-  for (const [pluginId, settings] of Object.entries(
-    SYNCABLE_PLUGIN_SETTING_DEFAULTS,
-  )) {
+  for (const [pluginId, settings] of Object.entries(SYNCABLE_PLUGIN_SETTING_DEFAULTS)) {
     flat[`plugin.${pluginId}.settings`] = settings;
   }
 
@@ -94,7 +94,7 @@ export async function ensureSyncableStorageDefaults(): Promise<void> {
   const patch: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(defaults)) {
     if (!isKeyIncludedInCloudUploadPayload(key)) continue;
-    if (Object.prototype.hasOwnProperty.call(existing, key)) continue;
+    if (Object.hasOwn(existing, key)) continue;
 
     if (key.startsWith("plugin.") && key.endsWith(".settings")) {
       patch[key] = mergePluginSettingsDefaults(

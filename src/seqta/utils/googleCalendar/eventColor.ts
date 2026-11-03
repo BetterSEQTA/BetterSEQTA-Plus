@@ -44,9 +44,7 @@ export function parseRgbColour(value: string): Rgb | null {
     };
   }
 
-  const rgbMatch = trimmed.match(
-    /rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i,
-  );
+  const rgbMatch = trimmed.match(/rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)/i);
   if (rgbMatch) {
     return {
       r: Math.round(Number(rgbMatch[1])),

@@ -1,5 +1,6 @@
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
+import { delay } from "@/seqta/utils/delay";
 
 const BACKDROP_CLASS = "bsplus-popup-css-animate";
 const OPEN_CLASS = "bsplus-popup-css-animate--open";
@@ -31,5 +32,5 @@ export function animatePopupOpen(background: HTMLElement): void {
 export function animatePopupClose(background: HTMLElement): Promise<void> {
   if (!useCssPopupAnimation()) return Promise.resolve();
   background.classList.remove(OPEN_CLASS);
-  return new Promise((resolve) => window.setTimeout(resolve, CLOSE_FALLBACK_MS));
+  return delay(CLOSE_FALLBACK_MS);
 }

@@ -4,12 +4,17 @@ import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
 import { formatHotkeyForDisplay, isValidHotkey } from "../utils/hotkeyUtils";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { transparencyEnabled } from "@/seqta/utils/performanceMode";
-import browser from "webextension-polyfill";
+import renderSvelte from "@/interface/main";
+import type { GlobalSearchApi } from "../../lazy";
+import browser from "@/lib/browser";
+import { toMountableComponent } from "@/types/mountableComponent";
+
+type StorageChangeMap = Record<string, chrome.storage.StorageChange>;
 
 type AppRef = {
-  current: any;
-  storageChangeHandler?: any;
-  progressHandler?: any;
+  current: ReturnType<typeof renderSvelte> | null;
+  storageChangeHandler?: (changes: StorageChangeMap, area: string) => void;
+  progressHandler?: EventListener | null;
   clearDoneFlashTimer?: () => void;
   clickHandler?: () => void;
   ownedTrigger?: boolean;
@@ -18,12 +23,8 @@ type AppRef = {
 const SEARCH_SVG =
   '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 
-async function resolveTriggerWrapper(
-  titleElement: Element,
-): Promise<HTMLElement | null> {
-  const existing = titleElement.querySelector(
-    ".search-trigger-wrapper",
-  ) as HTMLElement | null;
+async function resolveTriggerWrapper(titleElement: Element): Promise<HTMLElement | null> {
+  const existing = titleElement.querySelector(".search-trigger-wrapper") as HTMLElement | null;
   if (existing) return existing;
 
   const custom =
@@ -65,8 +66,7 @@ function buildTriggerWrapper() {
 }
 
 function triggerParts(searchWrapper: HTMLElement) {
-  const q = <T extends HTMLElement>(sel: string) =>
-    searchWrapper.querySelector(sel) as T;
+  const q = <T extends HTMLElement>(sel: string) => searchWrapper.querySelector(sel) as T;
   return {
     searchWrapper,
     searchAnchor: q(".search-trigger-anchor"),
@@ -80,11 +80,7 @@ function triggerParts(searchWrapper: HTMLElement) {
   };
 }
 
-export async function mountSearchBar(
-  titleElement: Element,
-  api: any,
-  appRef: AppRef,
-) {
+export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi, appRef: AppRef) {
   const preRendered = await resolveTriggerWrapper(titleElement);
   if (preRendered?.dataset.bsplusSearchWired === "1") return;
 
@@ -132,8 +128,7 @@ export async function mountSearchBar(
   const DONE_HOLD_MS = 5000;
   const DONE_FADE_MS = 550;
   const statusLooksRough = (s: string) => /\b(fail|error|cancel)\b/i.test(s);
-  const truncateStatus = (s: string, max = 44) =>
-    s.length > max ? s.slice(0, max - 1) + "…" : s;
+  const truncateStatus = (s: string, max = 44) => (s.length > max ? s.slice(0, max - 1) + "…" : s);
 
   const clearDoneFlashTimer = () => {
     if (doneFlashTimer) clearTimeout(doneFlashTimer);
@@ -147,12 +142,7 @@ export async function mountSearchBar(
     progressBarWrapper.classList.remove("is-active", "is-rough-complete");
     searchAnchor.classList.remove("is-indexing");
     searchButton.classList.remove("is-indexing");
-    progressText.classList.remove(
-      "is-active",
-      "is-rough",
-      "is-fading-done",
-      "is-done-message",
-    );
+    progressText.classList.remove("is-active", "is-rough", "is-fading-done", "is-done-message");
     progressBar.style.width = "0%";
     progressText.textContent = "";
     ranIndexingCycle = false;
@@ -179,9 +169,7 @@ export async function mountSearchBar(
     searchAnchor.classList.remove("is-indexing");
     searchButton.classList.remove("is-indexing");
     progressText.classList.remove("is-fading-done");
-    progressText.textContent = rough
-      ? truncateStatus(indexingStatus!, 52)
-      : "Done!";
+    progressText.textContent = rough ? truncateStatus(indexingStatus!, 52) : "Done!";
     progressText.classList.toggle("is-rough", rough);
     progressBarWrapper.classList.toggle("is-rough-complete", rough);
     progressText.classList.add("is-active", "is-done-message");
@@ -219,17 +207,15 @@ export async function mountSearchBar(
 
     if (completionEligible) {
       if (doneFlashTimer !== null || doneFadeTimer !== null) return;
-      scheduleCompletionFlash(
-        indexingStatus != null && statusLooksRough(indexingStatus),
-      );
+      scheduleCompletionFlash(indexingStatus != null && statusLooksRough(indexingStatus));
       return;
     }
 
     resetIdleProgressUi();
   };
 
-  const progressHandler = (event: CustomEvent) => {
-    const { completed, total, indexing, status } = event.detail as {
+  const progressHandler: EventListener = (event) => {
+    const { completed, total, indexing, status } = (event as CustomEvent).detail as {
       completed?: number;
       total?: number;
       indexing?: boolean;
@@ -249,7 +235,7 @@ export async function mountSearchBar(
     updateProgressDisplay();
   };
 
-  window.addEventListener("indexing-progress", progressHandler as EventListener);
+  window.addEventListener("indexing-progress", progressHandler);
   appRef.progressHandler = progressHandler;
   appRef.clearDoneFlashTimer = clearDoneFlashTimer;
 
@@ -265,7 +251,7 @@ export async function mountSearchBar(
   }
   searchWrapper.dataset.bsplusSearchWired = "1";
 
-  const handleStorageChange = (changes: any, area: string) => {
+  const handleStorageChange = (changes: StorageChangeMap, area: string) => {
     if (area !== "local" || !changes["plugin.global-search.settings"]) return;
     const next = changes["plugin.global-search.settings"].newValue as
       | { searchHotkey?: string }
@@ -284,8 +270,9 @@ export async function mountSearchBar(
 
   const clickHandler = () => {
     warmUpVectorSearchOnInteraction();
-    // @ts-ignore
-    window.setCommandPalleteOpen(true);
+    (
+      window as Window & { setCommandPalleteOpen?: (open: boolean) => void }
+    ).setCommandPalleteOpen?.(true);
   };
   searchButton.addEventListener("click", clickHandler);
   appRef.clickHandler = clickHandler;
@@ -293,7 +280,7 @@ export async function mountSearchBar(
   try {
     const { default: renderSvelte } = await import("@/interface/main");
     appRef.current = renderSvelte(
-      SearchBar,
+      toMountableComponent(SearchBar),
       searchRoot.attachShadow({ mode: "open" }),
       {
         transparencyEffects: transparencyEnabled(),
@@ -325,19 +312,14 @@ export function cleanupSearchBar(appRef: AppRef) {
   appRef.clearDoneFlashTimer = undefined;
 
   if (appRef.progressHandler) {
-    window.removeEventListener(
-      "indexing-progress",
-      appRef.progressHandler as EventListener,
-    );
+    window.removeEventListener("indexing-progress", appRef.progressHandler as EventListener);
     appRef.progressHandler = null;
   }
 
-  const searchWrapper = document.querySelector(
-    ".search-trigger-wrapper",
-  ) as HTMLElement | null;
+  const searchWrapper = document.querySelector(".search-trigger-wrapper") as HTMLElement | null;
   const customOwns = Boolean(
     document.querySelector("#title.bsplus-custom-title") ||
-      document.getElementById("bsplus-title-root"),
+    document.getElementById("bsplus-title-root"),
   );
 
   if (searchWrapper) {
@@ -364,7 +346,7 @@ export function cleanupSearchBar(appRef: AppRef) {
 
   if (appRef.storageChangeHandler) {
     browser.storage.onChanged.removeListener(appRef.storageChangeHandler);
-    appRef.storageChangeHandler = null;
+    appRef.storageChangeHandler = undefined;
   }
   appRef.ownedTrigger = undefined;
 }

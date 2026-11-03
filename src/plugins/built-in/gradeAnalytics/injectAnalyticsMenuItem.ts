@@ -4,11 +4,12 @@ import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import {
   ensureAnalyticsMenuOrder,
   insertMenuItemAfterKey,
-} from "@/seqta/utils/Openers/analyticsMenuOrder";
+} from "@/seqta/utils/openers/analyticsMenuOrder";
 import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
-import { ChangeMenuItemPositions } from "@/seqta/utils/Openers/menuOrder";
-import { isMenuOptionsOpen } from "@/seqta/utils/Openers/menuOptionsState";
+import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
@@ -29,11 +30,12 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
   if (isSeqtaEngageExperience()) {
     return () => {};
   }
+  if (isFeatureDisabled("page.analytics")) {
+    return () => {};
+  }
 
   document
-    .querySelectorAll(
-      `#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`,
-    )
+    .querySelectorAll(`#menu .${ANALYTICS_MENU_CLASS}, #menu [data-key="${ANALYTICS_MENU_KEY}"]`)
     .forEach((node) => {
       node.remove();
     });

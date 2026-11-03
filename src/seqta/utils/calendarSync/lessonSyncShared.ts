@@ -91,15 +91,19 @@ export function entriesToPrune(
   mode: "full" | "incremental",
   weeksAhead: number,
   currentMapKeys: Set<string>,
+  syncAssessmentDueDates = false,
 ): Array<[string, string]> {
   if (mode === "incremental") return [];
 
+  const syncAssessments = syncAssessmentDueDates;
   const window = syncWindowRange(weeksAhead);
   const prefix = `${origin}::`;
   const entries: Array<[string, string]> = [];
 
   for (const [mapKey, raw] of Object.entries(eventMap)) {
     if (!mapKey.startsWith(prefix)) continue;
+    if (!syncAssessments && mapKey.includes(":assessment:")) continue;
+
     const entry = normalizeEventMapEntry(raw);
     if (!entry) continue;
     const missingFromTimetable = !currentMapKeys.has(mapKey);
@@ -214,10 +218,7 @@ export function formatLessonSyncResultMessage(
   return `${calendarLabel} updated (${parts.join(", ")}).`;
 }
 
-export function buildDeleteSyncResult(
-  deleted: number,
-  failed: number,
-): GoogleCalendarDeleteResult {
+export function buildDeleteSyncResult(deleted: number, failed: number): GoogleCalendarDeleteResult {
   return {
     success: failed === 0,
     configured: true,

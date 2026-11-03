@@ -5,22 +5,24 @@ import type {
   HotkeySetting,
   NumberSetting,
   Plugin,
+  PluginSetting,
   PluginSettings,
   SelectSetting,
   StringSetting,
 } from "./types";
 import { createPluginAPI } from "./createAPI";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { verboseInfo } from "@/utils/verboseLog";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 interface PluginSettingsStorage {
   enabled?: boolean;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
-interface StorageChange<T = any> {
+interface StorageChange<T = unknown> {
   oldValue?: T;
   newValue?: T;
 }
@@ -36,6 +38,7 @@ const PLUGIN_START_PHASES: readonly string[][] = [
     "assessments-overview",
     "assessments-average",
     "messageFolders",
+    "timetable-classmates",
     "profile-picture",
     "background-music",
     // Menu icon is eager; page UI still loads on demand via dynamic import.
@@ -55,12 +58,14 @@ const PLUGIN_BOOT_ONLY_IDS = new Set(["error-page-kitten"]);
  */
 export class PluginManager {
   private static instance: PluginManager;
-  private plugins: Map<string, Plugin<any, any>> = new Map();
+  private plugins: Map<string, Plugin> = new Map();
   private runningPlugins: Map<string, boolean> = new Map();
-  private eventBacklog: Map<string, any[]> = new Map();
+  private startingPlugins: Map<string, Promise<void>> = new Map();
+  private pendingStops: Map<string, symbol> = new Map();
+  private eventBacklog: Map<string, unknown[]> = new Map();
   private cleanupFunctions: Map<string, () => void> = new Map();
   private apiDisposers: Map<string, () => void> = new Map();
-  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
+  private listeners: Map<string, Set<(...args: unknown[]) => void>> = new Map();
   private styleElements: Map<string, HTMLStyleElement> = new Map();
 
   /**
@@ -71,10 +76,6 @@ export class PluginManager {
     this.setupPluginStateListener();
   }
 
-  /**
-   * Gets the singleton instance of the PluginManager.
-   * @returns {PluginManager} The singleton instance.
-   */
   public static getInstance(): PluginManager {
     if (!PluginManager.instance) {
       PluginManager.instance = new PluginManager();
@@ -82,16 +83,7 @@ export class PluginManager {
     return PluginManager.instance;
   }
 
-  /**
-   * Dispatches an event to a specific plugin.
-   * If the plugin is currently running, the event is dispatched immediately via a DOM CustomEvent.
-   * If the plugin is not running, the event is added to a backlog to be processed when the plugin starts.
-   *
-   * @param {string} pluginId The ID of the target plugin.
-   * @param {string} event The name of the event to dispatch (e.g., "update").
-   * @param {any} [args] Optional arguments to pass with the event.
-   */
-  public dispatchPluginEvent(pluginId: string, event: string, args?: any) {
+  public dispatchPluginEvent(pluginId: string, event: string, args?: unknown) {
     const fullEventName = `plugin.${pluginId}.${event}`;
 
     // Dispatch plugin event if it's running otherwise queue it
@@ -106,14 +98,6 @@ export class PluginManager {
     }
   }
 
-  /**
-   * Processes and dispatches any events that were backlogged for a plugin.
-   * This is typically called after a plugin has successfully started.
-   *
-   * @private
-   * @param {string} pluginId The ID of the plugin for which to process backlogged events.
-   * @returns {Promise<void>}
-   */
   private async processBackloggedEvents(pluginId: string) {
     for (const [key, argsList] of this.eventBacklog.entries()) {
       const [eventPluginId, event] = key.split(":");
@@ -126,48 +110,37 @@ export class PluginManager {
     }
   }
 
-  /**
-   * Registers a plugin with the manager.
-   * Plugins must have a unique ID.
-   *
-   * @template T - The type of settings the plugin uses.
-   * @template S - The type of storage the plugin uses.
-   * @param {Plugin<T, S>} plugin The plugin object to register.
-   * @throws {Error} If a plugin with the same ID is already registered.
-   */
-  public registerPlugin<T extends PluginSettings, S>(
-    plugin: Plugin<T, S>,
-  ): void {
+  public registerPlugin<T extends PluginSettings, S>(plugin: Plugin<T, S>): void {
     if (this.plugins.has(plugin.id)) {
       throw new Error(`Plugin with id "${plugin.id}" is already registered`);
     }
-    this.plugins.set(plugin.id, plugin);
+    this.plugins.set(plugin.id, plugin as unknown as Plugin);
   }
 
-  /**
-   * Starts a specific plugin by its ID.
-   * This involves:
-   * - Checking if the plugin exists and isn't already running.
-   * - Creating and providing the plugin API (settings, storage, etc.).
-   * - Checking if the plugin is enabled (if `disableToggle` is true), respecting its `defaultEnabled` status.
-   * - Injecting any CSS styles defined by the plugin into the document head.
-   * - Waiting for the plugin's settings and storage to be loaded.
-   * - Executing the plugin's `run` method.
-   * - Storing any cleanup function returned by `run` for later use in `stopPlugin`.
-   * - Marking the plugin as running and processing any backlogged events for it.
-   *
-   * @param {string} pluginId The ID of the plugin to start.
-   * @returns {Promise<void>} A promise that resolves when the plugin has started or is determined not to start (e.g., disabled).
-   * @throws {Error} If the plugin is not found, or if an error occurs during plugin initialization or execution.
-   */
   public async startPlugin(pluginId: string): Promise<void> {
+    const plugin = this.plugins.get(pluginId);
+    if (plugin && !this.shouldStartPlugin(plugin)) return;
+    this.pendingStops.delete(pluginId);
+    const starting = this.startingPlugins.get(pluginId);
+    if (starting) return starting;
+
+    const promise = this.startPluginOnce(pluginId);
+    this.startingPlugins.set(pluginId, promise);
+    try {
+      await promise;
+    } finally {
+      this.startingPlugins.delete(pluginId);
+    }
+  }
+
+  private async startPluginOnce(pluginId: string): Promise<void> {
     const plugin = this.plugins.get(pluginId);
     if (!plugin) {
       throw new Error(`Plugin "${pluginId}" not found`);
     }
 
     if (this.runningPlugins.get(pluginId)) {
-      console.warn(`Plugin "${pluginId}" is already running`);
+      console.warn("Plugin is already running:", pluginId);
       return;
     }
 
@@ -175,32 +148,6 @@ export class PluginManager {
       const api = createPluginAPI(plugin);
       this.apiDisposers.set(pluginId, api.dispose);
 
-      // Check if plugin is enabled before starting
-      if (plugin.disableToggle) {
-        const all = settingsState.getAll() as unknown as Record<string, unknown>;
-        const pluginSettings = all[`plugin.${pluginId}.settings`] as
-          | PluginSettingsStorage
-          | undefined;
-        const enabled =
-          pluginSettings?.enabled ?? plugin.defaultEnabled ?? true;
-        if (!enabled) {
-          this.disposePluginAPI(pluginId);
-          verboseInfo(
-            `Plugin "${pluginId}" is disabled, skipping initialization`,
-          );
-          return;
-        }
-      }
-
-      if (!isPluginAllowedInPerformanceMode(pluginId)) {
-        this.disposePluginAPI(pluginId);
-        verboseInfo(
-          `Plugin "${pluginId}" paused by performance mode`,
-        );
-        return;
-      }
-
-      // Inject plugin styles if provided
       if (plugin.styles) {
         const styleElement = document.createElement("style");
         styleElement.textContent = plugin.styles;
@@ -209,26 +156,47 @@ export class PluginManager {
       }
 
       // Wait for both settings and storage to be loaded before starting the plugin
-      await Promise.all([(api.settings as any).loaded, api.storage.loaded]);
+      await Promise.all([api.settings.loaded, api.storage.loaded]);
+
+      if (!this.shouldStartPlugin(plugin)) {
+        this.removePluginStyles(pluginId);
+        this.disposePluginAPI(pluginId);
+        return;
+      }
 
       const result = await plugin.run(api);
+      if (!this.shouldStartPlugin(plugin)) {
+        if (typeof result === "function") result();
+        this.removePluginStyles(pluginId);
+        this.disposePluginAPI(pluginId);
+        return;
+      }
       if (typeof result === "function") {
         this.cleanupFunctions.set(plugin.id, result);
       }
       this.runningPlugins.set(pluginId, true);
       verboseInfo(`Plugin "${pluginId}" started successfully`);
 
-      // Process any backlogged events
       await this.processBackloggedEvents(pluginId);
     } catch (error) {
       this.removePluginStyles(pluginId);
       this.disposePluginAPI(pluginId);
-      console.error(
-        `[BetterSEQTA+] Failed to start plugin ${pluginId}:`,
-        error,
-      );
+      console.error("[BetterSEQTA+] Failed to start plugin:", pluginId, error);
       throw error;
     }
+  }
+
+  private shouldStartPlugin(plugin: Plugin): boolean {
+    if (settingsState.onoff === false || !isPluginAllowedInPerformanceMode(plugin.id)) {
+      return false;
+    }
+    if (isFeatureDisabled(`plugin.${plugin.id}`)) {
+      return false;
+    }
+    if (!plugin.disableToggle) return true;
+    const all = settingsState.getAll() as unknown as Record<string, unknown>;
+    const stored = all[`plugin.${plugin.id}.settings`] as PluginSettingsStorage | undefined;
+    return stored?.enabled ?? plugin.defaultEnabled ?? true;
   }
 
   private removePluginStyles(pluginId: string): void {
@@ -253,7 +221,7 @@ export class PluginManager {
 
     const startPromises = idsToStart.map((id) =>
       this.startPlugin(id).catch((error) => {
-        console.error(`Failed to start plugin "${id}":`, error);
+        console.error("Failed to start plugin:", id, error);
         return Promise.reject(error);
       }),
     );
@@ -261,13 +229,6 @@ export class PluginManager {
     await Promise.allSettled(startPromises);
   }
 
-  /**
-   * Attempts to start all registered plugins in phased order.
-   * Errors during the start of individual plugins are caught and logged,
-   * allowing other plugins to attempt to start.
-   *
-   * @returns {Promise<void>} A promise that resolves when all plugins have attempted to start.
-   */
   public async startAllPlugins(): Promise<void> {
     for (const phase of PLUGIN_START_PHASES) {
       await this.startPluginPhase(phase);
@@ -282,18 +243,12 @@ export class PluginManager {
     }
   }
 
-  /**
-   * Stops a specific plugin by its ID.
-   * This involves:
-   * - Removing any CSS styles injected by the plugin.
-   * - Executing the cleanup function that was returned by the plugin's `run` method (if any).
-   * - Marking the plugin as not running.
-   * - Emitting a "plugin.stopped" event with the pluginId.
-   *
-   * @param {string} pluginId The ID of the plugin to stop.
-   * @returns {Promise<void>} A promise that resolves when the plugin has been stopped.
-   */
   public async stopPlugin(pluginId: string): Promise<void> {
+    const stopRequest = Symbol();
+    this.pendingStops.set(pluginId, stopRequest);
+    await this.startingPlugins.get(pluginId)?.catch(() => {});
+    if (this.pendingStops.get(pluginId) !== stopRequest) return;
+    this.pendingStops.delete(pluginId);
     this.removePluginStyles(pluginId);
     this.disposePluginAPI(pluginId);
 
@@ -315,39 +270,14 @@ export class PluginManager {
     Array.from(this.plugins.keys()).forEach((id) => this.stopPlugin(id));
   }
 
-  /**
-   * Retrieves a registered plugin by its ID.
-   *
-   * @param {string} pluginId The ID of the plugin to retrieve.
-   * @returns {Plugin | undefined} The plugin object if found, otherwise undefined.
-   */
   public getPlugin(pluginId: string): Plugin | undefined {
     return this.plugins.get(pluginId);
   }
 
-  /**
-   * Retrieves an array of all registered plugin objects.
-   *
-   * @returns {Plugin[]} An array containing all registered plugin objects.
-   */
   public getAllPlugins(): Plugin[] {
     return Array.from(this.plugins.values());
   }
 
-  /**
-   * Retrieves a structured list of settings for all registered plugins.
-   * This is primarily used for building user interfaces for plugin configuration.
-   * It processes each plugin's defined settings, adding IDs, titles, descriptions,
-   * and default enabled states. For plugins with `disableToggle`, an "enabled"
-   * boolean setting is automatically included.
-   *
-   * @returns {Array<object>} An array of objects, where each object represents a plugin
-   *                          and contains its ID, name, description, beta status,
-   *                          and a processed `settings` object. The `settings` object
-   *                          maps setting keys to their detailed configuration (type, title, etc.).
-   *                          The specific structure of each setting object within `settings`
-   *                          depends on its type (boolean, string, number, select, button, hotkey).
-   */
   public getAllPluginSettings(): Array<{
     pluginId: string;
     name: string;
@@ -363,36 +293,41 @@ export class PluginManager {
             id: string;
             options: Array<{ value: string; label: string }>;
           })
-        | (Omit<ButtonSetting, "type"> & { type: "button"; id: string; trigger?: () => void | Promise<void> })
+        | (Omit<ButtonSetting, "type"> & {
+            type: "button";
+            id: string;
+            trigger?: () => void | Promise<void>;
+          })
         | (Omit<HotkeySetting, "type"> & { type: "hotkey"; id: string })
-        | (Omit<ComponentSetting, "type"> & { type: "component"; id: string; component: any });
+        | (Omit<ComponentSetting, "type"> & {
+            type: "component";
+            id: string;
+            component: ComponentSetting["component"];
+          });
     };
     // Actual type is more complex, see original code, but this gives the gist for the JSDoc.
     // Array<{ pluginId: string; name: string; description: string; beta?: boolean; settings: Record<string, ProcessedSetting>; disableToggle?: boolean; }>
   }> {
     return Array.from(this.plugins.entries()).map(([id, plugin]) => {
-      const settingsEntries = Object.entries(plugin.settings).map(
-        ([key, setting]) => {
-          const settingObj = setting as any;
-          let result: any;
-          if (settingObj.type === "button" || settingObj.type === "component") {
-            // For button or component, keep the functions
-            result = { ...settingObj };
-          } else {
-            // For others, strip functions
-            result = Object.fromEntries(
-              Object.entries(settingObj).filter(
-                ([_, value]) => typeof value !== "function",
-              ),
-            );
-          }
-          result.id = key;
-          result.title = result.title || key;
-          result.description = result.description || "";
-          result.defaultEnabled = plugin.defaultEnabled ?? true;
-          return [key, result];
-        },
-      );
+      const settingsEntries = Object.entries(plugin.settings).map(([key, setting]) => {
+        const settingObj = setting as PluginSetting;
+        let result: Record<string, unknown>;
+        if (settingObj.type === "button" || settingObj.type === "component") {
+          // For button or component, keep the functions
+          result = { ...(settingObj as unknown as Record<string, unknown>) };
+        } else {
+          result = Object.fromEntries(
+            Object.entries(settingObj as unknown as Record<string, unknown>).filter(
+              ([, value]) => typeof value !== "function",
+            ),
+          );
+        }
+        result.id = key;
+        result.title = result.title || key;
+        result.description = result.description || "";
+        result.defaultEnabled = plugin.defaultEnabled ?? true;
+        return [key, result];
+      });
 
       if (plugin.disableToggle) {
         settingsEntries.push([
@@ -417,71 +352,32 @@ export class PluginManager {
     });
   }
 
-  /**
-   * Checks if a specific plugin is currently running.
-   *
-   * @param {string} pluginId The ID of the plugin to check.
-   * @returns {boolean} True if the plugin is running, false otherwise.
-   */
   public isPluginRunning(pluginId: string): boolean {
     return this.runningPlugins.get(pluginId) || false;
   }
 
-  /**
-   * Emits an event to all registered listeners for that event.
-   * This is an internal event bus for the PluginManager itself.
-   *
-   * @private
-   * @param {string} event The name of the event to emit.
-   * @param {any[]} args Arguments to pass to the event listeners.
-   */
-  private emit(event: string, ...args: any[]): void {
+  private emit(event: string, ...args: unknown[]): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
       listeners.forEach((listener) => listener(...args));
     }
   }
 
-  /**
-   * Registers an event listener for PluginManager's internal events.
-   *
-   * @param {string} event The name of the event to listen for (e.g., "plugin.stopped").
-   * @param {(...args: any[]) => void} callback The function to call when the event is emitted.
-   */
-  public on(event: string, callback: (...args: any[]) => void): void {
+  public on(event: string, callback: (...args: unknown[]) => void): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
     this.listeners.get(event)!.add(callback);
   }
 
-  /**
-   * Unregisters an event listener for PluginManager's internal events.
-   *
-   * @param {string} event The name of the event.
-   * @param {(...args: any[]) => void} callback The callback function to remove.
-   */
-  public off(event: string, callback: (...args: any[]) => void): void {
+  public off(event: string, callback: (...args: unknown[]) => void): void {
     const listeners = this.listeners.get(event);
     if (listeners) {
       listeners.delete(callback);
     }
   }
 
-  /**
-   * Handles the change in a plugin's enabled state.
-   * Starts or stops the plugin based on the new `enabled` value.
-   * This is typically called by `setupPluginStateListener` when a relevant storage change is detected.
-   *
-   * @private
-   * @param {string} pluginId The ID of the plugin whose state has changed.
-   * @param {boolean} enabled The new enabled state of the plugin.
-   * @returns {Promise<void>}
-   */
-  private async handlePluginStateChange(
-    pluginId: string,
-    enabled: boolean,
-  ): Promise<void> {
+  private async handlePluginStateChange(pluginId: string, enabled: boolean): Promise<void> {
     if (enabled) {
       await this.startPlugin(pluginId);
     } else {
@@ -511,11 +407,9 @@ export class PluginManager {
           if (!plugin?.disableToggle) continue;
 
           const enabled =
-            (change.newValue as PluginSettingsStorage)?.enabled ?? true;
+            (change.newValue as PluginSettingsStorage)?.enabled ?? plugin.defaultEnabled ?? true;
           const wasEnabled =
-            (change.oldValue as PluginSettingsStorage)?.enabled ??
-            plugin.defaultEnabled ??
-            true;
+            (change.oldValue as PluginSettingsStorage)?.enabled ?? plugin.defaultEnabled ?? true;
 
           if (enabled !== wasEnabled) {
             this.handlePluginStateChange(pluginId, enabled);

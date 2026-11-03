@@ -1,8 +1,8 @@
-import { CreateElement } from "@/seqta/utils/CreateEnable/CreateElement";
+import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
 
-export function FilterUpcomingAssessments(subjectoptions: any) {
-  for (var item in subjectoptions) {
-    let subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
+export function FilterUpcomingAssessments(subjectoptions: Record<string, boolean>) {
+  for (const item in subjectoptions) {
+    const subjectdivs = document.querySelectorAll(`[data-subject="${item}"]`);
 
     for (let i = 0; i < subjectdivs.length; i++) {
       const element = subjectdivs[i];
@@ -15,7 +15,7 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
       }
       (element.parentNode! as HTMLElement).classList.remove("hidden");
 
-      let children = element.parentNode!.parentNode!.children;
+      const children = element.parentNode!.parentNode!.children;
       for (let i = 0; i < children.length; i++) {
         const element = children[i];
         if (element.hasAttribute("data-hidden")) {
@@ -28,33 +28,25 @@ export function FilterUpcomingAssessments(subjectoptions: any) {
         element.parentNode!.querySelectorAll(".hidden").length
       ) {
         if (element.parentNode!.querySelectorAll(".hidden").length > 0) {
-          if (
-            !(element.parentNode!.parentNode! as HTMLElement).hasAttribute(
-              "data-day",
-            )
-          ) {
-            (element.parentNode!.parentNode! as HTMLElement).classList.add(
-              "hidden",
-            );
+          if (!(element.parentNode!.parentNode! as HTMLElement).hasAttribute("data-day")) {
+            (element.parentNode!.parentNode! as HTMLElement).classList.add("hidden");
           } else {
             AddPlaceHolderToParent(
-              element.parentNode!.parentNode,
+              element.parentNode!.parentNode as HTMLElement,
               element.parentNode!.querySelectorAll(".hidden").length,
             );
           }
         }
       } else {
-        (element.parentNode!.parentNode! as HTMLElement).classList.remove(
-          "hidden",
-        );
+        (element.parentNode!.parentNode! as HTMLElement).classList.remove("hidden");
       }
     }
   }
 }
 
-function AddPlaceHolderToParent(parent: any, numberofassessments: any) {
-  let textcontainer = CreateElement("div", "upcoming-blank");
-  let textblank = CreateElement("p", "upcoming-hiddenassessment");
+function AddPlaceHolderToParent(parent: HTMLElement, numberofassessments: number) {
+  const textcontainer = CreateElement("div", "upcoming-blank");
+  const textblank = CreateElement("p", "upcoming-hiddenassessment");
   let s = "";
   if (numberofassessments > 1) {
     s = "s";

@@ -1,7 +1,7 @@
 import type { IndexItem, Job } from "../types";
 import { seqtaFetchPayload } from "../api";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes the user's external portal entries from `/seqta/student/load/portals`.
  *
@@ -42,7 +42,7 @@ export const portalsJob: Job = {
     return 0;
   },
 
-  run: async (_ctx) => {
+  run: async () => {
     const payload = await seqtaFetchPayload<PortalPayload[] | null>(
       "/seqta/student/load/portals",
       {},

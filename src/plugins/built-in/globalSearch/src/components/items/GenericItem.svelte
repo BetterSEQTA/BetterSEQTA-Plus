@@ -3,13 +3,13 @@
   import type { DynamicContentItem } from '../../utils/dynamicItems';
   import type { FuseResultMatch } from '../../core/types';
 
-  const { item, isSelected, searchTerm, matches, onclick } = $props<{
+  const { item, isSelected, searchTerm, matches, onclick }: {
     item: DynamicContentItem;
     isSelected: boolean;
     searchTerm: string;
     matches?: readonly FuseResultMatch[];
     onclick: () => void;
-  }>();
+  } = $props();
 
   const categoryLabel = (category: string): string => {
     if (!category) return '';
@@ -65,12 +65,12 @@
 
 <button
   class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group transition-colors duration-100 ring-0 dark:ring-zinc-600/50
-  {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px] dark:shadow' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+  {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px] dark:shadow-sm' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
   onclick={onclick}
 >
   <div class="flex items-center w-full">
     <div
-      class="flex-none scale-90 w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white rounded-md bg-gradient-to-br {gradientForCategory(item.category)}"
+      class="flex-none scale-90 w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white rounded-md bg-linear-to-br {gradientForCategory(item.category)}"
     >
       {item.metadata?.icon || fallbackIcon(item.category)}
     </div>

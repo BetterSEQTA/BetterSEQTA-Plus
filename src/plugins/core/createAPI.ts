@@ -10,7 +10,7 @@ import type {
 } from "./types";
 import { eventManager } from "@/seqta/utils/listeners/EventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import type { SettingsState } from "@/types/storage";
 
@@ -41,7 +41,6 @@ function createSEQTAAPI(): SEQTAAPI {
 
       window.addEventListener("hashchange", handler);
 
-      // Return an unregister function
       return {
         unregister: () => {
           window.removeEventListener("hashchange", handler);
@@ -51,55 +50,17 @@ function createSEQTAAPI(): SEQTAAPI {
   };
 }
 
-/**
- * Creates a reactive and persistent settings store for a given plugin.
- * This store is a Svelte-like store, providing reactivity, persistence
- * via `browser.storage.local`, and default value handling.
- *
- * @template T - Represents the structure of the plugin's settings, extending `PluginSettings`.
- * @param {Plugin<T, any>} plugin The plugin instance for which the settings store is being created.
- *                                `plugin.id` is used for namespacing the settings in storage,
- *                                and `plugin.settings` provides the definitions and default values for each setting.
- * @returns {SettingsAPI<T> & { loaded: Promise<void> }} An object that functions as a Svelte store,
- *                                                       enhanced with specific methods for settings management.
- *                                                       The object includes:
- *    - Reactivity: Changes to settings can be subscribed to using Svelte's store subscription pattern
- *                  (though not explicitly a Svelte store, it behaves similarly for direct property access and updates).
- *                  The `onChange` method provides a more direct way to listen for specific key changes.
- *    - Persistence: Settings are automatically loaded from `browser.storage.local` when the store is created
- *                   and saved back whenever a setting is changed via the proxy's setter.
- *    - Default Values: Uses default values from the `plugin.settings` definition if no stored value exists for a setting.
- *    - `loaded`: A Promise that resolves when the settings have been successfully loaded from storage,
- *                allowing operations to be deferred until settings are ready.
- *    - Direct property access for getting values (e.g., `settingsStore.mySettingKey`).
- *    - Direct property assignment for setting values (e.g., `settingsStore.mySettingKey = newValue`), which also persists the change.
- *    - `onChange(key, callback)`: Method to listen for changes to a specific setting. (Note: The prompt mentioned `listen`, this is `onChange`).
- *                                 Returns an object with an `unregister` method.
- *    - `offChange(key, callback)`: Method to stop listening for changes to a specific setting.
- *    The following methods are not explicitly present on the returned proxy from `createSettingsAPI` but are typically
- *    expected in a full "Svelte store" settings manager. The current implementation relies on direct property
- *    manipulation for get/set, and re-initialization for reset-like behavior or would require external implementation
- *    of reset logic if needed:
- *    - `get(key)`: (Achieved by direct property access: `settingsStore.key`)
- *    - `set(key, value)`: (Achieved by direct property assignment: `settingsStore.key = value`)
- *    - `reset(key)`: (Would require manual re-application of `plugin.settings[key].default` and then setting it)
- *    - `resetAll()`: (Would require iterating through all `plugin.settings` and applying defaults, then setting them)
- */
 function createSettingsAPI<T extends PluginSettings>(
-  plugin: Plugin<T>,
+  plugin: Pick<Plugin<T>, "id" | "settings" | "disableToggle">,
 ): {
   settings: SettingsAPI<T> & { loaded: Promise<void> };
   dispose: () => void;
 } {
   const storageKey = `plugin.${plugin.id}.settings`;
-  const listeners = new Map<keyof T, Set<(value: any) => void>>();
+  const listeners = new Map<keyof T, Set<(value: SettingValue<T[keyof T]>) => void>>();
 
-  // Initialize with default values
-  const settingsWithMeta: any = {
-    onChange: <K extends keyof T>(
-      key: K,
-      callback: (value: SettingValue<T[K]>) => void,
-    ) => {
+  const backing: Record<string, unknown> = {
+    onChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       if (!listeners.has(key)) {
         listeners.set(key, new Set());
       }
@@ -110,92 +71,79 @@ function createSettingsAPI<T extends PluginSettings>(
         },
       };
     },
-    offChange: <K extends keyof T>(
-      key: K,
-      callback: (value: SettingValue<T[K]>) => void,
-    ) => {
+    offChange: <K extends keyof T>(key: K, callback: (value: SettingValue<T[K]>) => void) => {
       listeners.get(key)?.delete(callback);
     },
-    loaded: Promise.resolve(), // will be replaced below
+    loaded: Promise.resolve(),
   };
 
-  // Fill with defaults first
   for (const key in plugin.settings) {
-    if (plugin.settings[key].type !== 'component' && plugin.settings[key].type !== 'button') {
-      settingsWithMeta[key] = plugin.settings[key].default;
+    if (plugin.settings[key].type !== "component" && plugin.settings[key].type !== "button") {
+      backing[key] = plugin.settings[key].default;
     }
   }
 
-  // Load stored settings and override defaults
   const loaded = (async () => {
     try {
       const allSettings = settingsState.getAll() as unknown as Record<string, unknown>;
-      const storedSettings = allSettings[storageKey] as Partial<Record<keyof T, any>>;
+      const storedSettings = allSettings[storageKey] as Partial<
+        Record<keyof T, SettingValue<T[keyof T]>>
+      >;
       if (storedSettings) {
         for (const key in storedSettings) {
-          if (key in settingsWithMeta) {
-            settingsWithMeta[key] = storedSettings[key];
-            listeners
-              .get(key as keyof T)
-              ?.forEach((cb) => cb(storedSettings[key]));
-          }
+          if (!(key in backing)) continue;
+          const value = storedSettings[key as keyof T];
+          if (value === undefined) continue;
+          backing[key] = value;
+          listeners.get(key as keyof T)?.forEach((cb) => cb(value));
         }
       }
     } catch (error) {
-      console.error(
-        `[BetterSEQTA+] Error loading settings for plugin ${plugin.id}:`,
-        error,
-      );
+      console.error("[BetterSEQTA+] Error loading settings for plugin:", plugin.id, error);
     }
   })();
 
-  settingsWithMeta.loaded = loaded;
+  backing.loaded = loaded;
 
   const handleSettingsChange = (newValue: unknown) => {
     if (!newValue || typeof newValue !== "object") return;
 
-    const newSettings = newValue as Partial<Record<keyof T, any>>;
+    const newSettings = newValue as Partial<Record<keyof T, SettingValue<T[keyof T]>>>;
     for (const key in newSettings) {
       const typedKey = key as keyof T;
-      settingsWithMeta[typedKey] = newSettings[typedKey];
-      listeners.get(typedKey)?.forEach((cb) => cb(newSettings[typedKey]));
+      const value = newSettings[typedKey];
+      if (value === undefined) continue;
+      backing[key] = value;
+      listeners.get(typedKey)?.forEach((cb) => cb(value));
     }
   };
 
-  settingsState.register(
-    storageKey as keyof SettingsState,
-    handleSettingsChange,
-  );
+  settingsState.register(storageKey as keyof SettingsState, handleSettingsChange);
 
   const dispose = () => {
-    settingsState.unregister(
-      storageKey as keyof SettingsState,
-      handleSettingsChange,
-    );
+    settingsState.unregister(storageKey as keyof SettingsState, handleSettingsChange);
   };
 
-  const proxy = new Proxy(settingsWithMeta, {
+  const proxy = new Proxy(backing, {
     get(target, prop) {
-      return target[prop];
+      if (typeof prop === "symbol") return undefined;
+      return target[prop as string];
     },
     set(target, prop, value) {
-      if (["onChange", "offChange", "loaded"].includes(prop as string))
-        return false;
+      if (typeof prop === "symbol") return false;
+      const key = prop as string;
+      if (["onChange", "offChange", "loaded"].includes(key)) return false;
 
-      target[prop] = value;
+      target[key] = value;
 
-      // Reconstruct just the data keys for storage (excluding metadata methods)
-      const dataToStore: any = {};
-      for (const key in plugin.settings) {
-        dataToStore[key] = target[key];
+      const dataToStore: Record<string, unknown> = {};
+      for (const settingKey in plugin.settings) {
+        dataToStore[settingKey] = target[settingKey];
       }
 
-      // Preserve enabled flag managed separately for disableToggle plugins
       if (plugin.disableToggle) {
         const allSettings = settingsState.getAll() as Record<string, unknown>;
-        const existing = allSettings[storageKey] as
-          | { enabled?: boolean }
-          | undefined;
+        const existing = allSettings[storageKey] as { enabled?: boolean } | undefined;
         if (existing?.enabled !== undefined) {
           dataToStore.enabled = existing.enabled;
         }
@@ -203,7 +151,7 @@ function createSettingsAPI<T extends PluginSettings>(
 
       browser.storage.local.set({ [storageKey]: dataToStore });
 
-      listeners.get(prop as keyof T)?.forEach((cb) => cb(value));
+      listeners.get(key as keyof T)?.forEach((cb) => cb(value as SettingValue<T[keyof T]>));
       return true;
     },
   }) as SettingsAPI<T> & { loaded: Promise<void> };
@@ -211,15 +159,15 @@ function createSettingsAPI<T extends PluginSettings>(
   return { settings: proxy, dispose };
 }
 
-function createStorageAPI<T = any>(
+function createStorageAPI<T extends Record<string, unknown> = Record<string, unknown>>(
   pluginId: string,
 ): {
   storage: StorageAPI<T> & { [K in keyof T]: T[K] };
   dispose: () => void;
 } {
   const prefix = `plugin.${pluginId}.storage.`;
-  const cache: Record<string, any> = {};
-  const listeners = new Map<string, Set<(value: any) => void>>();
+  const cache: Record<string, unknown> = {};
+  const listeners = new Map<string, Set<(value: unknown) => void>>();
 
   // Load all existing storage values for this plugin
   const loadStoragePromise = (async () => {
@@ -234,18 +182,11 @@ function createStorageAPI<T = any>(
         }
       });
     } catch (error) {
-      console.error(
-        `[BetterSEQTA+] Error loading storage for plugin ${pluginId}:`,
-        error,
-      );
+      console.error("[BetterSEQTA+] Error loading storage for plugin:", pluginId, error);
     }
   })();
 
-  const handleStorageChange = (
-    newValue: unknown,
-    _oldValue: unknown,
-    key: string,
-  ) => {
+  const handleStorageChange = (newValue: unknown, _oldValue: unknown, key: string) => {
     if (!key.startsWith(prefix)) return;
 
     const shortKey = key.slice(prefix.length);
@@ -267,27 +208,26 @@ function createStorageAPI<T = any>(
           if (!listeners.has(key as string)) {
             listeners.set(key as string, new Set());
           }
-          listeners.get(key as string)!.add(callback);
+          listeners.get(key as string)!.add(callback as (value: unknown) => void);
           return {
             unregister: () => {
-              listeners.get(key as string)?.delete(callback);
+              listeners.get(key as string)?.delete(callback as (value: unknown) => void);
             },
           };
         };
       }
       if (prop === "offChange") {
         return (key: keyof T, callback: (value: T[keyof T]) => void) => {
-          listeners.get(key as string)?.delete(callback);
+          listeners.get(key as string)?.delete(callback as (value: unknown) => void);
         };
       }
       if (prop === "loaded") {
         return loadStoragePromise;
       }
 
-      // Direct property access
       return target[prop];
     },
-    set(target, prop: string, value: any) {
+    set(target, prop: string, value: unknown) {
       if (["onChange", "offChange", "loaded"].includes(prop)) {
         return false;
       }
@@ -296,7 +236,6 @@ function createStorageAPI<T = any>(
       target[prop] = value;
       browser.storage.local.set({ [prefix + prop]: value });
 
-      // Notify listeners
       listeners.get(prop)?.forEach((callback) => callback(value));
 
       return true;
@@ -310,7 +249,7 @@ function createEventsAPI(pluginId: string): EventsAPI {
   const prefix = `plugin.${pluginId}.`;
   const eventListeners = new Map<
     string,
-    Set<{ callback: (...args: any[]) => void; listener: EventListener }>
+    Set<{ callback: (...args: unknown[]) => void; listener: EventListener }>
   >();
 
   return {
@@ -344,35 +283,10 @@ function createEventsAPI(pluginId: string): EventsAPI {
   };
 }
 
-/**
- * Creates and returns a tailored API object for a specific plugin.
- * This API object provides the plugin with various functionalities such as
- * managing settings, accessing namespaced storage, interacting with SEQTA-specific features,
- * and handling plugin-specific events.
- *
- * @template T - The type of the plugin's settings, extending `PluginSettings`.
- * @template S - The type of the data the plugin will store in its namespaced storage.
- * @param {Plugin<T, S>} plugin The plugin instance for which the API is being created.
- *                              The plugin's `id` and `name` are used internally by the API
- *                              for namespacing and identification but are accessed from the `plugin` object directly.
- * @returns {PluginAPI<T, S>} An API object containing the following key properties:
- *    - `seqta`: An API for interacting with SEQTA-specific functionalities, created by `createSEQTAAPI()`.
- *               This includes methods like `onMount` for DOM element appearance, `getFiber` for React component inspection,
- *               `getCurrentPage` for getting the current SEQTA page, and `onPageChange` for listening to page navigations.
- *    - `settings`: An API for managing plugin-specific settings, created by `createSettingsAPI(plugin)`.
- *                  It allows getting, setting, and listening to changes in the plugin's settings,
- *                  which are stored persistently and namespaced to the plugin. Includes a `loaded` promise.
- *    - `storage`: An API for providing namespaced storage for the plugin, created by `createStorageAPI<S>(plugin.id)`.
- *                 It allows the plugin to store and retrieve arbitrary data, namespaced to prevent conflicts
- *                 with other plugins or parts of the extension. Includes a `loaded` promise and `onChange` listeners.
- *    - `events`: An API for allowing the plugin to dispatch and listen for custom events within its own scope,
- *                created by `createEventsAPI(plugin.id)`. It provides `on(event, callback)` to listen for
- *                plugin-specific events and `emit(event, ...args)` to dispatch them. These events are namespaced
- *                to the plugin.
- */
-export function createPluginAPI<T extends PluginSettings, S = any>(
-  plugin: Plugin<T, S>,
-): PluginAPI<T, S> {
+export function createPluginAPI<
+  T extends PluginSettings,
+  S extends Record<string, unknown> = Record<string, unknown>,
+>(plugin: Plugin<T, S>): PluginAPI<T, S> {
   const { settings, dispose: disposeSettings } = createSettingsAPI(plugin);
   const { storage, dispose: disposeStorage } = createStorageAPI<S>(plugin.id);
 

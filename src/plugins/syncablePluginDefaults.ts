@@ -12,10 +12,7 @@ function defaultSearchHotkey(): string {
 }
 
 /** `plugin.<id>.settings` defaults (component/button keys omitted). */
-export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<
-  string,
-  Record<string, unknown>
-> = {
+export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<string, Record<string, unknown>> = {
   themes: {},
   "animated-background": { speed: 1 },
   "assessments-average": { lettergrade: false },
@@ -38,4 +35,5 @@ export const SYNCABLE_PLUGIN_SETTING_DEFAULTS: Record<
   },
   "grade-analytics": { cacheTtlHours: 24 },
   "error-page-kitten": {},
+  "timetable-classmates": { enabled: false },
 };

@@ -1,4 +1,4 @@
-import type { SvelteComponent } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
 
 export interface IndexItem {
   id: string;
@@ -6,10 +6,10 @@ export interface IndexItem {
   category: string;
   content: string;
   dateAdded: number;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   actionId: string;
   renderComponentId: string;
-  renderComponent?: typeof SvelteComponent;
+  renderComponent?: MountableSvelteComponent;
 }
 
 export type Frequency =
@@ -22,14 +22,10 @@ export interface JobContext {
   setStoredItems: (items: IndexItem[], storeId?: string) => Promise<void>;
   addItem: (item: IndexItem, storeId?: string) => Promise<void>;
   removeItem: (id: string, storeId?: string) => Promise<void>;
-  getProgress: <T = any>() => Promise<T | undefined>;
-  setProgress: <T = any>(progress: T) => Promise<void>;
+  getProgress: <T = unknown>() => Promise<T | undefined>;
+  setProgress: <T = unknown>(progress: T) => Promise<void>;
   /** Optional live status/progress while a long-running job is in flight. */
-  reportJobProgress?: (detail: {
-    processed: number;
-    total: number;
-    status?: string;
-  }) => void;
+  reportJobProgress?: (detail: { processed: number; total: number; status?: string }) => void;
 }
 
 export interface Job {

@@ -17,11 +17,10 @@ import enhancedNavigationPluginLazy from "./built-in/enhancedNavigation/lazy";
 import globalSearchPluginLazy from "./built-in/globalSearch/lazy";
 import gradeAnalyticsPluginLazy from "./built-in/gradeAnalytics/lazy";
 import errorPageKittenPlugin from "./built-in/errorPageKitten";
+import timetableClassmatesPluginLazy from "./built-in/timetableClassmates/lazy";
 
-// Initialize plugin manager
 const pluginManager = PluginManager.getInstance();
 
-// Register built-in plugins
 pluginManager.registerPlugin(themesPlugin);
 pluginManager.registerPlugin(animatedBackgroundPlugin);
 pluginManager.registerPlugin(notificationCollectorPlugin);
@@ -38,6 +37,7 @@ pluginManager.registerPlugin(enhancedNavigationPluginLazy);
 pluginManager.registerPlugin(globalSearchPluginLazy);
 pluginManager.registerPlugin(gradeAnalyticsPluginLazy);
 pluginManager.registerPlugin(errorPageKittenPlugin);
+pluginManager.registerPlugin(timetableClassmatesPluginLazy);
 
 export async function initializePlugins(): Promise<void> {
   await pluginManager.startAllPlugins();

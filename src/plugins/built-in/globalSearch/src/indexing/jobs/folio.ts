@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes student folio entries from `/seqta/student/folio`.
  *
@@ -61,10 +61,11 @@ export const folioJob: Job = {
     const stored = await ctx.getStoredItems("folio");
     const existing = new Map(stored.map((i) => [i.id, i]));
 
-    const list = await seqtaFetchPayload<FolioListPayload | null>(
-      "/seqta/student/folio",
-      { mode: "list", page: 0, filters: {} },
-    );
+    const list = await seqtaFetchPayload<FolioListPayload | null>("/seqta/student/folio", {
+      mode: "list",
+      page: 0,
+      filters: {},
+    });
     if (!list || !Array.isArray(list.list)) return [];
 
     const items: IndexItem[] = [];
@@ -88,10 +89,10 @@ export const folioJob: Job = {
       }
 
       try {
-        const detail = await seqtaFetchPayload<FolioEntryPayload | null>(
-          "/seqta/student/folio",
-          { mode: "load", id: entry.id },
-        );
+        const detail = await seqtaFetchPayload<FolioEntryPayload | null>("/seqta/student/folio", {
+          mode: "load",
+          id: entry.id,
+        });
         const rawContents = detail?.contents ?? "";
         const flattened = stripEmbedRaw(rawContents);
         const content = flattened.slice(0, 4000);

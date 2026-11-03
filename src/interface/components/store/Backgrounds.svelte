@@ -8,13 +8,12 @@
   const themeManager = ThemeManager.getInstance();
 
   type Background = { id: string; category: string; type: string; lowResUrl: string; highResUrl: string; name: string; description: string; featured?: boolean };
-  let { searchTerm, selectedCategory, onCategoriesChange } = $props<{
+  let { searchTerm, selectedCategory, onCategoriesChange }: {
     searchTerm: string;
     selectedCategory: string;
     onCategoriesChange: (categories: string[]) => void;
-  }>();
+  } = $props();
 
-  // Existing states
   let backgrounds = $state<Background[]>([]);
   let error = $state<string | null>(null);
   let selectedBackground = $state<string | null>(null);
@@ -22,11 +21,9 @@
   let savedBackgrounds = $state<string[]>([]);
   let installingBackgrounds = $state<Set<string>>(new Set());
   let debugInfo = $state<string>('');
-  // New state variables
   let activeTab = $state<'all' | 'installed' | 'photos' | 'videos'>('all');
   let sortBy = $state<'newest' | 'popular' | 'name'>('newest');
 
-  // Existing functions
   const loadStore = async () => {
     try {
       debugInfo = 'Fetching backgrounds...';
@@ -60,10 +57,8 @@
     }
   }
 
-  // Load data on mount
   loadStore();
 
-  // Derived states
   let filteredBackgrounds = $derived((() => {
     let filtered = backgrounds;
     
@@ -74,7 +69,6 @@
       );
     }
 
-    // Apply category filtering
     filtered = filtered.filter((bg: Background) => {
       return selectedCategory === 'All' 
         ? true 
@@ -83,7 +77,6 @@
           : bg.category === selectedCategory;
     });
 
-    // Apply sorting
     filtered.sort((a: Background, b: Background) => {
       switch (sortBy) {
         case 'name':
@@ -101,7 +94,6 @@
   })());
 
   let categories = $derived([...new Set(backgrounds.map(bg => bg.category))]);
-  // Background management functions
   async function saveBackgroundFromUrl(url: string, id: string, fileType: string): Promise<void> {
     try {
       if (!isIndexedDBSupported()) {
@@ -187,7 +179,7 @@
           <button
             class={`px-4 py-2 text-sm font-medium transition-colors rounded-full
               ${activeTab === tab.toLowerCase() ? 'bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700' : 
-                'bg-zinc-100 dark:bg-transparent dark:outline dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
+                'bg-zinc-100 dark:bg-transparent dark:outline-solid dark:outline-zinc-700 hover:bg-zinc-200 dark:hover:bg-zinc-700/20'}`}
             onclick={() => activeTab = tab.toLowerCase() as typeof activeTab}
           >
             {tab}
@@ -266,7 +258,7 @@
 </div>
 
 {#if settingsState.devMode}
-  <div class="p-4 mt-8 rounded bg-zinc-100 dark:bg-zinc-800">
+  <div class="p-4 mt-8 rounded-sm bg-zinc-100 dark:bg-zinc-800">
     <h3 class="mb-2 font-bold">Debug Info:</h3>
     <p>{debugInfo}</p>
     <p>Total backgrounds: {backgrounds.length}</p>

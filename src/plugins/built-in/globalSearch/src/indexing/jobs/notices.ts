@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { htmlToPlainText } from "../utils";
 import { delay } from "@/seqta/utils/delay";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes daily notices from `/seqta/student/load/notices`.
  *
@@ -56,14 +56,16 @@ const fetchNoticesForDate = async (date: string): Promise<NoticeRecord[]> => {
   );
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
-  if (Array.isArray((payload as any).notices)) return (payload as any).notices;
+  const wrapped = payload as { notices?: NoticeRecord[] };
+  if (Array.isArray(wrapped.notices)) return wrapped.notices;
   return [];
 };
 
 const fetchLabelLookup = async (): Promise<Map<number, string>> => {
-  const payload = await seqtaFetchPayload<
-    Array<{ id: number; title?: string }>
-  >("/seqta/student/load/notices", { mode: "labels" });
+  const payload = await seqtaFetchPayload<Array<{ id: number; title?: string }>>(
+    "/seqta/student/load/notices",
+    { mode: "labels" },
+  );
   const map = new Map<number, string>();
   if (Array.isArray(payload)) {
     for (const entry of payload) {
@@ -86,8 +88,7 @@ export const noticesJob: Job = {
     let score = 0;
     const ts = item.metadata?.timestamp;
     if (typeof ts === "string") {
-      const ageDays =
-        (Date.now() - new Date(ts).getTime()) / (1000 * 60 * 60 * 24);
+      const ageDays = (Date.now() - new Date(ts).getTime()) / (1000 * 60 * 60 * 24);
       if (ageDays >= 0 && ageDays <= 7) score += 0.05;
     }
     return score;
@@ -108,19 +109,14 @@ export const noticesJob: Job = {
 
     // Sweep window: always the most recent SWEEP_DAYS, plus extend further
     // back the first time we run until we hit MAX_HISTORY_DAYS.
-    const earliestEverIso = formatYmd(
-      new Date(today.getTime() - MAX_HISTORY_DAYS * 86_400_000),
-    );
+    const earliestEverIso = formatYmd(new Date(today.getTime() - MAX_HISTORY_DAYS * 86_400_000));
 
     const dates: string[] = [];
     for (let offset = 0; offset < SWEEP_DAYS; offset++) {
       const day = new Date(today.getTime() - offset * 86_400_000);
       dates.push(formatYmd(day));
     }
-    if (
-      !progress.lastSweepBackTo ||
-      progress.lastSweepBackTo > earliestEverIso
-    ) {
+    if (!progress.lastSweepBackTo || progress.lastSweepBackTo > earliestEverIso) {
       // Walk backwards in batches of ~30 days per run so we don't blow up
       // a single indexing pass.
       const startBack = parseYmd(progress.lastSweepBackTo) ?? today;
@@ -151,13 +147,9 @@ export const noticesJob: Job = {
 
           const labelTitle =
             notice.label_title ??
-            (typeof notice.label === "number"
-              ? labelLookup.get(notice.label) ?? null
-              : null);
+            (typeof notice.label === "number" ? (labelLookup.get(notice.label) ?? null) : null);
 
-          const bodyText = notice.contents
-            ? htmlToPlainText(notice.contents)
-            : "";
+          const bodyText = notice.contents ? htmlToPlainText(notice.contents) : "";
 
           items.push({
             id,
@@ -194,10 +186,7 @@ export const noticesJob: Job = {
         .filter((d): d is string => !!d);
       if (dateStrings.length > 0) {
         const earliest = dateStrings.sort()[0];
-        if (
-          !progress.earliestDate ||
-          earliest < progress.earliestDate
-        ) {
+        if (!progress.earliestDate || earliest < progress.earliestDate) {
           progress.earliestDate = earliest;
         }
       }

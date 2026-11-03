@@ -1,13 +1,13 @@
 <script lang="ts">
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
+  import Button from "@/interface/components/Button.svelte"
   import { standalone } from "@/interface/utils/standalone.svelte"
 
-  let { section = "all" } = $props<{
+  let { section = "all" }: {
     section?: "all" | "themes" | "backgrounds";
-  }>();
+  } = $props();
   
-  // backgrounds
   let selectedBackground = $state<string | null>(null);
   let selectNoBackground = $state<() => void>(() => { });
     
@@ -20,27 +20,42 @@
 <div class="py-4">
   {#if !standalone.standalone}
     {#if showBackgrounds}
-      <button
-        onclick={() => selectNoBackground()}
+      <Button
+        onClick={() => selectNoBackground()}
         disabled={section === "backgrounds" && !clearTheme}
-        class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50 disabled:opacity-50">
-        {section === "all"
+        text={section === "all"
           ? clearTheme ? 'Clear Theme' : 'Select a Theme'
           : clearTheme ? 'Clear Background' : 'No Background Selected'}
-      </button>
+        class="w-full mb-4"
+      />
     {/if}
-    <div class="relative w-full">
-      <button
-        onclick={() => editMode = !editMode}
-        class="absolute top-0 right-0 z-10 px-2 h-8 text-lg rounded-xl bg-zinc-100 dark:bg-zinc-700">
-        <span class="mr-2">{editMode ? 'Done' : 'Edit'}</span>
-        <span class="font-IconFamily">{editMode ? '\ue9e4' : '\uec38'}</span>
-      </button>
+    <div class="w-full">
+      {#if showThemes || showBackgrounds}
+        <div class="mb-3 flex justify-end">
+          <Button
+            onClick={() => editMode = !editMode}
+            text={editMode ? 'Done' : 'Remove'}
+            icon={editMode ? '\ue9e4' : '\uec38'}
+          />
+        </div>
+      {/if}
 
       {#if showBackgrounds}
         <BackgroundSelector isEditMode={editMode} bind:selectedBackground={selectedBackground} bind:selectNoBackground={selectNoBackground} />
       {/if}
       {#if showThemes}
+        {#if section === "themes"}
+          <Button
+            variant="primary"
+            class="w-full mb-4"
+            icon={""}
+            text="Open theme builder"
+            onClick={() =>
+              void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>
+                launchPageThemeBuilder(),
+              )}
+          />
+        {/if}
         <ThemeSelector isEditMode={editMode} showNavigation={section === "all"} />
       {/if}
     </div>

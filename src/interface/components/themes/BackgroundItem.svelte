@@ -6,7 +6,7 @@
     url?: string | undefined;
   }
 
-  let { bg, isSelected, isEditMode, onClick, onDelete } = $props<{ bg: Background, isSelected: boolean, isEditMode: boolean, onClick: () => void, onDelete: () => void }>();
+  let { bg, isSelected, isEditMode, onClick, onDelete }: { bg: Background, isSelected: boolean, isEditMode: boolean, onClick: () => void, onDelete: () => void } = $props();
 
 </script>
 

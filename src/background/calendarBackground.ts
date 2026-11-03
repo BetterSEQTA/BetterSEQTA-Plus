@@ -29,6 +29,7 @@ import {
   CALENDAR_WEEKLY_ALARM,
   clampSyncWeeks,
   getAutoSyncWeekly,
+  getSyncAssessmentDueDates,
   getSyncWeeksAhead,
   isAnyCalendarConnected,
   markWeeklySyncPending,
@@ -51,14 +52,15 @@ import {
   writeOutlookCalendarState,
   type OutlookCalendarStatus,
 } from "@/seqta/utils/calendarSync/providerStorage";
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
+import { isSeqtaTab } from "@/seqta/utils/seqtaTabMatch";
 
 const WEEKLY_PERIOD_MINUTES = 7 * 24 * 60;
 
 export type CalendarMessageHandler = (
   request: unknown,
   sendResponse: (response?: unknown) => void,
-  sender?: browser.Runtime.MessageSender,
+  sender?: chrome.runtime.MessageSender,
 ) => boolean | void;
 
 export type CalendarMessageHandlerMap = Record<string, CalendarMessageHandler>;
@@ -69,6 +71,7 @@ type StoredTokens = {
   expiresAt?: number;
   lastSyncAt?: number;
   lastSyncOrigin?: string;
+  calendarId?: string;
 };
 
 type OAuthTabFlowOptions = {
@@ -114,7 +117,14 @@ function createProviderBackend(
   return {
     ...backend,
     exchange: (code, redirectUri, verifier) =>
-      exchangeAccountsCode(tokenUrl, code, redirectUri, verifier, notReadyHint, includeErrorDescription),
+      exchangeAccountsCode(
+        tokenUrl,
+        code,
+        redirectUri,
+        verifier,
+        notReadyHint,
+        includeErrorDescription,
+      ),
     refresh: (refreshToken) =>
       refreshAccountsToken(refreshUrl, refreshToken, notReadyHint, includeErrorDescription),
   };
@@ -248,12 +258,11 @@ function waitForOAuthCallback(authTabId: number, opts: OAuthTabFlowOptions): Pro
 
     const onUpdated = (
       tabId: number,
-      changeInfo: browser.Tabs.OnUpdatedChangeInfoType,
-      tab: browser.Tabs.Tab,
+      changeInfo: chrome.tabs.OnUpdatedInfo,
+      tab: chrome.tabs.Tab,
     ) => {
       if (tabId !== authTabId) return;
-      const url =
-        changeInfo.url ?? (changeInfo.status === "complete" ? tab.url : undefined);
+      const url = changeInfo.url ?? (changeInfo.status === "complete" ? tab.url : undefined);
       if (url) finishFromUrl(url, tabId);
     };
 
@@ -279,9 +288,7 @@ function tokenExpiresAt(expiresIn?: number): number {
   return expiresIn ? Date.now() + expiresIn * 1000 : Date.now() + 3_600_000;
 }
 
-async function getValidStoredAccessToken(
-  provider: CalendarProviderBackend,
-): Promise<string> {
+async function getValidStoredAccessToken(provider: CalendarProviderBackend): Promise<string> {
   const state = await provider.read();
   const now = Date.now();
   if (state.accessToken && state.expiresAt && state.expiresAt > now + 60_000) {
@@ -299,7 +306,7 @@ async function getValidStoredAccessToken(
 
 export function registerTrustedAsyncHandler(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
   key: string,
   fn: (request: unknown) => Promise<unknown>,
   onError?: (err: unknown) => unknown,
@@ -324,12 +331,15 @@ export function registerTrustedAsyncHandler(
 }
 
 async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
-  const [state, shared, syncWeeksAhead, autoSyncWeekly] = await Promise.all([
-    readGoogleCalendarState(),
-    readSharedCalendarSyncSettings(),
-    getSyncWeeksAhead(),
-    getAutoSyncWeekly(),
-  ]);
+  const [state, shared, syncWeeksAhead, autoSyncWeekly, syncAssessmentDueDates] = await Promise.all(
+    [
+      readGoogleCalendarState(),
+      readSharedCalendarSyncSettings(),
+      getSyncWeeksAhead(),
+      getAutoSyncWeekly(),
+      getSyncAssessmentDueDates(),
+    ],
+  );
   return {
     configured: isGoogleCalendarConfigured(),
     connected: !!(state.refreshToken || state.accessToken),
@@ -338,6 +348,7 @@ async function getGoogleCalendarStatus(): Promise<GoogleCalendarStatus> {
     lastSyncOrigin: state.lastSyncOrigin,
     syncWeeksAhead,
     autoSyncWeekly,
+    syncAssessmentDueDates,
   };
 }
 
@@ -351,7 +362,9 @@ async function getOutlookCalendarStatus(): Promise<OutlookCalendarStatus> {
   };
 }
 
-async function connectCalendar(provider: CalendarProviderBackend): Promise<GoogleCalendarSyncResult> {
+async function connectCalendar(
+  provider: CalendarProviderBackend,
+): Promise<GoogleCalendarSyncResult> {
   if (!provider.isConfigured()) {
     return { success: false, configured: false, error: provider.notConfiguredError };
   }
@@ -377,8 +390,7 @@ async function connectCalendar(provider: CalendarProviderBackend): Promise<Googl
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : provider.signInFailed;
-    const mismatch =
-      provider.mismatchRe.test(message) || provider.mismatchRe.test(String(err));
+    const mismatch = provider.mismatchRe.test(message) || provider.mismatchRe.test(String(err));
     return {
       success: false,
       configured: true,
@@ -419,7 +431,7 @@ async function connectCalendar(provider: CalendarProviderBackend): Promise<Googl
 
 function registerProviderHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
   provider: CalendarProviderBackend,
   getStatus: () => Promise<unknown>,
 ): void {
@@ -459,49 +471,64 @@ function registerProviderHandlers(
     handlers,
     isTrustedSender,
     `${messagePrefix}GetAccessToken`,
-    () => getValidStoredAccessToken(provider).then((accessToken) => ({ success: true, accessToken })),
+    () =>
+      getValidStoredAccessToken(provider).then((accessToken) => ({ success: true, accessToken })),
     (err) => ({ success: false, error: errMsg(err, "Token refresh failed") }),
   );
 }
 
 export function registerGoogleCalendarMessageHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
 ): void {
   registerProviderHandlers(handlers, isTrustedSender, GOOGLE_BACKEND, getGoogleCalendarStatus);
 
-  registerTrustedAsyncHandler(handlers, isTrustedSender, "googleCalendarEnsureWeeklyAlarm", async () => {
-    await ensureWeeklySyncAlarm();
-    return { success: true };
-  }, (err) => ({
-    success: false,
-    error: err instanceof Error ? err.message : "Could not schedule weekly sync",
-  }));
+  registerTrustedAsyncHandler(
+    handlers,
+    isTrustedSender,
+    "googleCalendarEnsureWeeklyAlarm",
+    async () => {
+      await ensureWeeklySyncAlarm();
+      return { success: true };
+    },
+    (err) => ({
+      success: false,
+      error: err instanceof Error ? err.message : "Could not schedule weekly sync",
+    }),
+  );
 
-  registerTrustedAsyncHandler(handlers, isTrustedSender, "googleCalendarUpdateSyncSettings", async (request) => {
-    const body = request as { syncWeeksAhead?: number; autoSyncWeekly?: boolean };
-    const patch: Record<string, unknown> = {};
-    if (body.syncWeeksAhead != null) patch.syncWeeksAhead = clampSyncWeeks(body.syncWeeksAhead);
-    if (body.autoSyncWeekly != null) patch.autoSyncWeekly = !!body.autoSyncWeekly;
-    if (Object.keys(patch).length > 0) await writeSharedCalendarSyncSettings(patch);
-    await ensureWeeklySyncAlarm();
-    return { success: true, ...(await getGoogleCalendarStatus()) };
-  }, (err) => ({
-    success: false,
-    error: err instanceof Error ? err.message : "Could not update sync settings",
-  }));
+  registerTrustedAsyncHandler(
+    handlers,
+    isTrustedSender,
+    "googleCalendarUpdateSyncSettings",
+    async (request) => {
+      const body = request as {
+        syncWeeksAhead?: number;
+        autoSyncWeekly?: boolean;
+        syncAssessmentDueDates?: boolean;
+      };
+      const patch: Record<string, unknown> = {};
+      if (body.syncWeeksAhead != null) patch.syncWeeksAhead = clampSyncWeeks(body.syncWeeksAhead);
+      if (body.autoSyncWeekly != null) patch.autoSyncWeekly = !!body.autoSyncWeekly;
+      if (body.syncAssessmentDueDates != null) {
+        patch.syncAssessmentDueDates = !!body.syncAssessmentDueDates;
+      }
+      if (Object.keys(patch).length > 0) await writeSharedCalendarSyncSettings(patch);
+      await ensureWeeklySyncAlarm();
+      return { success: true, ...(await getGoogleCalendarStatus()) };
+    },
+    (err) => ({
+      success: false,
+      error: err instanceof Error ? err.message : "Could not update sync settings",
+    }),
+  );
 }
 
 export function registerOutlookCalendarMessageHandlers(
   handlers: CalendarMessageHandlerMap,
-  isTrustedSender: (sender?: browser.Runtime.MessageSender) => boolean,
+  isTrustedSender: (sender?: chrome.runtime.MessageSender) => boolean,
 ): void {
   registerProviderHandlers(handlers, isTrustedSender, OUTLOOK_BACKEND, getOutlookCalendarStatus);
-}
-
-function isSeqtaTab(tab: browser.Tabs.Tab): boolean {
-  const title = tab.title ?? "";
-  return title.includes("SEQTA Learn") || title.includes("SEQTA Engage");
 }
 
 export async function ensureWeeklySyncAlarm(): Promise<void> {

@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 
 export interface EventMapEntry {
   id: string;
@@ -34,9 +34,7 @@ export function getStoredFingerprint(
   return normalizeEventMapEntry(value)?.fingerprint;
 }
 
-export function getStoredEventId(
-  value: string | EventMapEntry | undefined,
-): string | undefined {
+export function getStoredEventId(value: string | EventMapEntry | undefined): string | undefined {
   return normalizeEventMapEntry(value)?.id;
 }
 

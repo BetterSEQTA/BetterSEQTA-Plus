@@ -1,11 +1,13 @@
 import renderSvelte from "@/interface/main";
+import { getAssessmentsData } from "./api";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import AssessmentsOverview from "./AssessmentsOverview.svelte";
 import SkeletonLoader from "./SkeletonLoader.svelte";
 import ErrorState from "./ErrorState.svelte";
 import { unmount } from "svelte";
+import { toMountableComponent } from "@/types/mountableComponent";
 
-let currentApp: any = null;
+let currentApp: ReturnType<typeof renderSvelte> | null = null;
 let themeObserver: MutationObserver | null = null;
 type ThemeSettingKey =
   | "selectedColor"
@@ -38,17 +40,11 @@ const ACCENT_CSS_VARS = [
 function extractSolidColor(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed || trimmed === "initial") return null;
-  if (
-    trimmed.startsWith("#") ||
-    trimmed.startsWith("rgb") ||
-    trimmed.startsWith("hsl")
-  ) {
+  if (trimmed.startsWith("#") || trimmed.startsWith("rgb") || trimmed.startsWith("hsl")) {
     return trimmed;
   }
   if (trimmed.includes("gradient")) {
-    const match = trimmed.match(
-      /#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/i,
-    );
+    const match = trimmed.match(/#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/i);
     return match?.[0] ?? null;
   }
   return null;
@@ -71,18 +67,16 @@ function resolvePageAccentColor(): string {
 function syncOverviewTheme(target: HTMLElement) {
   const computed = getComputedStyle(document.documentElement);
   for (const name of THEME_CSS_VARS) {
-    const value = document.documentElement.style.getPropertyValue(name).trim()
-      || computed.getPropertyValue(name).trim();
+    const value =
+      document.documentElement.style.getPropertyValue(name).trim() ||
+      computed.getPropertyValue(name).trim();
     if (value) target.style.setProperty(name, value);
   }
 
   const accent = resolvePageAccentColor();
   target.style.setProperty("--bsplus-overview-accent", accent);
   target.style.setProperty("--better-main", accent);
-  target.classList.toggle(
-    "dark",
-    document.documentElement.classList.contains("dark"),
-  );
+  target.classList.toggle("dark", document.documentElement.classList.contains("dark"));
 }
 
 function watchOverviewTheme(root: HTMLElement) {
@@ -119,16 +113,19 @@ function prepareContainer(container: HTMLElement) {
   watchOverviewTheme(container);
 }
 
-export function renderGrid(container: HTMLElement, data: any) {
+export function renderGrid(
+  container: HTMLElement,
+  data: Awaited<ReturnType<typeof getAssessmentsData>>,
+) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(AssessmentsOverview, container, { data });
+  currentApp = renderSvelte(toMountableComponent(AssessmentsOverview), container, { data });
 }
 
 export function renderSkeletonLoader(container: HTMLElement) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(SkeletonLoader, container);
+  currentApp = renderSvelte(toMountableComponent(SkeletonLoader), container);
 }
 
 export function renderLoadingState(container: HTMLElement) {
@@ -138,7 +135,7 @@ export function renderLoadingState(container: HTMLElement) {
 export function renderErrorState(container: HTMLElement, error: string) {
   if (currentApp) unmount(currentApp);
   prepareContainer(container);
-  currentApp = renderSvelte(ErrorState, container, { error });
+  currentApp = renderSvelte(toMountableComponent(ErrorState), container, { error });
 }
 
 export function teardownOverviewUi() {

@@ -4,7 +4,7 @@
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
 
-  let { onClose } = $props<{ onClose: () => void }>();
+  let { onClose }: { onClose: () => void } = $props();
   let modalElement: HTMLElement;
 
   onMount(() => {
@@ -29,7 +29,7 @@
 </script>
 
 <div
-  class="flex fixed inset-0 z-[99999] justify-center items-center bg-black/50"
+  class="flex fixed inset-0 z-99999 justify-center items-center bg-black/50"
   onclick={(e) => {
     if (e.target === e.currentTarget) onClose();
   }}

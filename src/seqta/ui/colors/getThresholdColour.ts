@@ -1,12 +1,12 @@
 import Color from "color";
-export function GetThresholdOfColor(color: any) {
+export function GetThresholdOfColor(color: string) {
   if (!color) return 0;
   // Case-insensitive regular expression for matching RGBA colors
   const rgbaRegex = /rgba?\(([^)]+)\)/gi;
 
   // Check if the color string is a gradient (linear or radial)
   if (color.includes("gradient")) {
-    let gradientThresholds = [];
+    const gradientThresholds = [];
 
     // Find and replace all instances of RGBA in the gradient
     let match;
@@ -16,18 +16,13 @@ export function GetThresholdOfColor(color: any) {
       const [r, g, b] = rgbaString.split(",").map((str) => str.trim());
 
       // Compute the threshold using your existing algorithm
-      const threshold = Math.sqrt(
-        parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2,
-      );
+      const threshold = Math.sqrt(parseInt(r) ** 2 + parseInt(g) ** 2 + parseInt(b) ** 2);
 
-      // Store the computed threshold
       gradientThresholds.push(threshold);
     }
 
-    // Calculate the average threshold
     const averageThreshold =
-      gradientThresholds.reduce((acc, val) => acc + val, 0) /
-      gradientThresholds.length;
+      gradientThresholds.reduce((acc, val) => acc + val, 0) / gradientThresholds.length;
 
     return averageThreshold;
   } else {

@@ -19,26 +19,17 @@ function shouldDedupeAsSameCourseSPA(item: IndexItem): boolean {
   if (item.renderComponentId === "course") return true;
   if (item.actionId === "course") return true;
   if (item.actionId === "subjectcourse") return true;
-  if (
-    item.actionId === "passive" &&
-    item.metadata?.sourcePage === "/courses"
-  ) {
+  if (item.actionId === "passive" && item.metadata?.sourcePage === "/courses") {
     return true;
   }
   return false;
 }
 
-function programmeMetaclassIds(
-  item: IndexItem,
-): { programme?: number; metaclass?: number } {
+function programmeMetaclassIds(item: IndexItem): { programme?: number; metaclass?: number } {
   const md = item.metadata ?? {};
   return {
-    programme: toFiniteNumber(
-      md.programme ?? md.programmeId ?? md.programmeID,
-    ),
-    metaclass: toFiniteNumber(
-      md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId,
-    ),
+    programme: toFiniteNumber(md.programme ?? md.programmeId ?? md.programmeID),
+    metaclass: toFiniteNumber(md.metaclass ?? md.metaclassId ?? md.metaclassID ?? md.subjectId),
   };
 }
 
@@ -64,9 +55,7 @@ function shouldDedupeAsSameAssessmentSPA(item: IndexItem): boolean {
 export function assessmentDestinationKey(item: IndexItem): string | undefined {
   if (!shouldDedupeAsSameAssessmentSPA(item)) return undefined;
   const md = item.metadata ?? {};
-  const assessmentId = toFiniteNumber(
-    md.assessmentId ?? md.assessmentID ?? md.entityId,
-  );
+  const assessmentId = toFiniteNumber(md.assessmentId ?? md.assessmentID ?? md.entityId);
   if (assessmentId === undefined) return undefined;
   return `assessment:${assessmentId}`;
 }
@@ -76,9 +65,7 @@ function searchDedupeKey(item: IndexItem): string | undefined {
 }
 
 function isPassiveLike(item: IndexItem): boolean {
-  return (
-    item.actionId === "passive" || item.metadata?.source === "passive"
-  );
+  return item.actionId === "passive" || item.metadata?.source === "passive";
 }
 
 function hasProgrammeMetaclass(item: IndexItem): boolean {
@@ -93,10 +80,8 @@ function pickBetterCourseNavDuplicate(a: IndexItem, b: IndexItem): IndexItem {
   if (!aP && bP) return a;
   if (a.category === "courses" && b.category !== "courses") return a;
   if (b.category === "courses" && a.category !== "courses") return b;
-  if (a.renderComponentId === "course" && b.renderComponentId !== "course")
-    return a;
-  if (b.renderComponentId === "course" && a.renderComponentId !== "course")
-    return b;
+  if (a.renderComponentId === "course" && b.renderComponentId !== "course") return a;
+  if (b.renderComponentId === "course" && a.renderComponentId !== "course") return b;
   const ad = typeof a.dateAdded === "number" ? a.dateAdded : 0;
   const bd = typeof b.dateAdded === "number" ? b.dateAdded : 0;
   return ad >= bd ? a : b;
@@ -118,11 +103,7 @@ function pickBetterAssessmentDuplicate(a: IndexItem, b: IndexItem): IndexItem {
   return ad >= bd ? a : b;
 }
 
-function pickBetterSearchDuplicate(
-  a: IndexItem,
-  b: IndexItem,
-  key: string,
-): IndexItem {
+function pickBetterSearchDuplicate(a: IndexItem, b: IndexItem, key: string): IndexItem {
   return key.startsWith("assessment:")
     ? pickBetterAssessmentDuplicate(a, b)
     : pickBetterCourseNavDuplicate(a, b);
@@ -185,12 +166,6 @@ function mergeCombinedDuplicates(
   };
 }
 
-export function dedupeCombinedResultsByCourseNav(
-  results: CombinedResult[],
-): CombinedResult[] {
-  return dedupeByCanonicalKey(
-    results,
-    dynamicSearchKey,
-    mergeCombinedDuplicates,
-  );
+export function dedupeCombinedResultsByCourseNav(results: CombinedResult[]): CombinedResult[] {
+  return dedupeByCanonicalKey(results, dynamicSearchKey, mergeCombinedDuplicates);
 }

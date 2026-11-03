@@ -2,6 +2,10 @@ name: Build Extension
 description: Install dependencies, build Chrome and Firefox extensions, and package zips.
 
 inputs:
+  include_sources:
+    description: Include the committed source and Firefox build instructions.
+    required: false
+    default: "false"
   gh_release_update_check:
     description: Enable GitHub release update checker in the built extension.
     required: false
@@ -29,6 +33,9 @@ outputs:
   firefox_zip:
     description: Path to the Firefox extension zip
     value: ${{ steps.zip.outputs.firefox_zip }}
+  sources_zip:
+    description: Path to the Firefox source zip when include_sources is true
+    value: ${{ steps.zip.outputs.sources_zip }}
 
 runs:
   using: composite
@@ -56,4 +63,4 @@ runs:
       env:
         UPDATE_CHANNEL: ${{ inputs.update_channel }}
         BUILD_LABEL: ${{ inputs.build_label }}
-      run: node scripts/package-extension-zips.mjs "${{ steps.version.outputs.version }}"
+      run: node scripts/package-extension-zips.mjs "${{ steps.version.outputs.version }}" "${{ inputs.include_sources == 'true' && '--sources' || '' }}"

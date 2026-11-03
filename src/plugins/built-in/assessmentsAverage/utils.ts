@@ -1,30 +1,27 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements.ts";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { getEngageAssessmentStudentId } from "@/seqta/utils/engageAssessmentStudent";
 import {
   getEngageAssessmentReportUrl,
+  randomPdfFileName,
   requestEngageAssessmentPdf,
 } from "./engage.ts";
-import {
-  ensurePdfjsWorker,
-  getPdfjsPageContextUrls,
-} from "@/lib/pdfjsExtension.ts";
+import { ensurePdfjsWorker, getPdfjsPageContextUrls } from "@/lib/pdfjsExtension.ts";
 import * as pdfjs from "pdfjs-dist";
 import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetText";
+import { delay } from "@/seqta/utils/delay";
+import type {
+  AssessmentMark,
+  AssessmentsAverageApi,
+  WeightingEntry,
+  WeightingsMap,
+} from "./pluginApi";
 
 export { extractWeightFromCoversheetText };
+export type { WeightingEntry, WeightingsMap } from "./pluginApi";
 
 export const WEIGHTING_SCHEMA_VERSION = 1;
-
-export interface WeightingEntry {
-  weight: string;
-  fingerprint: string;
-  pluginVersion: number;
-  refreshing?: boolean;
-}
-
-export type WeightingsMap = Record<string, WeightingEntry>;
 
 /** Primary storage key for weightings / overrides. */
 export function assessmentIdKey(mark: { id: string | number }): string {
@@ -45,7 +42,7 @@ export function assessmentTitleLookupKey(mark: {
   return title;
 }
 
-function registerAssessmentLookup(api: any, mark: any) {
+function registerAssessmentLookup(api: AssessmentsAverageApi, mark: AssessmentMark) {
   const assessmentID = assessmentIdKey(mark);
   const next: Record<string, string> = {
     ...api.storage.assessments,
@@ -72,7 +69,7 @@ function collectMarksFromFiberState(state: Record<string, unknown>): MarkLike[] 
 }
 
 async function resolveAssessmentId(
-  api: any,
+  api: AssessmentsAverageApi,
   title: string,
   marks?: MarkLike[],
 ): Promise<string | undefined> {
@@ -81,10 +78,10 @@ async function resolveAssessmentId(
 
   if (!resolvedMarks) {
     try {
-      const state = await ReactFiber.find(
+      const state = (await ReactFiber.find(
         "[class*='AssessmentList__items___']",
-      ).getState();
-      resolvedMarks = collectMarksFromFiberState(state);
+      ).getState()) as Record<string, unknown> | null;
+      resolvedMarks = collectMarksFromFiberState(state ?? {});
     } catch {
       resolvedMarks = [];
     }
@@ -112,9 +109,8 @@ async function resolveAssessmentId(
   return undefined;
 }
 
-export function computeFingerprint(mark: any): string {
-  const score =
-    mark?.results?.percentage ?? mark?.results?.score ?? null;
+export function computeFingerprint(mark: AssessmentMark): string {
+  const score = mark?.results?.percentage ?? mark?.results?.score ?? null;
   return JSON.stringify([
     mark?.status ?? "",
     Boolean(mark?.graded),
@@ -125,7 +121,7 @@ export function computeFingerprint(mark: any): string {
   ]);
 }
 
-function migrateWeightings(api: any) {
+function migrateWeightings(api: AssessmentsAverageApi) {
   const w = api.storage.weightings ?? {};
   let dirty = false;
   const out: WeightingsMap = {};
@@ -154,7 +150,7 @@ function migrateWeightings(api: any) {
   if (dirty) api.storage.weightings = out;
 }
 
-export async function initStorage(api: any) {
+export async function initStorage(api: AssessmentsAverageApi) {
   await api.storage.loaded;
 
   if (!api.storage.weightings) {
@@ -170,7 +166,7 @@ export async function initStorage(api: any) {
   migrateWeightings(api);
 }
 
-export function clearStuck(api: any) {
+export function clearStuck(api: AssessmentsAverageApi) {
   const map = (api.storage.weightings ?? {}) as WeightingsMap;
   let dirty = false;
   const out: WeightingsMap = {};
@@ -197,10 +193,7 @@ export function clearStuck(api: any) {
 }
 
 // Helper function to find actual class names by their base pattern
-export const getClassByPattern = (
-  element: Element | Document,
-  basePattern: string,
-): string => {
+export const getClassByPattern = (element: Element | Document, basePattern: string): string => {
   const classes = Array.from(element.querySelectorAll("*"))
     .flatMap((el) => Array.from(el.classList))
     .filter((className) => className.startsWith(basePattern));
@@ -244,14 +237,15 @@ function formatWeightDisplay(weighting: string): string {
 }
 
 function saveWeightingOverride(
-  api: any,
+  api: AssessmentsAverageApi,
   assessmentID: string,
   raw: string,
 ): { ok: boolean; error?: string } {
   const trimmed = raw.trim();
   if (trimmed === "") {
-    const { [assessmentID]: _, ...rest } = api.storage.weightingOverrides;
-    api.storage.weightingOverrides = rest;
+    const overrides = { ...api.storage.weightingOverrides };
+    delete overrides[assessmentID];
+    api.storage.weightingOverrides = overrides;
     document.dispatchEvent(new CustomEvent("betterseqta:overrideChanged"));
     return { ok: true };
   }
@@ -271,14 +265,12 @@ function saveWeightingOverride(
 
 function attachWeightInputListeners(
   input: HTMLInputElement,
-  api: any,
+  api: AssessmentsAverageApi,
   assessmentID: string,
 ) {
   const save = () => {
     const result = saveWeightingOverride(api, assessmentID, input.value);
-    input.style.borderColor = result.ok
-      ? "rgba(128,128,128,0.35)"
-      : "rgba(255,80,80,0.6)";
+    input.style.borderColor = result.ok ? "rgba(128,128,128,0.35)" : "rgba(255,80,80,0.6)";
   };
 
   input.addEventListener("blur", save);
@@ -291,7 +283,7 @@ function updateWeightLabelContent(
   weightLabel: HTMLElement,
   weighting: string | undefined,
   assessmentID: string | undefined,
-  api: any,
+  api: AssessmentsAverageApi,
   refreshing = false,
 ) {
   const existingInput = weightLabel.querySelector(
@@ -334,10 +326,7 @@ function updateWeightLabelContent(
 
   const span = document.createElement("span");
   span.className = "betterseqta-weight-value";
-  const baseText =
-    weighting && weighting !== "N/A"
-      ? formatWeightDisplay(weighting)
-      : "N/A";
+  const baseText = weighting && weighting !== "N/A" ? formatWeightDisplay(weighting) : "N/A";
   span.textContent = refreshing ? `${baseText} ↻` : baseText;
   if (refreshing) {
     span.style.opacity = "0.7";
@@ -347,9 +336,9 @@ function updateWeightLabelContent(
 }
 
 function createWeightLabel(
-  assessmentItem: Element,
+  assessmentItem: HTMLElement,
   weighting: string | undefined,
-  api: any,
+  api: AssessmentsAverageApi,
   refreshing = false,
   assessmentID?: string,
 ) {
@@ -373,25 +362,16 @@ function createWeightLabel(
   const hasNativeLabel = !!statsContainer.querySelector(
     `[class*='Label__Label___']:not(.betterseqta-weight-label)`,
   );
-  statsContainer.style.justifyContent = hasNativeLabel
-    ? "space-between"
-    : "flex-end";
+  statsContainer.style.justifyContent = hasNativeLabel ? "space-between" : "flex-end";
 
-  const resolvedAssessmentId =
-    assessmentID ?? assessmentItem.dataset.betterseqtaAssessmentId;
+  const resolvedAssessmentId = assessmentID ?? assessmentItem.dataset.betterseqtaAssessmentId;
 
   const existingLabel = statsContainer.querySelector(
     ".betterseqta-weight-label",
   ) as HTMLElement | null;
 
   if (existingLabel) {
-    updateWeightLabelContent(
-      existingLabel,
-      weighting,
-      resolvedAssessmentId,
-      api,
-      refreshing,
-    );
+    updateWeightLabelContent(existingLabel, weighting, resolvedAssessmentId, api, refreshing);
     return;
   }
 
@@ -408,13 +388,13 @@ function createWeightLabel(
   const weightLabel = existingNativeLabel
     ? (existingNativeLabel.cloneNode(true) as HTMLElement)
     : (() => {
-      const labelClass = getClassByPattern(document, "Label__Label___");
-      const innerTextClass = getClassByPattern(document, "Label__innerText___");
-      const el = document.createElement("label");
-      el.className = labelClass;
-      el.innerHTML = `<div class="${innerTextClass}">Weight</div>`;
-      return el;
-    })();
+        const labelClass = getClassByPattern(document, "Label__Label___");
+        const innerTextClass = getClassByPattern(document, "Label__innerText___");
+        const el = document.createElement("label");
+        el.className = labelClass;
+        el.innerHTML = `<div class="${innerTextClass}">Weight</div>`;
+        return el;
+      })();
 
   weightLabel.classList.add("betterseqta-weight-label");
   weightLabel.style.flex = "none";
@@ -423,18 +403,12 @@ function createWeightLabel(
   const innerTextDiv = weightLabel.querySelector(`[class*='Label__innerText___']`);
   if (innerTextDiv) innerTextDiv.textContent = "Weight";
 
-  updateWeightLabelContent(
-    weightLabel,
-    weighting,
-    resolvedAssessmentId,
-    api,
-    refreshing,
-  );
+  updateWeightLabelContent(weightLabel, weighting, resolvedAssessmentId, api, refreshing);
   statsContainer.appendChild(weightLabel);
 }
 
 export const isFirefox =
-  navigator.userAgent.toLowerCase().indexOf("firefox") > -1 &&
+  navigator.userAgent.toLowerCase().includes("firefox") &&
   !navigator.userAgent.toLowerCase().includes("seamonkey") &&
   !navigator.userAgent.toLowerCase().includes("waterfox");
 
@@ -523,18 +497,13 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
     }
 
     if (!response.ok) {
-      throw new Error(
-        `Failed to fetch PDF: ${response.status} ${response.statusText}`,
-      );
+      throw new Error(`Failed to fetch PDF: ${response.status} ${response.statusText}`);
     }
 
     return await response.arrayBuffer();
-  } catch (error: any) {
-    if (
-      error?.message?.includes("blob") ||
-      error?.message?.includes("Security") ||
-      error?.message?.includes("CSP")
-    ) {
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes("blob") || message.includes("Security") || message.includes("CSP")) {
       return await fetchPDFAsArrayBuffer(url);
     }
     throw error;
@@ -544,8 +513,7 @@ async function fetchPDFAsArrayBuffer(url: string): Promise<ArrayBuffer> {
 export async function extractPDFText(url: string): Promise<string> {
   try {
     if (isFirefox) {
-      const { lib: pdfLibUrl, worker: pdfWorkerUrl } =
-        getPdfjsPageContextUrls();
+      const { lib: pdfLibUrl, worker: pdfWorkerUrl } = getPdfjsPageContextUrls();
       const pdfLibInj = escJsSingleQuoted(pdfLibUrl);
       const pdfWorkerInj = escJsSingleQuoted(pdfWorkerUrl);
 
@@ -628,9 +596,7 @@ export async function extractPDFText(url: string): Promise<string> {
             if (event.data.success) {
               resolve(event.data.text);
             } else {
-              reject(
-                new Error(event.data.error || "Failed to extract PDF text"),
-              );
+              reject(new Error(event.data.error || "Failed to extract PDF text"));
             }
           }
         };
@@ -660,7 +626,6 @@ export async function extractPDFText(url: string): Promise<string> {
       useSystemFonts: true,
       verbosity: 0,
       useWorkerFetch: false,
-      isEvalSupported: false,
     }).promise;
 
     let text = "";
@@ -668,7 +633,7 @@ export async function extractPDFText(url: string): Promise<string> {
     for (let i = 1; i <= pdf.numPages; i++) {
       const page = await pdf.getPage(i);
       const content = await page.getTextContent();
-      text += content.items.map((item: any) => item.str).join(" ") + "\n";
+      text += content.items.map((item) => ("str" in item ? String(item.str) : "")).join(" ") + "\n";
     }
 
     return text;
@@ -678,37 +643,27 @@ export async function extractPDFText(url: string): Promise<string> {
   }
 }
 
-function randomStudentPdfFileName(): string {
-  // Matches SEQTA Learn coversheet tokens, e.g. "mrr158ct.pdf".
-  return `${Math.random().toString(36).slice(2, 10)}.pdf`;
-}
-
 async function requestStudentAssessmentPdf(params: {
   assessmentID: string | number;
   metaclassID: string | number;
   studentID: string | number;
 }): Promise<string> {
-  const fileName = randomStudentPdfFileName();
+  const fileName = randomPdfFileName();
 
-  const printResponse = await fetch(
-    `${location.origin}/seqta/student/print/assessment`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json; charset=utf-8" },
-      credentials: "include",
-      body: JSON.stringify({
-        id: Number(params.assessmentID),
-        metaclass: Number(params.metaclassID),
-        student: Number(params.studentID),
-        fileName,
-      }),
-    },
-  );
+  const printResponse = await fetch(`${location.origin}/seqta/student/print/assessment`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+    credentials: "include",
+    body: JSON.stringify({
+      id: Number(params.assessmentID),
+      metaclass: Number(params.metaclassID),
+      student: Number(params.studentID),
+      fileName,
+    }),
+  });
 
   if (!printResponse.ok) {
-    throw new Error(
-      `Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`,
-    );
+    throw new Error(`Failed to generate PDF: ${printResponse.status} ${printResponse.statusText}`);
   }
 
   const data = (await printResponse.json()) as {
@@ -734,11 +689,7 @@ function getStudentAssessmentReportUrl(fileName: string): string {
   return `${location.origin}/seqta/student/load/file?${params.toString()}`;
 }
 
-async function extractPDFTextWithRetry(
-  url: string,
-  attempts = 3,
-  delayMs = 1500,
-): Promise<string> {
+async function extractPDFTextWithRetry(url: string, attempts = 3, delayMs = 1500): Promise<string> {
   let lastError: unknown;
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
@@ -751,20 +702,30 @@ async function extractPDFTextWithRetry(
         message.includes("empty") ||
         message.includes("Failed to fetch PDF");
       if (!retryable || attempt === attempts - 1) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delayMs));
+      await delay(delayMs);
     }
   }
   throw lastError;
 }
 
-async function handleWeightings(mark: any, api: any) {
+async function handleWeightings(mark: AssessmentMark, api: AssessmentsAverageApi) {
   const assessmentID = assessmentIdKey(mark);
   const metaclassID = mark.metaclassID;
+  if (metaclassID == null || metaclassID === "") {
+    api.storage.weightings = {
+      ...api.storage.weightings,
+      [assessmentID]: {
+        weight: "N/A",
+        fingerprint: computeFingerprint(mark),
+        pluginVersion: WEIGHTING_SCHEMA_VERSION,
+      },
+    };
+    document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
+    return;
+  }
 
   const fingerprint = computeFingerprint(mark);
-  const existing = api.storage.weightings[assessmentID] as
-    | WeightingEntry
-    | undefined;
+  const existing = api.storage.weightings[assessmentID] as WeightingEntry | undefined;
 
   // Skip only when we already have a real numeric weight for this fingerprint.
   // "N/A" / "processing" / in-flight refreshing must not permanently block retries.
@@ -830,18 +791,21 @@ async function handleWeightings(mark: any, api: any) {
         metaclassID,
         studentID,
       });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await delay(1000);
       pdfUrl = getEngageAssessmentReportUrl(reportFile);
     } else {
       const userInfo = await getUserInfo();
       const userID = userInfo.id;
+      if (userID == null) {
+        throw new Error("Could not resolve student ID from user info");
+      }
 
       const reportFile = await requestStudentAssessmentPdf({
         assessmentID,
         metaclassID,
         studentID: userID,
       });
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await delay(1000);
       pdfUrl = getStudentAssessmentReportUrl(reportFile);
     }
 
@@ -852,18 +816,19 @@ async function handleWeightings(mark: any, api: any) {
     let text: string;
     try {
       text = await extractPDFTextWithRetry(pdfUrl);
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
       if (
         isFirefox &&
-        (error?.message?.includes("blob") ||
-          error?.message?.includes("Security") ||
-          error?.message?.includes("CSP") ||
-          error?.message?.includes("empty"))
+        (message.includes("blob") ||
+          message.includes("Security") ||
+          message.includes("CSP") ||
+          message.includes("empty"))
       ) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await delay(2000);
         text = await extractPDFTextWithRetry(pdfUrl, 2, 2000);
       } else {
-        throw new Error(`PDF extraction failed: ${error.message}`);
+        throw new Error(`PDF extraction failed: ${message}`, { cause: error });
       }
     }
 
@@ -877,11 +842,8 @@ async function handleWeightings(mark: any, api: any) {
         pluginVersion: WEIGHTING_SCHEMA_VERSION,
       },
     };
-  } catch (error: any) {
-    console.error(
-      `[BetterSEQTA+] Weighting fetch failed for assessment ${assessmentID}:`,
-      error,
-    );
+  } catch (error: unknown) {
+    console.error("[BetterSEQTA+] Weighting fetch failed for assessment:", assessmentID, error);
     api.storage.weightings = {
       ...api.storage.weightings,
       [assessmentID]: {
@@ -895,10 +857,11 @@ async function handleWeightings(mark: any, api: any) {
   document.dispatchEvent(new CustomEvent("betterseqta:weightingsChanged"));
 }
 
-export async function parseAssessments(api: any) {
-  const state = await ReactFiber.find(
-    "[class*='AssessmentList__items___']",
-  ).getState();
+export async function parseAssessments(api: AssessmentsAverageApi) {
+  const state = (await ReactFiber.find("[class*='AssessmentList__items___']").getState()) as Record<
+    string,
+    MarkLike[] | undefined
+  >;
 
   const marks = [
     ...(state["marks"] ?? []),
@@ -908,30 +871,31 @@ export async function parseAssessments(api: any) {
   ];
   if (!marks) return;
 
-  await Promise.all(marks.map((mark: any) => handleWeightings(mark, api)));
+  await Promise.all(marks.map((mark: AssessmentMark) => handleWeightings(mark, api)));
 }
 
-export async function processAssessments(api: any, assessmentItems: Element[]) {
+export async function processAssessments(
+  api: AssessmentsAverageApi,
+  assessmentItems: HTMLElement[],
+) {
   let weightedTotal = 0;
   let totalWeight = 0;
   let hasInaccurateWeighting = false;
   let hasRefreshingWeighting = false;
   let count = 0;
 
-  let fiberMarks: MarkLike[] = [];
+  let fiberMarks: MarkLike[];
   try {
-    const state = await ReactFiber.find(
+    const state = (await ReactFiber.find(
       "[class*='AssessmentList__items___']",
-    ).getState();
-    fiberMarks = collectMarksFromFiberState(state);
+    ).getState()) as Record<string, unknown> | null;
+    fiberMarks = collectMarksFromFiberState(state ?? {});
   } catch {
     fiberMarks = [];
   }
 
   for (const assessmentItem of assessmentItems) {
-    const titleEl = assessmentItem.querySelector(
-      `[class*='AssessmentItem__title___']`,
-    );
+    const titleEl = assessmentItem.querySelector(`[class*='AssessmentItem__title___']`);
     if (!titleEl) continue;
 
     const title = titleEl.textContent?.trim();
@@ -939,24 +903,19 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
 
     const assessmentID = await resolveAssessmentId(api, title, fiberMarks);
     if (assessmentID) {
-      (assessmentItem as HTMLElement).dataset.betterseqtaAssessmentId =
-        assessmentID;
+      assessmentItem.dataset.betterseqtaAssessmentId = assessmentID;
     }
     const entry = assessmentID
       ? (api.storage.weightings?.[assessmentID] as WeightingEntry | undefined)
       : undefined;
     const autoWeighting = entry?.weight;
-    const override = assessmentID
-      ? api.storage.weightingOverrides?.[assessmentID]
-      : undefined;
+    const override = assessmentID ? api.storage.weightingOverrides?.[assessmentID] : undefined;
     const weighting = override ?? autoWeighting;
     const refreshing = !override && Boolean(entry?.refreshing);
 
     createWeightLabel(assessmentItem, weighting, api, refreshing, assessmentID);
 
-    const gradeElement = assessmentItem.querySelector(
-      `[class*='Thermoscore__text___']`,
-    );
+    const gradeElement = assessmentItem.querySelector(`[class*='Thermoscore__text___']`);
     if (!gradeElement) continue;
     const grade = parseGrade(gradeElement.textContent || "");
     if (grade <= 0) continue;
@@ -968,7 +927,7 @@ export async function processAssessments(api: any, assessmentItems: Element[]) {
       weighting === "processing"
     ) {
       hasInaccurateWeighting = true;
-      continue
+      continue;
     } else {
       const weight = parseFloat(weighting);
 
@@ -1008,9 +967,9 @@ function resolveTabSetClasses(): Record<string, string> {
   const resolved: Record<string, string> = {};
 
   // First pass: scan live DOM elements (fast, covers currently-applied classes)
-  const allClasses = Array.from(
-    document.querySelectorAll('[class*="TabSet__"]'),
-  ).flatMap((el) => Array.from(el.classList));
+  const allClasses = Array.from(document.querySelectorAll('[class*="TabSet__"]')).flatMap((el) =>
+    Array.from(el.classList),
+  );
 
   for (const pattern of patterns) {
     const found = allClasses.find((c) => c.startsWith(pattern));
@@ -1027,13 +986,10 @@ function resolveTabSetClasses(): Record<string, string> {
         try {
           for (const rule of Array.from(sheet.cssRules ?? [])) {
             if (!(rule instanceof CSSStyleRule)) continue;
-            const selectorClasses =
-              rule.selectorText.match(/\.([\w-]+)/g) ?? [];
+            const selectorClasses = rule.selectorText.match(/\.([\w-]+)/g) ?? [];
             for (const pattern of missing) {
               if (!resolved[pattern]) {
-                const match = selectorClasses.find((c) =>
-                  c.slice(1).startsWith(pattern),
-                );
+                const match = selectorClasses.find((c) => c.slice(1).startsWith(pattern));
                 if (match) resolved[pattern] = match.slice(1);
               }
             }
@@ -1056,19 +1012,19 @@ function resolveTabSetClasses(): Record<string, string> {
 
 interface WeightingTabContext {
   assessmentID?: string;
-  autoWeight?: number;
+  autoWeight?: string;
   override?: number | string;
   weightingUnavailable: boolean;
   statusNote: string;
 }
 
-async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext> {
+async function resolveWeightingTabContext(
+  api: AssessmentsAverageApi,
+): Promise<WeightingTabContext> {
   const selectedItem = document.querySelector(
     "[class*='AssessmentItem__AssessmentItem___'][class*='selected___']",
   ) as HTMLElement | null;
-  const titleEl = selectedItem?.querySelector(
-    "[class*='AssessmentItem__title___']",
-  );
+  const titleEl = selectedItem?.querySelector("[class*='AssessmentItem__title___']");
   const title = titleEl?.textContent?.trim();
   const assessmentID =
     selectedItem?.dataset.betterseqtaAssessmentId ??
@@ -1080,12 +1036,8 @@ async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext
   const rawWeight = entry?.weight;
   const weightingUnavailable = rawWeight === "N/A";
   const autoWeight =
-    rawWeight && rawWeight !== "processing" && rawWeight !== "N/A"
-      ? rawWeight
-      : undefined;
-  const override = assessmentID
-    ? api.storage.weightingOverrides?.[assessmentID]
-    : undefined;
+    rawWeight && rawWeight !== "processing" && rawWeight !== "N/A" ? rawWeight : undefined;
+  const override = assessmentID ? api.storage.weightingOverrides?.[assessmentID] : undefined;
 
   const statusNote = !assessmentID
     ? ""
@@ -1104,12 +1056,8 @@ async function resolveWeightingTabContext(api: any): Promise<WeightingTabContext
   };
 }
 
-function renderWeightingTabHtml(
-  sheet: HTMLElement,
-  context: WeightingTabContext,
-) {
-  const { assessmentID, autoWeight, override, weightingUnavailable, statusNote } =
-    context;
+function renderWeightingTabHtml(sheet: HTMLElement, context: WeightingTabContext) {
+  const { assessmentID, autoWeight, override, weightingUnavailable, statusNote } = context;
 
   sheet.innerHTML = `
     <style>
@@ -1134,7 +1082,7 @@ function renderWeightingTabHtml(
           type="number"
           min="0"
           step="5"
-          placeholder="${weightingUnavailable ? "Enter weight" : autoWeight ?? ""}"
+          placeholder="${weightingUnavailable ? "Enter weight" : (autoWeight ?? "")}"
           value="${override ?? ""}"
           ${!assessmentID ? "disabled" : ""}
           style="
@@ -1159,15 +1107,11 @@ function renderWeightingTabHtml(
 
 function attachWeightingInputHandlers(
   sheet: HTMLElement,
-  api: any,
+  api: AssessmentsAverageApi,
   assessmentID: string,
 ) {
-  const input = sheet.querySelector(
-    "#betterseqta-weight-override",
-  ) as HTMLInputElement;
-  const statusEl = sheet.querySelector(
-    ".betterseqta-save-status",
-  ) as HTMLElement;
+  const input = sheet.querySelector("#betterseqta-weight-override") as HTMLInputElement;
+  const statusEl = sheet.querySelector(".betterseqta-save-status") as HTMLElement;
 
   const save = () => {
     const raw = input.value.trim();
@@ -1196,34 +1140,26 @@ function attachWeightingInputHandlers(
   });
   input.addEventListener("input", () => {
     input.style.borderColor = "rgba(128,128,128,0.3)";
-    if (statusEl.textContent === "Invalid. Must be 0 or greater.")
-      statusEl.textContent = "";
+    if (statusEl.textContent === "Invalid. Must be 0 or greater.") statusEl.textContent = "";
   });
 }
 
-async function buildWeightingsTabContent(api: any, sheet: HTMLElement) {
+async function buildWeightingsTabContent(api: AssessmentsAverageApi, sheet: HTMLElement) {
   const context = await resolveWeightingTabContext(api);
   renderWeightingTabHtml(sheet, context);
   if (!context.assessmentID) return;
   attachWeightingInputHandlers(sheet, api, context.assessmentID);
 }
 
-export function injectWeightingsTab(api: any) {
-  const tabList = document.querySelector(
-    '[class*="TabSet__tabs___"]',
-  ) as HTMLElement;
-  const container = document.querySelector(
-    '[class*="TabSet__tabContainer___"]',
-  ) as HTMLElement;
+export function injectWeightingsTab(api: AssessmentsAverageApi) {
+  const tabList = document.querySelector('[class*="TabSet__tabs___"]') as HTMLElement;
+  const container = document.querySelector('[class*="TabSet__tabContainer___"]') as HTMLElement;
   if (!tabList || !container) return;
   if (tabList.querySelector(".betterseqta-weightings-tab")) return;
 
   const cls = resolveTabSetClasses();
 
-  const prefix = (tabList.querySelector("li") as HTMLElement).id.replace(
-    /-tab-\d+$/,
-    "",
-  );
+  const prefix = (tabList.querySelector("li") as HTMLElement).id.replace(/-tab-\d+$/, "");
   const newIndex = tabList.querySelectorAll("li").length;
 
   const newTab = document.createElement("li");
@@ -1250,15 +1186,11 @@ export function injectWeightingsTab(api: any) {
   });
 
   const allTabs = Array.from(tabList.querySelectorAll("li"));
-  const allSheets = Array.from(
-    container.querySelectorAll('[class*="tabsheet"]'),
-  );
+  const allSheets = Array.from(container.querySelectorAll('[class*="tabsheet"]'));
 
   allTabs.forEach((tab, i) => {
     tab.addEventListener("click", () => {
-      const currentIndex = allTabs.findIndex((t) =>
-        t.className.includes("TabSet__selected___"),
-      );
+      const currentIndex = allTabs.findIndex((t) => t.className.includes("TabSet__selected___"));
       if (i === currentIndex) return;
       const goingRight = currentIndex < 0 ? true : i > currentIndex;
 
@@ -1271,18 +1203,14 @@ export function injectWeightingsTab(api: any) {
         allSheets[currentIndex].className = [
           cls["TabSet__tabsheet___"],
           cls["TabSet__hidden___"],
-          goingRight
-            ? cls["TabSet__disappearToLeft___"]
-            : cls["TabSet__disappearToRight___"],
+          goingRight ? cls["TabSet__disappearToLeft___"] : cls["TabSet__disappearToRight___"],
         ].join(" ");
       }
 
       allSheets[i].className = [
         cls["TabSet__tabsheet___"],
         cls["TabSet__selected___"],
-        goingRight
-          ? cls["TabSet__appearFromRight___"]
-          : cls["TabSet__appearFromLeft___"],
+        goingRight ? cls["TabSet__appearFromRight___"] : cls["TabSet__appearFromLeft___"],
       ].join(" ");
 
       tab.className = cls["TabSet__selected___"];

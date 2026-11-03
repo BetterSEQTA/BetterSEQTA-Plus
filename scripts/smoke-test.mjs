@@ -18,10 +18,7 @@ function assertManifest(browserDir) {
   if (!manifest.name) fail(`${browserDir} manifest missing name`);
   if (!manifest.version) fail(`${browserDir} manifest missing version`);
 
-  const sw =
-    manifest.background?.service_worker ??
-    manifest.background?.scripts?.[0] ??
-    null;
+  const sw = manifest.background?.service_worker ?? manifest.background?.scripts?.[0] ?? null;
   if (sw) {
     const swPath = path.join(root, "dist", browserDir, sw);
     if (!fs.existsSync(swPath)) {

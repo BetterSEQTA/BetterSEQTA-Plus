@@ -6,7 +6,7 @@
   import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
   import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
 
-  let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() } = $props<{ isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null }>();
+  let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() }: { isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null } = $props();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
   let feedback = $state<{ kind: 'error' | 'warn'; text: string } | null>(null);
 
@@ -128,7 +128,7 @@
 
   $effect(() => {
     loadBackground();
-    selectedBackground
+    void selectedBackground;
   });
 
   onMount(() => {
@@ -182,7 +182,7 @@
 
   {#if !(videoBackgrounds.length === 0 && isEditMode)}
     <h2 class="py-2 text-lg font-bold">Background Videos</h2>
-    <div class="flex flex-wrap gap-4">
+    <div class="flex flex-wrap gap-4 mb-4">
       {#if !isEditMode}
         <BackgroundUploader onFileChange={handleFileChange} />
       {/if}

@@ -1,4 +1,7 @@
 contact_links:
-  - name: BetterSEQTA Community Support
+  - name: Discord
     url: https://discord.gg/YzmbnCDkat
-    about: Join our discord for community updates, discussion, and more!
+    about: Questions, help and community chat.
+  - name: Documentation
+    url: https://docs.betterseqta.org
+    about: Guides for installing, making themes and writing plugins.

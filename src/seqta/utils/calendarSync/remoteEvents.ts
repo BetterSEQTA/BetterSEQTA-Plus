@@ -8,6 +8,7 @@ import {
   parseOutlookSeqtaKey,
 } from "@/seqta/utils/calendarSync/eventFingerprint";
 import type { SyncDateRange } from "@/seqta/utils/googleCalendar/syncDateRange";
+import { delay } from "@/seqta/utils/delay";
 
 export type RemoteSyncedEvent = {
   seqtaKey: string;
@@ -22,10 +23,6 @@ export type ListSyncedEventsOptions = {
 };
 
 const MAX_RETRIES = 4;
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function isRetryableStatus(status: number): boolean {
   return status === 429 || status === 500 || status === 502 || status === 503 || status === 403;
@@ -48,7 +45,7 @@ async function authorizedFetch(
       continue;
     }
     if (isRetryableStatus(res.status) && attempt < MAX_RETRIES - 1) {
-      await sleep(250 * 2 ** attempt + Math.floor(Math.random() * 100));
+      await delay(250 * 2 ** attempt + Math.floor(Math.random() * 100));
       continue;
     }
     return res;
@@ -89,7 +86,10 @@ async function upsertRemoteEvent(
     { method: "POST", headers, body: JSON.stringify(body) },
     refreshAccessToken,
   );
-  const json = (await res.json().catch(() => ({}))) as { id?: string; error?: { message?: string } };
+  const json = (await res.json().catch(() => ({}))) as {
+    id?: string;
+    error?: { message?: string };
+  };
   if (!res.ok || !json.id) {
     throw new Error(json?.error?.message ?? `${label} create failed (${res.status})`);
   }
@@ -182,16 +182,13 @@ export function deleteOutlookCalendarEvent(
 }
 
 function toRfc3339Start(date: string): string {
-  return `${date}T00:00:00Z`;
+  return new Date(`${date}T00:00:00`).toISOString();
 }
 
 function toRfc3339EndExclusive(date: string): string {
-  const d = new Date(`${date}T12:00:00Z`);
-  d.setUTCDate(d.getUTCDate() + 1);
-  const y = d.getUTCFullYear();
-  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
-  const day = String(d.getUTCDate()).padStart(2, "0");
-  return `${y}-${m}-${day}T00:00:00Z`;
+  const d = new Date(`${date}T00:00:00`);
+  d.setDate(d.getDate() + 1);
+  return d.toISOString();
 }
 
 function dateFromDateTime(value: string | undefined): string {
@@ -216,7 +213,8 @@ function googleItemToRemote(
   if (!item.id) return null;
   const seqtaKey = item.extendedProperties?.private?.[BSPLUS_GOOGLE_CALENDAR_EVENT_PROP] ?? "";
   if (!seqtaKey && !includeUnkeyed) return null;
-  const startDateTime = item.start?.dateTime ?? (item.start?.date ? `${item.start.date}T00:00:00` : "");
+  const startDateTime =
+    item.start?.dateTime ?? (item.start?.date ? `${item.start.date}T00:00:00` : "");
   const endDateTime = item.end?.dateTime ?? (item.end?.date ? `${item.end.date}T00:00:00` : "");
   const timeZone = item.start?.timeZone ?? item.end?.timeZone ?? "UTC";
   return {
@@ -253,8 +251,7 @@ export async function listGoogleSyncedEvents(
       maxResults: "2500",
       timeMin: toRfc3339Start(range.from),
       timeMax: toRfc3339EndExclusive(range.until),
-      fields:
-        "nextPageToken,items(id,summary,location,description,start,end,extendedProperties)",
+      fields: "nextPageToken,items(id,summary,location,description,start,end,extendedProperties)",
     });
     if (pageToken) params.set("pageToken", pageToken);
 
@@ -264,13 +261,22 @@ export async function listGoogleSyncedEvents(
       { method: "GET" },
       refreshAccessToken,
     );
-    const json = (await res.json().catch(() => ({}))) as {
+    const json = (await res.json()) as {
       items?: GoogleListItem[];
       nextPageToken?: string;
       error?: { message?: string };
     };
     if (!res.ok) {
       throw new Error(json?.error?.message ?? `Google Calendar list failed (${res.status})`);
+    }
+    if (
+      !json ||
+      typeof json !== "object" ||
+      Array.isArray(json) ||
+      json.error ||
+      (json.items !== undefined && !Array.isArray(json.items))
+    ) {
+      throw new Error("Invalid Google Calendar list response.");
     }
 
     for (const item of json.items ?? []) {
@@ -347,8 +353,7 @@ export async function listOutlookSyncedEvents(
     $select: "id,subject,body,location,start,end,categories",
   });
 
-  let nextUrl: string | undefined =
-    `${OUTLOOK_GRAPH_API}/me/calendarView?${params.toString()}`;
+  let nextUrl: string | undefined = `${OUTLOOK_GRAPH_API}/me/calendarView?${params.toString()}`;
 
   while (nextUrl) {
     const res = await authorizedFetch(
@@ -360,13 +365,16 @@ export async function listOutlookSyncedEvents(
       },
       refreshAccessToken,
     );
-    const json = (await res.json().catch(() => ({}))) as {
+    const json = (await res.json()) as {
       value?: OutlookListItem[];
       "@odata.nextLink"?: string;
       error?: { message?: string };
     };
     if (!res.ok) {
       throw new Error(json?.error?.message ?? `Outlook Calendar list failed (${res.status})`);
+    }
+    if (!Array.isArray(json?.value) || json.error) {
+      throw new Error("Invalid Outlook Calendar list response.");
     }
 
     for (const item of json.value ?? []) {

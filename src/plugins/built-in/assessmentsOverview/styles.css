@@ -8,11 +8,7 @@
   --bsplus-overview-surface: var(--background-primary, #ffffff);
   --bsplus-overview-surface-2: var(--background-secondary, #f8fafc);
   --bsplus-overview-text: var(--text-primary, #1a1a1a);
-  --bsplus-overview-muted: color-mix(
-    in srgb,
-    var(--bsplus-overview-text) 55%,
-    transparent
-  );
+  --bsplus-overview-muted: color-mix(in srgb, var(--bsplus-overview-text) 55%, transparent);
   --bsplus-overview-border: color-mix(
     in srgb,
     var(--theme-offset-bg, var(--background-secondary, #e2e8f0)) 78%,
@@ -157,8 +153,7 @@
 .filter-select:focus {
   outline: none;
   border-color: var(--bsplus-overview-accent);
-  box-shadow: 0 0 0 3px
-    color-mix(in srgb, var(--bsplus-overview-accent) 22%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-overview-accent) 22%, transparent);
 }
 
 .filter-select:hover {
@@ -317,7 +312,11 @@
 }
 
 .label-subject {
-  background: color-mix(in srgb, var(--subject-color, var(--bsplus-overview-accent)) 88%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--subject-color, var(--bsplus-overview-accent)) 88%,
+    transparent
+  );
 }
 
 .label-student {
@@ -360,18 +359,13 @@
 }
 
 .menu-button:hover {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-overview-surface-2) 90%,
-    transparent
-  ) !important;
+  background: color-mix(in srgb, var(--bsplus-overview-surface-2) 90%, transparent) !important;
   color: var(--bsplus-overview-text);
   transform: scale(1.05) !important;
 }
 
 .menu-button:focus-visible {
-  box-shadow: 0 0 0 2px
-    color-mix(in srgb, var(--bsplus-overview-accent) 35%, transparent) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bsplus-overview-accent) 35%, transparent) !important;
 }
 
 .menu-dropdown {
@@ -404,11 +398,7 @@
 }
 
 .menu-item:hover {
-  background: color-mix(
-    in srgb,
-    var(--bsplus-overview-surface-2) 90%,
-    transparent
-  );
+  background: color-mix(in srgb, var(--bsplus-overview-surface-2) 90%, transparent);
 }
 
 .menu-item.mark-completed {
@@ -879,8 +869,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes shimmer {
@@ -893,12 +887,7 @@
 }
 
 .skeleton-element {
-  background: linear-gradient(
-    90deg,
-    #f1f5f9 0%,
-    #e2e8f0 50%,
-    #f1f5f9 100%
-  );
+  background: linear-gradient(90deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
   background-size: 1000px 100%;
   animation: shimmer 2s infinite linear;
   border-radius: 4px;
@@ -995,17 +984,17 @@
   .grid-view-title {
     font-size: 1.5rem !important;
   }
-  
+
   .filter-select {
     padding: 0.5rem 0.75rem;
     font-size: 0.8rem;
     min-width: 120px;
   }
-  
+
   .assessment-card {
     padding: 0.75rem;
   }
-  
+
   .card-footer {
     flex-direction: column;
     gap: 0.5rem;

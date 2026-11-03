@@ -1,8 +1,20 @@
 import { BSPLUS_GOOGLE_CALENDAR_EVENT_PROP } from "@/config/googleCalendar";
 import { BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY } from "@/config/outlookCalendar";
 import { outlookDescriptionWithKey } from "@/seqta/utils/calendarSync/eventFingerprint";
+import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
 import { nearestGoogleEventColorId } from "./eventColor";
 import type { GoogleCalendarEventInput, SeqtaTimetableLesson } from "./types";
+
+export type CalendarSyncAssessment = {
+  id: number;
+  title: string;
+  subject: string;
+  code: string;
+  due: string;
+  status?: string;
+};
+
+const SKIP_ASSESSMENT_STATUSES = new Set(["MARKS_RELEASED", "CANCELLED"]);
 
 const SKIP_TYPES = new Set(["note", "holiday", "assembly-note"]);
 
@@ -93,13 +105,65 @@ export function mapLessonsToGoogleEvents(
   return out;
 }
 
+function assessmentDueDate(due: string): string | null {
+  const trimmed = due.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return trimmed;
+  const parsed = new Date(trimmed);
+  return Number.isNaN(parsed.getTime()) ? null : toISODate(parsed);
+}
+
+export function mapAssessmentsToGoogleEvents(
+  origin: string,
+  assessments: CalendarSyncAssessment[],
+  timeZone: string,
+): GoogleCalendarEventInput[] {
+  const out: GoogleCalendarEventInput[] = [];
+  const seen = new Set<string>();
+  for (const row of assessments) {
+    if (!row.id || !row.title.trim()) continue;
+    if (row.status && SKIP_ASSESSMENT_STATUSES.has(row.status)) continue;
+    const dateOnly = assessmentDueDate(row.due);
+    if (!dateOnly) continue;
+
+    const seqtaKey = `${origin}:assessment:${row.id}`;
+    if (seen.has(seqtaKey)) continue;
+    seen.add(seqtaKey);
+
+    const subject = (row.subject || row.code || "Assessment").trim();
+    const end = new Date(`${dateOnly}T12:00:00`);
+    end.setDate(end.getDate() + 1);
+
+    out.push({
+      seqtaKey,
+      summary: `Due: ${row.title.trim()} (${subject})`,
+      description: ["Synced by BetterSEQTA+", "Type: Assessment due date"].join("\n"),
+      allDay: true,
+      startDate: dateOnly,
+      endDate: toISODate(end),
+      startDateTime: `${dateOnly}T00:00:00`,
+      endDateTime: `${dateOnly}T23:59:00`,
+      timeZone,
+    });
+  }
+  return out;
+}
+
 export function googleApiEventBody(event: GoogleCalendarEventInput): Record<string, unknown> {
+  const start =
+    event.allDay && event.startDate
+      ? { date: event.startDate }
+      : { dateTime: event.startDateTime, timeZone: event.timeZone };
+  const end =
+    event.allDay && event.endDate
+      ? { date: event.endDate }
+      : { dateTime: event.endDateTime, timeZone: event.timeZone };
+
   const body: Record<string, unknown> = {
     summary: event.summary,
     location: event.location,
     description: event.description,
-    start: { dateTime: event.startDateTime, timeZone: event.timeZone },
-    end: { dateTime: event.endDateTime, timeZone: event.timeZone },
+    start,
+    end,
     extendedProperties: {
       private: {
         [BSPLUS_GOOGLE_CALENDAR_EVENT_PROP]: event.seqtaKey,
@@ -119,8 +183,13 @@ export function outlookGraphEventBody(event: GoogleCalendarEventInput): Record<s
       contentType: "text",
       content: outlookDescriptionWithKey(event.description, event.seqtaKey),
     },
-    start: { dateTime: event.startDateTime, timeZone: event.timeZone },
-    end: { dateTime: event.endDateTime, timeZone: event.timeZone },
+    start: event.allDay
+      ? { dateTime: `${event.startDate}T00:00:00`, timeZone: event.timeZone }
+      : { dateTime: event.startDateTime, timeZone: event.timeZone },
+    end: event.allDay
+      ? { dateTime: `${event.endDate}T00:00:00`, timeZone: event.timeZone }
+      : { dateTime: event.endDateTime, timeZone: event.timeZone },
+    isAllDay: Boolean(event.allDay),
     categories: [BSPLUS_OUTLOOK_CALENDAR_EVENT_CATEGORY],
   };
   if (event.location) {

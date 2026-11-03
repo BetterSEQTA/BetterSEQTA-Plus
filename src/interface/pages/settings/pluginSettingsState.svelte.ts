@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import type {
   BooleanSetting,
@@ -59,8 +59,7 @@ class PluginSettingsStore {
   private async load(): Promise<void> {
     const { getAllPluginSettings } = await import("@/plugins");
     this.plugins = getAllPluginSettings().filter(
-      (plugin) =>
-        !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
+      (plugin) => !(isSeqtaEngageExperience() && plugin.pluginId === "global-search"),
     ) as PluginSettingsEntry[];
 
     for (const plugin of this.plugins) {

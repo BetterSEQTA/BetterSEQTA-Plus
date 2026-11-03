@@ -1,4 +1,4 @@
-import type { PluginAPI } from "../../core/types";
+import type { PluginAPI, PluginSettings } from "../../core/types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
 import {
@@ -38,7 +38,9 @@ function mergeLiveWithArchived(
 async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   if (!document.querySelector(LIST_SELECTOR)) return false;
 
-  const state = await ReactFiber.find(LIST_SELECTOR).getState();
+  const state = (await ReactFiber.find(LIST_SELECTOR).getState()) as {
+    items?: unknown[];
+  } | null;
   if (!state || !Array.isArray(state.items)) return false;
 
   const liveItems = state.items as Record<string, unknown>[];
@@ -48,8 +50,7 @@ async function tryInjectArchived(archive: ArchiveMap): Promise<boolean> {
   const sameOrder =
     liveItems.length === merged.length &&
     liveItems.every(
-      (item, index) =>
-        Number(item.notificationID) === Number(merged[index]?.notificationID),
+      (item, index) => Number(item.notificationID) === Number(merged[index]?.notificationID),
     );
   if (sameOrder) return true;
 
@@ -89,7 +90,7 @@ export function applyBackupBadges(archive: ArchiveMap) {
 }
 
 export function mountArchivedNotificationInjection(
-  api: PluginAPI<Record<string, never>, { archivesByUser?: ArchivesByUser }>,
+  api: Pick<PluginAPI<PluginSettings, { archivesByUser?: ArchivesByUser }>, "seqta" | "storage">,
   getUserKey: () => Promise<string | null>,
 ) {
   let observer: MutationObserver | null = null;

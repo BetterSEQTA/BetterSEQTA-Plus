@@ -1,5 +1,5 @@
 import { GOOGLE_CALENDAR_SYNC_WEEKS } from "@/config/googleCalendar";
-import { toISODate, weekRangeContaining } from "@/seqta/utils/Loaders/engageParentTimetable";
+import { toISODate, weekRangeContaining } from "@/seqta/utils/loaders/engageParentTimetable";
 
 export interface SyncDateRange {
   from: string;

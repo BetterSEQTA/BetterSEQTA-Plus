@@ -7,10 +7,7 @@ import {
 } from "../../core/settingsHelpers";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
-import {
-  resetSearchIndexes,
-  notifyOpenTabsResetSearchIndex,
-} from "./src/indexing/resetIndexes";
+import { resetSearchIndexes, notifyOpenTabsResetSearchIndex } from "./src/indexing/resetIndexes";
 import {
   formatHotkeyForDisplay,
   getDefaultSearchHotkey,
@@ -58,9 +55,7 @@ const settings = defineSettings({
       try {
         await notifyOpenTabsResetSearchIndex();
         await resetSearchIndexes();
-        alert(
-          "Search index and storage were reset.\n\nReload this tab to regenerate the index.",
-        );
+        alert("Search index and storage were reset.\n\nReload this tab to regenerate the index.");
       } catch (e) {
         alert(
           "Failed to reset index: " +
@@ -71,6 +66,8 @@ const settings = defineSettings({
     },
   }),
 });
+
+export type GlobalSearchSettings = typeof settings;
 
 /**
  * Shell loads immediately so the Quick Search chip can show in the title bar.
@@ -89,6 +86,7 @@ const globalSearchPlugin = defineLazyPlugin({
 });
 
 const runGlobalSearch = globalSearchPlugin.run!;
+export type GlobalSearchApi = Parameters<typeof runGlobalSearch>[0];
 
 globalSearchPlugin.run = async (api) => {
   if (isSeqtaEngageExperience() || isSeqtaLoginPage()) return () => {};
@@ -102,7 +100,7 @@ globalSearchPlugin.run = async (api) => {
   titleBarState.showSearch = true;
 
   let heavyCleanup: (() => void) | void;
-  const heavyPromise = runGlobalSearch(api).then((cleanup) => {
+  const heavyPromise = Promise.resolve(runGlobalSearch(api)).then((cleanup) => {
     heavyCleanup = cleanup;
   });
 

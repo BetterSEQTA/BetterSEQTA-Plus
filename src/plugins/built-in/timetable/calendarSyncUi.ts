@@ -65,9 +65,7 @@ export function portalToBody(node: HTMLElement) {
 export function isCalendarSyncModalTarget(target: EventTarget | null): boolean {
   return (
     target instanceof Element &&
-    Boolean(
-      target.closest(".bsplus-cal-modal-backdrop, .bsplus-cal-disconnect-overlay"),
-    )
+    Boolean(target.closest(".bsplus-cal-modal-backdrop, .bsplus-cal-disconnect-overlay"))
   );
 }
 
@@ -114,21 +112,17 @@ export function syncCalendarSyncTheme(target: HTMLElement): void {
     computed.getPropertyValue("--background-secondary").trim() ||
     computed.getPropertyValue("--theme-offset-bg").trim();
 
-  target.style.setProperty(
-    "--bsplus-cal-text",
-    textPrimary || (dark ? "#f4f4f5" : "#18181b"),
-  );
-  target.style.setProperty(
-    "--bsplus-cal-surface",
-    bgPrimary || (dark ? "#27272a" : "#ffffff"),
-  );
+  target.style.setProperty("--bsplus-cal-text", textPrimary || (dark ? "#f4f4f5" : "#18181b"));
+  target.style.setProperty("--bsplus-cal-surface", bgPrimary || (dark ? "#27272a" : "#ffffff"));
   target.style.setProperty(
     "--bsplus-cal-surface-muted",
     dark ? "#3f3f46" : "color-mix(in srgb, var(--bsplus-cal-text) 5%, var(--bsplus-cal-surface))",
   );
   target.style.setProperty(
     "--bsplus-cal-border",
-    dark ? "color-mix(in srgb, #ffffff 14%, transparent)" : "color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent)",
+    dark
+      ? "color-mix(in srgb, #ffffff 14%, transparent)"
+      : "color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent)",
   );
 }
 

@@ -2,11 +2,7 @@
  * @jest-environment jsdom
  */
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import {
-  resetSeqtaShellWaiters,
-  waitForSeqtaMenu,
-  waitForSeqtaTitle,
-} from "./waitForSeqtaShell";
+import { resetSeqtaShellWaiters, waitForSeqtaMenu, waitForSeqtaTitle } from "./waitForSeqtaShell";
 
 jest.mock("@/seqta/utils/waitForElm", () => ({
   waitForElm: jest.fn(),

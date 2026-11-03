@@ -2,11 +2,7 @@ import type { SettingsState } from "@/types/storage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import {
-  applySidebarLook,
-  applySidebarStyleClass,
-  clearSidebarAppearance,
-} from "./sidebarStyles";
+import { applySidebarLook, applySidebarStyleClass, clearSidebarAppearance } from "./sidebarStyles";
 
 const MENU_CLASS = "bsplus-styled-sidebar";
 
@@ -48,9 +44,7 @@ function attachSettingsListeners() {
   settingsListenersAttached = true;
   clearSettingListeners();
 
-  registerSetting("sidebarStyle", () =>
-    applySidebarStyleClass(menuEl, settingsState.sidebarStyle),
-  );
+  registerSetting("sidebarStyle", () => applySidebarStyleClass(menuEl, settingsState.sidebarStyle));
   for (const key of [
     "sidebarDensity",
     "sidebarCornerRadius",
@@ -87,7 +81,7 @@ export async function applyNativeSidebar(): Promise<boolean> {
     return true;
   }
 
-  let menu: HTMLElement | null = null;
+  let menu: HTMLElement | null;
   try {
     menu = (await waitForElm("#menu", true, 50, 200)) as HTMLElement;
   } catch {

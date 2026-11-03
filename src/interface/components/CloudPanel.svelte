@@ -3,11 +3,13 @@
   import { animate } from "motion";
   import { delay } from "@/seqta/utils/delay.ts";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
+  import Button from "./Button.svelte";
 
-  const { hidePanel } = $props<{
+  const { hidePanel }: {
     hidePanel: () => void;
-  }>();
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   let background = $state<HTMLDivElement | null>(null);
@@ -90,7 +92,7 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={background}
-  class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50"
+  class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50 {$settingsState.DarkMode ? 'dark' : ''}"
   onclick={handleBackgroundClick}
   onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick(e as unknown as MouseEvent) }}
 >
@@ -138,13 +140,7 @@
           <p class="text-sm text-zinc-600 dark:text-zinc-400">
             Sign in to sync settings across devices, use your cloud profile picture, and more.
           </p>
-          <button
-            type="button"
-            onclick={handleSignIn}
-            class="w-full px-4 py-2.5 text-sm font-medium rounded-lg bg-zinc-800 dark:bg-zinc-200 text-white dark:text-zinc-900 hover:bg-zinc-700 dark:hover:bg-zinc-300 transition-colors duration-200"
-          >
-            Sign in with BetterSEQTA Cloud
-          </button>
+          <Button class="w-full" icon={""} text="Sign in with BetterSEQTA Cloud" onClick={handleSignIn} />
           {#if loginError}
             <p class="text-xs text-red-600 dark:text-red-400">{loginError}</p>
           {/if}

@@ -1,8 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 
 function detectLowEndDevice(): boolean {
-  const lowCoreCount =
-    navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+  const lowCoreCount = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
   const lowMemory =
     (navigator as Navigator & { deviceMemory?: number }).deviceMemory != null &&
     (navigator as Navigator & { deviceMemory?: number }).deviceMemory! <= 2;
@@ -16,9 +15,10 @@ export function getDefaultSettingsState(): SettingsState {
 
   return {
     onoff: true,
+    settingsPopupExpanded: false,
     animatedbk: true,
     bksliderinput: "50",
-    transparencyEffects: false,
+    transparencyEffects: true,
     lessonalert: true,
     defaultmenuorder: [],
     menuitems: {
@@ -43,8 +43,7 @@ export function getDefaultSettingsState(): SettingsState {
     menuorder: [],
     subjectfilters: {},
     selectedTheme: "",
-    selectedColor:
-      "linear-gradient(40deg, rgba(201,61,0,1) 0%, RGBA(170, 5, 58, 1) 100%)",
+    selectedColor: "linear-gradient(45deg, rgba(17,88,131,1) 0%, rgba(18,106,98,1) 100%)",
     originalSelectedColor: "",
     DarkMode: true,
     animations: !isLowEndDevice,
@@ -81,7 +80,7 @@ export function getDefaultSettingsState(): SettingsState {
     selectedFont: "rubik",
     timeFormat: "24",
     privacyStatementShown: false,
-    bsCloudAutoSyncAnnouncementShown: false,
+
     coursesAssessmentsFixPopupShown: false,
   };
 }

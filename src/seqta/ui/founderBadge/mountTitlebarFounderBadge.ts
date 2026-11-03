@@ -1,67 +1,111 @@
 import { cloudAuth } from "@/seqta/utils/CloudAuth";
 import { refreshCloudUserFromServer } from "@/seqta/utils/cloudPfpSync";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import {
-  founderBadgeChipHtml,
-  pickPrimaryFounderBadge,
-  type FounderBadgeItem,
+  badgeBlobStyle,
+  badgesForTitlebar,
+  badgeVisualForKey,
+  type BadgeItem,
 } from "@/seqta/utils/founderBadges";
 import { openFounderBadgeModal } from "@/seqta/ui/founderBadge/openFounderBadgeModal";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
 let subscribed = false;
 let refreshPending = false;
+let profileSyncedThisSession = false;
 
-function renderBadgeChip(
+const BADGE_CYCLE_MS = 4500;
+const carouselTimers = new WeakMap<HTMLElement, ReturnType<typeof setInterval>>();
+
+function stopBadgeCarousel(slot: HTMLElement): void {
+  clearInterval(carouselTimers.get(slot));
+  carouselTimers.delete(slot);
+}
+
+function createBadgeButton(
+  badge: BadgeItem,
+  signupNumber?: number | null,
+): HTMLButtonElement | null {
+  const visual = badgeVisualForKey(badge.key, badge.label);
+  if (!visual) return null;
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "bsplus-titlebar-badge";
+  button.style.cssText = badgeBlobStyle(visual);
+  button.textContent = badge.label || visual.label;
+  button.addEventListener("click", () => openFounderBadgeModal(badge, signupNumber));
+  return button;
+}
+
+function showBadge(buttons: HTMLButtonElement[], index: number): void {
+  buttons.forEach((button, i) => {
+    const active = i === index;
+    button.toggleAttribute("inert", !active);
+    button.setAttribute("aria-hidden", String(!active));
+  });
+}
+
+function renderTitlebarBadges(
   slot: HTMLElement,
-  badge: FounderBadgeItem,
+  badges: BadgeItem[],
   signupNumber?: number | null,
 ): void {
-  const house = slot
-    .closest(".userInfoHouseWrap")
-    ?.querySelector<HTMLElement>(".userInfohouse");
-  if (house?.style.display === "none") {
-    slot.replaceChildren();
-    slot.hidden = true;
-    return;
-  }
+  stopBadgeCarousel(slot);
 
-  slot.hidden = false;
-  slot.innerHTML = founderBadgeChipHtml(badge, { titlebar: true });
+  const buttons = badges.flatMap((badge) => createBadgeButton(badge, signupNumber) ?? []);
 
-  const chip = slot.querySelector<HTMLButtonElement>(".bsplus-founder-badge");
-  if (!chip) return;
+  slot.replaceChildren(...buttons);
+  slot.hidden = buttons.length === 0;
+  slot.classList.toggle("bsplus-founder-badge-slot--static", !fullMotionEffectsEnabled());
+  if (buttons.length <= 1) return;
 
-  chip.setAttribute("aria-label", `${badge.label}, click for details`);
-  chip.addEventListener("click", () => openFounderBadgeModal(badge, signupNumber));
+  let index = 0;
+  showBadge(buttons, index);
+  carouselTimers.set(
+    slot,
+    setInterval(() => {
+      index = (index + 1) % buttons.length;
+      showBadge(buttons, index);
+    }, BADGE_CYCLE_MS),
+  );
 }
 
 async function syncTitlebarFounderBadge(): Promise<void> {
   const slots = document.querySelectorAll<HTMLElement>(".titlebar .bsplus-founder-badge-slot");
   for (const slot of slots) {
+    stopBadgeCarousel(slot);
     slot.replaceChildren();
     slot.hidden = true;
   }
 
-  if (settingsState.showTitlebarFounderBadge === false || !cloudAuth.state.isLoggedIn) return;
+  if (
+    settingsState.showTitlebarFounderBadge === false ||
+    !cloudAuth.state.isLoggedIn ||
+    isFeatureDisabled("ui.titlebar.founderBadge")
+  ) {
+    return;
+  }
 
   let user = cloudAuth.state.user;
-  if (user && user.signup_number == null && !user.badges?.length) {
-    if (!refreshPending) {
-      refreshPending = true;
-      try {
-        await refreshCloudUserFromServer();
-        user = cloudAuth.state.user;
-      } finally {
-        refreshPending = false;
-      }
+  const needsProfileSync =
+    !profileSyncedThisSession || (user?.signup_number == null && !user?.badges?.length);
+  if (needsProfileSync && !refreshPending) {
+    refreshPending = true;
+    try {
+      await refreshCloudUserFromServer();
+      user = cloudAuth.state.user;
+      profileSyncedThisSession = true;
+    } finally {
+      refreshPending = false;
     }
   }
 
-  const badge = pickPrimaryFounderBadge(user?.badges ?? [], user?.signup_number);
-  if (!badge) return;
+  const badges = badgesForTitlebar(user?.badges ?? [], user?.signup_number);
+  if (badges.length === 0) return;
 
   for (const slot of slots) {
-    renderBadgeChip(slot, badge, user?.signup_number);
+    renderTitlebarBadges(slot, badges, user?.signup_number);
   }
 }
 
@@ -72,7 +116,10 @@ export function refreshTitlebarFounderBadge(): void {
 export function ensureTitlebarFounderBadgeMounted(): void {
   if (!subscribed) {
     subscribed = true;
-    cloudAuth.subscribe(() => void syncTitlebarFounderBadge());
+    cloudAuth.subscribe((state) => {
+      if (!state.isLoggedIn) profileSyncedThisSession = false;
+      void syncTitlebarFounderBadge();
+    });
     settingsState.register("showTitlebarFounderBadge", () => void syncTitlebarFounderBadge());
   }
   void syncTitlebarFounderBadge();

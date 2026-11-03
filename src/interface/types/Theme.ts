@@ -35,6 +35,8 @@ export type Theme = {
   master_id?: string;
   /** Variants nested on master rows; installs use flavour `id` */
   flavours?: ThemeFlavour[];
+  /** Admin review list: required for preview install (`marketplace` | `community`). */
+  adminSource?: "marketplace" | "community";
 };
 
 /** One marquee slide (cover hero or modal carousel). */

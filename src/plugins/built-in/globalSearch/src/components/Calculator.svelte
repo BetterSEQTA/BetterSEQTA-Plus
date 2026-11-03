@@ -1,13 +1,17 @@
 <script lang="ts">
-  import { createEventDispatcher, onDestroy } from 'svelte';
+  import { onDestroy } from 'svelte';
   import { calculateExpression } from '../utils/calculator';
 
-  let { searchTerm = '', isSelected = false } = $props<{ searchTerm: string, isSelected: boolean }>();
-  
-  const dispatch = createEventDispatcher<{
-    hasResult: string | null;
-  }>();
-  
+  let {
+    searchTerm = '',
+    isSelected = false,
+    onresult,
+  }: {
+    searchTerm: string;
+    isSelected: boolean;
+    onresult: (result: string | null) => void;
+  } = $props();
+
   let result = $state<string | null>(null);
   let isCalculating = $state(false);
   let inputUnit = $state<string>('');
@@ -29,13 +33,13 @@
         inputUnit = calcResult.inputUnit;
         outputUnit = calcResult.outputUnit;
         isPartial = calcResult.isPartial;
-        dispatch('hasResult', calcResult.result);
+        onresult(calcResult.result);
       } else {
         result = null;
         inputUnit = '';
         outputUnit = '';
         isPartial = false;
-        dispatch('hasResult', null);
+        onresult(null);
       }
     } catch {
       if (gen !== calcGen) return;
@@ -43,7 +47,7 @@
       inputUnit = '';
       outputUnit = '';
       isPartial = false;
-      dispatch('hasResult', null);
+      onresult(null);
     } finally {
       if (gen === calcGen) isCalculating = false;
     }
@@ -54,7 +58,7 @@
   });
   
   onDestroy(() => {
-    dispatch('hasResult', null);
+    onresult(null);
   });
 </script>
 
@@ -72,12 +76,12 @@
       </div>
     </div>
 
-    <div class="flex flex-col flex-shrink-0 justify-center items-center w-12">
-      <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+    <div class="flex flex-col shrink-0 justify-center items-center w-12">
+      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
       <div class="text-2xl text-zinc-900 dark:text-zinc-100">
         →
       </div>
-      <div class="h-8 w-[1px] bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
     </div>
 
     {#if !isCalculating}

@@ -1,6 +1,6 @@
-import browser from "webextension-polyfill";
-import { getApiBase } from "@/seqta/utils/DevApiBase";
-import { SettingsClicked } from "@/seqta/utils/Closers/closeExtensionPopup";
+import browser from "@/lib/browser";
+import { API_BASE } from "@/config/apiBase";
+import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import {
@@ -16,6 +16,7 @@ import {
   type FeedbackProduct,
 } from "./constants";
 import { getOrCreateInstallId } from "./installId";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
 export class FeedbackApiError extends Error {
   constructor(
@@ -114,7 +115,7 @@ function channel(): FeedbackChannel {
 
 async function apiFetch(path: string, init?: RequestInit): Promise<Response> {
   try {
-    return await fetch(`${getApiBase()}${path}`, {
+    return await fetch(`${API_BASE}${path}`, {
       ...init,
       headers: { Accept: "application/json", ...init?.headers },
     });
@@ -137,12 +138,24 @@ async function throwApiError(res: Response): Promise<never> {
       body.code ?? "RATE_LIMITED",
     );
   }
-  throw new FeedbackApiError(body.error || `Request failed (${res.status}).`, res.status, body.code);
+  throw new FeedbackApiError(
+    body.error || `Request failed (${res.status}).`,
+    res.status,
+    body.code,
+  );
 }
 
 export async function submitFeedback(form: FeedbackFormInput): Promise<{ id: string }> {
   const err = validateFeedbackForm(form);
   if (err) throw new FeedbackApiError(err, 422);
+
+  if (isFeatureDisabled("feedback.submit")) {
+    throw new FeedbackApiError(
+      "Feedback submissions are temporarily disabled.",
+      503,
+      "REMOTE_DISABLED",
+    );
+  }
 
   const installId = await getOrCreateInstallId();
   const host = getInstanceHostname();
@@ -192,7 +205,8 @@ export async function submitFeedback(form: FeedbackFormInput): Promise<{ id: str
   });
   if (res.status !== 201 && res.status !== 200) await throwApiError(res);
   const data = (await res.json()) as { id?: string };
-  if (!data?.id) throw new FeedbackApiError("Unexpected response from the feedback server.", res.status);
+  if (!data?.id)
+    throw new FeedbackApiError("Unexpected response from the feedback server.", res.status);
   return { id: data.id };
 }
 
@@ -243,7 +257,9 @@ async function getPendingIds(): Promise<string[]> {
   const stored = await browser.storage.local.get(BSPLUS_PENDING_FEEDBACK_IDS_KEY);
   const raw = stored[BSPLUS_PENDING_FEEDBACK_IDS_KEY];
   if (!Array.isArray(raw)) return [];
-  return [...new Set(raw.filter((id): id is string => typeof id === "string" && id.startsWith("fb_")))];
+  return [
+    ...new Set(raw.filter((id): id is string => typeof id === "string" && id.startsWith("fb_"))),
+  ];
 }
 
 export async function addPendingFeedbackId(id: string): Promise<void> {
@@ -291,6 +307,6 @@ export function consumeOpenFeedbackRequest(): string | null {
 }
 
 export function openExtensionSettingsPopup(): void {
-  if (SettingsClicked) return;
+  if (isExtensionSettingsOpen()) return;
   document.getElementById("AddedSettings")?.click();
 }

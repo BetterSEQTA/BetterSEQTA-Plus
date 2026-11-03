@@ -10,7 +10,9 @@
     isLoggedIn,
     onRequestSignIn,
     allStoreThemeRows,
-  } = $props<{
+    installedThemeIds = [],
+    variant = 'official',
+  }: {
     themes: Theme[];
     searchTerm: string;
     setDisplayTheme: (theme: Theme) => void;
@@ -19,7 +21,9 @@
     onRequestSignIn?: () => void;
     /** Raw API list (includes `slave` rows) for master download aggregation */
     allStoreThemeRows?: Theme[];
-  }>();
+    installedThemeIds?: string[];
+    variant?: 'official' | 'community';
+  } = $props();
   
   let filteredThemes = $derived(themes.filter((theme: Theme) => {
     const q = searchTerm.toLowerCase();
@@ -27,39 +31,49 @@
     const description = (theme.description ?? '').toLowerCase();
     return name.includes(q) || description.includes(q);
   }));
+
+  const isCommunity = $derived(variant === 'community');
 </script>
 
-<div class="relative" >
-  <div class="grid grid-cols-1 gap-4 py-6 mx-auto sm:grid-cols-2 lg:grid-cols-3">
-    {#each filteredThemes as theme (theme.id)}
-      <ThemeCard
-        {theme}
-        onClick={() => setDisplayTheme(theme)}
-        {toggleFavorite}
-        {isLoggedIn}
-        {onRequestSignIn}
-        {allStoreThemeRows}
-      />
-    {/each}
-  
-    {#if filteredThemes.length !== 0}
-      <a href="https://docs.betterseqta.org/theme-creation/" class="block relative z-0 hover:z-20 w-full cursor-pointer">
-        <div class="bg-zinc-50 h-48 w-full transition-[transform,box-shadow,border-color] duration-300 ease-out relative overflow-clip rounded-xl border group group/card flex flex-col justify-center items-center hover:scale-[1.02] hover:shadow-xl dark:hover:shadow-black/60 dark:bg-zinc-800 dark:border-white/[0.1]">
-          <div class="text-2xl font-IconFamily">{'\uecb3'}</div>
-          <div class="text-xl font-bold text-center transition-all duration-500 dark:text-white">
-            Got a Theme Idea?
-            <p class="text-lg font-light subtitle">Transform it into a stunning theme!</p>
-          </div>
-        </div>
-      </a>
-    {/if}
-  
-  </div>
-  {#if filteredThemes.length === 0}
-    <div class="absolute top-0 flex flex-col items-center justify-center w-full text-center h-96">
-      <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">That doesn't exist! 😭😭😭</h1>
-      <p class="mt-6 text-lg leading-7 text-zinc-600 dark:text-zinc-300">Sorry, we couldn't find the theme you're looking for. Maybe... you could create it?</p>
-      <a href="https://docs.betterseqta.org/theme-creation/" class='p-2 px-3 mt-4 transition rounded-md cursor-pointer dark:text-white bg-zinc-500/10 hover:scale-105'>
+<div class="relative">
+  {#if filteredThemes.length > 0}
+    <div class="mx-auto grid grid-cols-1 gap-4 py-6 sm:grid-cols-2 lg:grid-cols-3">
+      {#each filteredThemes as theme (theme.id)}
+        <ThemeCard
+          {theme}
+          onClick={() => setDisplayTheme(theme)}
+          {toggleFavorite}
+          {isLoggedIn}
+          {onRequestSignIn}
+          {allStoreThemeRows}
+          {installedThemeIds}
+          {variant}
+        />
+      {/each}
+    </div>
+  {:else if isCommunity}
+    <div class="mx-auto max-w-md py-24 text-center text-zinc-500 dark:text-zinc-400">
+      <p class="text-lg font-medium text-zinc-900 dark:text-white">
+        {searchTerm.trim() ? "No themes match your search" : "No community themes yet"}
+      </p>
+      <p class="mt-2 text-sm">
+        {searchTerm.trim()
+          ? "Try a different search or clear the box."
+          : "Approved submissions show up here. Use Create & submit above to share yours."}
+      </p>
+    </div>
+  {:else}
+    <div class="absolute top-0 flex h-96 w-full flex-col items-center justify-center text-center">
+      <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+        That doesn't exist! 😭😭😭
+      </h1>
+      <p class="mt-6 text-lg leading-7 text-zinc-600 dark:text-zinc-300">
+        Sorry, we couldn't find the theme you're looking for. Maybe... you could create it?
+      </p>
+      <a
+        href="https://docs.betterseqta.org/theme-creation/"
+        class="mt-4 cursor-pointer rounded-md bg-zinc-500/10 p-2 px-3 transition hover:scale-105 dark:text-white"
+      >
         Show me how!
       </a>
     </div>

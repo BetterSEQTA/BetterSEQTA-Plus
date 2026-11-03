@@ -1,4 +1,4 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 
 /**
  * Parses the current page from window.location.hash.
@@ -23,10 +23,7 @@ function parsePageContext(): { programme: number; metaclass: number } | null {
 /**
  * Fetches subjects and finds the subject matching programme:metaclass.
  */
-async function getSubjectCode(
-  programme: number,
-  metaclass: number
-): Promise<string | null> {
+async function getSubjectCode(programme: number, metaclass: number): Promise<string | null> {
   try {
     const res = await fetch(`${location.origin}/seqta/student/load/subjects?`, {
       method: "POST",
@@ -42,10 +39,8 @@ async function getSubjectCode(
       const subjects = semester?.subjects;
       if (!Array.isArray(subjects)) continue;
       const subject = subjects.find(
-        (s: any) =>
-          s &&
-          Number(s.programme) === programme &&
-          Number(s.metaclass) === metaclass
+        (s: { programme?: unknown; metaclass?: unknown; code?: string }) =>
+          s && Number(s.programme) === programme && Number(s.metaclass) === metaclass,
       );
       if (subject?.code) return subject.code;
     }
@@ -59,10 +54,7 @@ async function getSubjectCode(
 /**
  * Fetches user prefs and returns the colour for the given subject code.
  */
-async function getSubjectColour(
-  subjectCode: string,
-  userId: number
-): Promise<string | null> {
+async function getSubjectColour(subjectCode: string, userId: number): Promise<string | null> {
   try {
     const res = await fetch(`${location.origin}/seqta/student/load/prefs?`, {
       method: "POST",
@@ -79,8 +71,7 @@ async function getSubjectColour(
     if (!Array.isArray(payload)) return null;
 
     const pref = payload.find(
-      (p: { name: string; value: string }) =>
-        p.name === `timetable.subject.colour.${subjectCode}`
+      (p: { name: string; value: string }) => p.name === `timetable.subject.colour.${subjectCode}`,
     );
     return pref?.value ?? null;
   } catch (error) {
@@ -103,8 +94,9 @@ export async function getAdaptiveColour(): Promise<string | null> {
   let userId: number;
   try {
     const userInfo = await getUserInfo();
-    userId = userInfo?.id;
-    if (typeof userId !== "number") return null;
+    const id = userInfo?.id;
+    if (typeof id !== "number") return null;
+    userId = id;
   } catch {
     return null;
   }
@@ -112,7 +104,6 @@ export async function getAdaptiveColour(): Promise<string | null> {
   const colour = await getSubjectColour(subjectCode, userId);
   if (!colour || typeof colour !== "string") return null;
 
-  // Basic hex validation
   if (/^#([0-9A-Fa-f]{3}){1,2}$/.test(colour)) return colour;
   if (/^[0-9A-Fa-f]{6}$/.test(colour)) return `#${colour}`;
   return null;

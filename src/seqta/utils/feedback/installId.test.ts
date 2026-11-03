@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { BSPLUS_INSTALL_ID_KEY } from "./constants";
 import { generateInstallId, getOrCreateInstallId, isValidInstallId } from "./installId";
 

@@ -8,10 +8,7 @@ export function isVerboseLoggingEnabled(): boolean {
 
 export function syncVerboseLogDomFlag(): void {
   if (typeof document === "undefined") return;
-  document.documentElement.toggleAttribute(
-    VERBOSE_LOG_ATTR,
-    isVerboseLoggingEnabled(),
-  );
+  document.documentElement.toggleAttribute(VERBOSE_LOG_ATTR, isVerboseLoggingEnabled());
 }
 
 let initialized = false;

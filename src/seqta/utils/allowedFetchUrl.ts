@@ -45,9 +45,7 @@ function isPrivateOrLocalHost(hostname: string): boolean {
 
 function isAllowedHost(hostname: string): boolean {
   const host = hostname.toLowerCase();
-  return ALLOWED_HOST_SUFFIXES.some(
-    (suffix) => host === suffix || host.endsWith(`.${suffix}`),
-  );
+  return ALLOWED_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
 }
 
 /** HTTPS-only fetch allowlist for background `fetchFromUrl`. */

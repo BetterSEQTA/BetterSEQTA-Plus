@@ -11,16 +11,21 @@ const handleNotificationClick = async (target: HTMLElement) => {
   const buttonType = notificationItem.getAttribute("data-type");
   if (buttonType !== "message") return;
 
-  const notificationList = await ReactFiber.find(
+  type NotificationListItem = {
+    notificationID?: number;
+    message?: { messageID?: number };
+  };
+  const notificationList = (await ReactFiber.find(
     '[class*="notifications__list___"]',
-  ).getState();
+  ).getState()) as {
+    items?: NotificationListItem[];
+  };
   const buttonId = notificationItem.getAttribute("data-id");
   if (!buttonId) return;
 
-  const matchingNotification =
-    notificationList.items.find(
-      (item: any) => item.notificationID === parseInt(buttonId),
-    );
+  const matchingNotification = notificationList.items?.find(
+    (item) => item.notificationID === parseInt(buttonId, 10),
+  );
 
   if (!matchingNotification?.message?.messageID) return;
 
@@ -31,7 +36,6 @@ const handleNotificationClick = async (target: HTMLElement) => {
     selected: new Set([matchingNotification.message.messageID]),
   });
 
-  // Close the notifications panel
   const notificationButton = document.querySelector(
     '[class*="notifications__notifications___"] > button',
   ) as HTMLButtonElement | null;
@@ -43,14 +47,14 @@ const handleNotificationClick = async (target: HTMLElement) => {
   if (button) {
     (button as HTMLElement).click();
   }
-  
+
   // send a network request to mark as read
-  fetch('/seqta/student/save/message', {
+  fetch("/seqta/student/save/message", {
     method: "POST",
     credentials: "include",
     body: JSON.stringify({
       items: [matchingNotification.message.messageID],
-      mode: 'x-read',
+      mode: "x-read",
       read: true,
     }),
   });

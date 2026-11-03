@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   ensureSyncableStorageDefaults,
   getSyncableStorageDefaults,
@@ -16,6 +16,11 @@ import {
   getLastUploadedSnapshot,
   setKnownRemoteUpdatedAt,
 } from "@/seqta/utils/cloudSettingsSync";
+import { readRemoteStatus } from "@/seqta/utils/remoteStatus";
+
+async function isCloudSyncDisabled(): Promise<boolean> {
+  return (await readRemoteStatus()).disabledFeatures.includes("cloud.sync");
+}
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 export const CLOUD_SUMMARY_URL = `${ACCOUNTS_BASE}/api/user/cloud-summary`;
@@ -46,7 +51,19 @@ function isAutoCloudSyncEnabled(all: Record<string, unknown>): boolean {
   return all.autoCloudSettingsSync !== false;
 }
 
-async function parseJsonResponse(r: Response): Promise<any> {
+type CloudJsonBody = {
+  access_token?: string;
+  refresh_token?: string;
+  user?: unknown;
+  error?: string;
+  updated_at?: string;
+};
+
+function asCloudJsonBody(data: unknown): CloudJsonBody {
+  return data && typeof data === "object" ? (data as CloudJsonBody) : {};
+}
+
+async function parseJsonResponse(r: Response): Promise<unknown> {
   const text = await r.text();
   try {
     return text ? JSON.parse(text) : {};
@@ -76,7 +93,7 @@ async function tryRefreshTokens(): Promise<boolean> {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ refresh_token, client_id }),
     });
-    const data = await parseJsonResponse(r);
+    const data = asCloudJsonBody(await parseJsonResponse(r));
     if (!r.ok || !data.access_token || !data.refresh_token) return false;
 
     await browser.storage.local.set({
@@ -102,8 +119,7 @@ function isServerTimestampNewer(serverIso: string, localIso: string | undefined)
 async function fetchCloudSummaryOnce(
   token: string,
 ): Promise<
-  | { ok: true; data: CloudSummaryResponse }
-  | { ok: false; unauthorized: boolean; error?: string }
+  { ok: true; data: CloudSummaryResponse } | { ok: false; unauthorized: boolean; error?: string }
 > {
   try {
     const r = await fetchWithTimeout(CLOUD_SUMMARY_URL, {
@@ -129,9 +145,7 @@ async function fetchCloudSummaryOnce(
   }
 }
 
-async function fetchCloudSummaryWithAuthRetry(
-  token: string,
-): Promise<CloudSummaryResponse | null> {
+async function fetchCloudSummaryWithAuthRetry(token: string): Promise<CloudSummaryResponse | null> {
   let t = token;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await fetchCloudSummaryOnce(t);
@@ -191,16 +205,16 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
       },
       body: JSON.stringify(payload),
     });
-    const data = await parseJsonResponse(r);
+    const data = asCloudJsonBody(await parseJsonResponse(r));
     if (r.status === 401) return { ok: false, unauthorized: true };
     if (!r.ok) {
       return {
         ok: false,
         unauthorized: false,
-        error: data?.error ?? `Upload failed (${r.status})`,
+        error: data.error ?? `Upload failed (${r.status})`,
       };
     }
-    const updated_at = data?.updated_at as string | undefined;
+    const updated_at = data.updated_at;
     await saveLastUploadedSnapshot(normalized);
     await setKnownRemoteUpdatedAt(updated_at);
     return { ok: true, updated_at };
@@ -216,6 +230,9 @@ async function putSettingsOnce(token: string): Promise<PutResult> {
 export async function performCloudSettingsUploadWithRetry(
   token: string,
 ): Promise<{ success: boolean; error?: string; updated_at?: string; skipped?: boolean }> {
+  if (await isCloudSyncDisabled()) {
+    return { success: false, error: "Cloud sync is temporarily disabled", skipped: true };
+  }
   let t = token;
   for (let attempt = 0; attempt < 2; attempt++) {
     const res = await putSettingsOnce(t);
@@ -246,7 +263,7 @@ async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
     });
-    const data = await parseJsonResponse(r);
+    const data = asCloudJsonBody(await parseJsonResponse(r));
     if (r.status === 401) return { ok: false, unauthorized: true };
     if (r.status === 404) {
       return {
@@ -260,7 +277,7 @@ async function getSettingsAndApplyOnce(token: string): Promise<GetResult> {
       return {
         ok: false,
         unauthorized: false,
-        error: data?.error ?? `Download failed (${r.status})`,
+        error: data.error ?? `Download failed (${r.status})`,
       };
     }
     const themeIdToEnsure = resolveThemeIdForPostSyncDownload(data);
@@ -332,6 +349,8 @@ async function downloadIfNeeded(token: string): Promise<void> {
 }
 
 async function runCloudSettingsPollInner(): Promise<void> {
+  if (await isCloudSyncDisabled()) return;
+
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) return;
 
@@ -349,9 +368,7 @@ async function runCloudSettingsPollInner(): Promise<void> {
     typeof bsplus.schemaVersion === "number" &&
     bsplus.schemaVersion > CLOUD_SETTINGS_SYNC_SCHEMA_VERSION
   ) {
-    console.warn(
-      "[BS+ cloud sync] Server schemaVersion newer than client; skip auto-download",
-    );
+    console.warn("[BS+ cloud sync] Server schemaVersion newer than client; skip auto-download");
     return;
   }
 
@@ -409,6 +426,7 @@ function scheduleDebouncedUpload(): void {
 /** Call after store theme install (and similar) so cloud upload runs even if storage events are flaky. */
 export function requestCloudSettingsDebouncedUpload(): void {
   void (async () => {
+    if (await isCloudSyncDisabled()) return;
     const all = (await browser.storage.local.get()) as Record<string, unknown>;
     if (!isAutoCloudSyncEnabled(all)) return;
     if (suppressAutoUploadDuringRestore) return;
@@ -418,6 +436,7 @@ export function requestCloudSettingsDebouncedUpload(): void {
 }
 
 async function runDebouncedUploadJob(): Promise<void> {
+  if (await isCloudSyncDisabled()) return;
   const all = (await browser.storage.local.get()) as Record<string, unknown>;
   if (!isAutoCloudSyncEnabled(all)) return;
   const token = await getAccessToken();
@@ -436,12 +455,12 @@ async function syncAutoUploadWithStorage(): Promise<void> {
 }
 
 function onStorageChanged(
-  changes: Record<string, browser.storage.StorageChange>,
+  changes: Record<string, chrome.storage.StorageChange>,
   area: string,
 ): void {
   if (area !== "local") return;
 
-  if (Object.prototype.hasOwnProperty.call(changes, "autoCloudSettingsSync")) {
+  if (Object.hasOwn(changes, "autoCloudSettingsSync")) {
     void syncAutoUploadWithStorage();
   }
 
@@ -449,6 +468,7 @@ function onStorageChanged(
   if (!keys.some((k) => isKeyIncludedInCloudUploadPayload(k))) return;
 
   void (async () => {
+    if (await isCloudSyncDisabled()) return;
     const all = (await browser.storage.local.get()) as Record<string, unknown>;
     if (!isAutoCloudSyncEnabled(all)) return;
     if (suppressAutoUploadDuringRestore) return;
@@ -475,4 +495,3 @@ export function initCloudSettingsAutoSync(deps: { reloadSeqtaPages: () => void }
   browser.storage.onChanged.addListener(onStorageChanged);
   void runCloudSettingsPoll();
 }
-

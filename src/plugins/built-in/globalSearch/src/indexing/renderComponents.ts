@@ -1,4 +1,5 @@
-import type { SvelteComponent } from "svelte";
+import type { MountableSvelteComponent } from "@/types/mountableComponent";
+import { toMountableComponent } from "@/types/mountableComponent";
 import AssessmentItem from "../components/items/AssessmentItem.svelte";
 import ForumItem from "../components/items/ForumItem.svelte";
 import SubjectItem from "../components/items/SubjectItem.svelte";
@@ -7,26 +8,22 @@ import type { IndexItem } from "./types";
 import { jobs } from "./jobs";
 import { loadDynamicItems } from "../utils/dynamicItems";
 
-export const renderComponentMap: Record<string, typeof SvelteComponent> = {
-  assessment: AssessmentItem as unknown as typeof SvelteComponent,
-  message: AssessmentItem as unknown as typeof SvelteComponent,
-  forum: ForumItem as unknown as typeof SvelteComponent,
-  subject: SubjectItem as unknown as typeof SvelteComponent,
-  // New categories share a generic, category-aware row component to keep
-  // the palette consistent without bespoke layouts for every job. The
-  // component reads `item.metadata.icon` and the `category` to pick a
-  // sensible default visual treatment.
-  course: GenericItem as unknown as typeof SvelteComponent,
-  notice: GenericItem as unknown as typeof SvelteComponent,
-  document: GenericItem as unknown as typeof SvelteComponent,
-  folio: GenericItem as unknown as typeof SvelteComponent,
-  portal: GenericItem as unknown as typeof SvelteComponent,
-  report: GenericItem as unknown as typeof SvelteComponent,
-  goal: GenericItem as unknown as typeof SvelteComponent,
-  passive: GenericItem as unknown as typeof SvelteComponent,
+export const renderComponentMap: Record<string, MountableSvelteComponent> = {
+  assessment: toMountableComponent(AssessmentItem),
+  message: toMountableComponent(AssessmentItem),
+  forum: toMountableComponent(ForumItem),
+  subject: toMountableComponent(SubjectItem),
+  course: toMountableComponent(GenericItem),
+  notice: toMountableComponent(GenericItem),
+  document: toMountableComponent(GenericItem),
+  folio: toMountableComponent(GenericItem),
+  portal: toMountableComponent(GenericItem),
+  report: toMountableComponent(GenericItem),
+  goal: toMountableComponent(GenericItem),
+  passive: toMountableComponent(GenericItem),
 };
 
-function resolveRenderComponent(item: IndexItem): typeof SvelteComponent | undefined {
+function resolveRenderComponent(item: IndexItem): MountableSvelteComponent | undefined {
   const jobDef =
     jobs[item.category] ||
     Object.values(jobs).find((j) => j.id === item.category) ||

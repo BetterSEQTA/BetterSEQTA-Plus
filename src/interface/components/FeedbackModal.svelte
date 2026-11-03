@@ -25,12 +25,12 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import Spinner from "./Spinner.svelte";
 
-  let { onClose, initialFeedbackId = null } = $props<{
+  let { onClose, initialFeedbackId = null }: {
     onClose: () => void;
     initialFeedbackId?: string | null;
-  }>();
+  } = $props();
 
-  let tab = $state<"send" | "status">(
+  let tab = $derived<"send" | "status">(
     typeof initialFeedbackId === "string" && initialFeedbackId ? "status" : "send",
   );
   let category = $state<FeedbackCategory>("bug");
@@ -57,9 +57,9 @@
       : "background-color:#fff;color:#18181b;border-color:#e4e4e7;color-scheme:light",
   );
   const field =
-    "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border focus:outline-none focus:ring-2 focus:ring-zinc-400";
+    "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border focus:outline-hidden focus:ring-2 focus:ring-zinc-400";
   const btn =
-    "px-4 py-2 text-[18px] font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-zinc-400 disabled:opacity-50";
+    "px-4 py-2 text-[18px] font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-zinc-400 disabled:opacity-50";
   const btnMuted = $derived(
     `${btn} ${isDark ? "bg-zinc-700 text-zinc-200" : "bg-zinc-200 text-zinc-700"}`,
   );
@@ -175,14 +175,14 @@
 
 <!-- Backdrop click target — separate from dialog so inner clicks never bubble to a "close" handler. -->
 <div
-  class="feedback-overlay fixed inset-0 z-[99999] overflow-y-auto overscroll-contain {isDark
+  class="feedback-overlay fixed inset-0 z-99999 overflow-y-auto overscroll-contain {isDark
     ? 'dark'
     : ''}"
   transition:fade={{ duration: $settingsState.animations ? 200 : 0 }}
 >
   <button
     type="button"
-    class="feedback-overlay__backdrop fixed inset-0 bg-black/50 backdrop-blur-sm border-0 p-0 cursor-default"
+    class="feedback-overlay__backdrop fixed inset-0 bg-black/50 backdrop-blur-xs border-0 p-0 cursor-default"
     aria-label="Close feedback"
     disabled={busy}
     onclick={() => {
@@ -191,7 +191,7 @@
   ></button>
 
   <div
-    class="feedback-overlay__center relative z-[1] flex min-h-full items-center justify-center p-4 sm:p-6 pointer-events-none"
+    class="feedback-overlay__center relative z-1 flex min-h-full items-center justify-center p-4 sm:p-6 pointer-events-none"
   >
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
@@ -226,8 +226,8 @@
           class="feedback-tab flex-1 px-3 py-2.5 rounded-full text-[18px] font-medium transition-all duration-200 {tab ===
           'send'
             ? isDark
-              ? 'bg-zinc-700 text-white font-semibold shadow-sm'
-              : 'bg-white text-zinc-900 font-semibold shadow-sm'
+              ? 'bg-zinc-700 text-white font-semibold shadow-xs'
+              : 'bg-white text-zinc-900 font-semibold shadow-xs'
             : isDark
               ? 'bg-transparent text-zinc-400 hover:text-zinc-200'
               : 'bg-transparent text-zinc-500 hover:text-zinc-800'}"
@@ -242,8 +242,8 @@
           class="feedback-tab flex-1 px-3 py-2.5 rounded-full text-[18px] font-medium transition-all duration-200 {tab ===
           'status'
             ? isDark
-              ? 'bg-zinc-700 text-white font-semibold shadow-sm'
-              : 'bg-white text-zinc-900 font-semibold shadow-sm'
+              ? 'bg-zinc-700 text-white font-semibold shadow-xs'
+              : 'bg-white text-zinc-900 font-semibold shadow-xs'
             : isDark
               ? 'bg-transparent text-zinc-400 hover:text-zinc-200'
               : 'bg-transparent text-zinc-500 hover:text-zinc-800'}"
@@ -387,7 +387,7 @@
             <h2 id="feedback-modal-title" class="text-xl font-bold">Feedback status</h2>
             <button
               type="button"
-              class="{btnMuted} !text-base !px-3 !py-1.5"
+              class="{btnMuted} text-base! px-3! py-1.5!"
               onclick={() => {
                 selectedItem = null;
                 void loadStatusList();
@@ -430,7 +430,7 @@
             <h2 id="feedback-modal-title" class="text-xl font-bold">My feedback</h2>
             <button
               type="button"
-              class="{btnMuted} !text-base !px-3 !py-1.5"
+              class="{btnMuted} text-base! px-3! py-1.5!"
               onclick={() => void loadStatusList()}
               disabled={statusLoading}
             >
@@ -461,7 +461,7 @@
                   <button
                     type="button"
                     onclick={() => openStatusItem(item.id)}
-                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-zinc-400 {isDark
+                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 {isDark
                       ? 'border-zinc-700 bg-zinc-900/40'
                       : 'border-zinc-200 bg-white'}"
                   >

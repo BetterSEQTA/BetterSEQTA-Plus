@@ -2,10 +2,11 @@
   import MotionDiv from '@/interface/components/MotionDiv.svelte';
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import Switch from "@/interface/components/Switch.svelte"
+  import Button from "@/interface/components/Button.svelte"
   import { onMount } from 'svelte';
   import Shortcuts from "@/seqta/content/links.json"
 
-  let { searchQuery = "" } = $props<{ searchQuery?: string }>();
+  let { searchQuery = "" }: { searchQuery?: string } = $props();
   const q = $derived(searchQuery.trim().toLowerCase());
 
   let isLoaded = $state(false);
@@ -162,13 +163,13 @@
                 >
                   {#if newIcon}
                     <div class="flex overflow-hidden items-center">
-                      <div class="flex-shrink-0 mr-2 w-6 h-6">
+                      <div class="shrink-0 mr-2 w-6 h-6">
                         <img src={`data:image/svg+xml;base64,${btoa(newIcon)}`} alt="Selected Icon" class="object-contain w-full h-full" />
                       </div>
                       <span class="truncate">Selected Icon</span>
                     </div>
                     <span
-                      class="p-1 ml-2 rounded hover:bg-zinc-200 dark:hover:bg-zinc-600"
+                      class="p-1 ml-2 rounded-sm hover:bg-zinc-200 dark:hover:bg-zinc-600"
                       aria-label="Clear icon"
                       role="button"
                       tabindex="0"
@@ -199,16 +200,11 @@
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <button
-          class="w-full px-4 py-3 mb-4 text-base dark:text-white transition rounded-xl bg-zinc-200 dark:bg-zinc-700/50"
-          onclick={isFormVisible ? addNewCustomShortcut : toggleForm}
-        >
-          {#if isFormVisible}
-            Add
-          {:else}
-            Add Custom Shortcut
-          {/if}
-        </button>
+        <Button
+          class="w-full mb-4"
+          text={isFormVisible ? "Add" : "Add Custom Shortcut"}
+          onClick={isFormVisible ? addNewCustomShortcut : toggleForm}
+        />
       </MotionDiv>
     </div>
     {/if}

@@ -19,7 +19,9 @@ export function warmUpVectorSearchOnInteraction(): void {
 export async function initVectorSearch() {
   if (initializationFailed || !isVectorSearchSupported()) {
     if (!isVectorSearchSupported()) {
-      verboseDebug("[Vector Search] Vector search not supported in Firefox - using text search only");
+      verboseDebug(
+        "[Vector Search] Vector search not supported in Firefox - using text search only",
+      );
     }
     return;
   }
@@ -35,7 +37,10 @@ export async function initVectorSearch() {
     vectorIndex.preloadIndexedDB();
     verboseDebug("[Vector Search] Initialized successfully");
   } catch (e) {
-    console.warn("[Vector Search] Failed to initialize vector search (will use text search only):", e);
+    console.warn(
+      "[Vector Search] Failed to initialize vector search (will use text search only):",
+      e,
+    );
     initializationFailed = true;
     vectorIndex = null;
   }
@@ -97,7 +102,7 @@ export async function searchVectors(
     });
 
     return results
-      .filter((r) => r.similarity > 0.80)
+      .filter((r) => r.similarity > 0.8)
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK) as VectorSearchResult[];
   } catch (e) {

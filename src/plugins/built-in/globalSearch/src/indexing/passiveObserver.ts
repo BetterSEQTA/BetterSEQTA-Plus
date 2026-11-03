@@ -1,11 +1,7 @@
 import type { IndexItem } from "./types";
 import { getAll, put } from "./db";
-import {
-  buildIndexItem,
-  extractTextFromValue,
-  pickId,
-  pickTitle,
-} from "./extract";
+import { buildIndexItem, extractTextFromValue, pickId, pickTitle } from "./extract";
+import { asXhrWithBsplusMeta } from "@/seqta/utils/xhrBsplusMeta";
 import { verboseDebug } from "@/utils/verboseLog";
 import { isSensitiveSeqtaPath, normalizeSeqtaPath } from "./api";
 import { mergeDynamicItems } from "../utils/dynamicItems";
@@ -83,7 +79,10 @@ interface CapturedContext {
 function categoryFromRoute(route: string): string {
   // /seqta/student/load/courses -> courses
   // /seqta/student/load/message -> message
-  const tail = route.replace(/^\/seqta\/student\//, "").split("/").filter(Boolean);
+  const tail = route
+    .replace(/^\/seqta\/student\//, "")
+    .split("/")
+    .filter(Boolean);
   if (tail.length === 0) return "passive";
   // message/people is a support endpoint that backs the messages compose UI.
   // We treat it as a low-priority `messages-support` record rather than a
@@ -111,13 +110,7 @@ function isPeopleEntityWorthIndexing(entity: unknown): boolean {
     "given",
     "givenName",
   ]);
-  const last = stringField(obj, [
-    "surname",
-    "lastname",
-    "lastName",
-    "last_name",
-    "familyName",
-  ]);
+  const last = stringField(obj, ["surname", "lastname", "lastName", "last_name", "familyName"]);
   const display = stringField(obj, ["displayName", "name", "fullName"]);
   return Boolean((first && last) || display);
 }
@@ -158,12 +151,8 @@ function extractProgrammeMetaclass(
     src: Record<string, unknown> | null,
   ): { programme: number; metaclass: number } | null => {
     if (!src) return null;
-    const programme = coerce(
-      src.programme ?? src.programmeId ?? src.programmeID,
-    );
-    const metaclass = coerce(
-      src.metaclass ?? src.metaclassId ?? src.metaclassID ?? src.subjectId,
-    );
+    const programme = coerce(src.programme ?? src.programmeId ?? src.programmeID);
+    const metaclass = coerce(src.metaclass ?? src.metaclassId ?? src.metaclassID ?? src.subjectId);
     if (programme !== undefined && metaclass !== undefined) {
       return { programme, metaclass };
     }
@@ -189,15 +178,7 @@ function entitiesFromPayload(payload: unknown): unknown[] {
     // `.items`, `.tasks`, etc. Pull the first array-shaped child as our
     // best guess; if none exists, fall back to the object itself so we
     // still index a single entry.
-    for (const key of [
-      "list",
-      "items",
-      "messages",
-      "tasks",
-      "pending",
-      "forums",
-      "docs",
-    ]) {
+    for (const key of ["list", "items", "messages", "tasks", "pending", "forums", "docs"]) {
       const value = obj[key];
       if (Array.isArray(value)) return value;
     }
@@ -229,9 +210,7 @@ const DEEP_LINK_FIELDS = [
   "messageId",
 ] as const;
 
-function pickDeepLinkHints(
-  entity: unknown,
-): Record<string, string | number> {
+function pickDeepLinkHints(entity: unknown): Record<string, string | number> {
   if (!entity || typeof entity !== "object") return {};
   const src = entity as Record<string, unknown>;
   const out: Record<string, string | number> = {};
@@ -246,10 +225,7 @@ function pickDeepLinkHints(
   return out;
 }
 
-function stringField(
-  entity: Record<string, unknown>,
-  keys: readonly string[],
-): string | undefined {
+function stringField(entity: Record<string, unknown>, keys: readonly string[]): string | undefined {
   for (const key of keys) {
     const value = entity[key];
     if (typeof value === "string" && value.trim()) return value.trim();
@@ -274,13 +250,7 @@ function titleFromEndpoint(
       "given",
       "givenName",
     ]);
-    const last = stringField(obj, [
-      "surname",
-      "lastname",
-      "lastName",
-      "last_name",
-      "familyName",
-    ]);
+    const last = stringField(obj, ["surname", "lastname", "lastName", "last_name", "familyName"]);
     const full = [first, last].filter(Boolean).join(" ").trim();
     if (full) return full.slice(0, 200);
   }
@@ -297,85 +267,88 @@ function titleFromEndpoint(
   return (firstLine || fallback).slice(0, 200);
 }
 
-function synthesizeItems(
+function shouldSkipPassiveEntity(
   ctx: CapturedContext,
-  payload: unknown,
-): IndexItem[] {
+  entity: unknown,
+  isPeopleSupport: boolean,
+): boolean {
+  if (!entity || (typeof entity !== "object" && typeof entity !== "string")) {
+    return true;
+  }
+  if (ctx.route.includes("/load/message") && typeof entity === "object") {
+    const subject = (entity as Record<string, unknown>).subject;
+    if (typeof subject === "string" && subject.startsWith("BQ+TIMETABLE:")) {
+      return true;
+    }
+  }
+  return isPeopleSupport && !isPeopleEntityWorthIndexing(entity);
+}
+
+function passiveEntityToIndexItem(
+  ctx: CapturedContext,
+  entity: unknown,
+  index: number,
+  category: ReturnType<typeof categoryFromRoute>,
+  isPeopleSupport: boolean,
+): IndexItem | null {
+  const fallbackId = `${ctx.route}#${index}`;
+  const entityId = pickId(entity, fallbackId);
+  const stableId = `passive-${ctx.route.replace(/\//g, "_")}-${entityId}`;
+
+  const content = extractTextFromValue(entity, {
+    maxChars: MAX_PER_RESPONSE_TEXT_CHARS,
+  });
+  const title = titleFromEndpoint(ctx.route, entity, content, fallbackId);
+  if (!content && (!title || title === fallbackId)) {
+    return null;
+  }
+
+  const deepLinkHints = pickDeepLinkHints(entity);
+  const sourcePage = sourcePageForRoute(ctx.route);
+  const coursePm = ctx.route.includes("/load/courses")
+    ? extractProgrammeMetaclass(ctx.requestBody, entity)
+    : null;
+
+  return buildIndexItem({
+    id: stableId,
+    text: title,
+    category,
+    contentOverride: content,
+    metadata: {
+      route: ctx.route,
+      source: "passive",
+      observedAt: new Date(ctx.observedAt).toISOString(),
+      entityType: category,
+      entityId,
+      icon: "\ueb71",
+      sourcePage,
+      ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
+      ...deepLinkHints,
+      ...(coursePm ? { programme: coursePm.programme, metaclass: coursePm.metaclass } : {}),
+    },
+    actionId: "passive",
+    renderComponentId: "passive",
+    dateAdded: ctx.observedAt,
+  });
+}
+
+function synthesizeItems(ctx: CapturedContext, payload: unknown): IndexItem[] {
   if (isAssessmentListRoute(ctx.route)) return [];
 
   const entities = entitiesFromPayload(payload);
   if (entities.length === 0) return [];
 
   const category = categoryFromRoute(ctx.route);
-  const now = ctx.observedAt;
-  const out: IndexItem[] = [];
-
   const isPeopleSupport = ctx.route.includes("/load/message/people");
-
+  const out: IndexItem[] = [];
   const limit = Math.min(entities.length, MAX_ITEMS_PER_RESPONSE);
+
   for (let i = 0; i < limit; i++) {
     const entity = entities[i];
-    if (!entity || (typeof entity !== "object" && typeof entity !== "string")) {
-      continue;
-    }
+    if (shouldSkipPassiveEntity(ctx, entity, isPeopleSupport)) continue;
 
-    // For the messages compose-people endpoint, skip records that don't
-    // carry a real human name. We never want raw entries like
-    // `/seqta/student/load/message/people#20` becoming titles, and we
-    // explicitly route the rest to /messages so they're treated as support
-    // records, not standalone "people" results.
-    if (isPeopleSupport && !isPeopleEntityWorthIndexing(entity)) {
-      continue;
-    }
-
-    const fallbackId = `${ctx.route}#${i}`;
-    const entityId = pickId(entity, fallbackId);
-    const stableId = `passive-${ctx.route.replace(/\//g, "_")}-${entityId}`;
-
-    const content = extractTextFromValue(entity, {
-      maxChars: MAX_PER_RESPONSE_TEXT_CHARS,
-    });
-    const title = titleFromEndpoint(ctx.route, entity, content, fallbackId);
-    if (!content && (!title || title === fallbackId)) {
-      // Skip records that produced neither title nor content; they are
-      // structurally noise (e.g. tiny acknowledgement payloads).
-      continue;
-    }
-
-    const deepLinkHints = pickDeepLinkHints(entity);
-    const sourcePage = sourcePageForRoute(ctx.route);
-    const coursePm = ctx.route.includes("/load/courses")
-      ? extractProgrammeMetaclass(ctx.requestBody, entity)
-      : null;
-
-    out.push(
-      buildIndexItem({
-        id: stableId,
-        text: title,
-        category,
-        contentOverride: content,
-        metadata: {
-          route: ctx.route,
-          source: "passive",
-          observedAt: new Date(now).toISOString(),
-          entityType: category,
-          entityId,
-          icon: "\ueb71",
-          sourcePage,
-          // Mark message/people as a low-priority support record so the
-          // search ranker can deprioritize it relative to real messages,
-          // assessments, courses, etc.
-          ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
-          ...deepLinkHints,
-          ...(coursePm
-            ? { programme: coursePm.programme, metaclass: coursePm.metaclass }
-            : {}),
-        },
-        actionId: "passive",
-        renderComponentId: "passive",
-        dateAdded: now,
-      }),
-    );
+    const item = passiveEntityToIndexItem(ctx, entity, i, category, isPeopleSupport);
+    if (item) out.push(item);
   }
 
   return out;
@@ -395,10 +368,7 @@ async function persistItems(items: IndexItem[]): Promise<void> {
       await put(STORE_ID, item, item.id);
       pendingChangedItems.set(item.id, item);
     } catch (e) {
-      console.warn(
-        `[Passive Observer] Failed to persist item ${item.id}:`,
-        e,
-      );
+      console.warn(`[Passive Observer] Failed to persist item ${item.id}:`, e);
     }
   }
 
@@ -460,10 +430,7 @@ async function handleCapturedPayload(
   requestBody: unknown,
   payload: unknown,
 ): Promise<void> {
-  const items = synthesizeItems(
-    { route, requestBody, observedAt: Date.now() },
-    payload,
-  );
+  const items = synthesizeItems({ route, requestBody, observedAt: Date.now() }, payload);
   if (items.length > 0) {
     await persistItems(items);
   }
@@ -533,17 +500,10 @@ export function installPassiveObserver(): void {
 
     try {
       const url =
-        typeof input === "string"
-          ? input
-          : input instanceof URL
-            ? input.toString()
-            : input.url;
+        typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
       if (isSameOriginSeqtaUrl(url)) {
         const body = init?.body;
-        const parsed =
-          body && typeof body === "string"
-            ? tryParseJson(body)
-            : undefined;
+        const parsed = body && typeof body === "string" ? tryParseJson(body) : undefined;
         // Fire-and-forget: never block the host page on indexing work.
         void consumeResponse(response, url, parsed);
       }
@@ -556,7 +516,7 @@ export function installPassiveObserver(): void {
   };
 
   // Best-effort XHR hook for the rare callers that bypass fetch.
-  const ProtoXhr = (window as any).XMLHttpRequest?.prototype;
+  const ProtoXhr = XMLHttpRequest.prototype;
   if (ProtoXhr) {
     const originalOpen = ProtoXhr.open;
     const originalSend = ProtoXhr.send;
@@ -564,25 +524,25 @@ export function installPassiveObserver(): void {
       this: XMLHttpRequest,
       method: string,
       url: string,
-      ...rest: any[]
+      ...rest: unknown[]
     ) {
       try {
-        (this as any).__bsplusUrl = url;
-        (this as any).__bsplusMethod = method;
+        const xhr = asXhrWithBsplusMeta(this);
+        xhr.__bsplusUrl = url;
+        xhr.__bsplusMethod = method;
       } catch {
         /* ignore */
       }
-      return originalOpen.call(this, method, url, ...rest);
+      return originalOpen.apply(this, [method, url, ...rest] as Parameters<typeof originalOpen>);
     };
     ProtoXhr.send = function patchedSend(
       this: XMLHttpRequest,
-      body?: any,
+      body?: Document | XMLHttpRequestBodyInit | null,
     ) {
       try {
-        const url = (this as any).__bsplusUrl as string | undefined;
+        const url = asXhrWithBsplusMeta(this).__bsplusUrl;
         if (url && isSameOriginSeqtaUrl(url)) {
-          const parsed =
-            typeof body === "string" ? tryParseJson(body) : undefined;
+          const parsed = typeof body === "string" ? tryParseJson(body) : undefined;
           this.addEventListener("load", () => {
             try {
               if (this.status < 200 || this.status >= 300) return;

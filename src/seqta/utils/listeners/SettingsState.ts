@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import { SYNCABLE_PLUGIN_SETTING_DEFAULTS } from "@/plugins/syncablePluginDefaults";
 import { getDefaultSettingsState } from "@/seqta/utils/defaultSettings";
 import type { SettingsState } from "@/types/storage";
@@ -35,8 +35,10 @@ const SETTINGS_STORAGE_KEYS = [
     "mockNotices",
     "hideSensitiveContent",
     "privacyStatementLastUpdated",
+    "termsOfServiceLastAccepted",
     "themeOfTheMonthDismissedMonth",
     "themeOfTheMonthLastSeenId",
+
     ...PLUGIN_SETTINGS_KEYS,
     ...PLUGIN_STORAGE_KEYS,
   ]),
@@ -52,6 +54,7 @@ const EXCLUDED_FROM_SETTINGS_SURFACE = new Set([
   "cloudUsername",
   "bsplus_install_id",
   "bsplus_pending_feedback_ids",
+  "bsplus_remote_status",
 ]);
 
 function isExcludedSettingsKey(key: string): boolean {
@@ -75,8 +78,8 @@ function storageChangeIsNoop(oldValue: unknown, newValue: unknown): boolean {
   return JSON.stringify(oldValue) === JSON.stringify(newValue);
 }
 
-type ChangeListener = (newValue: any, oldValue: any) => void;
-type GlobalChangeListener = (newValue: any, oldValue: any, key: string) => void;
+type ChangeListener = (newValue: unknown, oldValue: unknown) => void;
+type GlobalChangeListener = (newValue: unknown, oldValue: unknown, key: string) => void;
 
 class StorageManager {
   private static instance: StorageManager;
@@ -98,8 +101,8 @@ class StorageManager {
 
     const handler: ProxyHandler<StorageManager> = {
       get: (target, prop: keyof SettingsState | "register" | "initialize") => {
-        if (prop in target) {
-          return (target as any)[prop];
+        if (typeof prop === "string" && prop in target) {
+          return Reflect.get(target, prop);
         }
         if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
           return undefined;
@@ -107,18 +110,7 @@ class StorageManager {
         return Reflect.get(target.data, prop);
       },
       set: (target, prop: keyof SettingsState, value) => {
-        if (typeof prop === "string" && isExcludedSettingsKey(prop)) {
-          void browser.storage.local.set({ [prop]: value });
-          return true;
-        }
-        const oldValue = target.data[prop];
-
-        // Only save if the reference actually changed
-        if (oldValue !== value) {
-          Reflect.set(target.data, prop, value);
-          void target.saveToStorage([prop as string]);
-          target.notifySettingChange(prop as string, value, oldValue);
-        }
+        target.setKey(prop, value);
         return true;
       },
       deleteProperty: (target, prop: keyof SettingsState) => {
@@ -159,10 +151,7 @@ class StorageManager {
         try {
           await browser.runtime.sendMessage({ type: "ensureStorageDefaults" });
         } catch (e) {
-          console.warn(
-            "[BetterSEQTA+] ensureStorageDefaults message failed:",
-            e,
-          );
+          console.warn("[BetterSEQTA+] ensureStorageDefaults message failed:", e);
         }
         await instance.loadFromStorage();
         instance.initialized = true;
@@ -173,10 +162,7 @@ class StorageManager {
     return instance;
   }
 
-  public setKey<K extends keyof SettingsState>(
-    key: K,
-    value: SettingsState[K],
-  ): void {
+  public setKey<K extends keyof SettingsState>(key: K, value: SettingsState[K]): void {
     if (typeof key === "string" && isExcludedSettingsKey(key)) {
       void browser.storage.local.set({ [key]: value });
       return;
@@ -186,14 +172,17 @@ class StorageManager {
       this.data[key] = value;
       void this.saveToStorage([key as string]);
       this.notifySettingChange(key as string, value, oldValue);
+      if (key === "onoff" && typeof value === "boolean") {
+        // Reload only after this switch and any queued preferences reach storage.
+        // This also covers Settings opened while the extension is disabled.
+        void this.flushPendingPatch()
+          .then(() => browser.runtime.sendMessage({ type: "reloadTabs" }))
+          .catch((error) => console.error("[BetterSEQTA+] Failed to save master setting", error));
+      }
     }
   }
 
-  private notifySettingChange(
-    key: string,
-    newValue: unknown,
-    oldValue: unknown,
-  ): void {
+  private notifySettingChange(key: string, newValue: unknown, oldValue: unknown): void {
     if (this.bootstrapping) return;
     const listeners = this.listeners.get(key);
     if (listeners) {
@@ -211,7 +200,7 @@ class StorageManager {
       Reflect.set(this.data, key, value);
     });
   }
-  
+
   public setSuppressWrites(suppress: boolean): void {
     this.suppressWrites = suppress;
     if (!suppress) {
@@ -220,10 +209,7 @@ class StorageManager {
   }
 
   private queueStoragePatch(changedKeys?: string[]): void {
-    const keys =
-      changedKeys && changedKeys.length > 0
-        ? changedKeys
-        : Object.keys(this.data);
+    const keys = changedKeys && changedKeys.length > 0 ? changedKeys : Object.keys(this.data);
 
     for (const key of keys) {
       if (isExcludedSettingsKey(key)) continue;
@@ -247,6 +233,7 @@ class StorageManager {
   }
 
   private async flushPendingPatch(): Promise<void> {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
     this.saveTimeout = null;
     if (this.bootstrapping || this.suppressWrites) return;
 
@@ -296,11 +283,7 @@ class StorageManager {
         }
       }
 
-      if (
-        !this.bootstrapping &&
-        actualChanges.length > 0 &&
-        this.globalListeners.size > 0
-      ) {
+      if (!this.bootstrapping && actualChanges.length > 0 && this.globalListeners.size > 0) {
         for (const listener of this.globalListeners) {
           for (const key of actualChanges) {
             const { oldValue, newValue } = changes[key];
@@ -315,11 +298,6 @@ class StorageManager {
     });
   }
 
-  /**
-   * Register a listener for a setting.
-   * @param prop The setting to listen to.
-   * @param listener The listener to call when the setting changes -> takes two arguments, (newValue, oldValue)
-   */
   public register(prop: keyof SettingsState, listener: ChangeListener): void {
     const key = prop as string;
     if (!this.listeners.has(key)) {
@@ -327,36 +305,19 @@ class StorageManager {
     }
     this.listeners.get(key)!.add(listener);
   }
-  
-  /**
-   * Unregister a listener for a setting.
-   * @param prop The setting to stop listening to.
-   * @param listener The listener to remove.
-   */
+
   public unregister(prop: keyof SettingsState, listener: ChangeListener): void {
     this.listeners.get(prop as string)?.delete(listener);
   }
 
-  /**
-   * Register a listener for any setting.
-   * @param listener The listener to call when any setting changes -> takes three arguments, (newValue, oldValue, key)
-   */
   public registerGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.add(listener);
   }
-  
-  /**
-   * Unregister a global listener.
-   * @param listener The listener to remove.
-   */
+
   public unregisterGlobal(listener: GlobalChangeListener): void {
     this.globalListeners.delete(listener);
   }
 
-  /**
-   * Get all settings.
-   * @returns All settings.
-   */
   public getAll(): SettingsState {
     return this.data;
   }
@@ -383,8 +344,7 @@ class StorageManager {
 }
 
 export const settingsState = StorageManager.getInstance();
-export const initializeSettingsState = async () =>
-  await StorageManager.initialize();
+export const initializeSettingsState = async () => await StorageManager.initialize();
 
 export function setSettingsStateSuppressWrites(suppress: boolean): void {
   settingsState.setSuppressWrites(suppress);

@@ -131,8 +131,7 @@ export function looksLikeLetterGrade(raw: string | undefined | null): boolean {
 
 function isGradedAssessment(a: Assessment): boolean {
   return (
-    a.finalGrade !== undefined ||
-    (a.letterGrade != null && looksLikeLetterGrade(a.letterGrade))
+    a.finalGrade !== undefined || (a.letterGrade != null && looksLikeLetterGrade(a.letterGrade))
   );
 }
 
@@ -162,14 +161,8 @@ function buildStandardLetterScale(): InferredLetterScale {
   for (let i = 0; i < bands.length; i++) {
     const above = bands[i - 1];
     const below = bands[i + 1];
-    bands[i].maxPercent =
-      above != null
-        ? (above.medianPercent + bands[i].medianPercent) / 2
-        : 100;
-    bands[i].minPercent =
-      below != null
-        ? (below.medianPercent + bands[i].medianPercent) / 2
-        : 0;
+    bands[i].maxPercent = above != null ? (above.medianPercent + bands[i].medianPercent) / 2 : 100;
+    bands[i].minPercent = below != null ? (below.medianPercent + bands[i].medianPercent) / 2 : 0;
   }
 
   return {
@@ -183,9 +176,7 @@ function buildStandardLetterScale(): InferredLetterScale {
 /**
  * Learn letter bands from assessments that report both % and the letter SEQTA assigned.
  */
-export function inferLetterGradeScale(
-  assessments: Assessment[],
-): InferredLetterScale | null {
+export function inferLetterGradeScale(assessments: Assessment[]): InferredLetterScale | null {
   const pairMap = new Map<string, { percents: number[]; labels: string[] }>();
   const letterOnlyMap = new Map<string, { labels: string[]; count: number }>();
   let pairedCount = 0;
@@ -267,13 +258,8 @@ export function inferLetterGradeScale(
     const below = bands[i + 1];
     if (bands[i].pairedSamples > 0 || above?.pairedSamples || below?.pairedSamples) {
       bands[i].maxPercent =
-        above != null
-          ? (above.medianPercent + bands[i].medianPercent) / 2
-          : 100;
-      bands[i].minPercent =
-        below != null
-          ? (below.medianPercent + bands[i].medianPercent) / 2
-          : 0;
+        above != null ? (above.medianPercent + bands[i].medianPercent) / 2 : 100;
+      bands[i].minPercent = below != null ? (below.medianPercent + bands[i].medianPercent) / 2 : 0;
     }
   }
 
@@ -311,10 +297,7 @@ function resolveEffectiveMode(
   return letterCount / graded.length >= 0.35 ? "letter" : "percent";
 }
 
-function assignPercentToBand(
-  percent: number,
-  scale: InferredLetterScale,
-): string | null {
+function assignPercentToBand(percent: number, scale: InferredLetterScale): string | null {
   if (!scale.bands.length) return null;
   for (const band of scale.bands) {
     if (percent >= band.minPercent) return band.key;
@@ -348,8 +331,7 @@ function buildPercentDistribution(graded: Assessment[]): GradeDistributionResult
     scaleSource: "percent",
     scaleLabel: "Percentage bands",
     gradedCount: graded.length,
-    averagePercent:
-      percentCount > 0 ? Math.round((percentSum / percentCount) * 10) / 10 : null,
+    averagePercent: percentCount > 0 ? Math.round((percentSum / percentCount) * 10) / 10 : null,
     letterGradeCoverage: 0,
   };
 }
@@ -406,10 +388,7 @@ function buildLetterDistribution(
           0;
         scale.bands.push({
           key,
-          label:
-            letterRaw && looksLikeLetterGrade(letterRaw)
-              ? letterRaw
-              : key.toUpperCase(),
+          label: letterRaw && looksLikeLetterGrade(letterRaw) ? letterRaw : key.toUpperCase(),
           medianPercent: approx,
           minPercent: 0,
           maxPercent: 100,
@@ -442,8 +421,7 @@ function buildLetterDistribution(
     scaleSource,
     scaleLabel,
     gradedCount: graded.length,
-    averagePercent:
-      percentCount > 0 ? Math.round((percentSum / percentCount) * 10) / 10 : null,
+    averagePercent: percentCount > 0 ? Math.round((percentSum / percentCount) * 10) / 10 : null,
     letterGradeCoverage: graded.length ? withLetter / graded.length : 0,
   };
 }

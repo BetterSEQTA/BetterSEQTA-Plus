@@ -1,5 +1,8 @@
+import { toISODate } from "@/seqta/utils/loaders/engageParentTimetable";
+import { getStudentId, tryGetUserInfo } from "@/seqta/utils/userInfo";
+import type { CalendarSyncAssessment } from "./eventMapper";
 import type { SyncDateRange } from "./syncDateRange";
-import { syncWindowRange } from "./syncDateRange";
+import { isDateInRange, syncWindowRange } from "./syncDateRange";
 import type { SeqtaTimetableLesson } from "./types";
 
 type PrefItem = { name?: string; value?: string };
@@ -69,38 +72,20 @@ function withSubjectColours(
   });
 }
 
-type SeqtaLoginPayload = {
-  id?: number;
-  student?: number;
-  type?: string;
-};
-
-let cachedLogin: SeqtaLoginPayload | null = null;
-
-async function resolveLoginPayload(): Promise<SeqtaLoginPayload | undefined> {
-  if (cachedLogin?.id != null) return cachedLogin;
-  try {
-    const json = await postSeqtaJson<{ payload?: SeqtaLoginPayload }>(
-      "/seqta/student/login",
-      { mode: "normal", query: null, redirect_url: location.href },
-    );
-    const payload = json?.payload;
-    if (!payload) return undefined;
-    cachedLogin = payload;
-    return payload;
-  } catch {
-    return undefined;
-  }
-}
-
 export async function resolveStudentId(): Promise<number | undefined> {
-  const payload = await resolveLoginPayload();
-  const id = payload?.id ?? payload?.student;
-  return typeof id === "number" && Number.isFinite(id) ? id : undefined;
+  if (isEngageParentContext()) {
+    const data = await postSeqtaJson<{ payload?: { id?: string | number }[] }>(
+      "/seqta/parent/load/timetable",
+      { list: true },
+    );
+    const id = Array.isArray(data?.payload) ? Number(data.payload[0]?.id) : NaN;
+    return Number.isFinite(id) && id > 0 ? id : undefined;
+  }
+  return getStudentId();
 }
 
 async function resolvePersonType(): Promise<string> {
-  const payload = await resolveLoginPayload();
+  const payload = await tryGetUserInfo();
   const type = payload?.type?.trim().toLowerCase();
   return type || "student";
 }
@@ -127,7 +112,9 @@ type SeqtaAppointmentPayload = {
 };
 
 /** Parse SEQTA datetimes like `2026-07-20 09:30:00.0` into lesson date/time fields. */
-export function parseSeqtaDateTime(value: string | undefined): { date: string; time: string } | null {
+export function parseSeqtaDateTime(
+  value: string | undefined,
+): { date: string; time: string } | null {
   if (!value) return null;
   const match = value.trim().match(/^(\d{4}-\d{2}-\d{2})[ T](\d{1,2}:\d{2})/);
   if (!match) return null;
@@ -157,49 +144,40 @@ export function appointmentToLesson(item: SeqtaAppointmentPayload): SeqtaTimetab
 export async function fetchAppointments(range: SyncDateRange): Promise<SeqtaTimetableLesson[]> {
   if (isEngageParentContext()) return [];
 
-  try {
-    const person = await resolveStudentId();
-    if (person == null) return [];
+  const person = await resolveStudentId();
+  if (person == null) throw new Error("Could not resolve student for calendar sync.");
 
-    const personType = await resolvePersonType();
-    const data = await postSeqtaJson<{ payload?: SeqtaAppointmentPayload[] }>(
-      "/seqta/student/events/load",
-      {
-        dateFrom: range.from,
-        dateTo: range.until,
-        person,
-        personType,
-      },
-    );
+  const personType = await resolvePersonType();
+  const data = await postSeqtaJson<{ payload?: SeqtaAppointmentPayload[] }>(
+    "/seqta/student/events/load",
+    {
+      dateFrom: range.from,
+      dateTo: range.until,
+      person,
+      personType,
+    },
+  );
 
-    const payload = Array.isArray(data?.payload) ? data.payload : [];
-    const lessons: SeqtaTimetableLesson[] = [];
-    for (const item of payload) {
-      const lesson = appointmentToLesson(item);
-      if (lesson) lessons.push(lesson);
-    }
-    return lessons;
-  } catch {
-    return [];
+  if (!Array.isArray(data?.payload)) {
+    throw new Error("Invalid SEQTA appointments response.");
   }
+  const payload = data.payload;
+  const lessons: SeqtaTimetableLesson[] = [];
+  for (const item of payload) {
+    const lesson = appointmentToLesson(item);
+    if (lesson) lessons.push(lesson);
+  }
+  return lessons;
 }
 
-export async function fetchTimetableLessons(
-  range: SyncDateRange,
-): Promise<SeqtaTimetableLesson[]> {
+export async function fetchTimetableLessons(range: SyncDateRange): Promise<SeqtaTimetableLesson[]> {
   const { from, until } = range;
   const coloursPromise = fetchSubjectColours();
-  const appointmentsPromise = fetchAppointments(range);
 
-  let lessons: SeqtaTimetableLesson[] = [];
+  let lessons: SeqtaTimetableLesson[];
 
   if (isEngageParentContext()) {
-    const listJson = await postSeqtaJson<{ payload?: { id?: string | number }[] }>(
-      "/seqta/parent/load/timetable",
-      { list: true },
-    );
-    const firstChild = Array.isArray(listJson?.payload) ? listJson.payload[0] : undefined;
-    const studentId = firstChild?.id;
+    const studentId = await resolveStudentId();
     if (studentId == null) {
       throw new Error("No student found on this parent account.");
     }
@@ -207,7 +185,10 @@ export async function fetchTimetableLessons(
       "/seqta/parent/load/timetable",
       { from, until, student: studentId },
     );
-    lessons = Array.isArray(data?.payload?.items) ? data.payload.items : [];
+    if (!Array.isArray(data?.payload?.items)) {
+      throw new Error("Invalid SEQTA timetable response.");
+    }
+    lessons = data.payload.items;
   } else {
     const studentId = await resolveStudentId();
     const body: Record<string, unknown> = { from, until };
@@ -217,14 +198,72 @@ export async function fetchTimetableLessons(
       "/seqta/student/load/timetable?",
       body,
     );
-    lessons = Array.isArray(data?.payload?.items) ? data.payload.items : [];
+    if (!Array.isArray(data?.payload?.items)) {
+      throw new Error("Invalid SEQTA timetable response.");
+    }
+    lessons = data.payload.items;
   }
 
   const coloured = withSubjectColours(lessons, await coloursPromise);
-  const appointments = await appointmentsPromise;
+  const appointments = await fetchAppointments(range);
   return [...coloured, ...appointments];
 }
 
 export async function fetchTimetableForSync(weeksAhead?: number): Promise<SeqtaTimetableLesson[]> {
   return fetchTimetableLessons(syncWindowRange(weeksAhead));
+}
+
+function parseAssessmentDue(raw: Record<string, unknown>): string {
+  const due = raw.due ?? raw.date ?? raw.dueDate;
+  return typeof due === "string" ? due : String(due ?? "");
+}
+
+function assessmentDueInRange(due: string, range: SyncDateRange): boolean {
+  const trimmed = due.trim();
+  let datePart = trimmed;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const parsed = new Date(trimmed);
+    if (Number.isNaN(parsed.getTime())) return false;
+    datePart = toISODate(parsed);
+  }
+  return isDateInRange(datePart, range);
+}
+
+/** Upcoming assessments with due dates inside the sync window. */
+export async function fetchAssessmentsForCalendarSync(
+  range: SyncDateRange,
+): Promise<CalendarSyncAssessment[]> {
+  const studentId = await resolveStudentId();
+  if (studentId == null) throw new Error("Could not resolve student for calendar sync.");
+
+  const path = isEngageParentContext()
+    ? "/seqta/parent/assessment/list/upcoming?"
+    : "/seqta/student/assessment/list/upcoming?";
+  const data = await postSeqtaJson<{ payload?: unknown[] }>(path, {
+    student: studentId,
+  });
+  if (!Array.isArray(data?.payload)) {
+    throw new Error("Invalid SEQTA assessments response.");
+  }
+  const payload = data.payload;
+
+  const out: CalendarSyncAssessment[] = [];
+  for (const raw of payload) {
+    if (!raw || typeof raw !== "object") continue;
+    const row = raw as Record<string, unknown>;
+    const id = Number(row.id);
+    const title = String(row.title ?? "").trim();
+    const due = parseAssessmentDue(row);
+    if (!id || !title || !due || !assessmentDueInRange(due, range)) continue;
+    if (row.status === "MARKS_RELEASED" || row.status === "CANCELLED") continue;
+    out.push({
+      id,
+      title,
+      subject: String(row.subject ?? row.code ?? "").trim(),
+      code: String(row.code ?? row.subject ?? "").trim(),
+      due,
+      status: row.status != null ? String(row.status) : undefined,
+    });
+  }
+  return out;
 }

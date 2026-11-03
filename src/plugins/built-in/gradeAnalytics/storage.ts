@@ -1,10 +1,16 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import type { DistributionMode } from "./gradeDistribution";
+import {
+  DEFAULT_ANALYTICS_GRADE_INFERENCE,
+  type AnalyticsGradeInferenceSettings,
+  type GradeBandMapping,
+} from "./gradeInferenceSettings";
 import type { AnalyticsCache, AnalyticsClassGroup } from "./types";
 
 const STORAGE_PREFIX = "bsplus.analytics.v2";
 const DISTRIBUTION_MODE_PREFIX = "bsplus.analytics.distMode.v1";
 const CLASS_GROUPS_PREFIX = "bsplus.analytics.groups.v1";
+const GRADE_INFERENCE_PREFIX = "bsplus.analytics.gradeInference.v1";
 
 export function analyticsStorageKey(origin: string, studentId: number): string {
   return `${STORAGE_PREFIX}.${origin}.${studentId}`;
@@ -34,10 +40,7 @@ export async function saveAnalyticsCache(
   await browser.storage.local.set({ [key]: payload });
 }
 
-export function distributionModeStorageKey(
-  origin: string,
-  studentId: number,
-): string {
+export function distributionModeStorageKey(origin: string, studentId: number): string {
   return `${DISTRIBUTION_MODE_PREFIX}.${origin}.${studentId}`;
 }
 
@@ -50,10 +53,7 @@ export async function loadDistributionMode(
   const key = distributionModeStorageKey(origin, studentId);
   const result = await browser.storage.local.get(key);
   const mode = result[key];
-  if (
-    typeof mode === "string" &&
-    VALID_DISTRIBUTION_MODES.includes(mode as DistributionMode)
-  ) {
+  if (typeof mode === "string" && VALID_DISTRIBUTION_MODES.includes(mode as DistributionMode)) {
     return mode as DistributionMode;
   }
   return null;
@@ -101,4 +101,55 @@ export async function saveClassGroups(
 ): Promise<void> {
   const key = classGroupsStorageKey(origin, studentId);
   await browser.storage.local.set({ [key]: groups });
+}
+
+export function gradeInferenceStorageKey(origin: string, studentId: number): string {
+  return `${GRADE_INFERENCE_PREFIX}.${origin}.${studentId}`;
+}
+
+function isGradeBand(value: unknown): value is GradeBandMapping {
+  if (!value || typeof value !== "object") return false;
+  const row = value as GradeBandMapping;
+  return (
+    typeof row.id === "string" &&
+    typeof row.label === "string" &&
+    typeof row.percent === "number" &&
+    !Number.isNaN(row.percent)
+  );
+}
+
+function sanitizeInferenceSettings(raw: unknown): AnalyticsGradeInferenceSettings {
+  if (!raw || typeof raw !== "object") {
+    return { ...DEFAULT_ANALYTICS_GRADE_INFERENCE, gradeBands: [] };
+  }
+  const row = raw as Partial<AnalyticsGradeInferenceSettings>;
+  const gradeBands = Array.isArray(row.gradeBands)
+    ? row.gradeBands.filter(isGradeBand).map((band) => ({
+        ...band,
+        percent: Math.min(100, Math.max(0, band.percent)),
+      }))
+    : [];
+  return {
+    useCustomGradeBands: Boolean(row.useCustomGradeBands),
+    rollupCriteriaGrades: Boolean(row.rollupCriteriaGrades),
+    gradeBands,
+  };
+}
+
+export async function loadGradeInferenceSettings(
+  origin: string,
+  studentId: number,
+): Promise<AnalyticsGradeInferenceSettings> {
+  const key = gradeInferenceStorageKey(origin, studentId);
+  const result = await browser.storage.local.get(key);
+  return sanitizeInferenceSettings(result[key]);
+}
+
+export async function saveGradeInferenceSettings(
+  origin: string,
+  studentId: number,
+  settings: AnalyticsGradeInferenceSettings,
+): Promise<void> {
+  const key = gradeInferenceStorageKey(origin, studentId);
+  await browser.storage.local.set({ [key]: sanitizeInferenceSettings(settings) });
 }

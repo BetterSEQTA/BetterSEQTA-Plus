@@ -1,8 +1,5 @@
-import browser from "webextension-polyfill";
-import {
-  markWeeklySyncComplete,
-  shouldRunWeeklySync,
-} from "@/seqta/utils/calendarSync/settings";
+import browser from "@/lib/browser";
+import { markWeeklySyncComplete, shouldRunWeeklySync } from "@/seqta/utils/calendarSync/settings";
 import { formatLessonSyncResultMessage } from "@/seqta/utils/calendarSync/lessonSyncShared";
 import {
   resumeInterruptedCalendarSync,
@@ -57,7 +54,10 @@ export function registerCalendarContentHandlers(): void {
   listenerRegistered = true;
 
   browser.runtime.onMessage.addListener((request, _sender, sendResponse) => {
-    if (request?.type === "calendarRunWeeklySync" || request?.type === "googleCalendarRunWeeklySync") {
+    if (
+      request?.type === "calendarRunWeeklySync" ||
+      request?.type === "googleCalendarRunWeeklySync"
+    ) {
       void runWeeklySyncForConnectedProviders()
         .then((results) => sendResponse({ success: true, results }))
         .catch((err: unknown) => {

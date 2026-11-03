@@ -12,7 +12,7 @@ import { delay } from "@/seqta/utils/delay";
  *   per-subject course crawls) from hammering SEQTA.
  */
 
-export interface SeqtaResponse<T = any> {
+export interface SeqtaResponse<T = unknown> {
   payload: T;
   status: string;
 }
@@ -138,81 +138,6 @@ export function isSensitiveSeqtaPath(path: string): boolean {
 }
 
 /* ------------------------------------------------------------------ */
-/*                     student / user identity                        */
-/* ------------------------------------------------------------------ */
-
-interface SeqtaUserInfo {
-  id?: number;
-  personUUID?: string;
-  username?: string;
-  [key: string]: unknown;
-}
-
-let cachedUserInfo: SeqtaUserInfo | null = null;
-let inflightUserInfo: Promise<SeqtaUserInfo | null> | null = null;
-
-/**
- * Resolves the current SEQTA user identity by re-using the same `login`
- * handshake that the host page performs. This is the canonical way to
- * discover the active student id and avoids the historical hard-coded
- * `student: 69` placeholder that was incorrect on every real instance.
- *
- * Failures are intentionally NOT cached — a transient login glitch on the
- * very first call must not poison the cache for the lifetime of the page,
- * because every subsequent indexing pass that needs the student id (e.g.
- * the assignments job) would skip silently.
- */
-export async function getCurrentUserInfo(): Promise<SeqtaUserInfo | null> {
-  if (cachedUserInfo) return cachedUserInfo;
-  if (inflightUserInfo) return inflightUserInfo;
-
-  inflightUserInfo = (async () => {
-    try {
-      const res = await fetch(`${location.origin}/seqta/student/login`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json; charset=utf-8" },
-        body: JSON.stringify({
-          mode: "normal",
-          query: null,
-          redirect_url: location.origin,
-        }),
-      });
-      if (!res.ok) return null;
-      const json = (await res.json()) as { payload?: SeqtaUserInfo };
-      const payload = json?.payload ?? null;
-      if (payload && typeof payload === "object") {
-        cachedUserInfo = payload;
-        return payload;
-      }
-      return null;
-    } catch (e) {
-      console.warn(
-        "[Global Search API] Failed to resolve current user info:",
-        e,
-      );
-      return null;
-    } finally {
-      inflightUserInfo = null;
-    }
-  })();
-
-  return inflightUserInfo;
-}
-
-/**
- * Best-effort lookup of the active student id. Returns `undefined` when the
- * value cannot be discovered (jobs should fall back gracefully rather than
- * fabricating an id).
- */
-export async function getCurrentStudentId(): Promise<number | undefined> {
-  const info = await getCurrentUserInfo();
-  const id = info?.id;
-  if (typeof id === "number" && Number.isFinite(id)) return id;
-  return undefined;
-}
-
-/* ------------------------------------------------------------------ */
 /*                            core fetch                              */
 /* ------------------------------------------------------------------ */
 
@@ -234,7 +159,7 @@ function isTransientError(err: unknown): boolean {
     return false;
   }
   if (err instanceof TypeError) return true;
-  if ((err as any)?.name === "AbortError") return false;
+  if (err instanceof Error && err.name === "AbortError") return false;
   return true;
 }
 
@@ -249,7 +174,7 @@ function isTransientError(err: unknown): boolean {
  *   the SEQTA convention; jobs that need raw payloads can pass `path` but
  *   call `seqtaFetch` directly via the underlying API if they need to).
  */
-export async function seqtaFetchJson<T = any>(
+export async function seqtaFetchJson<T = unknown>(
   path: string,
   body: Record<string, unknown> | undefined = {},
   options: SeqtaFetchOptions = {},
@@ -368,7 +293,7 @@ export async function seqtaFetchJson<T = any>(
  * Convenience helper: fetch and unwrap `.payload` directly. Returns `null`
  * on failure rather than throwing, so jobs can use the value optionally.
  */
-export async function seqtaFetchPayload<T = any>(
+export async function seqtaFetchPayload<T = unknown>(
   path: string,
   body: Record<string, unknown> | undefined = {},
   options: SeqtaFetchOptions = {},
@@ -377,10 +302,7 @@ export async function seqtaFetchPayload<T = any>(
     const res = await seqtaFetchJson<T>(path, body, options);
     return res.payload ?? null;
   } catch (e) {
-    console.warn(
-      `[Global Search API] Request to ${normalizeSeqtaPath(path)} failed:`,
-      e,
-    );
+    console.warn(`[Global Search API] Request to ${normalizeSeqtaPath(path)} failed:`, e);
     return null;
   }
 }

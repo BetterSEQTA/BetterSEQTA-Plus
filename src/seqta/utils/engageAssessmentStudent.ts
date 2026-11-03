@@ -1,5 +1,4 @@
-export const ENGAGE_STUDENT_STORAGE_KEY = () =>
-  `bsplus.engageTimetable.student.${location.origin}`;
+export const ENGAGE_STUDENT_STORAGE_KEY = () => `bsplus.engageTimetable.student.${location.origin}`;
 
 /** Engage assessments URLs: /#?page=/assessments/{studentId}/{programme}:{metaclass}:{studentId} */
 export function getEngageAssessmentStudentId(): string | null {
@@ -19,9 +18,7 @@ export function buildEngageAssessmentPagePath(
   return assessmentId != null ? `${base}&item=${assessmentId}` : base;
 }
 
-export function buildEngageAssessmentOverviewPath(
-  studentId: string | number,
-): string {
+export function buildEngageAssessmentOverviewPath(studentId: string | number): string {
   return `#?page=/assessments/${studentId}/overview`;
 }
 

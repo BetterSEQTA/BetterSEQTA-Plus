@@ -2,10 +2,10 @@
   import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
   import type { CloudUser } from "@/seqta/utils/CloudAuth";
 
-  const { user, class: className = "" } = $props<{
+  const { user, class: className = "" }: {
     user: CloudUser | null | undefined;
     class?: string;
-  }>();
+  } = $props();
 
   let avatarSrc = $state<string | undefined>(undefined);
   let revokeUrl: string | undefined;

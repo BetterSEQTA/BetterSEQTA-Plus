@@ -1,27 +1,29 @@
 <script lang="ts">
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
-  import browser from 'webextension-polyfill'
+  import browser from '@/lib/browser'
   import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
-  import { closeExtensionPopup } from '@/seqta/utils/Closers/closeExtensionPopup'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
+  import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
+  import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
 
   const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
-  let { isEditMode, showNavigation = true } = $props<{
+  let { isEditMode, showNavigation = true }: {
     isEditMode: boolean;
     showNavigation?: boolean;
-  }>();
-  let isDragging = $state(false);
-  let tempTheme = $state(null);
+  } = $props();
   let favoriteStatus = $state<Record<string, boolean>>({});
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
   let prevLoggedIn = $state(false);
   let showSignInModal = $state(false);
+  let submittingThemeId = $state<string | null>(null);
+  let submitError = $state<string | null>(null);
 
   $effect(() => {
     const unsub = cloudAuth.subscribe((s) => {
@@ -70,37 +72,6 @@
     }
   }
 
-  const handleDragOver = (e: DragEvent) => {
-    e.preventDefault();
-    isDragging = true;
-  }
-
-  const handleDragLeave = () => {
-    isDragging = false;
-  }
-
-  const handleDrop = async (e: DragEvent) => {
-    e.preventDefault();
-    isDragging = false;
-    const file = e.dataTransfer?.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = async (event: ProgressEvent<FileReader>) => {
-      try {
-        const result = JSON.parse(event.target?.result as string);
-        tempTheme = result;
-        await themeManager.installTheme(result, { fromStore: false });
-        await fetchThemes();
-      } catch (error) {
-        console.error('Error parsing file:', error);
-        alert('Error parsing file. Please upload a valid JSON theme file.');
-      }
-      tempTheme = null;
-    };
-    reader.readAsText(file);
-  }
-
   const fetchThemes = async () => {
     themes = {
       themes: await themeManager.getAvailableThemes(),
@@ -135,9 +106,26 @@
   }
 
   const openThemeCreator = async (themeId?: string) => {
-    const { OpenThemeCreator } = await import('@/plugins/built-in/themes/ThemeCreator')
-    OpenThemeCreator(themeId)
-    closeExtensionPopup()
+    const { launchPageThemeBuilder } = await import('@/seqta/utils/launchPageThemeBuilder')
+    await launchPageThemeBuilder(themeId)
+  }
+
+  const submitCustomTheme = async (theme: CustomTheme, e: MouseEvent) => {
+    e.stopPropagation();
+    submitError = null;
+    if (!cloudLoggedIn) {
+      showSignInModal = true;
+      return;
+    }
+    submittingThemeId = theme.id;
+    try {
+      const { submitThemeById } = await import('@/seqta/utils/customThemes/submitLocalTheme');
+      await submitThemeById(theme.id, theme.description?.trim() || undefined);
+    } catch (err) {
+      submitError = formatCustomThemeApiError(err);
+    } finally {
+      submittingThemeId = null;
+    }
   }
 
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
@@ -165,36 +153,20 @@
   onDestroy(() => {
     themeUpdates.removeListener(fetchThemes);
   })
+
+  const useTwoColumnLayout = $derived(!showNavigation);
 </script>
 
 <div
-  class="pt-5 mb-1 w-full max-w-lg mx-auto"
+  class="relative mb-1 w-full {useTwoColumnLayout ? '' : 'max-w-lg mx-auto'}"
   role="list"
   tabindex="-1"
-  ondragover={handleDragOver}
-  ondragleave={handleDragLeave}
-  ondrop={handleDrop}
 >
-  <div class="{isDragging ? 'opacity-100' : 'opacity-0'} transition pointer-events-none absolute w-full p-2 z-50">
-    <div class="sticky top-5 w-full h-64 bg-white rounded-xl shadow-xl dark:bg-zinc-900 dark:text-white outline-dashed outline-4 outline-zinc-200 dark:outline-zinc-700">
-      <div class="flex justify-center items-center h-full">
-        <div class="flex flex-col justify-center items-center">
-          <svg height="48" width="48" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <g fill="currentColor">
-              <path d="M44,31a1,1,0,0,0-1,1v8a3,3,0,0,1-3,3H8a3,3,0,0,1-3-3V32a1,1,0,0,0-2,0v8a5.006,5.006,0,0,0,5,5H40a5.006,5.006,0,0,0,5-5V32A1,1,0,0,0,44,31Z" fill="currentColor"/>
-              <path d="M23.2,33.6a1,1,0,0,0,1.6,0l9-12A1,1,0,0,0,33,20H26V5a2,2,0,0,0-4,0V20H15a1,1,0,0,0-.8,1.6Z" fill="currentColor"/>
-            </g>
-          </svg>
-          <span class="text-lg">Import Theme</span>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="flex flex-col gap-2 px-2">
+  <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
-          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
+          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={(e) => handleThemeClick(theme, e)}
         >
           {#if isEditMode}
@@ -210,36 +182,55 @@
           {/if}
 
           {#if !isEditMode}
-            <div
-              class="flex absolute right-24 top-1/4 z-20 place-items-center p-2 w-8 h-8 text-center rounded-full opacity-0 transition-all -translate-y-1/2 group-hover:opacity-100 group-hover:top-1/2 {(favoriteStatus[theme.id] ?? false) ? 'text-red-400' : 'text-white/80'} bg-black/50"
-              onclick={(event) => handleToggleFavorite(theme, event)}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleToggleFavorite(theme, event as any) }}
-              role="button"
-              tabindex="-1"
-              title={cloudLoggedIn ? ((favoriteStatus[theme.id] ?? false) ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="w-5 h-5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            </div>
-            <div
-              class="absolute z-20 flex w-8 h-8 p-2 text-white transition-all rounded-full delay-[20ms] opacity-0 top-1/4 right-2 bg-black/50 place-items-center group-hover:opacity-100 group-hover:top-1/2 -translate-y-1/2"
-              onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
-              role="button"
-              tabindex="-1"
-            >
-              <span class="text-lg font-IconFamily">&#xeaa5;</span>
-            </div>
+            <div class="absolute inset-y-0 right-3 z-20 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
+              {#if !isLocalCustomTheme(theme)}
+                <div
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-center {(favoriteStatus[theme.id] ?? false) ? 'text-red-400' : 'text-white/80'}"
+                  onclick={(event) => handleToggleFavorite(theme, event)}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleToggleFavorite(theme, event as any) }}
+                  role="button"
+                  tabindex="-1"
+                  title={cloudLoggedIn ? ((favoriteStatus[theme.id] ?? false) ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </div>
+              {/if}
 
-            <div
-              class="flex absolute right-12 top-1/4 z-20 place-items-center p-2 w-8 h-8 text-center rounded-full opacity-0 transition-all -translate-y-1/2 text-white/80 bg-black/50 group-hover:opacity-100 group-hover:top-1/2"
-              onclick={(event) => { event.stopPropagation(); handleShareTheme(theme) }}
-              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleShareTheme(theme) }}
-              role="button"
-              tabindex="-1"
-            >
-              <span class="text-lg font-IconFamily">&#xecb3;</span>
+              <div
+                class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white/80"
+                onclick={(event) => { event.stopPropagation(); handleShareTheme(theme) }}
+                onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleShareTheme(theme) }}
+                role="button"
+                tabindex="-1"
+                title="Export theme"
+              >
+                <span class="text-lg font-IconFamily">&#xecb3;</span>
+              </div>
+
+              {#if isLocalCustomTheme(theme)}
+                <div
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white"
+                  onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
+                  role="button"
+                  tabindex="-1"
+                  title="Edit theme"
+                >
+                  <span class="text-lg font-IconFamily">&#xeaa5;</span>
+                </div>
+                <div
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
+                  onclick={(event) => void submitCustomTheme(theme, event)}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void submitCustomTheme(theme, event as unknown as MouseEvent) }}
+                  role="button"
+                  tabindex="-1"
+                  title="Submit to community"
+                >
+                  <span class="text-lg font-IconFamily">&#xe9fc;</span>
+                </div>
+              {/if}
             </div>
           {/if}
 
@@ -250,6 +241,11 @@
                 alt={theme.name}
                 class="object-cover absolute inset-0 z-0 w-full h-full pointer-events-none"
               />
+            {:else}
+              <ThemePlaceholderCover
+                accentHint={theme.defaultColour}
+                class="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
+              />
             {/if}
             {#if !theme.hideThemeName}
               <div class="z-10 {theme.coverImage ? 'text-white' : ''}">{theme.name}</div>
@@ -259,46 +255,23 @@
       {/each}
     {/if}
 
-    {#if tempTheme}
-      <div class="flex justify-center place-items-center w-full bg-gray-200 rounded-xl animate-pulse dark:bg-zinc-700/50 aspect-theme">
-        <svg class="w-5 h-5 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-      </div>
-    {/if}
-
-    {#if themes && themes.themes.length === 0 && !tempTheme}
-      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center">
+    {#if themes && themes.themes.length === 0}
+      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center {useTwoColumnLayout ? 'col-span-2' : ''}">
         <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
           No themes installed
         </h3>
         <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
           Install a theme from the store or create one of your own.
         </p>
-        <div class="mt-6 grid w-full max-w-md grid-cols-1 gap-2 sm:grid-cols-2">
-          <button
-            type="button"
-            onclick={() => void openStorePage()}
-            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-          >
-            <span class="font-IconFamily text-lg" aria-hidden="true">&#xecc5;</span>
-            Install a theme
-          </button>
-          <button
-            type="button"
-            onclick={() => void openThemeCreator()}
-            class="flex h-11 items-center justify-center gap-2 rounded-lg bg-zinc-200 px-4 font-medium text-zinc-900 transition-[background-color,color,transform] duration-150 hover:bg-zinc-300 active:scale-[0.96] focus:outline-none focus:ring-2 focus:ring-zinc-400 dark:bg-zinc-700 dark:text-white dark:hover:bg-zinc-600"
-          >
-            <span class="font-IconFamily text-lg" aria-hidden="true">&#xec60;</span>
-            Create a theme
-          </button>
-        </div>
       </div>
     {/if}
 
-    {#if showNavigation && themes && themes.themes.length > 0}
-      <div id="divider" class="w-full h-[1px] my-2 bg-zinc-100 dark:bg-zinc-600"></div>
+    {#if submitError}
+      <p class="whitespace-pre-line text-sm text-red-600 dark:text-red-400 {useTwoColumnLayout ? 'col-span-2' : ''}">{submitError}</p>
+    {/if}
+
+    {#if themes && showNavigation}
+      <div id="divider" class="w-full h-px my-2 bg-zinc-100 dark:bg-zinc-600"></div>
 
       <button
         onclick={() => void openStorePage()}

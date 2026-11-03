@@ -24,17 +24,11 @@ const ACCENT_CSS_VARS = [
 function extractSolidColor(value: string): string | null {
   const trimmed = value.trim();
   if (!trimmed || trimmed === "initial") return null;
-  if (
-    trimmed.startsWith("#") ||
-    trimmed.startsWith("rgb") ||
-    trimmed.startsWith("hsl")
-  ) {
+  if (trimmed.startsWith("#") || trimmed.startsWith("rgb") || trimmed.startsWith("hsl")) {
     return trimmed;
   }
   if (trimmed.includes("gradient")) {
-    const match = trimmed.match(
-      /#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/i,
-    );
+    const match = trimmed.match(/#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{3}|rgba?\([^)]+\)/i);
     return match?.[0] ?? null;
   }
   return null;
@@ -69,8 +63,5 @@ export function syncPageThemeToElement(target: HTMLElement): void {
   target.style.setProperty("--bsplus-analytics-accent", accent);
   target.style.setProperty("--better-main", accent);
 
-  target.classList.toggle(
-    "dark",
-    document.documentElement.classList.contains("dark"),
-  );
+  target.classList.toggle("dark", document.documentElement.classList.contains("dark"));
 }

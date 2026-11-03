@@ -1,45 +1,138 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import localforage from "localforage";
 import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
-import {
-  clearCloudPfpCache,
-  pfpUrlWithHash,
-} from "@/seqta/utils/cloudPfpCache";
+import { clearCloudPfpCache, pfpUrlWithHash } from "@/seqta/utils/cloudPfpCache";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
+const BSPLUS_PFP = `${ACCOUNTS_BASE}/api/bsplus/pfp`;
 const PLUGIN_SETTINGS_KEY = "plugin.profile-picture.settings";
+const UPLOAD_MAX_EDGE = 512;
+const MAX_SOURCE_BYTES_WEBP = 20 * 1024 * 1024;
+const MAX_SOURCE_BYTES_LEGACY = 10 * 1024 * 1024;
+
+function webpExportSupported(): boolean {
+  try {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1;
+    canvas.height = 1;
+    return canvas.toDataURL("image/webp").startsWith("data:image/webp");
+  } catch {
+    return false;
+  }
+}
+
+function maxSourceBytes(): number {
+  return webpExportSupported() ? MAX_SOURCE_BYTES_WEBP : MAX_SOURCE_BYTES_LEGACY;
+}
 
 const profileStore = localforage.createInstance({
   name: "profile-picture-store",
   storeName: "profilePicture",
 });
 
-/** Downscale before upload to reduce ingress (server still normalizes). */
-async function downscaleForUpload(blob: Blob, maxEdge = 512): Promise<Blob> {
-  if (!blob.type.startsWith("image/")) return blob;
+type PfpPayload = {
+  pfpUrl: string | null;
+  pfpHash: string | null;
+  pfpHistory: CloudUser["pfpHistory"];
+};
 
-  const bitmap = await createImageBitmap(blob);
-  const maxSide = Math.max(bitmap.width, bitmap.height);
-  if (maxSide <= maxEdge) {
-    bitmap.close();
-    return blob;
+async function parseJson(res: Response): Promise<Record<string, unknown>> {
+  const text = await res.text();
+  try {
+    return text ? (JSON.parse(text) as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function parsePfpPayload(data: Record<string, unknown>): PfpPayload {
+  const rawUrl = data.pfpUrl as string | null | undefined;
+  const history = Array.isArray(data.pfpHistory) ? data.pfpHistory : [];
+  const pfpHistory = history.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const o = item as Record<string, unknown>;
+    if (
+      typeof o.id === "string" &&
+      typeof o.r2Key === "string" &&
+      typeof o.createdAt === "number"
+    ) {
+      return [{ id: o.id, r2Key: o.r2Key, createdAt: o.createdAt }];
+    }
+    return [];
+  });
+  return {
+    pfpUrl: rawUrl == null || rawUrl === "" ? null : rawUrl,
+    pfpHash: (data.pfpHash as string | null | undefined) ?? null,
+    pfpHistory,
+  };
+}
+
+function mergePfpIntoUser(user: CloudUser, pfp: PfpPayload): CloudUser {
+  return {
+    ...user,
+    pfpUrl: pfp.pfpUrl ? pfpUrlWithHash(pfp.pfpUrl, pfp.pfpHash) : undefined,
+    pfpHash: pfp.pfpHash,
+    pfpHistory: pfp.pfpHistory,
+  };
+}
+
+async function applyPfpPayload(data: Record<string, unknown>): Promise<void> {
+  const user = cloudAuth.state.user;
+  if (!user) return;
+  await cloudAuth.setUser(mergePfpIntoUser(user, parsePfpPayload(data)));
+  if (user.id) await clearCloudPfpCache(user.id);
+}
+
+async function bsplusPfpRequest(
+  path: string,
+  init?: RequestInit,
+): Promise<{ ok: boolean; data: Record<string, unknown>; error?: string }> {
+  const token = await cloudAuth.getStoredToken();
+  if (!token) return { ok: false, data: {}, error: "Not signed in to BetterSEQTA Cloud" };
+
+  const res = await fetch(`${BSPLUS_PFP}${path}`, {
+    ...init,
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...init?.headers,
+    },
+  });
+  const data = await parseJson(res);
+  if (!res.ok) {
+    return {
+      ok: false,
+      data,
+      error: (data.error as string) ?? `Request failed (${res.status})`,
+    };
+  }
+  return { ok: true, data };
+}
+
+async function prepareUploadFile(source: Blob): Promise<File> {
+  if (!source.type.startsWith("image/")) throw new Error("Invalid file type");
+  const limit = maxSourceBytes();
+  if (source.size > limit) {
+    const mb = Math.round(limit / (1024 * 1024));
+    throw new Error(`File too large (max ${mb}MB)`);
   }
 
-  const scale = maxEdge / maxSide;
-  const w = Math.max(1, Math.round(bitmap.width * scale));
-  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const bitmap = await createImageBitmap(source);
+  try {
+    const size = Math.min(bitmap.width, bitmap.height);
+    const sx = Math.round((bitmap.width - size) / 2);
+    const sy = Math.round((bitmap.height - size) / 2);
+    const canvas = new OffscreenCanvas(UPLOAD_MAX_EDGE, UPLOAD_MAX_EDGE);
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("Could not prepare image");
+    ctx.drawImage(bitmap, sx, sy, size, size, 0, 0, UPLOAD_MAX_EDGE, UPLOAD_MAX_EDGE);
 
-  const canvas = new OffscreenCanvas(w, h);
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
+    const webp = webpExportSupported();
+    const mime = webp ? "image/webp" : "image/jpeg";
+    const blob = await canvas.convertToBlob({ type: mime, quality: webp ? 0.88 : 0.85 });
+    return new File([blob], webp ? "profile.webp" : "profile.jpg", { type: mime });
+  } finally {
     bitmap.close();
-    return blob;
   }
-  ctx.drawImage(bitmap, 0, 0, w, h);
-  bitmap.close();
-
-  const out = await canvas.convertToBlob({ type: "image/jpeg", quality: 0.85 });
-  return out;
 }
 
 export async function isUseCloudPfpEnabled(): Promise<boolean> {
@@ -48,23 +141,12 @@ export async function isUseCloudPfpEnabled(): Promise<boolean> {
   return !!settings?.useCloudPfp;
 }
 
-async function parseJsonResponse(r: Response): Promise<Record<string, unknown>> {
-  const text = await r.text();
-  try {
-    return text ? (JSON.parse(text) as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
-}
-
 function mergeMeIntoUser(current: CloudUser, data: Record<string, unknown>): CloudUser {
   const raw = (data.user as Record<string, unknown> | undefined) ?? data;
   const pfpUrlRaw = raw.pfpUrl as string | null | undefined;
   const pfpHash = (raw.pfpHash as string | null | undefined) ?? null;
   const pfpUrl =
-    pfpUrlRaw == null || pfpUrlRaw === ""
-      ? undefined
-      : pfpUrlWithHash(pfpUrlRaw, pfpHash);
+    pfpUrlRaw == null || pfpUrlRaw === "" ? undefined : pfpUrlWithHash(pfpUrlRaw, pfpHash);
 
   return {
     ...current,
@@ -80,26 +162,21 @@ function mergeMeIntoUser(current: CloudUser, data: Record<string, unknown>): Clo
   };
 }
 
-/** Fetch `/api/auth/me` and update stored user (pfpUrl / pfpHash). */
-export async function refreshCloudUserFromServer(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function refreshCloudUserFromServer(): Promise<{ success: boolean; error?: string }> {
   if (!cloudAuth.state.isLoggedIn) {
     return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
   }
-
   const token = await cloudAuth.getStoredToken();
-  if (!token) return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
-
   const current = cloudAuth.state.user;
-  if (!current?.id) return { success: false, error: "No cloud user on this device" };
+  if (!token || !current?.id) {
+    return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
+  }
 
   try {
     const res = await fetch(`${ACCOUNTS_BASE}/api/auth/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
-    const data = await parseJsonResponse(res);
+    const data = await parseJson(res);
     if (!res.ok) {
       return {
         success: false,
@@ -107,7 +184,11 @@ export async function refreshCloudUserFromServer(): Promise<{
       };
     }
 
-    await cloudAuth.setUser(mergeMeIntoUser(current, data));
+    let merged = mergeMeIntoUser(current, data);
+    const pfp = await bsplusPfpRequest("");
+    if (pfp.ok) merged = mergePfpIntoUser(merged, parsePfpPayload(pfp.data));
+    await cloudAuth.setUser(merged);
+    await clearCloudPfpCache(current.id);
     return { success: true };
   } catch (err) {
     return {
@@ -117,32 +198,52 @@ export async function refreshCloudUserFromServer(): Promise<{
   }
 }
 
-/** Pull cloud avatar metadata from the server and refresh the in-page profile image. */
 export async function pullCloudProfilePictureFromServer(): Promise<{
   success: boolean;
   error?: string;
 }> {
-  const refreshed = await refreshCloudUserFromServer();
-  if (!refreshed.success) return refreshed;
+  const current = cloudAuth.state.user;
+  if (!cloudAuth.state.isLoggedIn || !current?.id) {
+    return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
+  }
 
-  const userId = cloudAuth.state.user?.id;
-  if (userId) await clearCloudPfpCache(userId);
+  const pfp = await bsplusPfpRequest("");
+  if (!pfp.ok) return { success: false, error: pfp.error ?? "Could not refresh cloud photo" };
+
+  await applyPfpPayload(pfp.data);
   await notifyProfilePictureChanged();
   return { success: true };
 }
 
-/** When cloud PFP is enabled: upload local image if present, otherwise pull from server. */
 export async function onUseCloudPfpToggled(enabled: boolean): Promise<void> {
   if (!enabled) {
     await notifyProfilePictureChanged();
     return;
   }
-
   const blob = await profileStore.getItem<Blob>("profile-picture");
-  if (blob instanceof Blob) {
-    await syncLocalProfilePictureToCloud();
-  } else {
-    await pullCloudProfilePictureFromServer();
+  if (blob instanceof Blob) await syncLocalProfilePictureToCloud();
+  else await pullCloudProfilePictureFromServer();
+}
+
+export async function uploadCloudProfilePicture(
+  source: Blob,
+): Promise<{ success: boolean; error?: string }> {
+  if (!cloudAuth.state.isLoggedIn) {
+    return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
+  }
+  try {
+    const file = await prepareUploadFile(source);
+    const form = new FormData();
+    form.append("file", file, file.name);
+    form.append("clientProcessed", "true");
+    form.append("preCropped", "true");
+    const res = await bsplusPfpRequest("", { method: "POST", body: form });
+    if (!res.ok) return { success: false, error: res.error ?? "Upload failed" };
+    await applyPfpPayload(res.data);
+    await notifyProfilePictureChanged();
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : "Upload failed" };
   }
 }
 
@@ -150,105 +251,38 @@ export async function syncLocalProfilePictureToCloud(): Promise<{
   success: boolean;
   error?: string;
 }> {
-  if (!(await isUseCloudPfpEnabled()) || !cloudAuth.state.isLoggedIn) {
-    return { success: true };
-  }
-
-  const token = await cloudAuth.getStoredToken();
-  if (!token) return { success: false, error: "Not logged in" };
-
-  const user = cloudAuth.state.user;
-  const userId = user?.id;
-
+  if (!(await isUseCloudPfpEnabled()) || !cloudAuth.state.isLoggedIn) return { success: true };
   const blob = await profileStore.getItem<Blob>("profile-picture");
-
-  try {
-    if (!blob || !(blob instanceof Blob)) {
-      // No local upload — keep the server avatar; do not clear cloud.
-      return { success: true };
-    }
-
-    if (!blob.type.startsWith("image/")) {
-      return { success: false, error: "Invalid file type" };
-    }
-    if (blob.size > 5 * 1024 * 1024) {
-      return { success: false, error: "File too large (max 5MB)" };
-    }
-
-    const uploadBlob = await downscaleForUpload(blob);
-    const formData = new FormData();
-    formData.append("file", uploadBlob, "profile-picture.jpg");
-
-    const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: formData,
-    });
-    const data = await parseJsonResponse(res);
-    if (!res.ok) {
-      return { success: false, error: (data.error as string) ?? `Upload failed (${res.status})` };
-    }
-
-    const pfpUrl = data.pfpUrl as string | undefined;
-    const pfpHash = (data.pfpHash as string | null | undefined) ?? null;
-    if (user && pfpUrl) {
-      await cloudAuth.setUser({
-        ...user,
-        pfpUrl: pfpUrlWithHash(pfpUrl, pfpHash),
-        pfpHash,
-      });
-    }
-    if (userId) await clearCloudPfpCache(userId);
-    return { success: true };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Cloud profile picture sync failed",
-    };
-  }
+  if (!(blob instanceof Blob)) return { success: true };
+  return uploadCloudProfilePicture(blob);
 }
 
-/** Upload local image to cloud, or clear cloud only when explicitly removing local image. */
-export async function clearCloudProfilePicture(): Promise<{
-  success: boolean;
-  error?: string;
-}> {
+export async function clearCloudProfilePicture(): Promise<{ success: boolean; error?: string }> {
   if (!cloudAuth.state.isLoggedIn) return { success: true };
-
-  const token = await cloudAuth.getStoredToken();
-  if (!token) return { success: false, error: "Not logged in" };
-
-  const user = cloudAuth.state.user;
-  const userId = user?.id;
-
-  try {
-    const res = await fetch(`${ACCOUNTS_BASE}/api/user/pfp/clear`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-    const data = await parseJsonResponse(res);
-    if (!res.ok) {
-      return { success: false, error: (data.error as string) ?? `Clear failed (${res.status})` };
-    }
-    if (user) {
-      await cloudAuth.setUser({ ...user, pfpUrl: undefined, pfpHash: null });
-    }
-    if (userId) await clearCloudPfpCache(userId);
-    return { success: true };
-  } catch (err) {
-    return {
-      success: false,
-      error: err instanceof Error ? err.message : "Cloud profile picture clear failed",
-    };
-  }
+  const res = await bsplusPfpRequest("/clear", { method: "POST" });
+  if (!res.ok) return { success: false, error: res.error ?? "Clear failed" };
+  await applyPfpPayload(res.data);
+  await notifyProfilePictureChanged();
+  return { success: true };
 }
 
-/** Notify SEQTA content scripts to refresh the in-page profile image. */
+export async function revertCloudProfilePicture(
+  historyId: string,
+): Promise<{ success: boolean; error?: string }> {
+  if (!cloudAuth.state.isLoggedIn) {
+    return { success: false, error: "Not signed in to BetterSEQTA Cloud" };
+  }
+  const res = await bsplusPfpRequest("/revert", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ historyId }),
+  });
+  if (!res.ok) return { success: false, error: res.error ?? "Revert failed" };
+  await applyPfpPayload(res.data);
+  await notifyProfilePictureChanged();
+  return { success: true };
+}
+
 export async function notifyProfilePictureChanged(): Promise<void> {
-  const revision = Date.now();
-  await browser.storage.local.set({ profile_picture_revision: revision });
+  await browser.storage.local.set({ profile_picture_revision: Date.now() });
 }

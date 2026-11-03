@@ -11,8 +11,7 @@ export const FONT_PICKER_ROOT_CLASS = "bsplus-font-picker-root";
 
 function googleFamilyParam(preset: FontPreset): string | null {
   if (!preset.googleUrl) return null;
-  const name =
-    preset.stack.split(",")[0]?.trim().replace(/^"|"$/g, "") ?? "";
+  const name = preset.stack.split(",")[0]?.trim().replace(/^"|"$/g, "") ?? "";
   if (!name) return null;
   return `family=${encodeURIComponent(name)}:wght@400;500;600;700`;
 }

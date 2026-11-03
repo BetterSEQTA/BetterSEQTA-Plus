@@ -1,13 +1,13 @@
 <script lang="ts">
-  import browser from "webextension-polyfill";
+  import browser from "@/lib/browser";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import Button from "./Button.svelte";
   import Switch from "./Switch.svelte";
 
-  let { showDisclaimer } = $props<{
+  let { showDisclaimer }: {
     showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
-  }>();
+  } = $props();
 
   let cloudState = $state(cloudAuth.state);
   let busy = $state(false);
@@ -109,7 +109,7 @@
         href="https://betterseqta.org/privacy"
         target="_blank"
         rel="noopener noreferrer"
-        class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-sm"
+        class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-xs"
       >Privacy policy</a>
     </p>
   </div>

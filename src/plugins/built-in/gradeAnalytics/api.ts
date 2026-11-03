@@ -1,15 +1,16 @@
-import { getUserInfo } from "@/seqta/ui/AddBetterSEQTAElements";
+import { getUserInfo } from "@/seqta/utils/userInfo";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { getMockGradeAnalyticsData } from "@/seqta/ui/dev/hideSensitiveContent";
+import { resolveGradeFromAssessmentPayload } from "./gradeResolution";
 import {
   extractLetterGradeStringFromPayload,
   resolveNumericGradeFromAssessmentPayload,
 } from "./letterGradeScale";
-import { loadAnalyticsCache, saveAnalyticsCache } from "./storage";
+import { loadAnalyticsCache, loadGradeInferenceSettings, saveAnalyticsCache } from "./storage";
+import type { AnalyticsGradeInferenceSettings } from "./gradeInferenceSettings";
 import type { Assessment, AssessmentStatus, AnalyticsClassOption } from "./types";
 
 const PAST_FETCH_CONCURRENCY = 8;
-const DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 
 interface Subject {
   code: string;
@@ -46,10 +47,7 @@ export function parseAssessment(data: unknown): Assessment | null {
     let finalGrade = resolveNumericGradeFromAssessmentPayload(
       raw as Parameters<typeof resolveNumericGradeFromAssessmentPayload>[0],
     );
-    if (
-      finalGrade !== undefined &&
-      (typeof finalGrade !== "number" || isNaN(finalGrade))
-    ) {
+    if (finalGrade !== undefined && (typeof finalGrade !== "number" || isNaN(finalGrade))) {
       finalGrade = undefined;
     }
 
@@ -72,6 +70,13 @@ export function parseAssessment(data: unknown): Assessment | null {
       availability: String(raw.availability || ""),
       finalGrade,
       letterGrade,
+      gradeSource:
+        raw.gradeSource === "seqta" ||
+        raw.gradeSource === "criteriaRollup" ||
+        raw.gradeSource === "customBand" ||
+        raw.gradeSource === "defaultLetter"
+          ? raw.gradeSource
+          : undefined,
     };
 
     if (
@@ -89,70 +94,14 @@ export function parseAssessment(data: unknown): Assessment | null {
   }
 }
 
-function jsonGradeToString(grade: unknown): string | undefined {
-  if (typeof grade === "string") return grade.trim() || undefined;
-  if (typeof grade === "number") return String(grade);
-  return undefined;
-}
-
-function extractFinalGrade(assessment: Record<string, unknown>): number | undefined {
-  if (assessment.status !== "MARKS_RELEASED") return undefined;
-
-  const criteria = assessment.criteria as
-    | { results?: { percentage?: unknown; score?: unknown } }[]
-    | undefined;
-  const cInitialResults = criteria?.[0]?.results;
-  if (cInitialResults?.percentage !== undefined && cInitialResults?.score !== undefined) {
-    const n = Number(cInitialResults.percentage);
-    if (!isNaN(n)) return n; 
-  }
-
-  const results = assessment.results as { percentage?: unknown; score?: unknown } | undefined;
-  if (results?.percentage !== undefined && results.score !== undefined) {
-    const n = Number(results.percentage);
-    if (!isNaN(n)) return n;
-  }
-
-  if (assessment.finalGrade !== undefined && assessment.finalGrade !== null) {
-    const n = Number(assessment.finalGrade);
-    if (!isNaN(n)) return n;
-  }
-
-  if (cInitialResults != null || results != null) return undefined;
-
-  const letter = extractLetterGradeStringFromPayload(
-    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
-  );
-  if (letter) {
-    const approx = resolveNumericGradeFromAssessmentPayload({
-      status: "MARKS_RELEASED",
-      letterGrade: letter,
-    });
-    if (approx !== undefined) return approx;
-  }
-
-  return undefined;
-}
-
-function extractLetterGrade(
-  assessment: Record<string, unknown>,
-): string | undefined {
-  if (assessment.status !== "MARKS_RELEASED") return undefined;
-
-  const criteria = assessment.criteria as
-    | { results?: { grade?: unknown } }[]
-    | undefined;
-  const c0 = criteria?.[0]?.results?.grade;
-  const fromCriteria = jsonGradeToString(c0);
-  if (fromCriteria) return fromCriteria;
-
-  const results = assessment.results as { grade?: unknown } | undefined;
-  const fromResults = jsonGradeToString(results?.grade);
-  if (fromResults) return fromResults;
-
-  return extractLetterGradeStringFromPayload(
-    assessment as Parameters<typeof extractLetterGradeStringFromPayload>[0],
-  );
+function applyResolvedGrade(
+  raw: Record<string, unknown>,
+  inference: AnalyticsGradeInferenceSettings,
+): void {
+  const resolved = resolveGradeFromAssessmentPayload(raw, inference);
+  if (resolved.finalGrade !== undefined) raw.finalGrade = resolved.finalGrade;
+  if (resolved.letterGrade !== undefined) raw.letterGrade = resolved.letterGrade;
+  if (resolved.source) raw.gradeSource = resolved.source;
 }
 
 function classKey(programme: number, metaclass: number): string {
@@ -321,10 +270,7 @@ async function loadAllPast(
       if (result.status === "fulfilled") {
         results.push(result.value);
       } else {
-        console.error(
-          "[BetterSEQTA+] Past assessments fetch failed:",
-          result.reason,
-        );
+        console.error("[BetterSEQTA+] Past assessments fetch failed:", result.reason);
       }
     }
   }
@@ -334,6 +280,7 @@ async function loadAllPast(
 function mergeRawAssessments(
   existing: Assessment[],
   rawItems: Record<string, unknown>[],
+  inference: AnalyticsGradeInferenceSettings,
 ): Assessment[] {
   const existingMap = new Map<number, Assessment>();
   for (const a of existing) {
@@ -344,14 +291,17 @@ function mergeRawAssessments(
     const id = Number(raw.id);
     if (!id) continue;
 
-    const finalGrade = extractFinalGrade(raw);
-    const letterGrade = extractLetterGrade(raw);
-    if (finalGrade !== undefined) raw.finalGrade = finalGrade;
-    if (letterGrade !== undefined) raw.letterGrade = letterGrade;
+    applyResolvedGrade(raw, inference);
+    const finalGrade = raw.finalGrade !== undefined ? Number(raw.finalGrade) : undefined;
 
     const existingItem = existingMap.get(id);
     const isAuthoritative = raw.status === "MARKS_RELEASED";
-    if (existingItem?.finalGrade !== undefined && finalGrade === undefined && !isAuthoritative) {
+    if (
+      existingItem?.finalGrade !== undefined &&
+      finalGrade === undefined &&
+      !isAuthoritative &&
+      (!existingItem.gradeSource || existingItem.gradeSource === "seqta")
+    ) {
       continue;
     }
 
@@ -411,13 +361,14 @@ export async function syncGradeAnalytics(): Promise<{
   const existing = cached?.assessments ?? [];
 
   const subjectList = await loadAllSubjects(existing);
+  const inference = await loadGradeInferenceSettings(location.origin, studentId);
 
   const [upcoming, past] = await Promise.all([
     loadUpcoming(studentId),
     loadAllPast(studentId, subjectList),
   ]);
 
-  const merged = mergeRawAssessments(existing, [...upcoming, ...past]);
+  const merged = mergeRawAssessments(existing, [...upcoming, ...past], inference);
   await saveAnalyticsCache(location.origin, studentId, merged);
 
   return { assessments: merged, updatedAt: Date.now() };

@@ -3,7 +3,7 @@ import { seqtaFetchPayload } from "../api";
 import { buildIndexItem } from "../extract";
 import { htmlToPlainText } from "../utils";
 
-import { verboseDebug } from '@/utils/verboseLog';
+import { verboseDebug } from "@/utils/verboseLog";
 /**
  * Indexes per-subject course content from `/seqta/student/load/courses`.
  *
@@ -36,9 +36,7 @@ interface CoursePayload {
   document?: string;
 }
 
-const fetchActiveSubjects = async (): Promise<
-  SubjectsListPayload["subjects"]
-> => {
+const fetchActiveSubjects = async (): Promise<SubjectsListPayload["subjects"]> => {
   const payload = await seqtaFetchPayload<SubjectsListPayload[]>(
     "/seqta/student/load/subjects",
     {},
@@ -50,11 +48,7 @@ const fetchActiveSubjects = async (): Promise<
     if (!semester || !Array.isArray(semester.subjects)) continue;
     if (semester.active !== 1) continue;
     for (const subject of semester.subjects) {
-      if (
-        subject &&
-        Number.isFinite(subject.programme) &&
-        Number.isFinite(subject.metaclass)
-      ) {
+      if (subject && Number.isFinite(subject.programme) && Number.isFinite(subject.metaclass)) {
         out.push(subject);
       }
     }
@@ -129,13 +123,10 @@ export const coursesJob: Job = {
         status: `Running job: Courses (${processedSubjects + 1}/${totalSubjects})`,
       });
 
-      const payload = await seqtaFetchPayload<CoursePayload>(
-        "/seqta/student/load/courses",
-        {
-          programme: String(subject.programme),
-          metaclass: String(subject.metaclass),
-        },
-      );
+      const payload = await seqtaFetchPayload<CoursePayload>("/seqta/student/load/courses", {
+        programme: String(subject.programme),
+        metaclass: String(subject.metaclass),
+      });
 
       if (!payload) {
         processedSubjects++;
@@ -150,8 +141,7 @@ export const coursesJob: Job = {
         "Course";
 
       const lessonText = flattenLessonHtml(payload);
-      const courseCode =
-        (typeof payload.c === "string" && payload.c.trim()) || subject.code;
+      const courseCode = (typeof payload.c === "string" && payload.c.trim()) || subject.code;
 
       const summary = [courseCode, lessonText]
         .filter((s) => s && s.length > 0)

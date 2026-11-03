@@ -17,7 +17,8 @@
     showStoreTools,
     onLogoClick,
     onClose,
-  } = $props<{
+    onToggleSize,
+  }: {
     searchTerm: string;
     setSearchTerm: (term: string) => void;
     activePage: SettingsPage;
@@ -25,7 +26,8 @@
     showStoreTools: boolean;
     onLogoClick: () => void;
     onClose: () => void;
-  }>();
+    onToggleSize?: () => void;
+  } = $props();
 
   const tabs: { id: SettingsPage; title: string }[] = [
     { id: "settings", title: "Settings" },
@@ -41,16 +43,16 @@
   class="flex shrink-0 items-center gap-4 border-b border-zinc-200/60 px-5 py-4 dark:border-zinc-700/50"
   style="--bs-settings-ease: 0.28s cubic-bezier(0.22, 1, 0.36, 1)"
 >
-  <button type="button" class="hidden shrink-0 lg:block" onclick={onLogoClick}>
+  <button type="button" class="shrink-0" onclick={onLogoClick} aria-label="BetterSEQTA+">
     <img
       src={resolveExtensionAssetUrl(darkLogo)}
-      class="h-11 w-52 object-cover dark:hidden"
-      alt="BetterSEQTA+"
+      class="h-9 max-w-42 object-contain object-left dark:hidden sm:h-10"
+      alt=""
     />
     <img
       src={resolveExtensionAssetUrl(lightLogo)}
-      class="hidden h-11 w-52 object-cover dark:block"
-      alt="BetterSEQTA+"
+      class="hidden h-9 max-w-42 object-contain object-left dark:block sm:h-10"
+      alt=""
     />
   </button>
 
@@ -61,7 +63,7 @@
   >
     <div class="relative flex">
       <MotionDiv
-        class="absolute inset-y-0 left-0 z-0 w-1/3 rounded-full bg-white shadow-sm dark:bg-zinc-700"
+        class="absolute inset-y-0 left-0 z-0 w-1/3 rounded-full bg-white shadow-xs dark:bg-zinc-700"
         animate={{ x: `${activeIndex * 100}%` }}
         transition={{ type: "spring", stiffness: 250, damping: 25 }}
       />
@@ -71,7 +73,7 @@
           role="tab"
           aria-selected={activePage === tab.id}
           onclick={() => setActivePage(tab.id)}
-          class="relative z-10 h-10 flex-1 whitespace-nowrap rounded-full px-4 text-base transition-colors duration-200
+          class="relative z-10 h-10 flex-1 whitespace-nowrap rounded-full px-4 text-lg transition-colors duration-200
             {activePage === tab.id
             ? 'font-semibold text-zinc-900 dark:text-white'
             : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
@@ -115,6 +117,13 @@
       <CloudHeader />
     {/if}
 
+    {#if onToggleSize}
+      <button type="button" onclick={onToggleSize}
+        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
+        aria-label="Collapse settings" title="Collapse settings" aria-expanded="true">
+        <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uec06"}</span>
+      </button>
+    {/if}
     <PlainCloseButton onclick={onClose} label="Close settings" />
   </div>
 </header>

@@ -1,6 +1,6 @@
 import { describe, expect, it, jest } from "@jest/globals";
 
-jest.mock("webextension-polyfill", () => ({
+jest.mock("@/lib/browser", () => ({
   __esModule: true,
   default: {
     runtime: {

@@ -1,4 +1,4 @@
-import { defineLazyPlugin } from "../../core/dynamicLoader";
+import type { Plugin } from "../../core/types";
 import { defineSettings, numberSetting } from "../../core/settingsHelpers";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { injectAnalyticsMenuItem } from "./injectAnalyticsMenuItem";
@@ -18,31 +18,19 @@ const settings = defineSettings({
  * Shell loads immediately so the sidebar Analytics icon can mount.
  * The page UI (`loadAnalyticsPage` / charts) stays in a separate lazy chunk.
  */
-const gradeAnalyticsPluginLazy = defineLazyPlugin({
+const gradeAnalyticsPlugin: Plugin<typeof settings> = {
   id: "grade-analytics",
   name: "Grade Analytics",
-  description:
-    "Grade trends, distribution charts, and assessment history synced from SEQTA",
+  description: "Grade trends, distribution charts, and assessment history synced from SEQTA",
   version: "1.0.0",
   settings,
   disableToggle: true,
   defaultEnabled: true,
   styles,
-  // Kept for API compatibility; menu injection no longer waits on this chunk.
-  loader: () => import("./core/index"),
-});
-
-gradeAnalyticsPluginLazy.run = async () => {
-  if (isSeqtaEngageExperience()) {
-    return () => {};
-  }
-
-  // Eager: sidebar icon / native menu row only.
-  const cleanupMenu = await injectAnalyticsMenuItem();
-
-  return () => {
-    cleanupMenu();
-  };
+  run: async () => {
+    if (isSeqtaEngageExperience()) return () => {};
+    return injectAnalyticsMenuItem();
+  },
 };
 
-export default gradeAnalyticsPluginLazy;
+export default gradeAnalyticsPlugin;

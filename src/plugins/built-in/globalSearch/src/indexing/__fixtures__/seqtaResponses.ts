@@ -43,8 +43,7 @@ export const coursesPayload = {
   t: "English GEN 1",
   i: 3830,
   m: 29611,
-  document:
-    '{"document":{"modules":[{"uuid":"1641cf87-ae08-4bcb-832d-d5709d84d0c5"}]}}',
+  document: '{"document":{"modules":[{"uuid":"1641cf87-ae08-4bcb-832d-d5709d84d0c5"}]}}',
   w: [
     [
       { t: "", h: "", i: 248293, l: "", n: 0, o: "" },
@@ -86,8 +85,7 @@ export const documentsPayload = [
         filename: "School Glossary.docx",
         size: "14931",
         context_uuid: "3162189c-2052-4f83-ad83-a66c57460ea2",
-        mimetype:
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        mimetype: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         created_date: "2021-08-04 12:55:55.102653+00",
         title: "School Glossary",
         uuid: "3162189c-2052-4f83-ad83-a66c57460ea2",
@@ -139,8 +137,7 @@ export const folioListPayload = {
 
 export const folioEntryPayload = {
   forum: 478,
-  contents:
-    '[[embed:raw|<p>Some <strong>reflection</strong> text.</p>]] Plain trailing text.',
+  contents: "[[embed:raw|<p>Some <strong>reflection</strong> text.</p>]] Plain trailing text.",
   created: "2026-04-14 10:32:34.264641+00",
   allow_comments: true,
   author: { year: "Year 10", name: "Jacob Johannesburg", id: 3111 },

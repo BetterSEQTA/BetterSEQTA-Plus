@@ -19,9 +19,7 @@ function updateTimeElements(): void {
     const original = el.dataset.original;
     if (!original) return;
 
-    el.textContent = convertTo12HourFormat(original, true)
-      .toLowerCase()
-      .replace(" ", "");
+    el.textContent = convertTo12HourFormat(original, true).toLowerCase().replace(" ", "");
   });
 
   const entryTimes = timetablePage.querySelectorAll<HTMLElement>(".entry .times");
@@ -38,14 +36,14 @@ function updateTimeElements(): void {
     el.textContent = `${start12}–${end12}`;
   });
 
-    const quickbarTimes = document.querySelectorAll<HTMLElement>(".quickbar .meta .times");
+  const quickbarTimes = document.querySelectorAll<HTMLElement>(".quickbar .meta .times");
   quickbarTimes.forEach((el) => {
     if (!el.dataset.original) el.dataset.original = el.textContent || "";
     const original = el.dataset.original || "";
 
     if (!original.includes("–") && !original.includes("-")) return;
     const [start, end] = original.split(/[-–]/).map((p) => p.trim());
-    
+
     if (!start || !end) return;
     const start12 = convertTo12HourFormat(start).toLowerCase().replace(" ", "");
     const end12 = convertTo12HourFormat(end).toLowerCase().replace(" ", "");
@@ -66,21 +64,23 @@ function startTimetableMonitoring(): void {
   // Create observer for timetable content changes
   timetableObserver = new MutationObserver((mutations) => {
     let shouldUpdate = false;
-    
+
     mutations.forEach((mutation) => {
       if (mutation.type === "childList") {
         // Check if any time elements were added or modified
         const addedNodes = Array.from(mutation.addedNodes);
-        const hasTimeElements = addedNodes.some(node => {
+        const hasTimeElements = addedNodes.some((node) => {
           if (node.nodeType === Node.ELEMENT_NODE) {
             const element = node as Element;
-            return element.querySelector(".time, .times") || 
-                   element.classList.contains("time") || 
-                   element.classList.contains("times");
+            return (
+              element.querySelector(".time, .times") ||
+              element.classList.contains("time") ||
+              element.classList.contains("times")
+            );
           }
           return false;
         });
-        
+
         if (hasTimeElements) {
           shouldUpdate = true;
         }
@@ -107,10 +107,10 @@ function stopTimetableMonitoring(): void {
 
 function handleUrlChange(): void {
   const currentlyOnTimetable = checkIfOnTimetablePage();
-  
+
   if (currentlyOnTimetable !== isOnTimetablePage) {
     isOnTimetablePage = currentlyOnTimetable;
-    
+
     if (isOnTimetablePage) {
       // Wait a bit for the page to load, then start monitoring
       setTimeout(() => {
@@ -135,10 +135,9 @@ function startUrlMonitoring(): void {
   const signal = abortController.signal;
 
   // Listen for hash changes (more efficient than polling)
-  window.addEventListener('hashchange', handleUrlChange, { signal });
-  window.addEventListener('popstate', handleUrlChange, { signal });
-  
-  // Initial check
+  window.addEventListener("hashchange", handleUrlChange, { signal });
+  window.addEventListener("popstate", handleUrlChange, { signal });
+
   handleUrlChange();
 }
 
@@ -146,12 +145,11 @@ function stopUrlMonitoring(): void {
   if (!isInitialized) return;
   isInitialized = false;
 
-  // Abort all event listeners at once
   if (abortController) {
     abortController.abort();
     abortController = null;
   }
-  
+
   stopTimetableMonitoring();
 }
 
@@ -174,7 +172,7 @@ export async function updateTimetableTimes(): Promise<void> {
   }
 
   updateTimeElements();
-  
+
   // Start continuous monitoring when this function is called
   isOnTimetablePage = checkIfOnTimetablePage();
   if (isOnTimetablePage) {

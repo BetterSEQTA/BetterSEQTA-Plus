@@ -1,4 +1,4 @@
-import browser from "webextension-polyfill";
+import browser from "@/lib/browser";
 import {
   GOOGLE_CALENDAR_SYNC_WEEKS,
   GOOGLE_CALENDAR_SYNC_WEEKS_MAX,
@@ -18,6 +18,8 @@ export const WEEKLY_SYNC_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
 export interface SharedCalendarSyncSettings {
   syncWeeksAhead?: number;
   autoSyncWeekly?: boolean;
+  /** When true, sync assessment due dates alongside timetable events. */
+  syncAssessmentDueDates?: boolean;
   lastWeeklySyncAt?: number;
   pendingWeeklySync?: boolean;
 }
@@ -66,6 +68,11 @@ export async function getSyncWeeksAhead(): Promise<number> {
 export async function getAutoSyncWeekly(): Promise<boolean> {
   const settings = await readSharedCalendarSyncSettings();
   return settings.autoSyncWeekly !== false;
+}
+
+export async function getSyncAssessmentDueDates(): Promise<boolean> {
+  const settings = await readSharedCalendarSyncSettings();
+  return settings.syncAssessmentDueDates === true;
 }
 
 export async function isAnyCalendarConnected(): Promise<boolean> {
@@ -119,12 +126,7 @@ export async function readResumableCalendarSync(): Promise<PendingCalendarSync |
   const validMode = pending.mode === "full" || pending.mode === "incremental";
   const fresh = Date.now() - pending.startedAt < 24 * 60 * 60 * 1000;
 
-  if (
-    !validProvider ||
-    !validMode ||
-    pending.origin !== location.origin ||
-    !fresh
-  ) {
+  if (!validProvider || !validMode || pending.origin !== location.origin || !fresh) {
     await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
     return null;
   }
