@@ -6,6 +6,7 @@ import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
 import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
+import { isAnalyticsRoute } from "./injectAnalyticsMenuItem";
 
 type ThemeSettingKey =
   | "selectedColor"
@@ -23,18 +24,22 @@ type ThemeListenerRegistration = {
 let currentApp: ReturnType<typeof mount> | null = null;
 let shadowHost: HTMLElement | null = null;
 let analyticsRoot: HTMLElement | null = null;
-let darkModeObserver: MutationObserver | null = null;
 let themeStyleObserver: MutationObserver | null = null;
 let themeListeners: ThemeListenerRegistration[] = [];
 
-const ANALYTICS_STACKING_STYLE_ID = "bsplus-analytics-stacking-styles";
+const ANALYTICS_PAGE_STYLE_ID = "bsplus-analytics-page-styles";
 
-/** Light-DOM stacking scope so toolbar/dropdown z-index cannot paint over ExtensionPopup. */
-function ensureAnalyticsStackingScope() {
-  if (document.getElementById(ANALYTICS_STACKING_STYLE_ID)) return;
+/** Light-DOM styles: stacking scope below ExtensionPopup, and #main sizing only while Analytics is shown. */
+function ensureAnalyticsPageStyles() {
+  if (document.getElementById(ANALYTICS_PAGE_STYLE_ID)) return;
   const style = document.createElement("style");
-  style.id = ANALYTICS_STACKING_STYLE_ID;
+  style.id = ANALYTICS_PAGE_STYLE_ID;
   style.textContent = `
+    #main:has(> #analytics-view-container) {
+      overflow: auto;
+      width: 100%;
+      max-width: none;
+    }
     #analytics-view-container,
     .bsplus-analytics-container,
     .bsplus-analytics-host {
@@ -159,7 +164,12 @@ function watchThemeChanges() {
   });
 }
 
+function onRouteChange() {
+  if (!isAnalyticsRoute()) teardown();
+}
+
 function teardown() {
+  window.removeEventListener("hashchange", onRouteChange);
   clearThemeListeners();
   themeStyleObserver?.disconnect();
   themeStyleObserver = null;
@@ -168,8 +178,6 @@ function teardown() {
     unmount(currentApp);
     currentApp = null;
   }
-  darkModeObserver?.disconnect();
-  darkModeObserver = null;
   shadowHost?.remove();
   shadowHost = null;
   analyticsRoot = null;
@@ -178,7 +186,8 @@ function teardown() {
 export function renderAnalyticsPage(container: HTMLElement) {
   teardown();
 
-  ensureAnalyticsStackingScope();
+  ensureAnalyticsPageStyles();
+  window.addEventListener("hashchange", onRouteChange);
 
   container.innerHTML = "";
   container.className = "bsplus-analytics-container";
@@ -199,12 +208,6 @@ export function renderAnalyticsPage(container: HTMLElement) {
   shadow.appendChild(analyticsRoot);
 
   watchThemeChanges();
-
-  darkModeObserver = new MutationObserver(() => syncThemeToAnalyticsUi());
-  darkModeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
 
   currentApp = mount(GradeAnalyticsPage, {
     target: analyticsRoot,

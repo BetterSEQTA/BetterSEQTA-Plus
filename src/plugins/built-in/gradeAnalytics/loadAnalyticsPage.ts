@@ -39,9 +39,6 @@ async function loadAnalyticsPageInner(): Promise<void> {
   }
 
   main.innerHTML = "";
-  main.style.overflow = "auto";
-  main.style.width = "100%";
-  main.style.maxWidth = "none";
   const viewShell = document.createElement("div");
   viewShell.id = "analytics-view-container";
   main.appendChild(viewShell);

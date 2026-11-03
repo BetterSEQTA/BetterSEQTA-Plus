@@ -396,12 +396,11 @@ async function handleDashboard(node: Element): Promise<void> {
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   const style = document.createElement("style");
-  style.classList.add("dashboardHider");
-  style.innerHTML = ".dashboard{opacity: 0 !important;}";
+  style.textContent = ".dashboard{opacity: 0 !important;}";
   document.head.append(style);
 
-  await waitForElm(".dashlet", true, 10);
   try {
+    await waitForElm(".dashlet", true, 10, 300);
     const children = document.querySelectorAll(".dashboard > *");
     if (children.length) {
       const { animate, stagger } = await loadMotion();
@@ -417,9 +416,9 @@ async function handleDashboard(node: Element): Promise<void> {
     }
   } catch {
     // Avoid uncaught errors if motion hits an unexpected DOM state during load.
+  } finally {
+    style.remove();
   }
-
-  document.head.querySelector("style.dashboardHider")?.remove();
 }
 
 async function handleDocuments(node: Element): Promise<void> {
