@@ -64,6 +64,8 @@ html {
 
 body {
   font-family: Rubik, sans-serif !important;
+  background: var(--theme-primary);
+  overflow: hidden;
 }
 
 select {
@@ -484,10 +486,12 @@ ul.magicDelete > li.deleting {
   display: flex;
   white-space: nowrap;
   place-items: center;
+  cursor: pointer;
 }
 #menu .sub {
   top: 71px;
   margin-top: -2px;
+  pointer-events: none;
 }
 
 /* Drill-in stack: only the current list + folder header stay clickable.
@@ -522,10 +526,6 @@ ul.magicDelete > li.deleting {
 }
 
 /* Only the frontmost open .sub panel receives pointer events */
-#menu .sub {
-  pointer-events: none;
-}
-
 #menu li.hasChildren:is(.active, .bsplus-active) > .sub {
   pointer-events: auto;
 }
@@ -657,6 +657,7 @@ ul.magicDelete > li.deleting {
   color: var(--text-color);
   border-right: none;
   transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --menuHidden: none;
 }
 
 /* Custom title bar: keep native `#title` children for sync, hide them visually.
@@ -977,35 +978,33 @@ body > .sortable-fallback.bsplus-sortable-drag,
   list-style: none !important;
 }
 
-#menu {
-  li:is(.active, .hasChildren.bsplus-active) > .sub > ul > .item:not(.hasChildren) {
-    position: relative;
+#menu li:is(.active, .hasChildren.bsplus-active) > .sub > ul > .item:not(.hasChildren) {
+  position: relative;
 
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      width: 3px;
-      background: var(--item-colour, transparent);
-      transition:
-        width 100ms,
-        transform 0.3s ease;
-      border-radius: 8px 0 0 8px;
-      pointer-events: none;
-    }
-
-    &:hover::before,
-    &:is(.active, .bsplus-active)::before {
-      width: 6px;
-      background: var(--item-colour, transparent);
-    }
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 3px;
+    background: var(--item-colour, transparent);
+    transition:
+      width 100ms,
+      transform 0.3s ease;
+    border-radius: 8px 0 0 8px;
+    pointer-events: none;
   }
 
-  li.active > .sub > ul > .active {
-    background: rgba(0, 0, 0, 0.3) !important;
+  &:hover::before,
+  &:is(.active, .bsplus-active)::before {
+    width: 6px;
+    background: var(--item-colour, transparent);
   }
+}
+
+#menu li.active > .sub > ul > .active {
+  background: rgba(0, 0, 0, 0.3) !important;
 }
 
 #userActions {
@@ -1369,10 +1368,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
 
 .assessmentsWrapper .message {
   display: none;
-}
-#menu li,
-#menu section {
-  cursor: pointer;
 }
 #menu li:hover:not(.active) {
   background: rgba(0, 0, 0, 0.15) !important;
@@ -2962,14 +2957,12 @@ div.bar.flat {
   border-radius: 12px;
 }
 
-.dark {
-  .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
-  .cke_toolbox > .cke_toolbar .cke_button_on {
-    background-color: #3d3d3e !important;
+.dark .cke_toolbox > .cke_toolbar .cke_combo_on > .cke_combo_button,
+.dark .cke_toolbox > .cke_toolbar .cke_button_on {
+  background-color: #3d3d3e !important;
 
-    &::after {
-      background: rgb(207, 207, 207) !important;
-    }
+  &::after {
+    background: rgb(207, 207, 207) !important;
   }
 }
 
@@ -3010,10 +3003,6 @@ ul.uiSplitButtonList,
 .legacy-root .input {
   background: transparent;
   color: var(--text-primary);
-}
-body {
-  background: var(--theme-primary);
-  overflow: hidden;
 }
 .shortcuticondiv {
   height: 39px;
@@ -3262,9 +3251,6 @@ body:not(.clr-open) .clr-picker,
   position: absolute;
   z-index: 10;
   opacity: 0.4;
-}
-#menu {
-  --menuHidden: none;
 }
 .editmenuoption {
   background: var(--background-primary);
@@ -3721,13 +3707,6 @@ div.day-empty {
 }
 .upcoming-special-day {
   font-size: 20px;
-}
-.upcoming-blank {
-  display: flex;
-  border-bottom: 2px solid #bebebe;
-  margin: 5px 50px;
-  height: 2em;
-  padding: 0px;
 }
 .upcoming-blank p {
   padding: 0;
@@ -5857,18 +5836,16 @@ button.notice-close-btn {
   }
 }
 
-.dark {
-  .notice-card {
-    border-color: rgba(255, 255, 255, 0.05);
+.dark .notice-card {
+  border-color: rgba(255, 255, 255, 0.05);
 
-    &:hover {
-      border-color: rgba(255, 255, 255, 0.1);
-    }
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.1);
   }
+}
 
-  .notice-modal-content {
-    border-color: rgba(255, 255, 255, 0.05);
-  }
+.dark .notice-modal-content {
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 @media (max-width: 768px) {

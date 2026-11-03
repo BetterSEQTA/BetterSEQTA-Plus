@@ -539,20 +539,6 @@
   fill: none;
 }
 
-.bsplus-context-item:hover {
-  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08));
-}
-
-.bsplus-context-item span {
-  flex: 1;
-}
-
-.bsplus-context-checkmark {
-  color: var(--better-main, #007bff) !important;
-  font-weight: bold;
-  flex: 0 !important;
-}
-
 .bsplus-context-empty {
   padding: 12px;
   text-align: center;
