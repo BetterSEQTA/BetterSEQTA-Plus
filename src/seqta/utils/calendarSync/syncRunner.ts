@@ -19,9 +19,12 @@ import {
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
+  CALENDAR_SYNC_HEARTBEAT_MS,
   getSyncAssessmentDueDates,
   getSyncWeeksAhead,
+  isCalendarSyncRunningElsewhere,
   readResumableCalendarSync,
+  type PendingCalendarSync,
 } from "@/seqta/utils/calendarSync/settings";
 import type {
   GoogleCalendarStatus,
@@ -105,21 +108,49 @@ const OUTLOOK_SYNC_RUNNER: CalendarSyncRunnerConfig = {
   lessonSyncProvider: outlookLessonSyncProvider,
 };
 
-export async function runCalendarSync(
+/** In-flight syncs for this tab; overlapping syncs each create every event, duplicating them. */
+const activeSyncs = new Map<CalendarProvider, Promise<GoogleCalendarSyncResult>>();
+
+export function runCalendarSync(
   config: CalendarSyncRunnerConfig,
   params: RunCalendarSyncParams = {},
 ): Promise<GoogleCalendarSyncResult> {
+  const active = activeSyncs.get(config.provider);
+  if (active) return active;
+  const run = runExclusiveCalendarSync(config, params).finally(() => {
+    activeSyncs.delete(config.provider);
+  });
+  activeSyncs.set(config.provider, run);
+  return run;
+}
+
+async function runExclusiveCalendarSync(
+  config: CalendarSyncRunnerConfig,
+  params: RunCalendarSyncParams,
+): Promise<GoogleCalendarSyncResult> {
+  if (await isCalendarSyncRunningElsewhere()) {
+    return {
+      success: false,
+      error: "A calendar sync is already running in another SEQTA tab. Try again in a minute.",
+    };
+  }
+
   const mode = params.mode ?? "full";
   const weeksAhead = await getSyncWeeksAhead();
 
-  await browser.storage.local.set({
-    [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: {
-      provider: config.provider,
-      mode,
-      origin: location.origin,
-      startedAt: Date.now(),
-    },
-  });
+  const marker: PendingCalendarSync = {
+    provider: config.provider,
+    mode,
+    origin: location.origin,
+    startedAt: Date.now(),
+    heartbeatAt: Date.now(),
+  };
+  await browser.storage.local.set({ [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: marker });
+  const heartbeat = setInterval(() => {
+    void browser.storage.local.set({
+      [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: { ...marker, heartbeatAt: Date.now() },
+    });
+  }, CALENDAR_SYNC_HEARTBEAT_MS);
 
   try {
     reportSyncProgress(params.onProgress, {
@@ -157,6 +188,7 @@ export async function runCalendarSync(
       { onProgress: params.onProgress },
     );
   } finally {
+    clearInterval(heartbeat);
     await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
   }
 }
@@ -166,6 +198,8 @@ export async function resumeInterruptedCalendarSync(
 ): Promise<GoogleCalendarSyncResult | null> {
   const pending = await readResumableCalendarSync();
   if (!pending) return null;
+  // Another tab is still mid-sync — leave its marker alone; a later page load resumes if it dies.
+  if (await isCalendarSyncRunningElsewhere()) return null;
 
   const state =
     pending.provider === "google"

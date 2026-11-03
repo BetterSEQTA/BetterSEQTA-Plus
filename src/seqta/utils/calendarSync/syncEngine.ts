@@ -65,6 +65,8 @@ type CalendarStoredState = {
   eventMap?: EventMapRecord;
 };
 
+const DUPLICATE_EVENT_MAP_KEY_PREFIX = "__duplicate__::";
+
 export type CalendarLessonSyncProvider = {
   label: string;
   isConfigured: () => boolean;
@@ -204,13 +206,14 @@ export async function syncLessonsToCalendar(
     events.map((event) => eventMapKey(request.origin, event.seqtaKey)),
   );
 
+  let duplicateIds: string[] = [];
   try {
     const remoteEvents = await provider.listSyncedEvents(
       accessToken,
       reconcileRange,
       refreshAccessToken,
     );
-    mergeRemoteEventsIntoMap(eventMap, request.origin, remoteEvents, eventMapKey);
+    duplicateIds = mergeRemoteEventsIntoMap(eventMap, request.origin, remoteEvents, eventMapKey);
     const remoteIds = new Set(remoteEvents.map((event) => event.id));
     for (const key of currentMapKeys) {
       const entry = normalizeEventMapEntry(eventMap[key]);
@@ -237,6 +240,10 @@ export async function syncLessonsToCalendar(
       const entry = normalizeEventMapEntry(raw);
       if (entry) staleEntries.push([mapKey, entry.id]);
     }
+  }
+  // Untracked map key so deleting a duplicate never drops the kept event's map entry.
+  for (const id of duplicateIds) {
+    staleEntries.push([`${DUPLICATE_EVENT_MAP_KEY_PREFIX}${id}`, id]);
   }
   const totalSteps = Math.max(staleEntries.length + events.length, 1);
   const lastSyncAt = Date.now();

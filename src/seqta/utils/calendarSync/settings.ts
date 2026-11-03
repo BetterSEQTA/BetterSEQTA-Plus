@@ -108,12 +108,27 @@ export async function markWeeklySyncPending(): Promise<void> {
   await writeSharedCalendarSyncSettings({ pendingWeeklySync: true });
 }
 
-type PendingCalendarSync = {
+export type PendingCalendarSync = {
   provider: "google" | "outlook";
   mode: "full" | "incremental";
   origin: string;
   startedAt: number;
+  /** Refreshed while a sync is running; a recent value means another tab is still syncing. */
+  heartbeatAt?: number;
 };
+
+export const CALENDAR_SYNC_HEARTBEAT_MS = 10_000;
+const CALENDAR_SYNC_HEARTBEAT_STALE_MS = 45_000;
+
+/** True when another tab's sync marker has a recent heartbeat. */
+export async function isCalendarSyncRunningElsewhere(): Promise<boolean> {
+  const got = await browser.storage.local.get(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+  const raw = got[BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY];
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return false;
+  const pending = raw as PendingCalendarSync;
+  const lastBeat = pending.heartbeatAt ?? pending.startedAt;
+  return typeof lastBeat === "number" && Date.now() - lastBeat < CALENDAR_SYNC_HEARTBEAT_STALE_MS;
+}
 
 /** Returns a pending sync worth resuming, or clears and returns null. */
 export async function readResumableCalendarSync(): Promise<PendingCalendarSync | null> {
