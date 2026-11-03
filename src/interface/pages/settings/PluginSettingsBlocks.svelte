@@ -5,7 +5,6 @@
   import Slider from "@/interface/components/Slider.svelte";
   import Select from "@/interface/components/Select.svelte";
   import HotkeyInput from "@/interface/components/HotkeyInput.svelte";
-  import SettingRow from "./SettingRow.svelte";
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import {
@@ -23,7 +22,6 @@
     pluginSettingsStore,
     type PluginSettingsEntry,
   } from "./pluginSettingsState.svelte";
-  import { toMountableComponent } from "@/types/mountableComponent";
 
   let {
     section,
@@ -73,10 +71,10 @@
 
 {#each visiblePlugins as plugin (plugin.pluginId)}
   {@const perfPaused = pluginPerfPaused(plugin.pluginId)}
-  <SettingsCard class="{!(plugin as PluginSettingsEntry & { disableToggle?: boolean }).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''} {perfPaused ? 'opacity-60' : ''}">
+  <SettingsCard class="divide-y divide-zinc-200/60 dark:divide-zinc-700/40 {!plugin.disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''} {perfPaused ? 'opacity-60' : ''}">
     {#if perfPaused}
       <div
-        class="flex justify-between items-center px-5 py-3 border-b border-amber-200/60 dark:border-amber-900/40 bg-amber-50/80 dark:bg-amber-950/20"
+        class="flex justify-between items-center px-4 py-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20"
       >
         <p class="text-sm text-amber-800 dark:text-amber-200">
           Paused by Performance Mode — enable anyway
@@ -182,19 +180,6 @@
           </div>
         {/if}
       {/each}
-    {/if}
-    {#if plugin.pluginId === "global-search"}
-      <SettingRow
-        title="Theme of the Month"
-        description="Show the monthly featured theme popup when a new entry is available"
-        id={15}
-        Component={toMountableComponent(Switch)}
-        {searchQuery}
-        props={{
-          state: !($settingsState.themeOfTheMonthDisabled ?? false),
-          onChange: (isOn: boolean) => (settingsState.themeOfTheMonthDisabled = !isOn),
-        }}
-      />
     {/if}
   </SettingsCard>
 {/each}
