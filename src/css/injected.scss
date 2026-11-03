@@ -2045,8 +2045,9 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
 }
 [class*="notifications__notifications___"] > button > [class*="notifications__bubble___"] {
   background: var(--better-alert-highlight);
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);

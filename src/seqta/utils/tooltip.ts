@@ -1,4 +1,4 @@
-const GAP_PX = 2;
+const GAP_PX = 6;
 
 export function attachTooltip(anchor: HTMLElement) {
   const bubble = anchor.querySelector<HTMLElement>(":scope > .bsplus-tooltip-bubble");
