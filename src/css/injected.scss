@@ -1877,12 +1877,16 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   border-radius: 50px;
 }
 .shortcut {
+  box-sizing: border-box;
   height: 4em;
   width: 15em;
   max-width: 15em;
+  padding: 0 20px 0 12px;
+  gap: 10px;
   background: var(--background-primary);
   color: var(--text-primary);
   display: flex;
+  align-items: center;
   border-radius: 80px;
   position: relative;
   transition: 200ms;
@@ -1891,9 +1895,10 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   background: var(--auto-background);
 }
 .shortcut p {
-  margin: auto 0px auto 5px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   font-size: 20px;
-  width: 150px;
   word-wrap: break-word;
   line-height: 20px;
 }
@@ -3006,13 +3011,13 @@ ul.uiSplitButtonList,
   color: var(--text-primary);
 }
 .shortcuticondiv {
-  height: 39px;
-  width: 39px;
+  flex-shrink: 0;
+  height: 39px !important;
+  width: 39px !important;
   border-radius: 50%;
   padding: 0;
-  margin: auto 0px auto 10px;
-  background-repeat: no-repeat;
-  background-size: contain;
+  margin: 0;
+  object-fit: contain;
 }
 .forumView > .messages > .thread,
 .forumView > .messages > .deletedPlaceholder,
@@ -3543,50 +3548,9 @@ div.day-empty {
   cursor: pointer;
   text-decoration: underline;
 }
-.upcoming-blank {
-  display: flex;
-  border-bottom: 2px solid #bebebe;
-  margin: 5px 50px;
-  height: 2em;
-  padding: 0px;
-}
-.upcoming-tick {
-  align-self: center;
-}
 .upcoming-title h2 {
   width: 100%;
 }
-.upcoming-filters {
-  display: flex;
-  height: 26px;
-  width: 65%;
-  align-self: center;
-  align-items: center;
-  color: var(--text-color);
-  padding: 5px;
-  overflow-x: scroll;
-  overflow-y: hidden;
-}
-.upcoming-checkbox-container {
-  position: relative;
-  padding: none !important;
-  padding-left: 25px !important;
-  padding-right: 10px !important;
-  cursor: pointer;
-  font-size: 12px;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  height: 20px;
-  align-items: center;
-  display: flex;
-}
-
-.upcoming-hiddenassessment {
-  color: #797979;
-}
-
 .calendarEventEditor > .tabset > .item {
   border-radius: 0 !important;
 }
@@ -3709,56 +3673,9 @@ div.day-empty {
 .upcoming-special-day {
   font-size: 20px;
 }
-.upcoming-blank p {
-  padding: 0;
-  margin: 0;
-}
 .upcoming-title {
   display: flex;
   align-content: space-between;
-}
-.upcoming-checkbox-container input {
-  position: absolute;
-  opacity: 0;
-  cursor: pointer;
-  height: 0;
-  width: 0;
-  padding: 0;
-}
-.upcoming-checkmark {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 15px;
-  width: 15px;
-  border: 3px solid var(--item-colour);
-  border-radius: 5px;
-  color: var(--text-color);
-}
-.upcoming-checkbox-container:hover input ~ .upcoming-checkmark {
-  filter: brightness(0.8);
-}
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark {
-  background: var(--item-colour);
-}
-.upcoming-checkmark:after {
-  content: "";
-  position: absolute;
-  display: none;
-}
-.upcoming-checkbox-container input:checked ~ .upcoming-checkmark:after {
-  display: block;
-}
-.upcoming-checkbox-container .upcoming-checkmark:after {
-  left: 3.5px;
-  top: 0px;
-  width: 5px;
-  height: 10px;
-  border: solid white;
-  border-width: 0 3px 3px 0;
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
-  transform: rotate(45deg);
 }
 .titlebar {
   align-items: center;

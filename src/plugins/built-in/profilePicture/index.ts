@@ -4,7 +4,7 @@ import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { toMountableComponent } from "@/types/mountableComponent";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "@/lib/browser";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 import { revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
 import { loadPicture, REVISION_KEY } from "./picture";
 import styles from "./styles.css?inline";

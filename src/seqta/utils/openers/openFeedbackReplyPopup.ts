@@ -1,5 +1,5 @@
 import stringToHTML from "../stringToHTML";
-import { closePopup, openPopup } from "./PopupManager";
+import { closePopup, openPopup } from "./popupManager";
 import {
   findPendingFeedbackWithReplies,
   formatStatus,

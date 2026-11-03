@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 /** Insert a menu DOM node after the top-level item with `afterKey`. */
 export function insertMenuItemAfterKey(

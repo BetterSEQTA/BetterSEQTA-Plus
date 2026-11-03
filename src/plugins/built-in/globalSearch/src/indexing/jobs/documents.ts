@@ -127,7 +127,7 @@ export const documentsJob: Job = {
       }
     }
 
-    verboseDebug(`[Documents job] Indexed ${items.length} document entries.`);
+    verboseDebug(`[BetterSEQTA+] Documents job: Indexed ${items.length} document entries.`);
     return items;
   },
 

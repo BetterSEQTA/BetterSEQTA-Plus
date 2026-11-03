@@ -2,42 +2,47 @@
   import FolderOpenIcon from "@lucide/svelte/icons/folder-open";
   import SearchIcon from "./SearchIcon.svelte";
   import { iconForCategory } from "../core/searchIcons";
-  import { onMount, tick } from 'svelte';
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
-  import { fade, scale } from 'svelte/transition';
-  import { circOut, quintOut } from 'svelte/easing';
-  import { type StaticCommandItem } from '../core/commands';
-  import type { CombinedResult } from '../core/types';
-  import { createSearchIndexes, applyDynamicIndexDelta, performSearch as doSearch, type DynamicItemsUpdatedDetail } from '../search/searchUtils';
-  import Fuse from 'fuse.js';
-  import Calculator from './Calculator.svelte';
-  import { actionMap } from '../indexing/actions';
-  import type { IndexItem } from '../indexing/types';
-  import debounce from '@/seqta/utils/debounce';
-  import { renderComponentMap } from '../indexing/renderComponents';
-  import HighlightedText from '../utils/HighlightedText.svelte';
-  import { matchesHotkey } from '../utils/hotkeyUtils';
-  import { warmUpVectorSearchOnInteraction } from '../search/vector/vectorSearch';
-  import browser from '@/lib/browser';
+  import { onMount, tick } from "svelte";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
+  import { fade, scale } from "svelte/transition";
+  import { circOut, quintOut } from "svelte/easing";
+  import { type StaticCommandItem } from "../core/commands";
+  import type { CombinedResult } from "../core/types";
+  import {
+    createSearchIndexes,
+    applyDynamicIndexDelta,
+    performSearch as doSearch,
+    type DynamicItemsUpdatedDetail,
+  } from "../search/searchUtils";
+  import Fuse from "fuse.js";
+  import Calculator from "./Calculator.svelte";
+  import { actionMap } from "../indexing/actions";
+  import type { IndexItem } from "../indexing/types";
+  import debounce from "@/seqta/utils/debounce";
+  import { renderComponentMap } from "../indexing/renderComponents";
+  import HighlightedText from "../utils/HighlightedText.svelte";
+  import { matchesHotkey } from "../utils/hotkeyUtils";
+  import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
+  import browser from "@/lib/browser";
 
-  const { 
-    transparencyEffects, 
-    searchHotkey: initialSearchHotkey
-  }: { 
-    transparencyEffects: boolean, 
-    searchHotkey: string
+  const {
+    transparencyEffects,
+    searchHotkey: initialSearchHotkey,
+  }: {
+    transparencyEffects: boolean;
+    searchHotkey: string;
   } = $props();
 
   let currentSearchHotkey = $derived(initialSearchHotkey);
 
   let commandsFuse = $state<Fuse<StaticCommandItem>>();
   let dynamicContentFuse = $state<Fuse<IndexItem>>();
-  
+
   const dynamicIdToItemMap = $state(new Map<string, IndexItem>());
   const commandIdToItemMap = $state(new Map<string, StaticCommandItem>());
 
   let commandPalleteOpen = $state(false);
-  let searchTerm = $state('');
+  let searchTerm = $state("");
   let selectedIndex = $state(0);
   let combinedResults = $state<CombinedResult[]>([]);
   let searchbar = $state<HTMLInputElement>();
@@ -53,13 +58,13 @@
   // the `world w` pass and clobbers the more relevant matches.
   let searchRequestId = 0;
 
-
   let keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
   $effect(() => {
     const loadSettings = async () => {
-      const settings = await browser.storage.local.get('plugin.global-search.settings');
-      const pluginSettings = settings['plugin.global-search.settings'] as { searchHotkey?: string } | undefined;
+      const settings = await browser.storage.local.get("plugin.global-search.settings");
+      const pluginSettings = settings["plugin.global-search.settings"] as
+        { searchHotkey?: string } | undefined;
       if (pluginSettings?.searchHotkey) {
         currentSearchHotkey = pluginSettings.searchHotkey;
       }
@@ -68,8 +73,9 @@
     loadSettings();
 
     const handleStorageChange = (changes: any, area: string) => {
-      if (area === 'local' && changes['plugin.global-search.settings']) {
-        const newSettings = changes['plugin.global-search.settings'].newValue as { searchHotkey?: string } | undefined;
+      if (area === "local" && changes["plugin.global-search.settings"]) {
+        const newSettings = changes["plugin.global-search.settings"].newValue as
+          { searchHotkey?: string } | undefined;
         if (newSettings?.searchHotkey) {
           currentSearchHotkey = newSettings.searchHotkey;
         }
@@ -77,7 +83,7 @@
     };
 
     browser.storage.onChanged.addListener(handleStorageChange);
-    
+
     return () => {
       browser.storage.onChanged.removeListener(handleStorageChange);
     };
@@ -86,9 +92,9 @@
   // Update keydown handler when hotkey changes
   $effect(() => {
     if (keydownHandler) {
-      window.removeEventListener('keydown', keydownHandler);
+      window.removeEventListener("keydown", keydownHandler);
     }
-    
+
     keydownHandler = (e: KeyboardEvent) => {
       if (matchesHotkey(e, currentSearchHotkey)) {
         e.preventDefault();
@@ -96,16 +102,16 @@
         commandPalleteOpen = true;
         tick().then(() => searchbar?.focus());
       }
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         commandPalleteOpen = false;
       }
     };
-    
-    window.addEventListener('keydown', keydownHandler);
-    
+
+    window.addEventListener("keydown", keydownHandler);
+
     return () => {
       if (keydownHandler) {
-        window.removeEventListener('keydown', keydownHandler);
+        window.removeEventListener("keydown", keydownHandler);
         keydownHandler = null;
       }
     };
@@ -115,21 +121,13 @@
     const applyItemsUpdate = (event: Event) => {
       const detail = (event as CustomEvent<DynamicItemsUpdatedDetail>).detail;
 
-      if (
-        detail?.vectorUpdate &&
-        !detail.changedItems?.length &&
-        !detail.removedIds?.length
-      ) {
+      if (detail?.vectorUpdate && !detail.changedItems?.length && !detail.removedIds?.length) {
         performSearch();
         return;
       }
 
       if (detail?.incremental && !detail.fullRebuild) {
-        const updatedFuse = applyDynamicIndexDelta(
-          dynamicContentFuse,
-          dynamicIdToItemMap,
-          detail,
-        );
+        const updatedFuse = applyDynamicIndexDelta(dynamicContentFuse, dynamicIdToItemMap, detail);
         if (updatedFuse) {
           dynamicContentFuse = updatedFuse;
           performSearch();
@@ -155,10 +153,10 @@
       });
     };
 
-    window.addEventListener('dynamic-items-updated', itemsUpdatedHandler);
+    window.addEventListener("dynamic-items-updated", itemsUpdatedHandler);
 
     setupSearchIndexes();
-    
+
     // @ts-ignore - Intentionally adding to window
     window.setCommandPalleteOpen = (open: boolean) => {
       if (open) warmUpVectorSearchOnInteraction();
@@ -167,21 +165,26 @@
 
     return () => {
       if (itemsUpdateRaf) cancelAnimationFrame(itemsUpdateRaf);
-      window.removeEventListener('dynamic-items-updated', itemsUpdatedHandler);
+      window.removeEventListener("dynamic-items-updated", itemsUpdatedHandler);
     };
   });
 
   function setupSearchIndexes() {
-    const { commandsFuse: cfuse, dynamicContentFuse: dfuse, commands, dynamicItems } = createSearchIndexes();
-    
+    const {
+      commandsFuse: cfuse,
+      dynamicContentFuse: dfuse,
+      commands,
+      dynamicItems,
+    } = createSearchIndexes();
+
     commandsFuse = cfuse;
     dynamicContentFuse = dfuse;
-    
+
     dynamicIdToItemMap.clear();
     commandIdToItemMap.clear();
-    
-    dynamicItems.forEach(item => dynamicIdToItemMap.set(item.id, item));
-    commands.forEach(item => commandIdToItemMap.set(item.id, item));
+
+    dynamicItems.forEach((item) => dynamicIdToItemMap.set(item.id, item));
+    commands.forEach((item) => commandIdToItemMap.set(item.id, item));
   }
 
   const performSearch = async () => {
@@ -190,7 +193,7 @@
 
     tick().then(() => {
       const selectedElement = resultsList?.querySelector(`li:nth-child(1)`);
-      selectedElement?.scrollIntoView({ block: 'nearest' });
+      selectedElement?.scrollIntoView({ block: "nearest" });
     });
 
     const term = searchTerm.trim().toLowerCase();
@@ -232,7 +235,7 @@
 
   $effect(() => {
     if (commandPalleteOpen) {
-      if (searchTerm === '') {
+      if (searchTerm === "") {
         // Immediate search for empty query (shows recent items)
         performSearch();
       } else if (searchTerm.length <= 2) {
@@ -242,9 +245,9 @@
         // Debounced search for longer queries
         debouncedPerformSearch();
       }
-      tick().then(() => searchbar?.focus()); 
+      tick().then(() => searchbar?.focus());
     } else {
-      searchTerm = '';
+      searchTerm = "";
       selectedIndex = 0;
       combinedResults = [];
     }
@@ -262,7 +265,7 @@
       selectedIndex++;
       tick().then(() => {
         const selectedElement = resultsList?.querySelector(`li:nth-child(${selectedIndex + 1})`);
-        selectedElement?.scrollIntoView({ block: 'nearest' });
+        selectedElement?.scrollIntoView({ block: "nearest" });
       });
     }
   };
@@ -272,15 +275,15 @@
       selectedIndex--;
       tick().then(() => {
         const selectedElement = resultsList?.querySelector(`li:nth-child(${selectedIndex + 1})`);
-        selectedElement?.scrollIntoView({ block: 'nearest' });
+        selectedElement?.scrollIntoView({ block: "nearest" });
       });
     }
   };
 
   function executeItemAction(item: StaticCommandItem | IndexItem) {
-    if ('action' in item && typeof item.action === 'function') {
+    if ("action" in item && typeof item.action === "function") {
       (item as StaticCommandItem).action();
-    } else if ('actionId' in item && item.actionId && actionMap[item.actionId]) {
+    } else if ("actionId" in item && item.actionId && actionMap[item.actionId]) {
       actionMap[item.actionId](item as IndexItem);
     }
     commandPalleteOpen = false;
@@ -300,49 +303,55 @@
   };
 
   const handleKeyNav = (e: KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
+    if (e.key === "ArrowDown") {
       e.preventDefault();
       selectNext();
-    } else if (e.key === 'ArrowUp') {
+    } else if (e.key === "ArrowUp") {
       e.preventDefault();
       selectPrev();
-    } else if (e.key === 'Enter') {
+    } else if (e.key === "Enter") {
       e.preventDefault();
       executeSelected();
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       commandPalleteOpen = false;
     }
   };
 </script>
 
 {#if commandPalleteOpen}
-  <div role="dialog" aria-modal="true" class={settingsState.DarkMode ? 'dark' : ''}>
-    <div 
-      class="fixed inset-0 z-50000 bg-zinc-900/40 dark:bg-black/60" 
+  <div role="dialog" aria-modal="true" class={settingsState.DarkMode ? "dark" : ""}>
+    <div
+      class="fixed inset-0 z-50000 bg-zinc-900/40 dark:bg-black/60"
       transition:fade={{ duration: 150, easing: quintOut }}
     ></div>
 
-    <div class="fixed inset-0 z-50000 flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none scale-120 origin-top" 
-         onclick={() => commandPalleteOpen = false}
-         onkeydown={(e: KeyboardEvent) => e.key === 'Escape' && (commandPalleteOpen = false)}
-         role="button"
-         tabindex="0">
+    <div
+      class="fixed inset-0 z-50000 flex justify-center place-items-start p-8 sm:p-6 md:p-8 select-none scale-120 origin-top"
+      onclick={() => (commandPalleteOpen = false)}
+      onkeydown={(e: KeyboardEvent) => e.key === "Escape" && (commandPalleteOpen = false)}
+      role="button"
+      tabindex="0"
+    >
       <div
-        class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 { transparencyEffects ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl' : 'bg-white dark:bg-zinc-900' }"
+        class="w-full max-w-2xl overflow-clip rounded-xl ring-1 shadow-2xl ring-black/5 dark:ring-white/10 {transparencyEffects
+          ? 'bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl'
+          : 'bg-white dark:bg-zinc-900'}"
         transition:scale={{ duration: 100, start: 0.95, opacity: 0, easing: circOut }}
         onclick={(e: MouseEvent) => {
           e.stopPropagation();
         }}
         onkeydown={(e: KeyboardEvent) => {
-          if (e.key === 'Escape') {
+          if (e.key === "Escape") {
             commandPalleteOpen = false;
           }
         }}
         role="button"
-        tabindex="0">
-
+        tabindex="0"
+      >
         <div class="relative p-2 border-b border-zinc-900/5 dark:border-zinc-100/5">
-          <div class="absolute top-1/2 translate-y-[calc(-50%-3px)] scale-105 left-5 w-6 h-6 text-[1.3rem] text-zinc-900/40 dark:text-zinc-400/40 pointer-events-none">
+          <div
+            class="absolute top-1/2 translate-y-[calc(-50%-3px)] scale-105 left-5 w-6 h-6 text-[1.3rem] text-zinc-900/40 dark:text-zinc-400/40 pointer-events-none"
+          >
             <SearchIcon name="search" />
           </div>
           <input
@@ -354,42 +363,55 @@
           />
         </div>
 
-        <ul 
+        <ul
           bind:this={resultsList}
           class="overflow-y-auto max-h-96 text-base scroll-py-2 p-2 gap-0.5 flex flex-col"
         >
-          <Calculator 
-            searchTerm={searchTerm} 
-            isSelected={selectedIndex === 0} 
+          <Calculator
+            {searchTerm}
+            isSelected={selectedIndex === 0}
             onresult={(result) => (calculatorResult = result)}
           />
-          
+
           {#if combinedResults.length > 0}
-            {#each combinedResults as result, i (result.id)} 
+            {#each combinedResults as result, i (result.id)}
               {@const isSelected = selectedIndex === (calculatorResult ? i + 1 : i)}
-              {@const item = result.item} 
+              {@const item = result.item}
               <li>
-                {#if result.type === 'command'}
+                {#if result.type === "command"}
                   {@const staticItem = item as StaticCommandItem}
                   <button
                     class="w-full flex items-center px-2 py-1.5 rounded-lg select-none cursor-pointer group transition-colors duration-100 ring-0 dark:ring-zinc-600/50
-                    {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px] dark:shadow-sm' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+                    {isSelected
+                      ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px] dark:shadow-sm'
+                      : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                     onclick={() => executeItemAction(staticItem)}
                   >
-                    <div class="flex-none scale-90 w-8 h-8 text-xl flex items-center justify-center bg-linear-to-br {staticItem.category === 'navigation' ? 'from-[#FA5D5D] to-[#DC2F30]' : 'from-[#4FBBFE] to-[#2090F3]'} rounded-md text-white"><SearchIcon name={staticItem.icon} /></div>
+                    <div
+                      class="flex-none scale-90 w-8 h-8 text-xl flex items-center justify-center bg-linear-to-br {staticItem.category ===
+                      'navigation'
+                        ? 'from-[#FA5D5D] to-[#DC2F30]'
+                        : 'from-[#4FBBFE] to-[#2090F3]'} rounded-md text-white"
+                    >
+                      <SearchIcon name={staticItem.icon} />
+                    </div>
                     <span class="ml-4 text-lg truncate">
-                      <HighlightedText text={staticItem.text} term={searchTerm} matches={result.matches} />
+                      <HighlightedText
+                        text={staticItem.text}
+                        term={searchTerm}
+                        matches={result.matches}
+                      />
                     </span>
                   </button>
-                {:else if result.type === 'dynamic'}
+                {:else if result.type === "dynamic"}
                   {@const dynamicItem = item as IndexItem}
                   {@const RenderComponent = renderComponentMap[dynamicItem.renderComponentId]}
                   {#if RenderComponent}
-                    <RenderComponent 
-                      item={dynamicItem} 
-                      isSelected={isSelected}
-                      searchTerm={searchTerm} 
-                      matches={result.matches} 
+                    <RenderComponent
+                      item={dynamicItem}
+                      {isSelected}
+                      {searchTerm}
+                      matches={result.matches}
                       onclick={() => executeItemAction(dynamicItem)}
                       onkeydown={() => executeItemAction(dynamicItem)}
                       role="button"
@@ -397,22 +419,40 @@
                     />
                   {:else}
                     <button
-                      class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group 
-                      {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px]' : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
+                      class="w-full flex flex-col px-2 py-1.5 rounded-lg select-none cursor-pointer group
+                      {isSelected
+                        ? 'bg-zinc-900/5 dark:bg-white/10 text-zinc-900 dark:text-white dark:ring-[1px]'
+                        : 'hover:bg-zinc-500/5 dark:hover:bg-white/5 text-zinc-800 dark:text-zinc-200'}"
                       onclick={() => executeItemAction(dynamicItem)}
                     >
                       <div class="flex items-center w-full">
-                        <div class="flex-none w-8 h-8 text-xl flex items-center justify-center {isSelected ? 'text-zinc-900 dark:text-white' : 'text-zinc-600 dark:text-zinc-400'}"><SearchIcon name={iconForCategory(dynamicItem.category)} /></div>
+                        <div
+                          class="flex-none w-8 h-8 text-xl flex items-center justify-center {isSelected
+                            ? 'text-zinc-900 dark:text-white'
+                            : 'text-zinc-600 dark:text-zinc-400'}"
+                        >
+                          <SearchIcon name={iconForCategory(dynamicItem.category)} />
+                        </div>
                         <span class="ml-4 text-lg truncate">
-                          <HighlightedText text={dynamicItem.text} term={searchTerm} matches={result.matches} />
+                          <HighlightedText
+                            text={dynamicItem.text}
+                            term={searchTerm}
+                            matches={result.matches}
+                          />
                         </span>
                         <span class="flex-none ml-auto text-xs text-zinc-500 dark:text-zinc-400">
-                          {dynamicItem.category} 
+                          {dynamicItem.category}
                         </span>
                       </div>
                       {#if dynamicItem.content}
-                        <div class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start">
-                          <HighlightedText text={dynamicItem.content} term={searchTerm} matches={result.matches} />
+                        <div
+                          class="mt-1 ml-12 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2 text-start"
+                        >
+                          <HighlightedText
+                            text={dynamicItem.content}
+                            term={searchTerm}
+                            matches={result.matches}
+                          />
                         </div>
                       {/if}
                     </button>
@@ -423,7 +463,9 @@
           {:else if !calculatorResult}
             <div class="px-8 py-16 text-center text-zinc-900 dark:text-zinc-200 sm:px-16">
               {#if isLoading}
-                <div class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>
+                <div
+                  class="mx-auto w-8 h-8 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"
+                ></div>
                 <p class="mt-4 text-lg dark:text-zinc-300">Searching...</p>
               {:else}
                 <FolderOpenIcon class="mx-auto w-8 h-8" />
@@ -434,13 +476,15 @@
         </ul>
         <div class="px-3 py-2 w-full border-t border-zinc-900/5 dark:border-zinc-100/5 bg-white/5">
           {#if combinedResults.length > 0 || calculatorResult}
-            <div class="flex justify-between items-center h-7 text-sm text-zinc-500 dark:text-zinc-400">
+            <div
+              class="flex justify-between items-center h-7 text-sm text-zinc-500 dark:text-zinc-400"
+            >
               <div class="flex gap-4 items-center">
-                {@render Shortcut({ text: 'Navigate', keybind: ['↑', '↓']})}
+                {@render Shortcut({ text: "Navigate", keybind: ["↑", "↓"] })}
                 {#if calculatorResult && selectedIndex === 0}
-                {@render Shortcut({ text: 'Copy result', keybind: ['↵']})}
+                  {@render Shortcut({ text: "Copy result", keybind: ["↵"] })}
                 {:else}
-                {@render Shortcut({ text: 'Select', keybind: ['↵']})}
+                  {@render Shortcut({ text: "Select", keybind: ["↵"] })}
                 {/if}
               </div>
             </div>
@@ -451,11 +495,14 @@
   </div>
 {/if}
 
-{#snippet Shortcut({ text, keybind }: { text: string, keybind: string[] }) }
+{#snippet Shortcut({ text, keybind }: { text: string; keybind: string[] })}
   <div class="flex gap-2 items-center">
     <div class="flex gap-1 items-center">
       {#each keybind as key}
-        <kbd class="size-6 text-[0.9rem] flex justify-center items-center rounded-sm bg-zinc-100 dark:bg-zinc-100/10">{key}</kbd>
+        <kbd
+          class="size-6 text-[0.9rem] flex justify-center items-center rounded-sm bg-zinc-100 dark:bg-zinc-100/10"
+          >{key}</kbd
+        >
       {/each}
     </div>
     <span>{text}</span>

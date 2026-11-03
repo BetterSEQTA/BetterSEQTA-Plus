@@ -6,11 +6,10 @@ import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { convertTo12HourFormat } from "../convertTo12HourFormat";
 import { delay } from "../delay";
-import { settingsState } from "../listeners/SettingsState";
+import { settingsState } from "../listeners/settingsState";
 import stringToHTML from "../stringToHTML";
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
-import { CreateElement } from "@/seqta/utils/createEnable/CreateElement";
-import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
+import { CreateElement } from "@/seqta/utils/createEnable/createElement";
 import { setupTooltips } from "@/seqta/utils/tooltip";
 import { verboseInfo } from "@/utils/verboseLog";
 import { getUserInfo } from "@/seqta/utils/userInfo";
@@ -18,10 +17,9 @@ import {
   activeSubjectsFromLearnPayload,
   activeSubjectForAssessment,
   filterAssessmentsForActiveSubjects,
-  subjectsWithUpcomingAssessments,
 } from "@/plugins/built-in/assessmentsOverview/utils";
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
-import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
+import { fetchNoticesForDate } from "@/seqta/utils/notices/noticeHomeUi";
 import { lessonsSubtitleForViewDate } from "@/seqta/utils/loaders/timetableSubtitle";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import type {
@@ -90,16 +88,12 @@ export async function loadHomePage() {
         <div class="border upcoming-container">
           <div class="upcoming-title">
             <h2 class="home-subtitle">Upcoming Assessments</h2>
-            <div class="upcoming-filters" id="upcoming-filters"></div>
           </div>
           <div class="upcoming-items loading" id="upcoming-items">
           </div>
         </div>
         <div class="border notices-container">
-          <div style="display: flex; justify-content: space-between">
-            <h2 class="home-subtitle">Notices</h2>
-            <input type="date" />
-          </div>
+          <h2 class="home-subtitle">Notices</h2>
           <div class="notice-container upcoming-items loading" id="notice-container">
           </div>
         </div>
@@ -160,13 +154,12 @@ export async function loadHomePage() {
   );
 
   if (document.getElementById("notice-container")) {
-    setupNoticesSection({
-      containerId: "notice-container",
-      dateInput: 'input[type="date"]',
-      noticesUrl: `${location.origin}/seqta/student/load/notices?`,
+    void fetchNoticesForDate(
+      "notice-container",
+      TodayFormatted,
+      `${location.origin}/seqta/student/load/notices?`,
       labelTokens,
-      initialDate: TodayFormatted,
-    });
+    );
   }
 
   return homeTeardown;
@@ -191,8 +184,6 @@ async function renderHomeUpcomingAssessments() {
 
   upcomingItems.classList.add("loading");
   upcomingItems.innerHTML = "";
-  const filterContainer = document.getElementById("upcoming-filters");
-  if (filterContainer) filterContainer.innerHTML = "";
 
   const [assessments, classes] = await Promise.all([GetUpcomingAssessments(), GetActiveClasses()]);
 
@@ -603,17 +594,6 @@ async function CreateUpcomingSection(
     }
   }
 
-  const filterSubjects = subjectsWithUpcomingAssessments(assessments, activeSubjects).map(
-    (subject) => {
-      const colour = colours.find(
-        (c: SeqtaColourPref) => c.name === `timetable.subject.colour.${subject.code}`,
-      );
-      return { code: subject.code, colour: `--item-colour: ${colour?.value ?? "#8e8e8e"};` };
-    },
-  );
-
-  CreateFilters(filterSubjects);
-
   for (let i = 0; i < assessments.length; i++) {
     const element = assessments[i];
     if (!upcomingDates[element.due]) {
@@ -643,7 +623,6 @@ async function CreateUpcomingSection(
       upcomingitemcontainer!.append(assessmentDate);
     }
   }
-  FilterUpcomingAssessments(settingsState.subjectfilters);
 
   if (assessments.length === 0) {
     upcomingitemcontainer!.innerHTML = `
@@ -779,54 +758,6 @@ async function GetLessonColours() {
     console.error("[BetterSEQTA+] Failed to get lesson colours:", error);
     return [];
   }
-}
-
-function CreateFilters(subjects: { code: string; colour: string }[]) {
-  const filteroptions = { ...settingsState.subjectfilters };
-  const filterdiv = document.querySelector("#upcoming-filters");
-  if (!filterdiv) return;
-
-  filterdiv.innerHTML = "";
-  const activeCodes = new Set(subjects.map((s) => s.code));
-
-  for (const key of Object.keys(filteroptions)) {
-    if (!activeCodes.has(key)) {
-      delete filteroptions[key];
-    }
-  }
-
-  for (let i = 0; i < subjects.length; i++) {
-    const element = subjects[i];
-    if (!Object.hasOwn(filteroptions, element.code)) {
-      filteroptions[element.code] = true;
-    }
-    filterdiv!.append(
-      CreateSubjectFilter(element.code, element.colour, filteroptions[element.code]),
-    );
-  }
-
-  settingsState.subjectfilters = filteroptions;
-}
-
-function CreateSubjectFilter(subjectcode: string, itemcolour: string, checked: boolean) {
-  const label = CreateElement("label", "upcoming-checkbox-container");
-  label.innerText = subjectcode;
-  const input = CreateElement("input") as HTMLInputElement;
-  input.type = "checkbox";
-  input.checked = checked;
-  input.id = `filter-${subjectcode}`;
-  label.style.cssText = itemcolour;
-  const span = CreateElement("span", "upcoming-checkmark");
-  label.append(input, span);
-
-  input.addEventListener("change", function (change) {
-    const checked = (change.target as HTMLInputElement).checked;
-    const filters = { ...settingsState.subjectfilters };
-    filters[subjectcode] = checked;
-    settingsState.subjectfilters = filters;
-  });
-
-  return label;
 }
 
 function SetTimetableSubtitle() {

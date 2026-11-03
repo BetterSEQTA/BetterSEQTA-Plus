@@ -82,7 +82,7 @@ export const portalsJob: Job = {
       });
     }
 
-    verboseDebug(`[Portals job] Indexed ${items.length} portal entries.`);
+    verboseDebug(`[BetterSEQTA+] Portals job: Indexed ${items.length} portal entries.`);
     return items;
   },
 

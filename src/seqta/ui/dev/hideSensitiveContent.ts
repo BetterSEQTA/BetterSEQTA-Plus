@@ -106,12 +106,6 @@ const contentConfig: ContentConfig = {
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
     },
   },
-  upcomingCheckboxes: {
-    selector: ".upcoming-checkbox-container",
-    action: (element) => {
-      element.firstChild!.textContent = "SUBJ";
-    },
-  },
   dates: {
     selector: '.upcoming-date-title h5, input[type="date"]',
     action: (element) => {

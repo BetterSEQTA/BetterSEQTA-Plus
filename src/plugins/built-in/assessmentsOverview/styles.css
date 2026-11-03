@@ -45,6 +45,12 @@
   }
 }
 
+.bsplus-overview-static,
+.bsplus-overview-static * {
+  animation: none !important;
+  transition: none !important;
+}
+
 .bsplus-overview-delay-1 {
   animation-delay: 80ms;
 }

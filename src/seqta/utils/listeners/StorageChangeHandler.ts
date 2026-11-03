@@ -1,10 +1,9 @@
-import { settingsState } from "./SettingsState";
-import { updateAllColors } from "@/seqta/ui/colors/Manager";
-import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import { settingsState } from "./settingsState";
+import { updateAllColors } from "@/seqta/ui/colors/colorManager";
+import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
-import { FilterUpcomingAssessments } from "@/seqta/utils/FilterUpcomingAssessments";
-import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/LoadHomePage";
+import { registerHomeUpcomingSettingsListeners } from "@/seqta/utils/loaders/loadHomePage";
 import { scheduleMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { syncPerformanceModeEffects } from "@/seqta/utils/performanceMode";
@@ -34,9 +33,6 @@ export class StorageChangeHandler {
     );
     settingsState.register("performanceMode", () => syncPerformanceModeEffects());
     settingsState.register("performanceModePluginOverrides", () => syncPerformanceModeEffects());
-    settingsState.register("subjectfilters", (newValue) =>
-      FilterUpcomingAssessments(newValue as Record<string, boolean>),
-    );
     registerHomeUpcomingSettingsListeners();
     settingsState.register("iconOnlySidebar", (newValue) =>
       this.handleIconOnlySidebarChange(newValue as boolean | undefined),

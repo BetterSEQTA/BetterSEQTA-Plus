@@ -1,9 +1,14 @@
 <script lang="ts">
-  import { fade } from 'svelte/transition';
-  import { animate } from 'motion';
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState';
+  import { fade } from "svelte/transition";
+  import { animate } from "motion";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
-  let { onConfirm, onCancel, title, message }: {
+  let {
+    onConfirm,
+    onCancel,
+    title,
+    message,
+  }: {
     onConfirm: () => void;
     onCancel: () => void;
     title: string;
@@ -18,39 +23,41 @@
         modalElement,
         { scale: [0.9, 1], opacity: [0, 1] },
         {
-          type: 'spring',
+          type: "spring",
           stiffness: 300,
-          damping: 25
-        }
+          damping: 25,
+        },
       );
     }
   });
 </script>
 
-<div 
-  class="flex fixed inset-0 z-10000 justify-center items-center bg-black/50 {$settingsState.DarkMode ? 'dark' : ''}" 
+<div
+  class="flex fixed inset-0 z-10000 justify-center items-center bg-black/50 {$settingsState.DarkMode
+    ? 'dark'
+    : ''}"
   style="position: fixed; top: 0; left: 0; right: 0; bottom: 0;"
   onclick={(e) => {
     if (e.target === e.currentTarget) onCancel();
-  }} 
+  }}
   onkeydown={(e) => {
-    if (e.key === 'Escape') onCancel();
-  }} 
-  role="button" 
-  tabindex="-1" 
+    if (e.key === "Escape") onCancel();
+  }}
+  role="button"
+  tabindex="-1"
   transition:fade={{ duration: 150 }}
 >
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={modalElement}
-    class="p-4 mx-4 w-full max-w-md bg-white rounded-2xl shadow-2xl dark:bg-zinc-800" 
+    class="p-4 mx-4 w-full max-w-md bg-white rounded-2xl shadow-2xl dark:bg-zinc-800"
     onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
     <h2 class="mb-3 text-xl font-bold text-gray-900 dark:text-white">
       {title}
     </h2>
-    
+
     <div class="mb-6 text-lg text-gray-700 whitespace-pre-line dark:text-gray-300">
       {message}
     </div>
@@ -71,4 +78,3 @@
     </div>
   </div>
 </div>
-

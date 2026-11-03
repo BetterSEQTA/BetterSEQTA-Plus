@@ -1,9 +1,13 @@
 <script lang="ts">
   import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-  let { value, onChange, options }: {
-    value: string,
-    onChange: (newValue: string) => void,
-    options: Array<{ value: string, label: string }>
+  let {
+    value,
+    onChange,
+    options,
+  }: {
+    value: string;
+    onChange: (newValue: string) => void;
+    options: Array<{ value: string; label: string }>;
   } = $props();
 
   const listboxId = $props.id();
@@ -143,9 +147,7 @@
     --sel-bg: var(--theme-primary, #ffffff);
     --sel-surface: var(--theme-secondary, #e5e7eb);
 
-    --sel-menu-shadow:
-      0 10px 25px -5px rgb(0 0 0 / 0.25),
-      0 8px 10px -6px rgb(0 0 0 / 0.2);
+    --sel-menu-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.25), 0 8px 10px -6px rgb(0 0 0 / 0.2);
   }
 
   .select-trigger {

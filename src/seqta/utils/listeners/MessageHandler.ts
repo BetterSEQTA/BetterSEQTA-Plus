@@ -1,13 +1,13 @@
 import browser from "@/lib/browser";
 
 import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
-import { OpenMenuOptions } from "@/seqta/utils/openers/OpenMenuOptions";
+import { OpenMenuOptions } from "@/seqta/utils/openers/openMenuOptions";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 
 import sendThemeUpdate from "@/seqta/utils/sendThemeUpdate";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
 import type { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 
 let themeManagerPromise: Promise<ThemeManager> | null = null;
 
@@ -119,7 +119,7 @@ export class MessageHandler {
 
       case "OpenThemeCreator": {
         const themeID = request?.body?.themeID;
-        void import("@/plugins/built-in/themes/ThemeCreator").then(({ OpenThemeCreator }) => {
+        void import("@/plugins/built-in/themes/themeCreator").then(({ OpenThemeCreator }) => {
           void OpenThemeCreator(themeID ? String(themeID) : "");
         });
         closeExtensionPopup();
@@ -136,7 +136,7 @@ export class MessageHandler {
         return true;
 
       case "CloseThemeCreator":
-        void import("@/plugins/built-in/themes/ThemeCreator").then(({ CloseThemeCreator }) => {
+        void import("@/plugins/built-in/themes/themeCreator").then(({ CloseThemeCreator }) => {
           try {
             CloseThemeCreator();
             sendResponse({ status: "success" });

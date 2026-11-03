@@ -1,7 +1,7 @@
 <script lang="ts">
   import UsersIcon from "@lucide/svelte/icons/users";
   import { onMount } from "svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { syncCalendarSyncTheme } from "@/plugins/built-in/timetable/calendarSyncUi";
   import { loadSession } from "./rosterStore";
   import { openTimetableClassmatesOptInPopup } from "./openTimetableClassmatesPopup";

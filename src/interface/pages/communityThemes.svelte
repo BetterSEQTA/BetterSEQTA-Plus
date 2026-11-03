@@ -21,7 +21,8 @@
       <div class="inline-flex rounded-xl bg-zinc-200/80 p-1 dark:bg-zinc-800/80">
         <button
           type="button"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'browse'
+          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab ===
+          'browse'
             ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
           onclick={() => (communityState.innerTab = "browse")}
@@ -30,7 +31,8 @@
         </button>
         <button
           type="button"
-          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'mine'
+          class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab ===
+          'mine'
             ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
             : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
           onclick={() => (communityState.innerTab = "mine")}
@@ -40,7 +42,8 @@
         {#if communityState.isAdmin}
           <button
             type="button"
-            class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab === 'review'
+            class="rounded-lg px-4 py-2 text-sm font-medium transition-colors {communityState.innerTab ===
+            'review'
               ? 'bg-white text-zinc-900 shadow-sm dark:bg-zinc-700 dark:text-white'
               : 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
             onclick={() => (communityState.innerTab = "review")}
@@ -63,7 +66,9 @@
     </p>
   </div>
 
-  <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 px-6 py-6 dark:bg-zinc-900/40 md:px-8 lg:px-10">
+  <main
+    class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 px-6 py-6 dark:bg-zinc-900/40 md:px-8 lg:px-10"
+  >
     {#if communityState.innerTab === "browse"}
       <BrowsePanel {communityState} {searchTerm} />
     {:else if communityState.innerTab === "mine"}

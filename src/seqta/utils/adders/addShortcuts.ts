@@ -34,7 +34,7 @@ function createNewShortcut(link: string, icon: string, viewBox: string, title: s
   shortcutdiv.classList.add("shortcut");
 
   const image = stringToHTML(
-    `<svg style="width:39px;height:39px" viewBox="${viewBox}"><path fill="currentColor" d="${icon}" /></svg>`,
+    `<svg viewBox="${viewBox}" aria-hidden="true"><path fill="currentColor" d="${icon}" /></svg>`,
   ).firstChild;
   (image! as HTMLElement).classList.add("shortcuticondiv");
   const text = document.createElement("p");

@@ -1,4 +1,4 @@
-import { settingsState } from "../listeners/SettingsState";
+import { settingsState } from "../listeners/settingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import { animatePopupClose, animatePopupOpen } from "@/seqta/utils/popupAnimation";
 import { animate as motionAnimate, stagger } from "motion";

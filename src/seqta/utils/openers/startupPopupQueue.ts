@@ -1,21 +1,21 @@
-import { settingsState } from "../listeners/SettingsState";
-import { OpenWhatsNewPopup } from "./OpenWhatsNewPopup";
+import { settingsState } from "../listeners/settingsState";
+import { OpenWhatsNewPopup } from "./openWhatsNewPopup";
 import {
   fetchThemeOfTheMonth,
   OpenThemeOfTheMonthPopup,
   shouldShowThemeOfTheMonth,
-} from "./OpenThemeOfTheMonthPopup";
-import { maybeQueueFeedbackReplyPopup } from "./OpenFeedbackReplyPopup";
+} from "./openThemeOfTheMonthPopup";
+import { maybeQueueFeedbackReplyPopup } from "./openFeedbackReplyPopup";
 import {
   OpenCoursesAssessmentsFixPopup,
   shouldShowCoursesAssessmentsFixPopup,
-} from "./OpenCoursesAssessmentsFixPopup";
-import { cloudAuth } from "../CloudAuth";
+} from "./openCoursesAssessmentsFixPopup";
+import { cloudAuth } from "../cloudAuth";
 import {
   fetchTermsOfService,
   openTermsOfServicePopup,
   shouldShowTermsOfServicePopup,
-} from "./OpenTermsOfServicePopup";
+} from "./openTermsOfServicePopup";
 
 type QueueStep = (goNext: () => void) => void;
 

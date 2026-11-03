@@ -2,14 +2,17 @@
   import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
   import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
   import StarIcon from "@lucide/svelte/icons/star";
-  import { fade } from 'svelte/transition';
-  import type { ThemeCoverSlide } from '@/interface/types/Theme';
-  import emblaCarouselSvelte from 'embla-carousel-svelte';
-  import Autoplay from 'embla-carousel-autoplay';
+  import { fade } from "svelte/transition";
+  import type { ThemeCoverSlide } from "@/interface/types/theme";
+  import emblaCarouselSvelte from "embla-carousel-svelte";
+  import Autoplay from "embla-carousel-autoplay";
 
-  let { slides, setDisplayTheme }: {
+  let {
+    slides,
+    setDisplayTheme,
+  }: {
     slides: ThemeCoverSlide[];
-    setDisplayTheme: (theme: import('@/interface/types/Theme').Theme) => void;
+    setDisplayTheme: (theme: import("@/interface/types/theme").Theme) => void;
   } = $props();
   let emblaApi = $state();
 
@@ -37,24 +40,31 @@
 </script>
 
 {#if slides.length > 0}
-  <div class="relative w-full overflow-clip rounded-xl ring-1 ring-black/10 transition-opacity dark:ring-white/10" transition:fade>
+  <div
+    class="relative w-full overflow-clip rounded-xl ring-1 ring-black/10 transition-opacity dark:ring-white/10"
+    transition:fade
+  >
     <div
       class="w-full overflow-hidden"
       use:emblaCarouselSvelte={{ options, plugins }}
       onemblaInit={onInit}
     >
       <div class="flex">
-        {#each slides as slide (slide.imageUrl + slide.title + (slide.subtitle ?? ''))}
+        {#each slides as slide (slide.imageUrl + slide.title + (slide.subtitle ?? ""))}
           <div
             class="cover-slide relative isolate min-w-0 flex-[0_0_100%] cursor-pointer overflow-hidden"
             role="button"
             tabindex="0"
             onkeydown={(e) => {
-              if (e.key === 'Enter') setDisplayTheme(slide.openTheme);
+              if (e.key === "Enter") setDisplayTheme(slide.openTheme);
             }}
             onclick={() => setDisplayTheme(slide.openTheme)}
           >
-            <img src={slide.imageUrl} alt="" class="absolute inset-0 z-0 h-full w-full object-cover" />
+            <img
+              src={slide.imageUrl}
+              alt=""
+              class="absolute inset-0 z-0 h-full w-full object-cover"
+            />
             {#if slide.badgeFeatured === true}
               <div class="absolute top-4 left-4 z-2 pointer-events-none">
                 <span
@@ -72,7 +82,9 @@
                 <p class="text-lg font-medium text-white/95 mt-1 line-clamp-2">{slide.subtitle}</p>
               {/if}
               {#if slide.openTheme.author && !slide.subtitle}
-                <p class="text-sm text-white/90 mt-1 mb-1 line-clamp-1">By {slide.openTheme.author}</p>
+                <p class="text-sm text-white/90 mt-1 mb-1 line-clamp-1">
+                  By {slide.openTheme.author}
+                </p>
               {/if}
               {#if slide.openTheme.description && !slide.subtitle}
                 <p class="text-lg text-white line-clamp-3">{slide.openTheme.description}</p>
@@ -122,7 +134,7 @@
       rgb(0 0 0 / 8%) 72%,
       transparent 88%
     );
-    content: '';
+    content: "";
     pointer-events: none;
   }
 </style>

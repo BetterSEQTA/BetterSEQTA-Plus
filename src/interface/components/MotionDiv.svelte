@@ -1,15 +1,22 @@
 <script lang="ts">
-  import { onMount, onDestroy } from 'svelte';
-  import { animate as motionAnimate } from 'motion';
-  import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
+  import { onMount, onDestroy } from "svelte";
+  import { animate as motionAnimate } from "motion";
+  import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 
-  let { initial, animate, exit, transition, children, class: className }: { 
-    initial?: any, 
-    animate?: any, 
-    exit?: any, 
-    transition?: any, 
-    children?: any, 
-    class?: string 
+  let {
+    initial,
+    animate,
+    exit,
+    transition,
+    children,
+    class: className,
+  }: {
+    initial?: any;
+    animate?: any;
+    exit?: any;
+    transition?: any;
+    children?: any;
+    class?: string;
   } = $props();
 
   let divElement: HTMLElement;
@@ -18,12 +25,12 @@
     if (!divElement || !keyframe) return;
     if (keyframe.x != null) {
       divElement.style.transition =
-        'transform var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1))';
+        "transform var(--bs-motion-duration, 0.2s) var(--bs-motion-ease, cubic-bezier(0.22, 1, 0.36, 1))";
       const x = keyframe.x;
       divElement.style.transform =
-        typeof x === 'number' ? `translateX(${x}px)` : `translateX(${String(x)})`;
+        typeof x === "number" ? `translateX(${x}px)` : `translateX(${String(x)})`;
     }
-    if (typeof keyframe.opacity === 'number') {
+    if (typeof keyframe.opacity === "number") {
       divElement.style.opacity = String(keyframe.opacity);
     }
   };
@@ -37,34 +44,30 @@
 
       let finalKeyframe = { ...keyframe };
 
-      if (finalKeyframe.height === 'auto') {
+      if (finalKeyframe.height === "auto") {
         const prevHeight = divElement.style.height;
         const prevVisibility = divElement.style.visibility;
-        
-        divElement.style.height = 'auto';
-        divElement.style.visibility = 'hidden';
-        divElement.style.position = 'absolute';
-        
+
+        divElement.style.height = "auto";
+        divElement.style.visibility = "hidden";
+        divElement.style.position = "absolute";
+
         const autoHeight = divElement.offsetHeight;
-        
+
         divElement.style.height = prevHeight;
         divElement.style.visibility = prevVisibility;
-        divElement.style.position = '';
-        
+        divElement.style.position = "";
+
         finalKeyframe.height = `${autoHeight}px`;
       }
 
       const defaultSpringConfig = { stiffness: 250, damping: 25 };
 
-      const animation = motionAnimate(
-        [divElement],
-        finalKeyframe,
-        {
-          type: 'spring',
-          stiffness: transition?.stiffness || defaultSpringConfig.stiffness,
-          damping: transition?.damping || defaultSpringConfig.damping
-        }
-      );
+      const animation = motionAnimate([divElement], finalKeyframe, {
+        type: "spring",
+        stiffness: transition?.stiffness || defaultSpringConfig.stiffness,
+        damping: transition?.damping || defaultSpringConfig.damping,
+      });
       return animation;
     }
     return Promise.resolve();
@@ -78,7 +81,7 @@
       await playAnimation(animate);
     }
   });
-  
+
   $effect(() => {
     if (animate) {
       playAnimation(animate);
@@ -92,7 +95,11 @@
   });
 </script>
 
-<div class={className} bind:this={divElement} style={fullMotionEffectsEnabled() ? 'will-change: transform, opacity;' : undefined}>
+<div
+  class={className}
+  bind:this={divElement}
+  style={fullMotionEffectsEnabled() ? "will-change: transform, opacity;" : undefined}
+>
   {#if children}
     {@render children()}
   {/if}

@@ -1,6 +1,9 @@
 <script lang="ts">
   import XIcon from "@lucide/svelte/icons/x";
-  let { onclick, label = "Close" }: {
+  let {
+    onclick,
+    label = "Close",
+  }: {
     onclick: () => void;
     label?: string;
   } = $props();

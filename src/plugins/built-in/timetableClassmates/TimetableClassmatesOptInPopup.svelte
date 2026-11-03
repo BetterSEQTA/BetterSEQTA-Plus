@@ -2,7 +2,7 @@
   import CircleCheckIcon from "@lucide/svelte/icons/circle-check";
   import { onMount } from "svelte";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
-  import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth, type CloudUser } from "@/seqta/utils/cloudAuth";
   import { ACCOUNTS_BASE } from "./constants";
   import { markResumeOptInAfterCloudLogin } from "./optInResume";
   import { registerOptIn } from "./syncOrchestrator";
@@ -50,7 +50,9 @@
     return null;
   }
 
-  const canSubmit = $derived(agreeShare && agreeJoin && cloudLoggedIn && !busy && $accountsAvailability.available);
+  const canSubmit = $derived(
+    agreeShare && agreeJoin && cloudLoggedIn && !busy && $accountsAvailability.available,
+  );
   const checksDisabled = $derived(busy || !cloudLoggedIn);
 
   async function signInWithCloud() {

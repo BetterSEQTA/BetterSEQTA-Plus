@@ -8,10 +8,34 @@
     icon: OverviewIcon;
     skeletonCount: number;
   }[] = [
-    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: STATUS_COLUMN_ICONS.UPCOMING, skeletonCount: 3 },
-    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: STATUS_COLUMN_ICONS.DUE_SOON, skeletonCount: 2 },
-    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: STATUS_COLUMN_ICONS.OVERDUE, skeletonCount: 1 },
-    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: STATUS_COLUMN_ICONS.MARKS_RELEASED, skeletonCount: 4 },
+    {
+      key: "UPCOMING",
+      title: "Upcoming",
+      className: "column-upcoming",
+      icon: STATUS_COLUMN_ICONS.UPCOMING,
+      skeletonCount: 3,
+    },
+    {
+      key: "DUE_SOON",
+      title: "Due Soon",
+      className: "column-due-soon",
+      icon: STATUS_COLUMN_ICONS.DUE_SOON,
+      skeletonCount: 2,
+    },
+    {
+      key: "OVERDUE",
+      title: "Overdue",
+      className: "column-overdue",
+      icon: STATUS_COLUMN_ICONS.OVERDUE,
+      skeletonCount: 1,
+    },
+    {
+      key: "MARKS_RELEASED",
+      title: "Marked",
+      className: "column-marked",
+      icon: STATUS_COLUMN_ICONS.MARKS_RELEASED,
+      skeletonCount: 4,
+    },
   ];
 </script>
 

@@ -1,5 +1,5 @@
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { renderAnalyticsPage } from "./ui";
 

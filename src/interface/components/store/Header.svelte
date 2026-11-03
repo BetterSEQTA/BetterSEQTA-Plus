@@ -7,7 +7,7 @@
   import MotionDiv from "../MotionDiv.svelte";
   import PlainCloseButton from "../PlainCloseButton.svelte";
   import CloudHeader from "./CloudHeader.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   type SettingsPage = "settings" | "themes" | "backgrounds";
 
@@ -95,7 +95,9 @@
     >
       <label class="relative block w-40 md:w-48 xl:w-56">
         <span class="sr-only">Search {activePage}</span>
-        <SearchIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+        <SearchIcon
+          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+        />
         <input
           type="search"
           placeholder={activePage === "themes" ? "Search themes" : "Search backgrounds"}
@@ -112,9 +114,14 @@
     {/if}
 
     {#if onToggleSize}
-      <button type="button" onclick={onToggleSize}
+      <button
+        type="button"
+        onclick={onToggleSize}
         class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-white"
-        aria-label="Collapse settings" title="Collapse settings" aria-expanded="true">
+        aria-label="Collapse settings"
+        title="Collapse settings"
+        aria-expanded="true"
+      >
         <Minimize2Icon size="1em" class="text-2xl" />
       </button>
     {/if}

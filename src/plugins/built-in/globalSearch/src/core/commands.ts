@@ -1,7 +1,7 @@
 import type { SearchIconName } from "./searchIcons";
 import type { HomeTimetableLesson } from "@/seqta/utils/loaders/homePageTypes";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
+import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 export interface BaseCommandItem {

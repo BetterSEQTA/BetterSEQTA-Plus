@@ -1,6 +1,6 @@
 import { unmount } from "svelte";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { themeBuilderPanel } from "@/interface/hooks/themeBuilderPanel.svelte";
 import {
   clearThemeCreatorSession,

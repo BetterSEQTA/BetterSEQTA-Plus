@@ -1,4 +1,4 @@
-import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/settingsState";
 import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "@/lib/browser";

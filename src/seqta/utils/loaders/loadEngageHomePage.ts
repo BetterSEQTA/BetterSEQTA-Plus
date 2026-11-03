@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-static";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { renderShortcuts } from "@/seqta/utils/render/renderShortcuts";
@@ -18,7 +18,7 @@ import {
   weekRangeContaining,
 } from "@/seqta/utils/loaders/engageParentTimetable";
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
-import { setupNoticesSection } from "@/seqta/utils/notices/noticeHomeUi";
+import { fetchNoticesForDate } from "@/seqta/utils/notices/noticeHomeUi";
 
 export function updateEngageHomeMenuActive(isHome: boolean): void {
   const home = document.getElementById("homebutton");
@@ -204,7 +204,6 @@ function bindEngageTimetableUi(): void {
 }
 
 const ENGAGE_NOTICE_CONTAINER_ID = "engage-notice-container";
-const ENGAGE_NOTICES_DATE_ID = "engage-notices-date";
 
 async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
   const noticeContainer = document.getElementById(ENGAGE_NOTICE_CONTAINER_ID);
@@ -229,22 +228,12 @@ async function initEngageNoticesUi(todayFormatted: string): Promise<void> {
     `${location.origin}/seqta/parent/load/notices`,
   );
 
-  const cleanup = setupNoticesSection({
-    containerId: ENGAGE_NOTICE_CONTAINER_ID,
-    dateInput: `#${ENGAGE_NOTICES_DATE_ID}`,
-    noticesUrl: `${location.origin}/seqta/parent/load/notices`,
+  await fetchNoticesForDate(
+    ENGAGE_NOTICE_CONTAINER_ID,
+    todayFormatted,
+    `${location.origin}/seqta/parent/load/notices`,
     labelTokens,
-    initialDate: todayFormatted,
-  });
-  engageMergeNoticeCleanup(cleanup);
-}
-
-function engageMergeNoticeCleanup(noticeCleanup: () => void): void {
-  const prev = engageListenersCleanup;
-  engageListenersCleanup = () => {
-    prev?.();
-    noticeCleanup();
-  };
+  );
 }
 
 function showEngageTimetableError(message: string): void {
@@ -308,10 +297,7 @@ export async function loadEngageHomePage(): Promise<void> {
             <div class="day-container loading" id="engage-day-container"></div>
           </div>
           <div class="border notices-container">
-            <div style="display: flex; justify-content: space-between">
-              <h2 class="home-subtitle">Notices</h2>
-              <input type="date" id="engage-notices-date" />
-            </div>
+            <h2 class="home-subtitle">Notices</h2>
             <div class="notice-container upcoming-items loading" id="engage-notice-container"></div>
           </div>
         </div>

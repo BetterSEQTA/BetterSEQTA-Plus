@@ -1,90 +1,102 @@
 <script lang="ts">
   import UploadIcon from "@lucide/svelte/icons/upload";
-  import localforage from 'localforage'
-  import { onMount } from 'svelte'
+  import localforage from "localforage";
+  import { onMount } from "svelte";
 
-  let fileInput = $state<HTMLInputElement | undefined>(undefined)
-  let dragging = $state(false)
-  let filename = $state<string | undefined>(undefined)
-  let durationText = $state<string | undefined>(undefined)
+  let fileInput = $state<HTMLInputElement | undefined>(undefined);
+  let dragging = $state(false);
+  let filename = $state<string | undefined>(undefined);
+  let durationText = $state<string | undefined>(undefined);
 
   const store = localforage.createInstance({
-    name: 'background-music-store',
-    storeName: 'music',
-  })
+    name: "background-music-store",
+    storeName: "music",
+  });
 
   async function loadExisting() {
-    const name = await store.getItem<string>('audio-name')
-    filename = name ?? undefined
+    const name = await store.getItem<string>("audio-name");
+    filename = name ?? undefined;
   }
 
-  onMount(() => { loadExisting() })
+  onMount(() => {
+    loadExisting();
+  });
 
-  function triggerSelect() { fileInput?.click() }
+  function triggerSelect() {
+    fileInput?.click();
+  }
 
   async function handleFiles(files: FileList | null) {
-    const file = files?.[0]
-    if (!file) return
-    const isSupported = file.type === 'audio/wav' || file.type === 'audio/mpeg' || 
-                       file.name.toLowerCase().endsWith('.wav') || file.name.toLowerCase().endsWith('.mp3')
+    const file = files?.[0];
+    if (!file) return;
+    const isSupported =
+      file.type === "audio/wav" ||
+      file.type === "audio/mpeg" ||
+      file.name.toLowerCase().endsWith(".wav") ||
+      file.name.toLowerCase().endsWith(".mp3");
     if (!isSupported) {
-      alert('Please select a .wav or .mp3 audio file')
-      return
+      alert("Please select a .wav or .mp3 audio file");
+      return;
     }
 
-    await store.setItem('audio-blob', file)
-    await store.setItem('audio-name', file.name)
-    filename = file.name
+    await store.setItem("audio-blob", file);
+    await store.setItem("audio-name", file.name);
+    filename = file.name;
 
     try {
-      const url = URL.createObjectURL(file)
-      const audio = new Audio(url)
+      const url = URL.createObjectURL(file);
+      const audio = new Audio(url);
       await new Promise<void>((resolve, reject) => {
-        audio.onloadedmetadata = () => resolve()
-        audio.onerror = () => reject()
-      })
+        audio.onloadedmetadata = () => resolve();
+        audio.onerror = () => reject();
+      });
       if (!isNaN(audio.duration) && audio.duration !== Infinity) {
-        const minutes = Math.floor(audio.duration / 60)
-        const seconds = Math.round(audio.duration % 60)
-        durationText = `${minutes}:${seconds.toString().padStart(2, '0')}`
+        const minutes = Math.floor(audio.duration / 60);
+        const seconds = Math.round(audio.duration % 60);
+        durationText = `${minutes}:${seconds.toString().padStart(2, "0")}`;
       } else {
-        durationText = undefined
+        durationText = undefined;
       }
-      URL.revokeObjectURL(url)
+      URL.revokeObjectURL(url);
     } catch {
-      durationText = undefined
+      durationText = undefined;
     }
 
-    window.dispatchEvent(new Event('betterseqta-background-music-updated'))
+    window.dispatchEvent(new Event("betterseqta-background-music-updated"));
   }
 
-  function onFileChange() { handleFiles(fileInput?.files || null) }
+  function onFileChange() {
+    handleFiles(fileInput?.files || null);
+  }
 
   function onDrop(event: DragEvent) {
-    event.preventDefault()
-    dragging = false
-    handleFiles(event.dataTransfer?.files || null)
+    event.preventDefault();
+    dragging = false;
+    handleFiles(event.dataTransfer?.files || null);
   }
 
   async function removeAudio() {
-    await store.removeItem('audio-blob')
-    await store.removeItem('audio-name')
-    filename = undefined
-    durationText = undefined
-    window.dispatchEvent(new Event('betterseqta-background-music-stop'))
+    await store.removeItem("audio-blob");
+    await store.removeItem("audio-name");
+    filename = undefined;
+    durationText = undefined;
+    window.dispatchEvent(new Event("betterseqta-background-music-stop"));
   }
 </script>
 
 <div
   class="relative cursor-pointer select-none"
   onclick={() => triggerSelect()}
-  ondragover={(e) => { e.stopPropagation(); dragging = true }}
-  ondragleave={() => dragging = false}
+  ondragover={(e) => {
+    e.stopPropagation();
+    dragging = true;
+  }}
+  ondragleave={() => (dragging = false)}
   ondrop={onDrop}
   onkeydown={(e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault()
-      triggerSelect()
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      triggerSelect();
     }
   }}
   role="button"
@@ -99,21 +111,30 @@
         </div>
         <button
           class="flex justify-center items-center m-1 text-lg dark:text-white size-7"
-          onclick={(e) => { e.stopPropagation(); removeAudio() }}
-          aria-label="Remove audio"
-        >&#215;</button>
+          onclick={(e) => {
+            e.stopPropagation();
+            removeAudio();
+          }}
+          aria-label="Remove audio">&#215;</button
+        >
       </div>
     {:else}
-      <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap">
+      <div
+        class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap"
+      >
         <UploadIcon size="1em" class="text-lg" />
         <span>Upload audio</span>
       </div>
     {/if}
   </div>
-  <input type="file" accept="audio/wav,audio/mpeg" class="hidden" bind:this={fileInput} onchange={onFileChange} />
+  <input
+    type="file"
+    accept="audio/wav,audio/mpeg"
+    class="hidden"
+    bind:this={fileInput}
+    onchange={onFileChange}
+  />
   {#if dragging}
     <div class="absolute inset-0 rounded-lg bg-zinc-200/40 dark:bg-zinc-700/40"></div>
   {/if}
 </div>
-
-

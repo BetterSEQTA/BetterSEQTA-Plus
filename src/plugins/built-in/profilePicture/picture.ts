@@ -1,6 +1,6 @@
 import localforage from "localforage";
 import browser from "@/lib/browser";
-import type { CloudUser } from "@/seqta/utils/CloudAuth";
+import type { CloudUser } from "@/seqta/utils/cloudAuth";
 import { defaultAccountsPfpUrl, resolveCloudPfp, revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
 
 export const REVISION_KEY = "profile_picture_revision";

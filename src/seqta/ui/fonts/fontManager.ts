@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { FONT_PRESETS, getFontPreset, type FontPreset } from "./presets";
 
 const FONT_STYLE_ID = "betterseqta-font-override";

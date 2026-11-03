@@ -7,7 +7,7 @@
     getThermoscorePercent,
     readStoredList,
   } from "./utils";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
   import CalendarDaysIcon from "@lucide/svelte/icons/calendar-days";
@@ -41,11 +41,36 @@
   const COMPLETED_ASSESSMENTS_KEY = "betterseqta-completed-assessments";
 
   const STATUS_COLUMNS: Column[] = [
-    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: STATUS_COLUMN_ICONS.UPCOMING },
-    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: STATUS_COLUMN_ICONS.DUE_SOON },
-    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: STATUS_COLUMN_ICONS.OVERDUE },
-    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: STATUS_COLUMN_ICONS.SUBMITTED },
-    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: STATUS_COLUMN_ICONS.MARKS_RELEASED },
+    {
+      key: "UPCOMING",
+      title: "Upcoming",
+      className: "column-upcoming",
+      icon: STATUS_COLUMN_ICONS.UPCOMING,
+    },
+    {
+      key: "DUE_SOON",
+      title: "Due Soon",
+      className: "column-due-soon",
+      icon: STATUS_COLUMN_ICONS.DUE_SOON,
+    },
+    {
+      key: "OVERDUE",
+      title: "Overdue",
+      className: "column-overdue",
+      icon: STATUS_COLUMN_ICONS.OVERDUE,
+    },
+    {
+      key: "SUBMITTED",
+      title: "Submitted",
+      className: "column-submitted",
+      icon: STATUS_COLUMN_ICONS.SUBMITTED,
+    },
+    {
+      key: "MARKS_RELEASED",
+      title: "Marked",
+      className: "column-marked",
+      icon: STATUS_COLUMN_ICONS.MARKS_RELEASED,
+    },
   ];
 
   const isEngage = isSeqtaEngageExperience();
@@ -147,7 +172,11 @@
       if (hiddenIds.includes(String(a.id))) return false;
       if (subjectFilters[a.code] === false) return false;
       if (currentFilters.subject !== "all" && a.code !== currentFilters.subject) return false;
-      if (isEngage && currentFilters.student !== "all" && String(a.studentId) !== currentFilters.student) {
+      if (
+        isEngage &&
+        currentFilters.student !== "all" &&
+        String(a.studentId) !== currentFilters.student
+      ) {
         return false;
       }
       return true;
@@ -231,7 +260,15 @@
     if (overdueCount === 0 && dueSoonCount === 0) {
       setTimeout(() => {
         const end = Date.now() + 100;
-        const side = { particleCount: 17, spread: 65, startVelocity: 40, scalar: 2, gravity: 2, decay: 0.97, ticks: 300 };
+        const side = {
+          particleCount: 17,
+          spread: 65,
+          startVelocity: 40,
+          scalar: 2,
+          gravity: 2,
+          decay: 0.97,
+          ticks: 300,
+        };
         const frame = () => {
           fireConfetti({ ...side, angle: 60, drift: 0.8, origin: { x: 0, y: 1 } });
           fireConfetti({ ...side, angle: 120, drift: -0.8, origin: { x: 1, y: 1 } });
@@ -297,7 +334,11 @@
           <option value={subject.code}>{subject.code} - {subject.title}</option>
         {/each}
       </select>
-      <select class="filter-select" bind:value={currentFilters.sortBy} title="Group by - columns change based on this">
+      <select
+        class="filter-select"
+        bind:value={currentFilters.sortBy}
+        title="Group by - columns change based on this"
+      >
         <option value="due">Group: Status</option>
         <option value="year">Group: Year</option>
         <option value="subject">Group: Subject</option>
@@ -328,7 +369,10 @@
             {#each hiddenSubjects as subject}
               <span class="visibility-chip">
                 {subject.code}
-                <button class="visibility-unhide" onclick={() => setSubjectVisible(subject.code, true)}>Show</button>
+                <button
+                  class="visibility-unhide"
+                  onclick={() => setSubjectVisible(subject.code, true)}>Show</button
+                >
               </span>
             {/each}
           </div>
@@ -341,7 +385,9 @@
             {#each hiddenAssessmentsWithInfo as assessment}
               <span class="visibility-chip">
                 {assessment.title}
-                <button class="visibility-unhide" onclick={() => unhideAssessment(assessment.id)}>Show</button>
+                <button class="visibility-unhide" onclick={() => unhideAssessment(assessment.id)}
+                  >Show</button
+                >
               </span>
             {/each}
           </div>
@@ -364,12 +410,12 @@
               <div class="kanban-column {column.className}">
                 <div class="column-header">
                   <div class="column-title">
-                  <span class="column-title-main">
-                    <column.icon size={18} class="bsplus-overview-icon" />
-                    {column.title}
-                  </span>
-                  <span class="column-count">{board.statusGroups[column.key].length}</span>
-                </div>
+                    <span class="column-title-main">
+                      <column.icon size={18} class="bsplus-overview-icon" />
+                      {column.title}
+                    </span>
+                    <span class="column-count">{board.statusGroups[column.key].length}</span>
+                  </div>
                 </div>
                 <div class="column-cards" id="{column.key.toLowerCase()}-cards">
                   {#each board.statusGroups[column.key] as assessment}
@@ -377,7 +423,7 @@
                     {@const dueDateClass = getDueDateClass(assessment)}
                     {@const isCompleted = completedIds.includes(assessment.id)}
                     {@const color = data.colors[assessment.code] || "#6366f1"}
-                    <div 
+                    <div
                       class="assessment-card"
                       data-subject={assessment.code}
                       data-status={status}
@@ -385,7 +431,7 @@
                       onclick={(e) => handleCardClick(assessment, e)}
                       role="button"
                       tabindex="0"
-                      onkeydown={(e) => e.key === 'Enter' && handleCardClick(assessment, e)}
+                      onkeydown={(e) => e.key === "Enter" && handleCardClick(assessment, e)}
                     >
                       <div class="card-labels">
                         {#if isEngage && assessment.studentName}
@@ -393,37 +439,58 @@
                         {/if}
                         <span class="card-label label-subject">{assessment.code}</span>
                         {#if assessment.submitted}
-                          <span class="card-label label-submitted" style="background: #10b981; color: white;">Submitted</span>
+                          <span
+                            class="card-label label-submitted"
+                            style="background: #10b981; color: white;">Submitted</span
+                          >
                         {/if}
                         {#if isCompleted && status === "MARKS_RELEASED" && !assessmentHasGradeDisplay(assessment)}
-                          <span class="card-label label-completed" style="background: #059669; color: white;">Completed</span>
+                          <span
+                            class="card-label label-completed"
+                            style="background: #059669; color: white;">Completed</span
+                          >
                         {/if}
                       </div>
 
                       {#if status !== "MARKS_RELEASED" || isCompleted}
                         <div class="card-menu">
-                          <button 
-                            class="menu-button" 
+                          <button
+                            class="menu-button"
                             data-assessment-id={assessment.id}
                             onclick={(e) => toggleMenu(assessment.id, e)}
                             aria-label="Open menu"
                           >
                             <EllipsisVerticalIcon size={16} class="bsplus-overview-icon" />
                           </button>
-                          <div class="menu-dropdown" style="display: {openMenuId === assessment.id ? 'block' : 'none'};">
+                          <div
+                            class="menu-dropdown"
+                            style="display: {openMenuId === assessment.id ? 'block' : 'none'};"
+                          >
                             {#if status !== "MARKS_RELEASED"}
-                              <button class="menu-item mark-completed" onclick={() => markAssessmentCompleted(assessment)}>
+                              <button
+                                class="menu-item mark-completed"
+                                onclick={() => markAssessmentCompleted(assessment)}
+                              >
                                 Mark as Completed
                               </button>
                             {:else if isCompleted}
-                              <button class="menu-item mark-not-completed" onclick={() => unmarkAssessmentCompleted(assessment)}>
+                              <button
+                                class="menu-item mark-not-completed"
+                                onclick={() => unmarkAssessmentCompleted(assessment)}
+                              >
                                 Mark as Not Complete
                               </button>
                             {/if}
-                            <button class="menu-item menu-item-hide" onclick={() => hideAssessment(assessment)}>
+                            <button
+                              class="menu-item menu-item-hide"
+                              onclick={() => hideAssessment(assessment)}
+                            >
                               Hide assessment
                             </button>
-                            <button class="menu-item menu-item-hide" onclick={() => hideSubject(assessment.code)}>
+                            <button
+                              class="menu-item menu-item-hide"
+                              onclick={() => hideSubject(assessment.code)}
+                            >
                               Hide subject ({assessment.code})
                             </button>
                           </div>
@@ -436,7 +503,10 @@
                         <div class="assessment-meta">
                           <div class="due-date {dueDateClass}">
                             <CalendarDaysIcon size={14} class="bsplus-overview-icon" />
-                            {formatDate(assessment.due || assessment.date || assessment.dueDate || "", assessment.submitted)}
+                            {formatDate(
+                              assessment.due || assessment.date || assessment.dueDate || "",
+                              assessment.submitted,
+                            )}
                           </div>
                         </div>
                       {/if}
@@ -445,7 +515,10 @@
                         {@const gradeLabel = getDisplayGrade(assessment, isLetterGradeMode())}
                         {@const barPercent = getThermoscorePercent(assessment) ?? 0}
                         <div class="card-footer">
-                          <div class="Thermoscore__Thermoscore___WFpL3" style="--fill-colour: {color}">
+                          <div
+                            class="Thermoscore__Thermoscore___WFpL3"
+                            style="--fill-colour: {color}"
+                          >
                             <div style="width: {barPercent}%" class="Thermoscore__fill___ojxDI">
                               <div title={gradeLabel} class="Thermoscore__text___XSR_M">
                                 {gradeLabel}

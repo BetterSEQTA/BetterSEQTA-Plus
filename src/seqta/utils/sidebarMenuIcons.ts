@@ -1,11 +1,11 @@
 import { pageIcon } from "@/seqta/utils/pageIcons";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const BETTERSEQTA_ICON_ATTR = "data-betterseqta-icon";

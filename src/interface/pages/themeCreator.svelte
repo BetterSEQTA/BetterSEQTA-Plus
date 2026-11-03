@@ -5,61 +5,58 @@
   import CircleQuestionMarkIcon from "@lucide/svelte/icons/circle-question-mark";
   import PlusIcon from "@lucide/svelte/icons/plus";
   import XIcon from "@lucide/svelte/icons/x";
-  import { onMount } from 'svelte';
-  import { slide } from 'svelte/transition';
-  import { fade } from 'svelte/transition';
+  import { onMount } from "svelte";
+  import { slide } from "svelte/transition";
+  import { fade } from "svelte/transition";
 
-  import {
-    type LoadedCustomTheme,
-    shouldForceThemeAppearance,
-  } from '@/types/CustomThemes'
+  import { type LoadedCustomTheme, shouldForceThemeAppearance } from "@/types/customThemes";
 
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
-  import Divider from '@/interface/components/themeCreator/divider.svelte'
-  import Switch from '@/interface/components/Switch.svelte'
-  import Button from '@/interface/components/Button.svelte'
-  import Slider from '@/interface/components/Slider.svelte'
-  import ColourPicker from '../components/ColourPicker.svelte'
-  import CodeEditor from '../components/CodeEditor.svelte'
+  import Divider from "@/interface/components/themeCreator/divider.svelte";
+  import Switch from "@/interface/components/Switch.svelte";
+  import Button from "@/interface/components/Button.svelte";
+  import Slider from "@/interface/components/Slider.svelte";
+  import ColourPicker from "../components/ColourPicker.svelte";
+  import CodeEditor from "../components/CodeEditor.svelte";
 
   import {
     handleImageUpload,
     handleRemoveImage,
     handleImageVariableChange,
-  } from '../utils/themeImageHandlers';
-  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
-  import { themeUpdates } from '../hooks/ThemeUpdates'
-  import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
-  import { submitLocalThemeToCommunity } from '@/seqta/utils/customThemes/submitLocalTheme'
-  import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
-  import { cloudAuth } from '@/seqta/utils/CloudAuth'
-  import MoonIcon from '@lucide/svelte/icons/moon'
-  import SunIcon from '@lucide/svelte/icons/sun'
-  import SidebarAppearance from '@/interface/components/SidebarAppearance.svelte'
-  import { FONT_PRESETS, DEFAULT_FONT_ID } from '@/seqta/ui/fonts/presets'
-  import { applySelectedFont, ensureFontPickerFontsLoaded } from '@/seqta/ui/fonts/Manager'
+  } from "../utils/themeImageHandlers";
+  import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
+  import { themeUpdates } from "../hooks/themeUpdates";
+  import { CloseThemeCreator } from "@/plugins/built-in/themes/themeCreator";
+  import { submitLocalThemeToCommunity } from "@/seqta/utils/customThemes/submitLocalTheme";
+  import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import MoonIcon from "@lucide/svelte/icons/moon";
+  import SunIcon from "@lucide/svelte/icons/sun";
+  import SidebarAppearance from "@/interface/components/SidebarAppearance.svelte";
+  import { FONT_PRESETS, DEFAULT_FONT_ID } from "@/seqta/ui/fonts/presets";
+  import { applySelectedFont, ensureFontPickerFontsLoaded } from "@/seqta/ui/fonts/fontManager";
   import {
     applySidebarSettings,
     defaultThemeCreatorMeta,
     mergeThemeWithCreatorMeta,
     snapshotSidebarSettings,
-  } from '@/interface/utils/themeCreatorMeta'
-  import { ensureThemeCoverImage } from '@/interface/utils/themePlaceholderCover'
-  import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
-  import type { ThemeCreatorMeta } from '@/types/CustomThemes'
+  } from "@/interface/utils/themeCreatorMeta";
+  import { ensureThemeCoverImage } from "@/interface/utils/themePlaceholderCover";
+  import ThemeBlobImage from "@/interface/components/themes/ThemeBlobImage.svelte";
+  import type { ThemeCreatorMeta } from "@/types/customThemes";
 
-  const { themeID }: { themeID: string } = $props()
+  const { themeID }: { themeID: string } = $props();
   const themeManager = ThemeManager.getInstance();
 
   let theme = $state<LoadedCustomTheme>({
     id: crypto.randomUUID(),
-    name: '',
-    description: '',
-    defaultColour: 'blue',
+    name: "",
+    description: "",
+    defaultColour: "blue",
     CanChangeColour: true,
     allowBackgrounds: true,
-    CustomCSS: '',
+    CustomCSS: "",
     CustomImages: [],
     coverImage: null,
     isEditable: true,
@@ -67,8 +64,8 @@
     forceTheme: undefined,
     forceDark: undefined,
     adaptiveCssVariables: [],
-  })
-  let closedAccordions = $state<string[]>([])
+  });
+  let closedAccordions = $state<string[]>([]);
   let themeLoaded = $state(false);
   let codeEditorFullscreen = $state(false);
   let communityBusy = $state(false);
@@ -94,27 +91,27 @@
     composeVisuals = true;
   }
 
-  function imageUsage(imageId: string): 'decorative' | 'page-background' | 'cover' {
-    if (creatorMeta.pageBackgroundImageId === imageId) return 'page-background';
+  function imageUsage(imageId: string): "decorative" | "page-background" | "cover" {
+    if (creatorMeta.pageBackgroundImageId === imageId) return "page-background";
     const image = theme.CustomImages.find((item) => item.id === imageId);
-    if (image && theme.coverImage === image.blob) return 'cover';
-    return 'decorative';
+    if (image && theme.coverImage === image.blob) return "cover";
+    return "decorative";
   }
 
-  function setImageUsage(imageId: string, usage: 'decorative' | 'page-background' | 'cover') {
+  function setImageUsage(imageId: string, usage: "decorative" | "page-background" | "cover") {
     const image = theme.CustomImages.find((item) => item.id === imageId);
     if (!image) return;
 
     let nextMeta = { ...creatorMeta };
     let coverImage = theme.coverImage;
 
-    if (usage === 'page-background') {
+    if (usage === "page-background") {
       nextMeta = { ...nextMeta, pageBackgroundImageId: imageId };
     } else if (nextMeta.pageBackgroundImageId === imageId) {
       nextMeta = { ...nextMeta, pageBackgroundImageId: null };
     }
 
-    if (usage === 'cover') {
+    if (usage === "cover") {
       coverImage = image.blob;
     } else if (coverImage === image.blob) {
       coverImage = null;
@@ -143,12 +140,12 @@
 
   function toggleAccordion(title: string, e: MouseEvent | KeyboardEvent) {
     // if the target is the fullscreen button return
-    if (e.target instanceof Element && e.target.closest('.fullscreen-toggle')) {
+    if (e.target instanceof Element && e.target.closest(".fullscreen-toggle")) {
       return;
     }
 
     if (closedAccordions.includes(title)) {
-      closedAccordions = closedAccordions.filter(t => t !== title);
+      closedAccordions = closedAccordions.filter((t) => t !== title);
     } else {
       closedAccordions = [...closedAccordions, title];
     }
@@ -197,9 +194,7 @@
       theme = {
         ...tempTheme,
         adaptiveCssVariables: tempTheme.adaptiveCssVariables ?? [],
-        forceTheme:
-          tempTheme.forceTheme ??
-          (tempTheme.forceDark !== undefined ? true : undefined),
+        forceTheme: tempTheme.forceTheme ?? (tempTheme.forceDark !== undefined ? true : undefined),
       };
     }
 
@@ -283,13 +278,30 @@
     void themeManager.updatePreviewDebounced(snapshot);
   });
 
-  type SettingType = 'switch' | 'button' | 'slider' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
+  type SettingType =
+    | "switch"
+    | "button"
+    | "slider"
+    | "select"
+    | "codeEditor"
+    | "imageUpload"
+    | "conditional"
+    | "lightDarkToggle";
 
   type SwitchProps = { state: boolean; onChange: (value: boolean) => void };
   type ButtonProps = { onClick: () => void; text: string };
-  type SliderProps = { state: number; onChange: (value: number) => void; min?: number; max?: number };
+  type SliderProps = {
+    state: number;
+    onChange: (value: number) => void;
+    min?: number;
+    max?: number;
+  };
 
-  type SelectProps = { options: Array<{ value: string; label: string }>; value: string; onChange: (value: string) => void };
+  type SelectProps = {
+    options: Array<{ value: string; label: string }>;
+    value: string;
+    onChange: (value: string) => void;
+  };
   type CodeEditorProps = { value: string; onChange: (value: string) => void };
   type LightDarkToggleProps = { state: boolean; onChange: (value: boolean) => void };
 
@@ -298,73 +310,107 @@
     children: SettingItem;
   };
 
-  type ComponentProps = SwitchProps | ButtonProps | SliderProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
+  type ComponentProps =
+    | SwitchProps
+    | ButtonProps
+    | SliderProps
+    | SelectProps
+    | CodeEditorProps
+    | LightDarkToggleProps
+    | ConditionalProps;
 
   type SettingItem = {
     type: SettingType;
     title: string;
     description: string;
-    direction?: 'horizontal' | 'vertical';
+    direction?: "horizontal" | "vertical";
     props: ComponentProps;
   };
 </script>
 
 {#snippet settingItem(item: SettingItem)}
-  {#if item.type === 'conditional'}
-    {#if (item.props as ConditionalProps).condition }
+  {#if item.type === "conditional"}
+    {#if (item.props as ConditionalProps).condition}
       <div transition:slide={{ duration: 300 }}>
         {@render settingItem((item.props as ConditionalProps).children)}
       </div>
     {/if}
   {:else}
-    <div class="flex justify-between {item.direction === 'vertical' ? 'flex-col items-start' : 'items-center'} py-3">
+    <div
+      class="flex justify-between {item.direction === 'vertical'
+        ? 'flex-col items-start'
+        : 'items-center'} py-3"
+    >
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
-        onclick={(e) => { item.direction === 'vertical' && toggleAccordion(item.title, e) }}
-        onkeydown={(e) => { e.key === 'Enter' && item.direction === 'vertical' && toggleAccordion(item.title, e) }}
-        class="flex justify-between pr-4 {item.direction === 'vertical' ? 'cursor-pointer w-full select-none' : ''}">
-
+        onclick={(e) => {
+          item.direction === "vertical" && toggleAccordion(item.title, e);
+        }}
+        onkeydown={(e) => {
+          e.key === "Enter" && item.direction === "vertical" && toggleAccordion(item.title, e);
+        }}
+        class="flex justify-between pr-4 {item.direction === 'vertical'
+          ? 'cursor-pointer w-full select-none'
+          : ''}"
+      >
         <div>
           <h2 class="text-sm font-bold">{item.title}</h2>
           <p class="text-xs">{item.description}</p>
         </div>
 
-        {#if item.direction === 'vertical'}
-          <div class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
-            {#if item.type === 'codeEditor'}
+        {#if item.direction === "vertical"}
+          <div
+            class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300"
+          >
+            {#if item.type === "codeEditor"}
               <!-- Fullscreen toggle button -->
-              <button onclick={toggleCodeEditorFullscreen} class="px-2 mr-2 text-lg fullscreen-toggle" aria-label="Expand editor">
-                <Maximize2Icon size="1em"  />
+              <button
+                onclick={toggleCodeEditorFullscreen}
+                class="px-2 mr-2 text-lg fullscreen-toggle"
+                aria-label="Expand editor"
+              >
+                <Maximize2Icon size="1em" />
               </button>
             {/if}
-            
-            <ChevronDownIcon size="1em" class="transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}" />
+
+            <ChevronDownIcon
+              size="1em"
+              class="transition-transform duration-300 {closedAccordions.includes(item.title)
+                ? 'rotate-180'
+                : ''}"
+            />
           </div>
         {/if}
       </div>
 
       {#if !closedAccordions.includes(item.title)}
-        <div class="{item.direction === 'vertical' ? 'w-full mt-2' : ''}" transition:slide={{ duration: 300 }}>
-          {#if item.type === 'switch'}
-            <Switch {...(item.props as SwitchProps)} />
-          {:else if item.type === 'button'}
-            <Button {...(item.props as ButtonProps)} />
-          {:else if item.type === 'slider'}
-            <Slider {...(item.props as SliderProps)} />
-
-          {:else if item.type === 'codeEditor'}
+        <div
+          class={item.direction === "vertical" ? "w-full mt-2" : ""}
+          transition:slide={{ duration: 300 }}
+        >
+          {#if item.type === "switch"}
+            <Switch {...item.props as SwitchProps} />
+          {:else if item.type === "button"}
+            <Button {...item.props as ButtonProps} />
+          {:else if item.type === "slider"}
+            <Slider {...item.props as SliderProps} />
+          {:else if item.type === "codeEditor"}
             {#if !codeEditorFullscreen}
               {#key themeLoaded}
                 <!-- Only render inline if not fullscreen -->
-                <CodeEditor className="h-[400px]" {...(item.props as CodeEditorProps)} />
+                <CodeEditor className="h-[400px]" {...item.props as CodeEditorProps} />
               {/key}
             {/if}
-          {:else if item.type === 'imageUpload'}
+          {:else if item.type === "imageUpload"}
             {#each theme.CustomImages as image (image.id)}
               <div class="mb-4 space-y-2 rounded-lg bg-white px-2 py-2 shadow-lg dark:bg-zinc-700">
                 <div class="flex h-16 items-center gap-2">
                   <div class="h-full">
-                    <ThemeBlobImage source={image.blob} alt={image.variableName} class="object-contain h-full rounded-sm" />
+                    <ThemeBlobImage
+                      source={image.blob}
+                      alt={image.variableName}
+                      class="object-contain h-full rounded-sm"
+                    />
                   </div>
                   <input
                     type="text"
@@ -373,7 +419,11 @@
                     placeholder="CSS variable name"
                     class="grow flex-3 rounded-lg border-0 bg-zinc-200 p-2 transition dark:bg-zinc-600/50 dark:placeholder-zinc-300 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
                   />
-                  <button onclick={() => onRemoveImage(image.id)} class="p-2 transition dark:text-white" type="button">
+                  <button
+                    onclick={() => onRemoveImage(image.id)}
+                    class="p-2 transition dark:text-white"
+                    type="button"
+                  >
                     <XIcon size="1em" class="text-xl" />
                   </button>
                 </div>
@@ -383,7 +433,10 @@
                     class="mt-1 w-full rounded-lg border-0 bg-zinc-200 px-2 py-1.5 text-sm dark:bg-zinc-600"
                     value={imageUsage(image.id)}
                     onchange={(e) =>
-                      setImageUsage(image.id, e.currentTarget.value as 'decorative' | 'page-background' | 'cover')}
+                      setImageUsage(
+                        image.id,
+                        e.currentTarget.value as "decorative" | "page-background" | "cover",
+                      )}
                   >
                     <option value="decorative">Decorative (CSS variable only)</option>
                     <option value="page-background">SEQTA page background</option>
@@ -392,16 +445,26 @@
                 </label>
               </div>
             {/each}
-      
-            <div class="flex overflow-hidden relative gap-1 justify-center place-items-center w-full h-8 rounded-lg transition bg-zinc-200 dark:bg-zinc-700">
-              <PlusIcon size="1em"  />
-              <span class='dark:text-white'>Add image</span>
-              <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+
+            <div
+              class="flex overflow-hidden relative gap-1 justify-center place-items-center w-full h-8 rounded-lg transition bg-zinc-200 dark:bg-zinc-700"
+            >
+              <PlusIcon size="1em" />
+              <span class="dark:text-white">Add image</span>
+              <input
+                type="file"
+                accept="image/*"
+                onchange={onImageUpload}
+                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
             </div>
-          {:else if item.type === 'lightDarkToggle'}
+          {:else if item.type === "lightDarkToggle"}
             <button
               class="overflow-hidden relative flex justify-center items-center px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
-              onclick={() => (item.props as LightDarkToggleProps).onChange(!(item.props as LightDarkToggleProps).state)}
+              onclick={() =>
+                (item.props as LightDarkToggleProps).onChange(
+                  !(item.props as LightDarkToggleProps).state,
+                )}
             >
               {#key (item.props as LightDarkToggleProps).state}
                 <span
@@ -431,7 +494,11 @@
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
-          <button onclick={toggleCodeEditorFullscreen} class="pr-14 text-xl" aria-label="Collapse editor"><Minimize2Icon size="1em"  /></button>
+          <button
+            onclick={toggleCodeEditorFullscreen}
+            class="pr-14 text-xl"
+            aria-label="Collapse editor"><Minimize2Icon size="1em" /></button
+          >
         </div>
         <CodeEditor
           className="editorHeight"
@@ -441,8 +508,9 @@
       </div>
     </div>
   {/if}
-  <div class="relative flex min-h-full w-full flex-col bg-zinc-100 p-2 text-zinc-900 dark:bg-zinc-800 dark:text-white">
-
+  <div
+    class="relative flex min-h-full w-full flex-col bg-zinc-100 p-2 text-zinc-900 dark:bg-zinc-800 dark:text-white"
+  >
     <div class="mb-2 flex items-start justify-between gap-2">
       <h1 class="text-xl font-semibold">Theme Creator</h1>
       <button
@@ -454,39 +522,48 @@
         <XIcon size="1em" />
       </button>
     </div>
-    <a href='https://docs.betterseqta.org/theme-creation/' target='_blank' rel='noopener noreferrer' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
+    <a
+      href="https://docs.betterseqta.org/theme-creation/"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="text-sm font-light text-zinc-500 dark:text-zinc-400"
+    >
       <CircleQuestionMarkIcon size="1em" class="pr-0.5" />
-      <span class='underline'>
-        Need help? Check out the docs!
-      </span>
+      <span class="underline"> Need help? Check out the docs! </span>
     </a>
 
     <Divider />
 
     <div>
-      <div class='pb-2 text-sm'>Theme Name</div>
+      <div class="pb-2 text-sm">Theme Name</div>
       <input
-        id='themeName'
-        type='text'
-        placeholder='What is your theme called?'
+        id="themeName"
+        type="text"
+        placeholder="What is your theme called?"
         bind:value={theme.name}
-        class='p-2 mb-4 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600' />
+        class="p-2 mb-4 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+      />
     </div>
 
     <div>
-      <div class='pb-2 text-sm'>Description <span class='italic font-light opacity-80'>(optional)</span></div>
+      <div class="pb-2 text-sm">
+        Description <span class="italic font-light opacity-80">(optional)</span>
+      </div>
       <textarea
-        id='themeDescription'
+        id="themeDescription"
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class="p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+      ></textarea>
     </div>
 
     <Divider />
 
     <div class="py-3">
       <h2 class="text-sm font-bold">Accent colour</h2>
-      <p class="text-xs text-zinc-600 dark:text-zinc-400">Default accent and gradient start colour.</p>
+      <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        Default accent and gradient start colour.
+      </p>
       <div class="mt-2">
         <ColourPicker
           savePresets={false}
@@ -521,7 +598,8 @@
       <div>
         <h2 class="text-sm font-bold">Images &amp; page background</h2>
         <p class="text-xs text-zinc-600 dark:text-zinc-400">
-          Upload images, then choose how each one is used. Set one as the live SEQTA page background to preview it on the main page.
+          Upload images, then choose how each one is used. Set one as the live SEQTA page background
+          to preview it on the main page.
         </p>
       </div>
 
@@ -536,7 +614,11 @@
               placeholder="CSS variable"
               class="min-w-0 flex-1 rounded-lg border-0 bg-zinc-100 p-2 text-sm dark:bg-zinc-600 dark:text-white"
             />
-            <button type="button" class="p-2 dark:text-white" onclick={() => onRemoveImage(image.id)}>
+            <button
+              type="button"
+              class="p-2 dark:text-white"
+              onclick={() => onRemoveImage(image.id)}
+            >
               <XIcon size="1em" class="text-xl" />
             </button>
           </div>
@@ -544,7 +626,10 @@
             class="w-full rounded-lg border-0 bg-zinc-100 px-2 py-1.5 text-sm dark:bg-zinc-600"
             value={imageUsage(image.id)}
             onchange={(e) =>
-              setImageUsage(image.id, e.currentTarget.value as 'decorative' | 'page-background' | 'cover')}
+              setImageUsage(
+                image.id,
+                e.currentTarget.value as "decorative" | "page-background" | "cover",
+              )}
           >
             <option value="decorative">Decorative only (CSS variable)</option>
             <option value="page-background">SEQTA page background</option>
@@ -553,8 +638,10 @@
         </div>
       {/each}
 
-      <label class="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-zinc-200 dark:bg-zinc-700">
-        <PlusIcon size="1em"  />
+      <label
+        class="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-zinc-200 dark:bg-zinc-700"
+      >
+        <PlusIcon size="1em" />
         <span class="text-sm dark:text-white">Add image</span>
         <input type="file" accept="image/*" class="hidden" onchange={onImageUpload} />
       </label>
@@ -607,11 +694,14 @@
     <div class="py-3">
       <h2 class="text-sm font-bold">Adaptive CSS variables</h2>
       <p class="text-xs text-zinc-600 dark:text-zinc-400">
-        One per line, each must start with <code class="text-xs">--</code>. These receive the same colour as the adaptive accent when &quot;Adaptive theme colour&quot; is enabled in general settings. Use them in Custom CSS, e.g. <code class="text-xs">border-color: var(--my-accent);</code>
+        One per line, each must start with <code class="text-xs">--</code>. These receive the same
+        colour as the adaptive accent when &quot;Adaptive theme colour&quot; is enabled in general
+        settings. Use them in Custom CSS, e.g.
+        <code class="text-xs">border-color: var(--my-accent);</code>
       </p>
       <textarea
         placeholder="--my-accent&#10;--class-banner"
-        value={theme.adaptiveCssVariables?.join('\n') ?? ''}
+        value={theme.adaptiveCssVariables?.join("\n") ?? ""}
         oninput={(e) => {
           const lines = e.currentTarget.value
             .split(/\r?\n/)
@@ -631,58 +721,13 @@
 
     <Divider />
 
-    {#each [
-      {
-        type: 'switch',
-        title: 'Hide Theme Name',
-        description: 'Useful when your cover image contains text',
-        props: {
-          state: theme.hideThemeName,
-          onChange: (value: boolean) => theme = { ...theme, hideThemeName: value }
-        }
-      },
-      {
-        type: 'switch',
-        title: 'Force Theme',
-        description: 'Force users to use either dark or light mode',
-        props: {
-          state: shouldForceThemeAppearance(theme),
-          onChange: (value: boolean) => {
-            if (value) {
-              theme = { ...theme, forceTheme: true, forceDark: false };
-            } else {
-              theme = { ...theme, forceTheme: false, forceDark: undefined };
-            }
-          }
-        }
-      },
-      {
-        type: 'conditional',
-        props: {
-          condition: shouldForceThemeAppearance(theme),
-          children: {
-            type: 'lightDarkToggle',
-            title: 'Mode',
-            description: 'Choose whether to force light or dark mode',
-            props: {
-              state: theme.forceDark === true,
-              onChange: (value: boolean) =>
-                (theme = { ...theme, forceDark: value, forceTheme: true })
-            }
-          }
-        }
-      },
-      {
-        type: 'codeEditor',
-        title: 'Custom CSS',
-        description: 'Extra CSS appended after generated theme rules',
-        direction: 'vertical',
-        props: {
-          value: creatorMeta.userCustomCss,
-          onChange: (value: string) => patchCreatorMeta({ userCustomCss: value })
-        }
-      }
-    ] as SettingItem[] as setting}
+    {#each [{ type: "switch", title: "Hide Theme Name", description: "Useful when your cover image contains text", props: { state: theme.hideThemeName, onChange: (value: boolean) => (theme = { ...theme, hideThemeName: value }) } }, { type: "switch", title: "Force Theme", description: "Force users to use either dark or light mode", props: { state: shouldForceThemeAppearance(theme), onChange: (value: boolean) => {
+                if (value) {
+                  theme = { ...theme, forceTheme: true, forceDark: false };
+                } else {
+                  theme = { ...theme, forceTheme: false, forceDark: undefined };
+                }
+              } } }, { type: "conditional", props: { condition: shouldForceThemeAppearance(theme), children: { type: "lightDarkToggle", title: "Mode", description: "Choose whether to force light or dark mode", props: { state: theme.forceDark === true, onChange: (value: boolean) => (theme = { ...theme, forceDark: value, forceTheme: true }) } } } }, { type: "codeEditor", title: "Custom CSS", description: "Extra CSS appended after generated theme rules", direction: "vertical", props: { value: creatorMeta.userCustomCss, onChange: (value: string) => patchCreatorMeta( { userCustomCss: value } ) } }] as SettingItem[] as setting}
       {@render settingItem(setting)}
     {/each}
 

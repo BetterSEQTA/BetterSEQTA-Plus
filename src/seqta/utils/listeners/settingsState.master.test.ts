@@ -12,10 +12,10 @@ describe("master extension setting", () => {
     async (enabled) => {
       jest.useFakeTimers();
       let browser!: MockBrowser;
-      let settings!: typeof import("./SettingsState");
+      let settings!: typeof import("./settingsState");
       jest.isolateModules(() => {
         browser = require("@/lib/browser").default as MockBrowser;
-        settings = require("./SettingsState");
+        settings = require("./settingsState");
       });
       await browser.storage.local.set({ onoff: !enabled });
       await settings!.initializeSettingsState();

@@ -14,7 +14,7 @@
   } from "./timeRange";
   import { computeGradeForecast, aggregateToMonthlyPoints } from "./utils/gradePrediction";
   import PredictionMonthsSlider from "./PredictionMonthsSlider.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   interface Props {
     data: Assessment[];
@@ -57,9 +57,7 @@
   const forecast = $derived.by(() => {
     if (!showPrediction) return null;
     const points = aggregateToMonthlyPoints(
-      historicalData
-        .filter(hasAverage)
-        .map((p) => ({ date: p.date, average: p.average })),
+      historicalData.filter(hasAverage).map((p) => ({ date: p.date, average: p.average })),
     );
     return computeGradeForecast(points, predictionMonths);
   });
@@ -89,10 +87,7 @@
 
     if (!times.length) return undefined;
 
-    return [
-      new Date(Math.min(...times)),
-      new Date(Math.max(...times)),
-    ];
+    return [new Date(Math.min(...times)), new Date(Math.max(...times))];
   });
 
   const chartConfig = $derived.by(() => {
@@ -171,9 +166,7 @@
 
   const canForecast = $derived.by(() => {
     const monthly = aggregateToMonthlyPoints(
-      historicalData
-        .filter(hasAverage)
-        .map((p) => ({ date: p.date, average: p.average })),
+      historicalData.filter(hasAverage).map((p) => ({ date: p.date, average: p.average })),
     );
     return monthly.length >= 3;
   });
@@ -213,11 +206,7 @@
       <div class="bsplus-analytics-card-title-row">
         <h3 class="bsplus-analytics-card-title">Grade trends</h3>
         <label class="bsplus-analytics-checkbox bsplus-analytics-forecast-toggle">
-          <input
-            type="checkbox"
-            bind:checked={showPrediction}
-            disabled={!canForecast}
-          />
+          <input type="checkbox" bind:checked={showPrediction} disabled={!canForecast} />
           <span class="bsplus-analytics-checkmark" aria-hidden="true"></span>
           <span>Forecast</span>
         </label>
@@ -246,93 +235,93 @@
   <div class="bsplus-analytics-card-body">
     {#if historicalData.length > 0}
       {#key `${showPrediction}-${predictionMonths}`}
-      <Chart.Container config={chartConfig} class="bsplus-chart-surface w-full">
-        <AreaChart
-          legend
-          data={chartData}
-          x="date"
-          {xDomain}
-          yScale={yScale}
-          series={areaSeries}
-          seriesLayout="overlap"
-          props={{
-            xAxis: {
-              ticks: timeRange === "7d" ? 7 : undefined,
-              format: (v: Date) =>
-                v.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: timeRange === "7d" ? "numeric" : undefined,
-                }),
-            },
-            yAxis: {
-              format: (v: number) => `${v.toFixed(0)}%`,
-            },
-          }}
-        >
-          {#snippet marks({ context }: { context: ChartState<TrendPoint> })}
-            <defs>
-              <linearGradient id={chartUid} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color={accentColor} stop-opacity="0.55" />
-                <stop offset="100%" stop-color={accentColor} stop-opacity="0.04" />
-              </linearGradient>
-            </defs>
+        <Chart.Container config={chartConfig} class="bsplus-chart-surface w-full">
+          <AreaChart
+            legend
+            data={chartData}
+            x="date"
+            {xDomain}
+            {yScale}
+            series={areaSeries}
+            seriesLayout="overlap"
+            props={{
+              xAxis: {
+                ticks: timeRange === "7d" ? 7 : undefined,
+                format: (v: Date) =>
+                  v.toLocaleDateString("en-US", {
+                    month: "short",
+                    day: timeRange === "7d" ? "numeric" : undefined,
+                  }),
+              },
+              yAxis: {
+                format: (v: number) => `${v.toFixed(0)}%`,
+              },
+            }}
+          >
+            {#snippet marks({ context }: { context: ChartState<TrendPoint> })}
+              <defs>
+                <linearGradient id={chartUid} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color={accentColor} stop-opacity="0.55" />
+                  <stop offset="100%" stop-color={accentColor} stop-opacity="0.04" />
+                </linearGradient>
+              </defs>
 
-            <ChartClipPath
-              initialWidth={animationsOn && !showPrediction ? 0 : undefined}
-              motion={animationsOn && !showPrediction
-                ? {
-                    width: { type: "tween", duration: 900, easing: cubicInOut },
-                  }
-                : undefined}
-            >
-              {#each context.series.visibleSeries as s (s.key)}
-                {@const meta = chartSeries.find((c) => c.key === s.key)}
-                {@const isOverall = meta?.isOverall ?? s.key === "average"}
-                {@const color = meta?.color ?? s.color}
+              <ChartClipPath
+                initialWidth={animationsOn && !showPrediction ? 0 : undefined}
+                motion={animationsOn && !showPrediction
+                  ? {
+                      width: { type: "tween", duration: 900, easing: cubicInOut },
+                    }
+                  : undefined}
+              >
+                {#each context.series.visibleSeries as s (s.key)}
+                  {@const meta = chartSeries.find((c) => c.key === s.key)}
+                  {@const isOverall = meta?.isOverall ?? s.key === "average"}
+                  {@const color = meta?.color ?? s.color}
 
-                {#if s.key !== "forecast"}
-                  <Area
-                    seriesKey={s.key}
-                    curve={curveMonotoneX}
-                    motion={animationsOn ? "tween" : false}
-                    line={{ class: "stroke-2", stroke: color }}
-                    fill={isOverall && !showSubjectTrends
-                      ? `url(#${chartUid})`
-                      : isOverall
-                        ? accentColor
-                        : "transparent"}
-                    fillOpacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
-                  />
-                {/if}
-              {/each}
-            </ChartClipPath>
-          {/snippet}
+                  {#if s.key !== "forecast"}
+                    <Area
+                      seriesKey={s.key}
+                      curve={curveMonotoneX}
+                      motion={animationsOn ? "tween" : false}
+                      line={{ class: "stroke-2", stroke: color }}
+                      fill={isOverall && !showSubjectTrends
+                        ? `url(#${chartUid})`
+                        : isOverall
+                          ? accentColor
+                          : "transparent"}
+                      fillOpacity={isOverall ? (showSubjectTrends ? 0.08 : 0.35) : 0}
+                    />
+                  {/if}
+                {/each}
+              </ChartClipPath>
+            {/snippet}
 
-          {#snippet aboveMarks()}
-            {#if showPrediction && forecastLineData.length > 1}
-              <Spline
-                data={forecastLineData}
-                x="date"
-                y="forecast"
-                curve={curveMonotoneX}
-                class="bsplus-analytics-forecast-line"
+            {#snippet aboveMarks()}
+              {#if showPrediction && forecastLineData.length > 1}
+                <Spline
+                  data={forecastLineData}
+                  x="date"
+                  y="forecast"
+                  curve={curveMonotoneX}
+                  class="bsplus-analytics-forecast-line"
+                />
+              {/if}
+            {/snippet}
+
+            {#snippet tooltip()}
+              <Chart.Tooltip
+                labelFormatter={(v: Date) =>
+                  v.toLocaleDateString("en-US", {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                indicator="line"
               />
-            {/if}
-          {/snippet}
-
-          {#snippet tooltip()}
-            <Chart.Tooltip
-              labelFormatter={(v: Date) =>
-                v.toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              indicator="line"
-            />
-          {/snippet}
-        </AreaChart>
-      </Chart.Container>
+            {/snippet}
+          </AreaChart>
+        </Chart.Container>
       {/key}
 
       {#if showPrediction && !canForecast}
@@ -354,8 +343,9 @@
         Projected average in {predictionMonths} month{predictionMonths === 1 ? "" : "s"}:
         <strong>{forecast.projectedGrade}%</strong>
         <span class="bsplus-analytics-footer-muted">
-          · {forecast.trendPerMonth >= 0 ? "+" : ""}{forecast.trendPerMonth}%/mo trend
-          · R² {forecast.rSquared.toFixed(2)}
+          · {forecast.trendPerMonth >= 0 ? "+" : ""}{forecast.trendPerMonth}%/mo trend · R² {forecast.rSquared.toFixed(
+            2,
+          )}
         </span>
       </span>
       <br />

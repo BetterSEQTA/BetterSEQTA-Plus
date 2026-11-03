@@ -14,12 +14,12 @@
   import { standalone as StandaloneStore } from "../utils/standalone.svelte";
   import { onMount, onDestroy, tick } from "svelte";
   import { animate } from "motion";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
-  import { OpenAboutPage } from "@/seqta/utils/openers/OpenAboutPage";
-  import { OpenWhatsNewPopup } from "@/seqta/utils/openers/OpenWhatsNewPopup";
+  import { OpenAboutPage } from "@/seqta/utils/openers/openAboutPage";
+  import { OpenWhatsNewPopup } from "@/seqta/utils/openers/openWhatsNewPopup";
 
   import type { Component } from "svelte";
   import SidebarNav from "../components/SidebarNav.svelte";
@@ -107,13 +107,15 @@
     if (!$settingsState.devMode && activeSection === "advanced") activeSection = "general";
   });
 
-  const appNav = $derived<NavItem[]>([
-    { id: "timetable", label: "Timetable" },
-    { id: "assessments", label: "Assessments" },
-    { id: "features", label: "Features" },
-    ...($settingsState.devMode ? [{ id: "advanced", label: "Advanced" }] : []),
-    { id: "shortcuts", label: "Shortcuts" },
-  ].filter((item) => isSectionVisible(item.id)));
+  const appNav = $derived<NavItem[]>(
+    [
+      { id: "timetable", label: "Timetable" },
+      { id: "assessments", label: "Assessments" },
+      { id: "features", label: "Features" },
+      ...($settingsState.devMode ? [{ id: "advanced", label: "Advanced" }] : []),
+      { id: "shortcuts", label: "Shortcuts" },
+    ].filter((item) => isSectionVisible(item.id)),
+  );
 
   const settingsNavGroups = $derived([
     { label: "User Settings", items: userNav },
@@ -195,8 +197,7 @@
   );
 
   const openGhRelease = () => {
-    const url =
-      ghReleaseUpdate?.url ?? "https://github.com/BetterSEQTA/BetterSEQTA-Plus/releases";
+    const url = ghReleaseUpdate?.url ?? "https://github.com/BetterSEQTA/BetterSEQTA-Plus/releases";
     if (ghReleaseUpdate?.available) {
       dismissNightlyUpdate();
     }
@@ -315,7 +316,9 @@
     const from = panel ? getComputedStyle(panel) : null;
     const start = bounds.map((key) => parseFloat(from?.[key] ?? "0"));
     resizeAnimation?.stop();
-    const motionEnabled = $settingsState.animations !== false && !$settingsState.performanceMode &&
+    const motionEnabled =
+      $settingsState.animations !== false &&
+      !$settingsState.performanceMode &&
       !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const root = panel?.getRootNode() as ShadowRoot | Document | undefined;
     const restoreFocus = !!content?.contains(root?.activeElement ?? null);
@@ -343,9 +346,12 @@
     await tick();
     if (!panel || !content || generation !== resizeGeneration) return;
     for (const key of bounds) panel.style.removeProperty(key);
-    if (restoreFocus) content.querySelector<HTMLButtonElement>(
-      `[aria-label="${nextExpanded ? "Collapse" : "Expand"} settings"]`,
-    )?.focus({ preventScroll: true });
+    if (restoreFocus)
+      content
+        .querySelector<HTMLButtonElement>(
+          `[aria-label="${nextExpanded ? "Collapse" : "Expand"} settings"]`,
+        )
+        ?.focus({ preventScroll: true });
     if (!motionEnabled) return;
     const targetStyle = getComputedStyle(panel);
     const target = bounds.map((key) => parseFloat(targetStyle[key]));
@@ -353,9 +359,13 @@
     // move, so compact text and images never stretch across the expanded panel.
     content.style.width = `${panel.clientWidth}px`;
     content.style.height = `${panel.clientHeight}px`;
-    bounds.forEach((key, index) => { panel.style[key] = `${start[index]}px`; });
+    bounds.forEach((key, index) => {
+      panel.style[key] = `${start[index]}px`;
+    });
     resizeAnimation = animate(0, 1, {
-      type: "spring", stiffness: 420, damping: 36,
+      type: "spring",
+      stiffness: 420,
+      damping: 36,
       onUpdate: (progress) => {
         if (generation !== resizeGeneration) return;
         const opacity = Math.max(0, Math.min(1, progress));
@@ -402,9 +412,7 @@
   };
 
   const syncCompactTab = () => {
-    compactActiveTab = activePage === "settings"
-        ? activeSection === "shortcuts" ? 1 : 0
-        : 2;
+    compactActiveTab = activePage === "settings" ? (activeSection === "shortcuts" ? 1 : 0) : 2;
     lastExpandedTab = compactActiveTab;
   };
 
@@ -469,7 +477,8 @@
             ? "community-themes"
             : "theme-settings";
     } else if (destination.page === "backgrounds" && destination.view) {
-      activeBackgroundView = destination.view === "store" ? "background-store" : "background-settings";
+      activeBackgroundView =
+        destination.view === "store" ? "background-store" : "background-settings";
     }
   };
 
@@ -575,7 +584,9 @@
         {#if activePage === "settings"}
           <label class="relative mb-4 block shrink-0">
             <span class="sr-only">Search settings</span>
-            <SearchIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
+            <SearchIcon
+              class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
+            />
             <input
               type="search"
               placeholder="Search settings"
@@ -585,13 +596,11 @@
           </label>
         {/if}
 
-        <SidebarNav
-          groups={navGroups}
-          selectedId={selectedNavId}
-          onselect={selectNavItem}
-        />
+        <SidebarNav groups={navGroups} selectedId={selectedNavId} onselect={selectNavItem} />
 
-        <div class="mt-4 flex shrink-0 flex-col gap-1 border-t border-zinc-200/60 pt-4 dark:border-zinc-700/50">
+        <div
+          class="mt-4 flex shrink-0 flex-col gap-1 border-t border-zinc-200/60 pt-4 dark:border-zinc-700/50"
+        >
           {#if ghReleaseUpdateEnabled}
             <div class="px-3 pb-2">
               {#if ghReleaseUpdate?.available}
@@ -709,7 +718,6 @@
             </div>
           </div>
         {/if}
-
       </div>
     </div>
   </div>
@@ -721,13 +729,17 @@
   >
     <RemoteStatusStrip />
     <div
-      class="grid shrink-0 items-center border-b border-zinc-200/40 dark:border-zinc-700/40 {standalone ? 'grid-cols-1' : 'grid-cols-[minmax(0,1fr)_44px] gap-2 px-2'}"
+      class="grid shrink-0 items-center border-b border-zinc-200/40 dark:border-zinc-700/40 {standalone
+        ? 'grid-cols-1'
+        : 'grid-cols-[minmax(0,1fr)_44px] gap-2 px-2'}"
     >
       <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <img
         src={resolveExtensionAssetUrl(darkLogo)}
-        class="min-w-0 dark:hidden {standalone ? 'mx-auto w-4/5' : 'h-auto w-full max-w-[296px] justify-self-center object-contain'}"
+        class="min-w-0 dark:hidden {standalone
+          ? 'mx-auto w-4/5'
+          : 'h-auto w-full max-w-[296px] justify-self-center object-contain'}"
         alt="BetterSEQTA+"
         onclick={handleDevModeToggle}
       />
@@ -735,14 +747,21 @@
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <img
         src={resolveExtensionAssetUrl(lightLogo)}
-        class="hidden min-w-0 dark:block {standalone ? 'mx-auto w-4/5' : 'h-auto w-full max-w-[296px] justify-self-center object-contain'}"
+        class="hidden min-w-0 dark:block {standalone
+          ? 'mx-auto w-4/5'
+          : 'h-auto w-full max-w-[296px] justify-self-center object-contain'}"
         alt="BetterSEQTA+"
         onclick={handleDevModeToggle}
       />
       {#if !standalone}
-        <button type="button" onclick={toggleExpanded}
+        <button
+          type="button"
+          onclick={toggleExpanded}
           class="mt-2 flex h-11 w-11 shrink-0 self-start items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-white"
-          aria-label="Expand settings" title="Expand settings" aria-expanded="false">
+          aria-label="Expand settings"
+          title="Expand settings"
+          aria-expanded="false"
+        >
           <Maximize2Icon size="1em" class="text-2xl" />
         </button>
       {/if}
@@ -785,19 +804,20 @@
   </div>
 {:else}
   <div
-    class="absolute inset-0 z-50 {$settingsState.DarkMode
-      ? 'dark'
-      : ''}"
+    class="absolute inset-0 z-50 {$settingsState.DarkMode ? 'dark' : ''}"
     role="dialog"
     aria-modal="true"
     aria-label="BetterSEQTA+ settings"
   >
     <button
       type="button"
-      class="settings-backdrop absolute inset-0 {expanded ? 'bg-black/60' : 'bg-transparent'} {expanded && !$settingsState.performanceMode
+      class="settings-backdrop absolute inset-0 {expanded
+        ? 'bg-black/60'
+        : 'bg-transparent'} {expanded && !$settingsState.performanceMode
         ? 'backdrop-blur-xs'
         : 'backdrop-blur-none'}"
-      class:settings-backdrop--motion={$settingsState.animations !== false && !$settingsState.performanceMode}
+      class:settings-backdrop--motion={$settingsState.animations !== false &&
+        !$settingsState.performanceMode}
       aria-label="Close settings"
       onclick={handleClose}
     ></button>
@@ -818,44 +838,6 @@
     </div>
   </div>
 {/if}
-
-<style>
-  .settings-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 100%;
-    height: 100%;
-  }
-
-  .settings-panel {
-    width: min(384px, calc(100vw - 20px));
-    height: min(600px, calc(100vh - 95px));
-    top: min(80px, 10vh);
-    right: 10px;
-    border-radius: 1rem;
-    transform-origin: 70% 0;
-  }
-
-  .settings-panel--expanded {
-    border-radius: 0.75rem;
-    transform-origin: center;
-    width: min(1180px, 96vw);
-    height: min(860px, 92vh);
-    top: calc((100% - min(860px, 92vh)) / 2);
-    right: calc((100% - min(1180px, 96vw)) / 2);
-  }
-
-  .settings-backdrop--motion {
-    transition: background-color 200ms ease;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .settings-backdrop--motion {
-      transition: none;
-    }
-  }
-</style>
 
 {#if showColourPicker && ColourPickerComponent}
   <ColourPickerComponent
@@ -907,3 +889,41 @@
     }}
   />
 {/if}
+
+<style>
+  .settings-content {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .settings-panel {
+    width: min(384px, calc(100vw - 20px));
+    height: min(600px, calc(100vh - 95px));
+    top: min(80px, 10vh);
+    right: 10px;
+    border-radius: 1rem;
+    transform-origin: 70% 0;
+  }
+
+  .settings-panel--expanded {
+    border-radius: 0.75rem;
+    transform-origin: center;
+    width: min(1180px, 96vw);
+    height: min(860px, 92vh);
+    top: calc((100% - min(860px, 92vh)) / 2);
+    right: calc((100% - min(1180px, 96vw)) / 2);
+  }
+
+  .settings-backdrop--motion {
+    transition: background-color 200ms ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .settings-backdrop--motion {
+      transition: none;
+    }
+  }
+</style>

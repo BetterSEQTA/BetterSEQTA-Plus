@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { settingsState } from "./listeners/SettingsState";
+import { settingsState } from "./listeners/settingsState";
 import {
   animateSettingsClose,
   animateSettingsOpen,

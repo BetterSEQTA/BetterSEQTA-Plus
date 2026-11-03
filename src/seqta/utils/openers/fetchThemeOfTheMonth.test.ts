@@ -1,5 +1,5 @@
 import browser from "@/lib/browser";
-import { fetchThemeOfTheMonth } from "./OpenThemeOfTheMonthPopup";
+import { fetchThemeOfTheMonth } from "./openThemeOfTheMonthPopup";
 
 const CACHE_KEY = "bsplus_theme_of_the_month_cache";
 

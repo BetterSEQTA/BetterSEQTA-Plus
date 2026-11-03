@@ -1,8 +1,15 @@
 <script lang="ts">
-  import { resolveCloudPfp, defaultAccountsPfpUrl, revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
-  import type { CloudUser } from "@/seqta/utils/CloudAuth";
+  import {
+    resolveCloudPfp,
+    defaultAccountsPfpUrl,
+    revokePfpUrl,
+  } from "@/seqta/utils/cloudPfpCache";
+  import type { CloudUser } from "@/seqta/utils/cloudAuth";
 
-  const { user, class: className = "" }: {
+  const {
+    user,
+    class: className = "",
+  }: {
     user: CloudUser | null | undefined;
     class?: string;
   } = $props();

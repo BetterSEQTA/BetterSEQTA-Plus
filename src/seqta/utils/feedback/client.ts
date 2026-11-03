@@ -2,7 +2,7 @@ import browser from "@/lib/browser";
 import { API_BASE } from "@/config/apiBase";
 import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import {
   BSPLUS_PENDING_FEEDBACK_IDS_KEY,
   FEEDBACK_API_PATH,

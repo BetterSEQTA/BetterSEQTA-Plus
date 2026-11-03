@@ -12,7 +12,7 @@ interface PrefItem {
 }
 
 import { getUserInfo } from "@/seqta/utils/userInfo";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { getMockAssessmentsData } from "@/seqta/ui/dev/hideSensitiveContent";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { getEngageAssessmentsData } from "./engageApi";

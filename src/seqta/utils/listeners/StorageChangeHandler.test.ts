@@ -1,15 +1,12 @@
 /** @jest-environment jsdom */
-import { settingsState } from "./SettingsState";
-import { StorageChangeHandler } from "./StorageChanges";
+import { settingsState } from "./settingsState";
+import { StorageChangeHandler } from "./StorageChangeHandler";
 
-jest.mock("@/seqta/ui/colors/Manager", () => ({ updateAllColors: jest.fn() }));
+jest.mock("@/seqta/ui/colors/colorManager", () => ({ updateAllColors: jest.fn() }));
 jest.mock("@/seqta/utils/render/renderShortcuts", () => ({
   renderShortcuts: jest.fn(),
 }));
-jest.mock("@/seqta/utils/FilterUpcomingAssessments", () => ({
-  FilterUpcomingAssessments: jest.fn(),
-}));
-jest.mock("@/seqta/utils/loaders/LoadHomePage", () => ({
+jest.mock("@/seqta/utils/loaders/loadHomePage", () => ({
   registerHomeUpcomingSettingsListeners: jest.fn(),
 }));
 jest.mock("@/seqta/utils/menuItemVisibility", () => ({

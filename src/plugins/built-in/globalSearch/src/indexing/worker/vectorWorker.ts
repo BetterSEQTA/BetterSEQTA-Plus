@@ -57,7 +57,7 @@ async function initWorker() {
   // Skip initialization in Firefox
   if (isFirefoxWorker()) {
     verboseDebug(
-      "[Vector Worker] Vector search not supported in Firefox - skipping initialization",
+      "[BetterSEQTA+] Vector Worker: Vector search not supported in Firefox - skipping initialization",
     );
     isInitialized = true;
     initializationFailed = true;
@@ -94,7 +94,7 @@ async function initWorker() {
     verboseDebug("Vector worker initialized successfully.");
   } catch (e) {
     console.warn(
-      "[Vector Worker] Failed to initialize vector worker (will use text search only):",
+      "[BetterSEQTA+] Vector Worker: Failed to initialize vector worker (will use text search only):",
       e,
     );
     isInitialized = true;

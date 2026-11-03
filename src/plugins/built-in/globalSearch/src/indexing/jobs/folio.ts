@@ -121,13 +121,13 @@ export const folioJob: Job = {
           renderComponentId: "folio",
         });
       } catch (e) {
-        console.warn(`[Folio job] Failed to load folio ${entry.id}:`, e);
+        console.warn(`[BetterSEQTA+] Folio job: Failed to load folio ${entry.id}:`, e);
       }
 
       await delay(PER_ITEM_DELAY_MS);
     }
 
-    verboseDebug(`[Folio job] Indexed ${items.length} folio entries.`);
+    verboseDebug(`[BetterSEQTA+] Folio job: Indexed ${items.length} folio entries.`);
     return items;
   },
 

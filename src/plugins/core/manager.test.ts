@@ -1,6 +1,6 @@
 /** @jest-environment jsdom */
 import { PluginManager } from "./manager";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 
 jest.mock("@/seqta/utils/performanceMode", () => ({

@@ -3,15 +3,24 @@
   import DownloadIcon from "@lucide/svelte/icons/download";
   import HeartIcon from "@lucide/svelte/icons/heart";
   import StarIcon from "@lucide/svelte/icons/star";
-  import type { Theme } from '@/interface/types/Theme'
+  import type { Theme } from "@/interface/types/theme";
   import {
     masterGridDisplayDownloadCount,
     gridCardPreviewImageUrls,
-  } from '@/interface/utils/themeStoreFlavours'
-  import { isStoreThemeInstalled } from '@/interface/utils/themeListFilters'
-  import emblaCarouselSvelte from 'embla-carousel-svelte';
-  import Autoplay from 'embla-carousel-autoplay';
-  let { theme, onClick, toggleFavorite, isLoggedIn, onRequestSignIn, allStoreThemeRows, installedThemeIds = [], variant = 'official' }: {
+  } from "@/interface/utils/themeStoreFlavours";
+  import { isStoreThemeInstalled } from "@/interface/utils/themeListFilters";
+  import emblaCarouselSvelte from "embla-carousel-svelte";
+  import Autoplay from "embla-carousel-autoplay";
+  let {
+    theme,
+    onClick,
+    toggleFavorite,
+    isLoggedIn,
+    onRequestSignIn,
+    allStoreThemeRows,
+    installedThemeIds = [],
+    variant = "official",
+  }: {
     theme: Theme;
     onClick: () => void;
     toggleFavorite: (theme: Theme) => void;
@@ -20,7 +29,7 @@
     /** Raw API themes (includes hidden slaves) for aggregated master download totals */
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
-    variant?: 'official' | 'community';
+    variant?: "official" | "community";
   } = $props();
 
   const displayDownloadCount = $derived(
@@ -33,13 +42,15 @@
 
   /** Mirrors CoverSwiper (featured bar): horizontal slides + autoplay */
   function prefersReducedMotion(): boolean {
-    return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    return (
+      typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    );
   }
 
   /** Read once synchronously where `window` exists so reduced-motion doesn’t briefly mount carousel */
   let allowSlideAutoplay = $state(!prefersReducedMotion());
 
-  const gridEmblaKey = $derived(gridRotatorUrls.join('|'));
+  const gridEmblaKey = $derived(gridRotatorUrls.join("|"));
 
   const gridEmblaOptions = $derived({ loop: gridRotatorUrls.length > 1 });
 
@@ -55,11 +66,11 @@
   });
 
   const isInstalled = $derived(isStoreThemeInstalled(theme, installedThemeIds));
-  const isCommunity = $derived(variant === 'community');
+  const isCommunity = $derived(variant === "community");
   const showFavorites = $derived(!isCommunity);
 
   function handleCardClick(e: MouseEvent) {
-    if ((e.target as HTMLElement).closest('[data-theme-favorite]')) return;
+    if ((e.target as HTMLElement).closest("[data-theme-favorite]")) return;
     onClick();
   }
 
@@ -105,7 +116,15 @@
       </div>
     {/if}
     {#if isInstalled}
-      <div class="absolute top-2 z-20 pointer-events-none {theme.featured === true ? (isCommunity ? 'left-44' : 'left-22') : isCommunity ? 'left-23' : 'left-2'}">
+      <div
+        class="absolute top-2 z-20 pointer-events-none {theme.featured === true
+          ? isCommunity
+            ? 'left-44'
+            : 'left-22'
+          : isCommunity
+            ? 'left-23'
+            : 'left-2'}"
+      >
         <span
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100 shadow-xs"
           aria-label="Installed"
@@ -116,24 +135,27 @@
       </div>
     {/if}
     {#if showFavorites}
-    <button
-      type="button"
-      data-theme-favorite
-      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0"
-      onclick={handleFavoriteClick}
-      aria-label={isLoggedIn
-        ? theme.is_favorited
-          ? 'Remove from favourites'
-          : 'Add to favourites'
-        : 'Sign in to favourite themes'}
-      title={isLoggedIn
-        ? theme.is_favorited
-          ? 'Remove from favourites'
-          : 'Add to favourites'
-        : 'Sign in to favourite themes'}
-    >
-      <HeartIcon class="h-5 w-5 {theme.is_favorited ? 'text-red-500' : ''}" fill={theme.is_favorited ? 'currentColor' : 'none'} />
-    </button>
+      <button
+        type="button"
+        data-theme-favorite
+        class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0"
+        onclick={handleFavoriteClick}
+        aria-label={isLoggedIn
+          ? theme.is_favorited
+            ? "Remove from favourites"
+            : "Add to favourites"
+          : "Sign in to favourite themes"}
+        title={isLoggedIn
+          ? theme.is_favorited
+            ? "Remove from favourites"
+            : "Add to favourites"
+          : "Sign in to favourite themes"}
+      >
+        <HeartIcon
+          class="h-5 w-5 {theme.is_favorited ? 'text-red-500' : ''}"
+          fill={theme.is_favorited ? "currentColor" : "none"}
+        />
+      </button>
     {/if}
     <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
       <span class="text-xl font-bold text-white drop-shadow-md">{theme.name}</span>
@@ -146,15 +168,18 @@
           {displayDownloadCount.toLocaleString()}
         </span>
         {#if showFavorites}
-        <span class="flex items-center gap-1">
-          <HeartIcon class="w-3.5 h-3.5" fill={theme.is_favorited ? 'currentColor' : 'none'} />
-          {(theme.favorite_count ?? 0).toLocaleString()}
-        </span>
+          <span class="flex items-center gap-1">
+            <HeartIcon class="w-3.5 h-3.5" fill={theme.is_favorited ? "currentColor" : "none"} />
+            {(theme.favorite_count ?? 0).toLocaleString()}
+          </span>
         {/if}
       </div>
     </div>
     {#if gridRotatorUrls.length === 0}
-      <div class="relative w-full h-48 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700" aria-hidden="true"></div>
+      <div
+        class="relative w-full h-48 overflow-hidden rounded-md bg-zinc-200 dark:bg-zinc-700"
+        aria-hidden="true"
+      ></div>
     {:else if !allowSlideAutoplay || gridRotatorUrls.length === 1}
       <div class="relative w-full h-48 overflow-hidden rounded-md">
         <img
@@ -205,7 +230,7 @@
       rgb(0 0 0 / 16%) 72%,
       transparent 88%
     );
-    content: '';
+    content: "";
     pointer-events: none;
   }
 </style>

@@ -1,6 +1,6 @@
 import Settings from "./pages/settings.svelte";
 import renderSvelte from "./main";
-import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState } from "@/seqta/utils/listeners/settingsState";
 import { loadRemoteStatus } from "@/seqta/utils/remoteStatus";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 

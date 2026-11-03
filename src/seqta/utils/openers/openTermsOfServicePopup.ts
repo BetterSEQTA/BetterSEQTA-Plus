@@ -1,7 +1,7 @@
 import stringToHTML from "../stringToHTML";
-import { settingsState } from "../listeners/SettingsState";
+import { settingsState } from "../listeners/settingsState";
 import { API_BASE } from "@/config/apiBase";
-import { closePopup, openPopup } from "./PopupManager";
+import { closePopup, openPopup } from "./popupManager";
 import fallbackTerms from "@/exampletermsresponse.json";
 import type { SettingsState } from "@/types/storage";
 
@@ -42,7 +42,7 @@ export async function fetchTermsOfService(): Promise<LegalDocumentPayload> {
     if (!isLegalDocumentPayload(data)) return getFallbackTermsOfService();
     return data;
   } catch (err) {
-    console.warn("[TermsOfService] Failed to fetch terms:", err);
+    console.warn("[BetterSEQTA+] TermsOfService: Failed to fetch terms:", err);
     return getFallbackTermsOfService();
   }
 }

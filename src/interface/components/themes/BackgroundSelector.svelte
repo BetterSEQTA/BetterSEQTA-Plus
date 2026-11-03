@@ -1,24 +1,38 @@
 <script lang="ts">
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader'
-  import BackgroundUploader from './BackgroundUploader.svelte';
-  import BackgroundItem from './BackgroundItem.svelte'
-  import { onMount, onDestroy } from 'svelte'
-  import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
-  import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
+  import {
+    hasEnoughStorageSpace,
+    isIndexedDBSupported,
+    writeData,
+    readAllData,
+    deleteData,
+  } from "@/interface/hooks/backgroundDataLoader";
+  import BackgroundUploader from "./BackgroundUploader.svelte";
+  import BackgroundItem from "./BackgroundItem.svelte";
+  import { onMount, onDestroy } from "svelte";
+  import { loadBackground } from "@/seqta/ui/imageBackgrounds";
+  import { backgroundUpdates } from "@/interface/hooks/backgroundUpdates";
 
-  let { isEditMode, selectNoBackground = $bindable(), selectedBackground = $bindable() }: { isEditMode: boolean, selectNoBackground: () => void, selectedBackground: string | null } = $props();
+  let {
+    isEditMode,
+    selectNoBackground = $bindable(),
+    selectedBackground = $bindable(),
+  }: {
+    isEditMode: boolean;
+    selectNoBackground: () => void;
+    selectedBackground: string | null;
+  } = $props();
   let backgrounds = $state<{ id: string; type: string; blob: Blob | null; url?: string }[]>([]);
-  let feedback = $state<{ kind: 'error' | 'warn'; text: string } | null>(null);
+  let feedback = $state<{ kind: "error" | "warn"; text: string } | null>(null);
 
-  let imageBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'image'));
-  let videoBackgrounds = $derived(backgrounds.filter(bg => bg.type === 'video'));
+  let imageBackgrounds = $derived(backgrounds.filter((bg) => bg.type === "image"));
+  let videoBackgrounds = $derived(backgrounds.filter((bg) => bg.type === "video"));
 
-  function inferBackgroundType(file: File): 'image' | 'video' {
+  function inferBackgroundType(file: File): "image" | "video" {
     const mime = file.type.toLowerCase();
-    if (mime.startsWith('video/')) return 'video';
-    if (mime.startsWith('image/')) return 'image';
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    return ['mp4', 'mov', 'webm', 'm4v', 'mkv'].includes(ext) ? 'video' : 'image';
+    if (mime.startsWith("video/")) return "video";
+    if (mime.startsWith("image/")) return "image";
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    return ["mp4", "mov", "webm", "m4v", "mkv"].includes(ext) ? "video" : "image";
   }
 
   async function handleFileChange(file: File): Promise<void> {
@@ -35,9 +49,13 @@
         throw new Error("Not enough storage space to save this background.");
       }
 
-      const fileId = `${Date.now()}-${file.name.replace(/[^\w.-]+/g, '_')}`;
+      const fileId = `${Date.now()}-${file.name.replace(/[^\w.-]+/g, "_")}`;
       const fileType = inferBackgroundType(file);
-      const blob = file.slice(0, file.size, file.type || (fileType === 'video' ? 'video/mp4' : 'image/jpeg'));
+      const blob = file.slice(
+        0,
+        file.size,
+        file.type || (fileType === "video" ? "video/mp4" : "image/jpeg"),
+      );
 
       await writeData(fileId, fileType, blob);
       backgrounds = [
@@ -46,17 +64,17 @@
       ];
       backgroundUpdates.triggerUpdate();
 
-      const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-      if (['heic', 'heif'].includes(ext) || file.type.toLowerCase().includes('hei')) {
+      const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+      if (["heic", "heif"].includes(ext) || file.type.toLowerCase().includes("hei")) {
         feedback = {
-          kind: 'warn',
-          text: 'HEIC saved, but Chrome and Edge often cannot preview it. Export as JPEG or PNG if the thumbnail stays blank.',
+          kind: "warn",
+          text: "HEIC saved, but Chrome and Edge often cannot preview it. Export as JPEG or PNG if the thumbnail stays blank.",
         };
       }
     } catch (e) {
       feedback = {
-        kind: 'error',
-        text: e instanceof Error ? e.message : 'An unknown error occurred',
+        kind: "error",
+        text: e instanceof Error ? e.message : "An unknown error occurred",
       };
     }
   }
@@ -69,27 +87,27 @@
         throw new Error("Your browser doesn't support IndexedDB. Unable to load backgrounds.");
       }
 
-      selectedBackground = localStorage.getItem('selectedBackground');
+      selectedBackground = localStorage.getItem("selectedBackground");
       const dbData = await readAllData();
 
-      backgrounds.forEach(bg => {
+      backgrounds.forEach((bg) => {
         if (bg.url) URL.revokeObjectURL(bg.url);
       });
 
-      backgrounds = dbData.map(bg => ({
+      backgrounds = dbData.map((bg) => ({
         id: bg.id,
         type: bg.type,
         blob: bg.blob,
-        url: URL.createObjectURL(bg.blob)
+        url: URL.createObjectURL(bg.blob),
       }));
 
-      if (selectedBackground && !backgrounds.some(bg => bg.id === selectedBackground)) {
+      if (selectedBackground && !backgrounds.some((bg) => bg.id === selectedBackground)) {
         selectNoBackground();
       }
     } catch (e) {
       feedback = {
-        kind: 'error',
-        text: e instanceof Error ? e.message : 'An unknown error occurred',
+        kind: "error",
+        text: e instanceof Error ? e.message : "An unknown error occurred",
       };
     }
   }
@@ -101,13 +119,13 @@
     }
 
     selectedBackground = fileId;
-    localStorage.setItem('selectedBackground', fileId);
+    localStorage.setItem("selectedBackground", fileId);
   }
 
   async function deleteBackground(fileId: string): Promise<void> {
     try {
       await deleteData(fileId);
-      backgrounds = backgrounds.filter(bg => bg.id !== fileId);
+      backgrounds = backgrounds.filter((bg) => bg.id !== fileId);
 
       if (selectedBackground === fileId) {
         selectNoBackground();
@@ -115,16 +133,16 @@
       backgroundUpdates.triggerUpdate();
     } catch (e) {
       feedback = {
-        kind: 'error',
-        text: e instanceof Error ? e.message : 'An unknown error occurred',
+        kind: "error",
+        text: e instanceof Error ? e.message : "An unknown error occurred",
       };
     }
   }
 
   selectNoBackground = () => {
     selectedBackground = null;
-    localStorage.setItem('selectedBackground', '');
-  }
+    localStorage.setItem("selectedBackground", "");
+  };
 
   $effect(() => {
     loadBackground();
@@ -147,13 +165,19 @@
   });
 </script>
 
-<div class="relative px-1 { !( isEditMode && imageBackgrounds.length === 0 && videoBackgrounds.length === 0 ) && 'pt-2' }">
+<div
+  class="relative px-1 {!(
+    isEditMode &&
+    imageBackgrounds.length === 0 &&
+    videoBackgrounds.length === 0
+  ) && 'pt-2'}"
+>
   {#if feedback}
     <div
       class="mx-1 mb-3 rounded-lg border px-3 py-2 text-sm {feedback.kind === 'warn'
         ? 'border-amber-300/60 bg-amber-50 text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-100'
         : 'border-red-300/60 bg-red-50 text-red-800 dark:border-red-900/50 dark:bg-red-950/40 dark:text-red-200'}"
-      role={feedback.kind === 'warn' ? 'status' : 'alert'}
+      role={feedback.kind === "warn" ? "status" : "alert"}
     >
       {feedback.text}
     </div>
@@ -168,11 +192,12 @@
       {#each imageBackgrounds as bg (bg.id)}
         {#if bg.url}
           <BackgroundItem
-            bg={bg}
+            {bg}
             isSelected={selectedBackground === bg.id}
-            isEditMode={isEditMode}
+            {isEditMode}
             onClick={() => selectBackground(bg.id)}
-            onDelete={() => deleteBackground(bg.id)}/>
+            onDelete={() => deleteBackground(bg.id)}
+          />
         {:else}
           <div class="w-16 h-16 rounded-xl bg-zinc-100 dark:bg-zinc-900 animate-pulse"></div>
         {/if}
@@ -189,9 +214,9 @@
       {#each videoBackgrounds as bg (bg.id)}
         {#if bg.url}
           <BackgroundItem
-            bg={bg}
+            {bg}
             isSelected={selectedBackground === bg.id}
-            isEditMode={isEditMode}
+            {isEditMode}
             onClick={() => selectBackground(bg.id)}
             onDelete={() => deleteBackground(bg.id)}
           />

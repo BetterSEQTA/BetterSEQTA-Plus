@@ -1,7 +1,7 @@
-import { AppendLoadingSymbol } from "@/seqta/ui/Loading";
+import { AppendLoadingSymbol } from "@/seqta/ui/loading";
 import stringToHTML from "./stringToHTML";
 import { delay } from "./delay";
-import { settingsState } from "./listeners/SettingsState";
+import { settingsState } from "./listeners/settingsState";
 import browser from "@/lib/browser";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import LogoLightOutline from "@/resources/icons/betterseqta-light-outline.png";

@@ -1,7 +1,11 @@
 <script lang="ts">
-  import type { FuseResultMatch } from '../core/types';
+  import type { FuseResultMatch } from "../core/types";
 
-  const { text, term, matches }: {
+  const {
+    text,
+    term,
+    matches,
+  }: {
     text: string;
     term: string;
     matches?: readonly FuseResultMatch[];
@@ -15,14 +19,13 @@
     try {
       const fieldMatches = matches.find(
         (match) =>
-          match.key === 'text' ||
-          (match.key === 'allContent' && match.value?.includes(text)),
+          match.key === "text" || (match.key === "allContent" && match.value?.includes(text)),
       );
       if (!fieldMatches?.indices?.length) return [{ text, highlight: false }];
 
       const highlightMap = Array.from({ length: text.length }, () => false);
       for (const [start, end] of fieldMatches.indices) {
-        if (fieldMatches.key === 'allContent') {
+        if (fieldMatches.key === "allContent") {
           const textPos = fieldMatches.value?.indexOf(text) ?? -1;
           if (textPos < 0) continue;
           const relStart = start - textPos;
@@ -37,13 +40,13 @@
       }
 
       const segments: { text: string; highlight: boolean }[] = [];
-      let current = '';
+      let current = "";
       let currentHighlight = highlightMap[0] ?? false;
       for (let i = 0; i < text.length; i++) {
         const isHighlight = highlightMap[i] ?? false;
         if (isHighlight !== currentHighlight) {
           segments.push({ text: current, highlight: currentHighlight });
-          current = '';
+          current = "";
           currentHighlight = isHighlight;
         }
         current += text[i];

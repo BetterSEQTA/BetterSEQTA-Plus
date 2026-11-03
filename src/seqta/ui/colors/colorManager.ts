@@ -1,8 +1,8 @@
 import Color from "color";
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { lightenAndPaleColor } from "./lightenAndPaleColor";
-import ColorLuminance from "./ColorLuminance";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import ColorLuminance from "./colorLuminance";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { getAdaptiveColour } from "@/seqta/utils/adaptiveThemeColour";
 import { adaptiveThemeTransitionEnabled, transparencyEnabled } from "@/seqta/utils/performanceMode";
 import { getCustomThemeAdaptiveCssVariableBindings } from "@/seqta/ui/colors/customThemeAdaptiveBindings";

@@ -22,10 +22,13 @@
     validateFeedbackForm,
     type FeedbackStatusItem,
   } from "@/seqta/utils/feedback/client";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import Spinner from "./Spinner.svelte";
 
-  let { onClose, initialFeedbackId = null }: {
+  let {
+    onClose,
+    initialFeedbackId = null,
+  }: {
     onClose: () => void;
     initialFeedbackId?: string | null;
   } = $props();
@@ -56,8 +59,7 @@
       ? "background-color:#18181b;color:#fafafa;border-color:#52525b;color-scheme:dark"
       : "background-color:#fff;color:#18181b;border-color:#e4e4e7;color-scheme:light",
   );
-  const field =
-    "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border   ";
+  const field = "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border   ";
   const btn =
     "px-4 py-2 text-[18px] font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95    disabled:opacity-50";
   const btnMuted = $derived(
@@ -412,8 +414,9 @@
           {:else}
             <p class="mb-4 text-zinc-500">No response yet.</p>
           {/if}
-          {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">{statusError}</p
-            >{/if}
+          {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">
+              {statusError}
+            </p>{/if}
           <div class="flex gap-3 justify-end">
             <button
               type="button"
@@ -437,8 +440,9 @@
               {statusLoading ? "…" : "Refresh"}
             </button>
           </div>
-          {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">{statusError}</p
-            >{/if}
+          {#if statusError}<p class="mb-3 text-red-600 dark:text-red-400" role="alert">
+              {statusError}
+            </p>{/if}
           {#if statusLoading && !statusItems.length}
             <div class="feedback-loading" aria-busy="true" aria-live="polite">
               <Spinner size="md" />
@@ -461,14 +465,13 @@
                   <button
                     type="button"
                     onclick={() => openStatusItem(item.id)}
-                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01]    {isDark
+                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01] {isDark
                       ? 'border-zinc-700 bg-zinc-900/40'
                       : 'border-zinc-200 bg-white'}"
                   >
                     <p class="text-base text-zinc-500 mb-0.5">
-                      {formatStatus(item.status)}{#if hasReply(item)} · Reply{/if} · {categoryLabel(
-                        item.category,
-                      )}
+                      {formatStatus(item.status)}{#if hasReply(item)}
+                        · Reply{/if} · {categoryLabel(item.category)}
                     </p>
                     <p class="font-medium truncate">{item.subject || "Untitled"}</p>
                   </button>

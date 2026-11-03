@@ -178,7 +178,10 @@
     >
       <header class="bsplus-analytics-class-groups-dialog-head">
         <div>
-          <h2 id="bsplus-class-group-modal-title" class="bsplus-analytics-class-groups-dialog-title">
+          <h2
+            id="bsplus-class-group-modal-title"
+            class="bsplus-analytics-class-groups-dialog-title"
+          >
             {editingId ? "Edit combined classes" : "Combine classes"}
           </h2>
           <p class="bsplus-analytics-class-groups-dialog-desc">
@@ -237,9 +240,7 @@
       </div>
 
       <footer class="bsplus-analytics-class-groups-dialog-actions">
-        <button type="button" class="bsplus-analytics-btn" onclick={cancelEditor}>
-          Cancel
-        </button>
+        <button type="button" class="bsplus-analytics-btn" onclick={cancelEditor}> Cancel </button>
         <button
           type="button"
           class="bsplus-analytics-btn bsplus-analytics-btn-primary"

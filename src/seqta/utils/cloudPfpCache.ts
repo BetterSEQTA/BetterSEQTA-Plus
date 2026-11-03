@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 

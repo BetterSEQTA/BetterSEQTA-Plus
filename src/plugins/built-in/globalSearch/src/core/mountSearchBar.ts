@@ -113,7 +113,7 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
     !progressBar ||
     !progressText
   ) {
-    console.error("[Global Search] Search trigger markup incomplete");
+    console.error("[BetterSEQTA+] Global Search: Search trigger markup incomplete");
     return;
   }
 

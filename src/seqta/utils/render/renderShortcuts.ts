@@ -1,6 +1,6 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { addShortcuts } from "@/seqta/utils/adders/AddShortcuts";
-import { CreateCustomShortcutDiv } from "@/seqta/utils/createEnable/CreateCustomShortcutDiv";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
+import { addShortcuts } from "@/seqta/utils/adders/addShortcuts";
+import { CreateCustomShortcutDiv } from "@/seqta/utils/createEnable/createCustomShortcutDiv";
 
 export function renderShortcuts() {
   const container = document.getElementById("shortcuts");

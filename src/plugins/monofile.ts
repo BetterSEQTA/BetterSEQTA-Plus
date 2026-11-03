@@ -3,8 +3,8 @@ import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { MessageHandler } from "@/seqta/utils/listeners/MessageListener";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { MessageHandler } from "@/seqta/utils/listeners/MessageHandler";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import {
   animationsEnabled,
   fullMotionEffectsEnabled,
@@ -12,27 +12,27 @@ import {
   syncPerformanceModeEffects,
 } from "@/seqta/utils/performanceMode";
 import { animatePopupOpen } from "@/seqta/utils/popupAnimation";
-import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChangeHandler";
+import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import debounce from "@/seqta/utils/debounce";
 
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
-import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
-import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
-import { updateAllColors } from "@/seqta/ui/colors/Manager";
-import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import RegisterClickListeners from "@/seqta/utils/listeners/clickListeners";
+import { AddBetterSEQTAElements } from "@/seqta/ui/addBetterSEQTAElements";
+import { updateAllColors } from "@/seqta/ui/colors/colorManager";
+import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 import { verboseInfo, verboseLog } from "@/utils/verboseLog";
-import loading, { stopLoadingAnimation } from "@/seqta/ui/Loading";
-import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import loading, { stopLoadingAnimation } from "@/seqta/ui/loading";
+import { SendNewsPage } from "@/seqta/utils/sendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
   loadEngageHomePage,
   updateEngageHomeMenuActive,
-} from "@/seqta/utils/loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
+} from "@/seqta/utils/loaders/loadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
-import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
-import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/OpenCoursesAssessmentsFixPopup";
+import { runStartupPopupQueue } from "@/seqta/utils/openers/startupPopupQueue";
+import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/openCoursesAssessmentsFixPopup";
 
 import {
   syncTimetableUrlMonitoring,
@@ -369,26 +369,28 @@ async function handleMessages(node: Element): Promise<void> {
 
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  // Hides messages on page load
   const style = document.createElement("style");
-  style.classList.add("messageHider");
-  style.innerHTML = "[data-message]{opacity: 0 !important;}";
+  style.textContent = "[data-message]{opacity: 0 !important;}";
   document.head.append(style);
 
-  await waitForElm("[data-message]", true, 10);
-  const messages = Array.from(document.querySelectorAll("[data-message]")).slice(0, 35);
-  const { animate, stagger } = await loadMotion();
-  animate(
-    messages,
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.03),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
-
-  document.head.querySelector("style.messageHider")?.remove();
+  try {
+    await waitForElm("[data-message]", true, 10, 300);
+    const messages = Array.from(document.querySelectorAll("[data-message]")).slice(0, 35);
+    const { animate, stagger } = await loadMotion();
+    animate(
+      messages,
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.03),
+        duration: 0.5,
+        ease: [0.22, 0.03, 0.26, 1],
+      },
+    );
+  } catch {
+    return;
+  } finally {
+    style.remove();
+  }
 }
 
 async function handleDashboard(node: Element): Promise<void> {
@@ -425,8 +427,8 @@ async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  await waitForElm(".document", true, 10);
   try {
+    await waitForElm(".document", true, 10, 300);
     const rows = document.querySelectorAll(".documents tbody tr.document");
     if (rows.length) {
       const { animate, stagger } = await loadMotion();
@@ -449,8 +451,8 @@ async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  await waitForElm(".report", true, 10);
   try {
+    await waitForElm(".report", true, 10, 300);
     const items = document.querySelectorAll(".reports .item");
     if (items.length) {
       const { animate, stagger } = await loadMotion();

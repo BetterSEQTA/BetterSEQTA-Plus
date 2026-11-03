@@ -1,23 +1,23 @@
 import { icon } from "@/lib/icon";
 import { LogOut, Moon, Sun, Wrench } from "lucide-static";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
-import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
+import { addExtensionSettings } from "@/seqta/utils/adders/addExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
-import { loadEngageHomePage } from "@/seqta/utils/loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
-import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import { loadEngageHomePage } from "@/seqta/utils/loaders/loadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
+import { SendNewsPage } from "@/seqta/utils/sendNewsPage";
 import { attachNotificationsPanelAnimation } from "@/seqta/utils/attachNotificationsPanelAnimation";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
-import { appendBackgroundToUI } from "./ImageBackgrounds";
+import { appendBackgroundToUI } from "./imageBackgrounds";
 import { attachTooltip } from "@/seqta/utils/tooltip";
 import { pageIcon } from "@/seqta/utils/pageIcons";
 import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { updateAllColors } from "./colors/Manager";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
+import { updateAllColors } from "./colors/colorManager";
 import {
   ensureThemeToggleSurprisePageScript,
   openThemeToggleSurprise,

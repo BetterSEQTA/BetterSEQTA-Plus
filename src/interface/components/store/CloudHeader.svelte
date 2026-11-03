@@ -1,11 +1,15 @@
 <script lang="ts">
   import CircleUserRoundIcon from "@lucide/svelte/icons/circle-user-round";
   import { onMount } from "svelte";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
-  let { alwaysShowUserName = false, onClick = undefined, compact = false }: {
+  let {
+    alwaysShowUserName = false,
+    onClick = undefined,
+    compact = false,
+  }: {
     alwaysShowUserName?: boolean;
     onClick?: () => void;
     compact?: boolean;
@@ -73,7 +77,9 @@
   <button
     type="button"
     onclick={handleButtonClick}
-    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950  dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
+    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact
+      ? 'h-8 rounded-lg px-3 text-[0.75rem]'
+      : 'h-12 rounded-full px-4 text-sm'}"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
@@ -83,7 +89,9 @@
         />
       {/if}
       {#if !cloudState.user?.pfpUrl}
-        <div class="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-[0.6rem]">
+        <div
+          class="flex items-center justify-center w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-[0.6rem]"
+        >
           {getInitials()}
         </div>
       {/if}
@@ -92,7 +100,10 @@
           ? "inline max-w-40 truncate"
           : "hidden max-w-24 truncate sm:inline"}
       >
-        {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
+        {cloudState.user?.displayName ||
+          cloudState.user?.username ||
+          cloudState.user?.email ||
+          "User"}
       </span>
     {:else}
       <CircleUserRoundIcon size="1em" class="text-sm" />
@@ -123,16 +134,23 @@
                 />
               {/if}
               {#if !cloudState.user?.pfpUrl}
-                <div class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base">
+                <div
+                  class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base"
+                >
                   {getInitials()}
                 </div>
               {/if}
               <div class="min-w-0 flex-1">
                 <p class="text-base font-medium text-zinc-900 dark:text-white truncate">
-                  {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
+                  {cloudState.user?.displayName ||
+                    cloudState.user?.username ||
+                    cloudState.user?.email ||
+                    "User"}
                 </p>
                 {#if cloudState.user?.email && cloudState.user?.email !== (cloudState.user?.displayName || cloudState.user?.username)}
-                  <p class="text-base text-zinc-500 dark:text-zinc-400 truncate">{cloudState.user.email}</p>
+                  <p class="text-base text-zinc-500 dark:text-zinc-400 truncate">
+                    {cloudState.user.email}
+                  </p>
                 {/if}
               </div>
             </div>

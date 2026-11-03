@@ -17,7 +17,7 @@
   <div
     class="flex items-center justify-center w-full h-full text-3xl font-bold text-gray-400 transition hover:text-gray-500 pointer-events-none"
   >
-    <PlusIcon size="1em"  />
+    <PlusIcon size="1em" />
   </div>
   <input
     type="file"

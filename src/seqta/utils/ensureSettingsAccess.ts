@@ -1,7 +1,7 @@
 import { icon } from "@/lib/icon";
 import { Wrench } from "lucide-static";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
+import { addExtensionSettings } from "@/seqta/utils/adders/addExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";

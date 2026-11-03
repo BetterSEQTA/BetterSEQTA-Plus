@@ -11,7 +11,10 @@
     props?: Record<string, unknown>;
   };
 
-  let { tabs, activeTab = $bindable(0) }: {
+  let {
+    tabs,
+    activeTab = $bindable(0),
+  }: {
     tabs: TabDef[];
     activeTab?: number;
   } = $props();
@@ -28,7 +31,10 @@
 </script>
 
 <div class="flex flex-col h-full min-h-0">
-  <div class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
+  <div
+    class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container"
+    role="tablist"
+  >
     <div class="flex relative">
       <div
         class="absolute top-0 left-0 z-0 h-full bg-linear-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
@@ -70,6 +76,8 @@
 
 <style>
   @media (prefers-reduced-motion: reduce) {
-    .tab-width { transition: none !important; }
+    .tab-width {
+      transition: none !important;
+    }
   }
 </style>

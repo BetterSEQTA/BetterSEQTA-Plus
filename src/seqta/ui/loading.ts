@@ -1,6 +1,6 @@
 import browser from "@/lib/browser";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import loadingSpinner from "./loading-spinner.html?raw";
 import loadingOverlay from "./loading-overlay.html?raw";
 import { startLoadingCanvas } from "./loadingCanvas";

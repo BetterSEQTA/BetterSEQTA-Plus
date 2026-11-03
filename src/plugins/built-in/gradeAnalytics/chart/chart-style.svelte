@@ -4,9 +4,7 @@
   let { id, config }: { id: string; config: ChartConfig } = $props();
 
   const colorConfig = $derived(
-    config
-      ? Object.entries(config).filter(([, c]) => c.theme || c.color)
-      : null,
+    config ? Object.entries(config).filter(([, c]) => c.theme || c.color) : null,
   );
 
   const themeContents = $derived.by(() => {

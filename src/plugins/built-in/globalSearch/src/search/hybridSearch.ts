@@ -220,7 +220,7 @@ export async function hybridSearch(
 
       return rerankedResults.slice(0, opts.finalLimit);
     } catch (e) {
-      console.warn("[Hybrid Search] Vector reranking failed, using BM25 only:", e);
+      console.warn("[BetterSEQTA+] Hybrid Search: Vector reranking failed, using BM25 only:", e);
       return topBm25Results.slice(0, opts.finalLimit);
     }
   }
@@ -250,7 +250,7 @@ export async function hybridSearchWithExpansion(
   try {
     vectorResults = await searchVectors(trimmedQuery, opts.bm25TopK * 2);
   } catch (e) {
-    console.warn("[Hybrid Search] Vector search failed:", e);
+    console.warn("[BetterSEQTA+] Hybrid Search: Vector search failed:", e);
     return hybridSearch(bm25Results, query, options);
   }
 

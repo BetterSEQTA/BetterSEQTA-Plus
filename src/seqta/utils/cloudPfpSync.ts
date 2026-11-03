@@ -1,4 +1,4 @@
-import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
+import { cloudAuth, type CloudUser } from "@/seqta/utils/cloudAuth";
 import { clearCloudPfpCache, pfpUrlWithHash } from "@/seqta/utils/cloudPfpCache";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";

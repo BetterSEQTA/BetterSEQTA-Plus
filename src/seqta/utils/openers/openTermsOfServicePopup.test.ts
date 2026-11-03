@@ -5,7 +5,7 @@ import {
   getFallbackTermsOfService,
   markTermsOfServiceAccepted,
   shouldShowTermsOfServicePopup,
-} from "./OpenTermsOfServicePopup";
+} from "./openTermsOfServicePopup";
 
 const SAMPLE_TERMS = {
   last_updated: "2024-06-15T12:00:00Z",

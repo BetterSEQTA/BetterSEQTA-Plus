@@ -2,12 +2,14 @@
   import { onMount } from "svelte";
   import { animate } from "motion";
   import { delay } from "@/seqta/utils/delay.ts";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import Button from "./Button.svelte";
 
-  const { hidePanel }: {
+  const {
+    hidePanel,
+  }: {
     hidePanel: () => void;
   } = $props();
 
@@ -22,15 +24,11 @@
     });
 
     if (background && content) {
-      animate(
-        background,
-        { opacity: [0, 1] },
-        { duration: 0.3, ease: [0.4, 0, 0.2, 1] }
-      );
+      animate(background, { opacity: [0, 1] }, { duration: 0.3, ease: [0.4, 0, 0.2, 1] });
       animate(
         content,
         { scale: [0.4, 1], opacity: [0, 1] },
-        { type: "spring", stiffness: 400, damping: 30 }
+        { type: "spring", stiffness: 400, damping: 30 },
       );
     }
 
@@ -50,13 +48,9 @@
     animate(
       content,
       { scale: [1, 0.4], opacity: [1, 0] },
-      { type: "spring", stiffness: 400, damping: 30 }
+      { type: "spring", stiffness: 400, damping: 30 },
     );
-    animate(
-      background,
-      { opacity: [1, 0] },
-      { ease: [0.4, 0, 0.2, 1] }
-    );
+    animate(background, { opacity: [1, 0] }, { ease: [0.4, 0, 0.2, 1] });
     await delay(400);
     hidePanel();
   }
@@ -92,9 +86,13 @@
 <!-- svelte-ignore a11y_no_static_element_interactions -->
 <div
   bind:this={background}
-  class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50 {$settingsState.DarkMode ? 'dark' : ''}"
+  class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full cursor-pointer bg-black/50 {$settingsState.DarkMode
+    ? 'dark'
+    : ''}"
   onclick={handleBackgroundClick}
-  onkeydown={(e) => { if (e.key === "Enter") handleBackgroundClick(e as unknown as MouseEvent) }}
+  onkeydown={(e) => {
+    if (e.key === "Enter") handleBackgroundClick(e as unknown as MouseEvent);
+  }}
 >
   <div
     bind:this={content}
@@ -114,16 +112,23 @@
               />
             {/if}
             {#if !cloudState.user?.pfpUrl}
-              <div class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base">
+              <div
+                class="flex items-center justify-center w-12 h-12 rounded-full bg-zinc-300 dark:bg-zinc-600 text-zinc-700 dark:text-zinc-200 font-semibold text-base"
+              >
                 {getInitials()}
               </div>
             {/if}
             <div class="min-w-0 flex-1">
               <p class="text-sm font-medium text-zinc-900 dark:text-white truncate">
-                {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
+                {cloudState.user?.displayName ||
+                  cloudState.user?.username ||
+                  cloudState.user?.email ||
+                  "User"}
               </p>
               {#if cloudState.user?.email && cloudState.user?.email !== (cloudState.user?.displayName || cloudState.user?.username)}
-                <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">{cloudState.user.email}</p>
+                <p class="text-xs text-zinc-500 dark:text-zinc-400 truncate">
+                  {cloudState.user.email}
+                </p>
               {/if}
             </div>
           </div>

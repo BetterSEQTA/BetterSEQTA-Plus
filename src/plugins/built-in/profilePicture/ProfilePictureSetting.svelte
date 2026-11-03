@@ -4,7 +4,7 @@
   import XIcon from "@lucide/svelte/icons/x";
   import { onMount } from "svelte";
   import browser from "@/lib/browser";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
   import { revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
   import { uploadCloudProfilePicture } from "@/seqta/utils/cloudPfpSync";
   import { pluginSettingsStore } from "@/interface/pages/settings/pluginSettingsState.svelte";
@@ -64,7 +64,9 @@
   <div class="flex gap-2 items-center">
     <button
       type="button"
-      class="flex justify-center items-center rounded-md size-8 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 dark:text-white {removable ? '' : 'invisible'}"
+      class="flex justify-center items-center rounded-md size-8 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 dark:text-white {removable
+        ? ''
+        : 'invisible'}"
       aria-label="Remove profile picture"
       onclick={() => setLocalPicture(null)}
     >

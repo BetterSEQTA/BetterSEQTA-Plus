@@ -1,5 +1,5 @@
 import browser from "@/lib/browser";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { removeAnimatedBackgroundLayers } from "@/plugins/built-in/animatedBackground/backgroundLayers";
 import { applySidebarLook } from "@/seqta/ui/sidebar/sidebarStyles";
 import {

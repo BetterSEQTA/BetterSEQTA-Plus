@@ -33,12 +33,11 @@ export function CreateCustomShortcutDiv(element: CustomShortcut) {
   } else if (typeof element.icon === "string" && element.icon.startsWith("data:image")) {
     const img = document.createElement("img");
     img.src = element.icon;
-    img.style.width = "39px";
-    img.style.height = "39px";
+    img.alt = "";
     image = img;
   } else {
     image = stringToHTML(/* html */ `
-      <svg style="width:39px;height:39px" viewBox="0 0 40 40" class="shortcuticondiv">
+      <svg viewBox="0 0 40 40">
         <text
           text-anchor="middle"
           x="50%"

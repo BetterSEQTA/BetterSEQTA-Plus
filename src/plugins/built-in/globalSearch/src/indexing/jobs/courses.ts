@@ -101,7 +101,7 @@ export const coursesJob: Job = {
   run: async (ctx) => {
     const subjects = await fetchActiveSubjects();
     if (subjects.length === 0) {
-      verboseDebug("[Courses job] No active subjects discovered.");
+      verboseDebug("[BetterSEQTA+] Courses job: No active subjects discovered.");
       return [];
     }
 
@@ -178,7 +178,7 @@ export const coursesJob: Job = {
     });
 
     verboseDebug(
-      `[Courses job] Indexed ${items.length} courses across ${subjects.length} subjects.`,
+      `[BetterSEQTA+] Courses job: Indexed ${items.length} courses across ${subjects.length} subjects.`,
     );
     return items;
   },

@@ -2,11 +2,11 @@ import { icon } from "@/lib/icon";
 import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-static";
 import browser from "@/lib/browser";
 import stringToHTML from "../stringToHTML";
-import { settingsState } from "../listeners/SettingsState";
-import { closePopup } from "./PopupManager";
+import { settingsState } from "../listeners/settingsState";
+import { closePopup } from "./popupManager";
 import { API_BASE } from "@/config/apiBase";
 import { openThemeStoreWithHighlight } from "../openThemeStoreWithHighlight";
-import type { Theme } from "@/interface/types/Theme";
+import type { Theme } from "@/interface/types/theme";
 import { buildModalHeroSlides, normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
 import { attachPopupMediaFullscreen } from "./attachPopupMediaFullscreen";
 import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
@@ -72,7 +72,7 @@ export async function fetchThemeOfTheMonth(): Promise<ThemeOfTheMonthEntry | nul
     void writeCachedThemeOfTheMonth(data);
     return data;
   } catch (err) {
-    console.warn("[ThemeOfTheMonth] Failed to fetch current entry:", err);
+    console.warn("[BetterSEQTA+] ThemeOfTheMonth: Failed to fetch current entry:", err);
     return readCachedThemeOfTheMonth();
   }
 }
@@ -116,7 +116,7 @@ export async function fetchThemeStoreTheme(themeId: string): Promise<Theme | nul
     if (!res?.success || !res?.data?.theme) return null;
     return normalizeStoreTheme(res.data.theme);
   } catch (err) {
-    console.warn("[ThemeOfTheMonth] Failed to fetch theme store details:", err);
+    console.warn("[BetterSEQTA+] ThemeOfTheMonth: Failed to fetch theme store details:", err);
     return null;
   }
 }

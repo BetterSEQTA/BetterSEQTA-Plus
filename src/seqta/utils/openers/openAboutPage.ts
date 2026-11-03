@@ -1,6 +1,6 @@
 import stringToHTML from "../stringToHTML";
-import { settingsState } from "../listeners/SettingsState";
-import { openPopup } from "./PopupManager";
+import { settingsState } from "../listeners/settingsState";
+import { openPopup } from "./popupManager";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import brandingDark from "@/resources/branding/dark.jpg";

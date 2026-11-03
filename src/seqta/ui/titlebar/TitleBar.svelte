@@ -16,7 +16,8 @@
           <span
             class="search-trigger-hotkey"
             style="margin-left: auto; display: flex; align-items: center; color: rgb(119, 119, 119); font-size: 12px;"
-          >{titleBarState.searchHotkeyLabel}</span>
+            >{titleBarState.searchHotkeyLabel}</span
+          >
         </div>
         <div class="search-progress-bar-wrapper">
           <div class="search-progress-track">

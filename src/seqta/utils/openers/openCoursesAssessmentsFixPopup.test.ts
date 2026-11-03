@@ -6,7 +6,7 @@ import {
   reEnableBetterSeqtaFeatures,
   shouldOfferCoursesAssessmentsReEnable,
   shouldShowCoursesAssessmentsFixPopup,
-} from "./OpenCoursesAssessmentsFixPopup";
+} from "./openCoursesAssessmentsFixPopup";
 
 describe("shouldShowCoursesAssessmentsFixPopup", () => {
   it("shows when BetterSEQTA features are off and the popup has not been seen", () => {

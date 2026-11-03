@@ -1,6 +1,6 @@
 import stringToHTML from "../stringToHTML";
 import browser from "@/lib/browser";
-import { openPopup } from "./PopupManager";
+import { openPopup } from "./popupManager";
 import { createPopupHeroVideo } from "./attachPopupMediaFullscreen";
 import { createPopupSocialFooter } from "./createPopupSocialFooter";
 import { renderWhatsNewChangelogHtml } from "./whatsNewChangelog";

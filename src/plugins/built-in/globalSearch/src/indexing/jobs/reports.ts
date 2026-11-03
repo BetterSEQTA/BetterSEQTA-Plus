@@ -89,7 +89,7 @@ export const reportsJob: Job = {
       });
     }
 
-    verboseDebug(`[Reports job] Indexed ${items.length} reports.`);
+    verboseDebug(`[BetterSEQTA+] Reports job: Indexed ${items.length} reports.`);
     return items;
   },
 

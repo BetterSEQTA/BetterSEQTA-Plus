@@ -1,4 +1,4 @@
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 
 /** SVG cover used when a theme has no store/community cover image. */
 export function createDefaultThemeCoverSvg(accentHint = "#52525b"): string {

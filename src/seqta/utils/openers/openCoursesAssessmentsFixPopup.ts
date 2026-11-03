@@ -1,7 +1,7 @@
 import browser from "@/lib/browser";
 import stringToHTML from "../stringToHTML";
-import { settingsState } from "../listeners/SettingsState";
-import { closePopup, openPopup } from "./PopupManager";
+import { settingsState } from "../listeners/settingsState";
+import { closePopup, openPopup } from "./popupManager";
 
 const POPUP_STYLE_ID = "bsplus-courses-fix-popup-styles";
 

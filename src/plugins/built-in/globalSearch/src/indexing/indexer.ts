@@ -34,13 +34,13 @@ async function ensureSchemaCurrent(): Promise<void> {
     if (stored === INDEX_SCHEMA_VERSION) return;
 
     console.warn(
-      `[Indexer] Schema version changed (${stored} -> ${INDEX_SCHEMA_VERSION}); resetting structured + vector indexes.`,
+      `[BetterSEQTA+] Indexer: Schema version changed (${stored} -> ${INDEX_SCHEMA_VERSION}); resetting structured + vector indexes.`,
     );
 
     try {
       await resetSearchIndexes();
     } catch (e) {
-      console.warn("[Indexer] Failed to reset search indexes:", e);
+      console.warn("[BetterSEQTA+] Indexer: Failed to reset search indexes:", e);
     }
 
     try {
@@ -108,7 +108,7 @@ async function diffAndStoreItems(targetStore: string, items: IndexItem[]): Promi
   const validItems = items.filter((i) => i && i.id);
   if (validItems.length !== items.length) {
     console.warn(
-      `[Indexer] Filtered out ${items.length - validItems.length} invalid items before storing in '${targetStore}'.`,
+      `[BetterSEQTA+] Indexer: Filtered out ${items.length - validItems.length} invalid items before storing in '${targetStore}'.`,
     );
   }
 
@@ -153,7 +153,7 @@ async function tryClaimLock(lockId: string): Promise<boolean> {
 
 async function acquireLock(): Promise<boolean> {
   if (isIndexingActive) {
-    verboseDebug("[Indexer] Already indexing in this tab");
+    verboseDebug("[BetterSEQTA+] Indexer: Already indexing in this tab");
     return false;
   }
 
@@ -174,7 +174,7 @@ async function acquireLock(): Promise<boolean> {
           if (await tryClaimLock(lockId)) return true;
         }
       } catch (e) {
-        console.warn("[Indexer] Error parsing lock:", e);
+        console.warn("[BetterSEQTA+] Indexer: Error parsing lock:", e);
       }
     }
 
@@ -242,7 +242,7 @@ export async function loadAllStoredItems(): Promise<IndexItem[]> {
       console.error(`Error loading items for job store ${jobId}:`, error);
     }
   }
-  verboseDebug(`[Indexer] Loaded ${all.length} items from all primary stores.`);
+  verboseDebug(`[BetterSEQTA+] Indexer: Loaded ${all.length} items from all primary stores.`);
   return all;
 }
 
@@ -293,12 +293,16 @@ function dispatchVectorProgress(
 
 export async function runIndexing(): Promise<void> {
   if (isPluginBlockedByPerformanceMode("global-search")) {
-    verboseDebug("[Indexer] Skipping indexing — performance mode blocks Global Search.");
+    verboseDebug(
+      "[BetterSEQTA+] Indexer: Skipping indexing — performance mode blocks Global Search.",
+    );
     return;
   }
 
   if (isIndexingPaused()) {
-    verboseDebug("[Indexer] Skipping indexing — index was reset; reload the page to rebuild.");
+    verboseDebug(
+      "[BetterSEQTA+] Indexer: Skipping indexing — index was reset; reload the page to rebuild.",
+    );
     return;
   }
 
@@ -327,7 +331,9 @@ export async function runIndexing(): Promise<void> {
 
     for (const jobId of jobIds) {
       if (isIndexingPaused()) {
-        verboseDebug("[Indexer] Indexing stopped — index was reset; reload the page to rebuild.");
+        verboseDebug(
+          "[BetterSEQTA+] Indexer: Indexing stopped — index was reset; reload the page to rebuild.",
+        );
         dispatchProgress(completedJobs, totalSteps, false, "Indexing paused — reload to rebuild");
         return;
       }
@@ -417,7 +423,7 @@ export async function runIndexing(): Promise<void> {
         const { refreshVectorCache } = await import("../search/vector/vectorSearch");
         await refreshVectorCache();
       } catch (e) {
-        console.warn("[Indexer] Failed to refresh vector cache after prune:", e);
+        console.warn("[BetterSEQTA+] Indexer: Failed to refresh vector cache after prune:", e);
       }
     }
 

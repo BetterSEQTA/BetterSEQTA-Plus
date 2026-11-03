@@ -1,10 +1,10 @@
 <script lang="ts">
   import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
-  import { onDestroy } from 'svelte';
-  import { calculateExpression } from '../utils/calculator';
+  import { onDestroy } from "svelte";
+  import { calculateExpression } from "../utils/calculator";
 
   let {
-    searchTerm = '',
+    searchTerm = "",
     isSelected = false,
     onresult,
   }: {
@@ -15,10 +15,10 @@
 
   let result = $state<string | null>(null);
   let isCalculating = $state(false);
-  let inputUnit = $state<string>('');
-  let outputUnit = $state<string>('');
+  let inputUnit = $state<string>("");
+  let outputUnit = $state<string>("");
   let isPartial = $state(false);
-  
+
   let calcGen = 0;
 
   const processInput = async (input: string) => {
@@ -37,16 +37,16 @@
         onresult(calcResult.result);
       } else {
         result = null;
-        inputUnit = '';
-        outputUnit = '';
+        inputUnit = "";
+        outputUnit = "";
         isPartial = false;
         onresult(null);
       }
     } catch {
       if (gen !== calcGen) return;
       result = null;
-      inputUnit = '';
-      outputUnit = '';
+      inputUnit = "";
+      outputUnit = "";
       isPartial = false;
       onresult(null);
     } finally {
@@ -57,47 +57,65 @@
   $effect(() => {
     void processInput(searchTerm);
   });
-  
+
   onDestroy(() => {
     onresult(null);
   });
 </script>
 
 {#if result !== null}
-<div class="">
-  <p class="text-[0.85rem] p-1 pb-0.5 pt-0 font-semibold text-zinc-500 dark:text-zinc-400">Calculator</p>
-  <div class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5' : ''}">
-    <div class="flex flex-col flex-1 items-center py-4 pl-4 min-w-0">
-      <div class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis" 
-        style="--char-count: {searchTerm?.length || 10}; font-size: min(2.5rem, max(1rem, calc(35vw / var(--char-count, 10))))">
-        {searchTerm}
-      </div>
-      <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
-        {inputUnit || 'Question'}
-      </div>
-    </div>
-
-    <div class="flex flex-col shrink-0 justify-center items-center w-12">
-      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
-      <div class="text-2xl text-zinc-900 dark:text-zinc-100">
-        <ArrowRightIcon size="1em" />
-      </div>
-      <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
-    </div>
-
-    {#if !isCalculating}
-      <div class="flex flex-col flex-1 items-center py-4 pr-4 min-w-0">
-        <div class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis" 
-             style="--char-count: {result?.length || 10}; font-size: min(2.5rem, max(1rem, calc(30vw / var(--char-count, 10))))">
-          {result}
+  <div class="">
+    <p class="text-[0.85rem] p-1 pb-0.5 pt-0 font-semibold text-zinc-500 dark:text-zinc-400">
+      Calculator
+    </p>
+    <div
+      class="flex items-center justify-between gap-8 rounded-lg border border-transparent {isSelected
+        ? 'bg-zinc-900/5 dark:bg-white/10 border-zinc-900/5 dark:border-zinc-100/5'
+        : ''}"
+    >
+      <div class="flex flex-col flex-1 items-center py-4 pl-4 min-w-0">
+        <div
+          class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis"
+          style="--char-count: {searchTerm?.length ||
+            10}; font-size: min(2.5rem, max(1rem, calc(35vw / var(--char-count, 10))))"
+        >
+          {searchTerm}
         </div>
-        <div class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10">
-          {outputUnit || (isPartial ? 'Partial' : 'Result')}
+        <div
+          class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10"
+        >
+          {inputUnit || "Question"}
         </div>
       </div>
-    {:else}
-      <div class="w-6 h-6 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"></div>
-    {/if}
+
+      <div class="flex flex-col shrink-0 justify-center items-center w-12">
+        <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+        <div class="text-2xl text-zinc-900 dark:text-zinc-100">
+          <ArrowRightIcon size="1em" />
+        </div>
+        <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
+      </div>
+
+      {#if !isCalculating}
+        <div class="flex flex-col flex-1 items-center py-4 pr-4 min-w-0">
+          <div
+            class="overflow-hidden py-2 w-full font-semibold text-center whitespace-nowrap text-zinc-900 dark:text-white text-ellipsis"
+            style="--char-count: {result?.length ||
+              10}; font-size: min(2.5rem, max(1rem, calc(30vw / var(--char-count, 10))))"
+          >
+            {result}
+          </div>
+          <div
+            class="px-3 py-1 mt-1 text-sm rounded-md text-zinc-900 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-100/10"
+          >
+            {outputUnit || (isPartial ? "Partial" : "Result")}
+          </div>
+        </div>
+      {:else}
+        <div
+          class="w-6 h-6 rounded-full border-2 animate-spin border-zinc-300 dark:border-zinc-700 border-t-zinc-600 dark:border-t-zinc-300"
+        ></div>
+      {/if}
+    </div>
   </div>
-</div>
 {/if}

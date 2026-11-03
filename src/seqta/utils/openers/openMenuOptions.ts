@@ -1,5 +1,5 @@
 import type { SettingsState } from "@/types/storage";
-import { settingsState } from "../listeners/SettingsState";
+import { settingsState } from "../listeners/settingsState";
 import { applyMenuItemVisibility } from "../menuItemVisibility";
 import { ensureAnalyticsMenuOrder } from "@/seqta/utils/openers/analyticsMenuOrder";
 import { isMenuOptionsOpen, setMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";

@@ -1,4 +1,4 @@
-import type { Theme, ThemeCoverSlide, ThemeFlavour } from "@/interface/types/Theme";
+import type { Theme, ThemeCoverSlide, ThemeFlavour } from "@/interface/types/theme";
 
 export function isHiddenStoreTheme(theme: Theme): boolean {
   return theme.theme_role === "slave";

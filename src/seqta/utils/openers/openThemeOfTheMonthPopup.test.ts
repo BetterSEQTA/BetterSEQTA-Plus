@@ -1,9 +1,9 @@
 /** @jest-environment jsdom */
-import { OpenThemeOfTheMonthPopup } from "./OpenThemeOfTheMonthPopup";
-import { settingsState } from "../listeners/SettingsState";
+import { OpenThemeOfTheMonthPopup } from "./openThemeOfTheMonthPopup";
+import { settingsState } from "../listeners/settingsState";
 
-jest.mock("./PopupManager", () => ({ closePopup: jest.fn() }));
-jest.mock("../listeners/SettingsState", () => ({
+jest.mock("./popupManager", () => ({ closePopup: jest.fn() }));
+jest.mock("../listeners/settingsState", () => ({
   settingsState: { animations: false },
 }));
 

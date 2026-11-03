@@ -1,4 +1,4 @@
-import { getDataById, isIndexedDBSupported } from "@/interface/hooks/BackgroundDataLoader";
+import { getDataById, isIndexedDBSupported } from "@/interface/hooks/backgroundDataLoader";
 
 export async function appendBackgroundToUI() {
   const parent = document.getElementById("container");
