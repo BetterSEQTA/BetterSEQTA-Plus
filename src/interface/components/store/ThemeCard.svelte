@@ -1,4 +1,8 @@
 <script lang="ts">
+  import CheckIcon from "@lucide/svelte/icons/check";
+  import DownloadIcon from "@lucide/svelte/icons/download";
+  import HeartIcon from "@lucide/svelte/icons/heart";
+  import StarIcon from "@lucide/svelte/icons/star";
   import type { Theme } from '@/interface/types/Theme'
   import {
     masterGridDisplayDownloadCount,
@@ -95,9 +99,7 @@
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100 shadow-xs"
           aria-label="Featured theme"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
-          </svg>
+          <StarIcon class="w-3.5 h-3.5" fill="currentColor" />
           Featured
         </span>
       </div>
@@ -108,9 +110,7 @@
           class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-100 shadow-xs"
           aria-label="Installed"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-            <path fill-rule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clip-rule="evenodd" />
-          </svg>
+          <CheckIcon class="w-3.5 h-3.5" />
           Installed
         </span>
       </div>
@@ -119,7 +119,7 @@
     <button
       type="button"
       data-theme-favorite
-      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-white"
+      class="pointer-events-none absolute right-2 top-2 z-20 flex h-10 w-10 scale-[0.25] items-center justify-center rounded-full bg-black/50 text-white opacity-0 blur-xs transition-[opacity,transform,filter,background-color] duration-200 ease-[cubic-bezier(0.2,0,0,1)] hover:bg-black/70 active:scale-[0.96] group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100 group-hover:blur-0 focus-visible:pointer-events-auto focus-visible:scale-100 focus-visible:opacity-100 focus-visible:blur-0"
       onclick={handleFavoriteClick}
       aria-label={isLoggedIn
         ? theme.is_favorited
@@ -132,17 +132,7 @@
           : 'Add to favourites'
         : 'Sign in to favourite themes'}
     >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill={theme.is_favorited ? 'currentColor' : 'none'}
-        stroke="currentColor"
-        stroke-width="2"
-        class="h-5 w-5 {theme.is_favorited ? 'text-red-500' : ''}"
-        aria-hidden="true"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 0 1 6.364 0L12 7.636l1.318-1.318a4.5 4.5 0 0 1 6.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 0 1 0-6.364Z" />
-      </svg>
+      <HeartIcon class="h-5 w-5 {theme.is_favorited ? 'text-red-500' : ''}" fill={theme.is_favorited ? 'currentColor' : 'none'} />
     </button>
     {/if}
     <div class="absolute bottom-1 left-3 right-3 z-10 mb-1 flex flex-col gap-0.5">
@@ -152,16 +142,12 @@
       {/if}
       <div class="flex gap-3 text-xs font-medium text-white/90 drop-shadow-xs">
         <span class="flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-3.5 h-3.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-          </svg>
+          <DownloadIcon class="w-3.5 h-3.5" />
           {displayDownloadCount.toLocaleString()}
         </span>
         {#if showFavorites}
         <span class="flex items-center gap-1">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-3.5 h-3.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
+          <HeartIcon class="w-3.5 h-3.5" fill={theme.is_favorited ? 'currentColor' : 'none'} />
           {(theme.favorite_count ?? 0).toLocaleString()}
         </span>
         {/if}

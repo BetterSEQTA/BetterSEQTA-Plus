@@ -120,7 +120,6 @@ export const documentsJob: Job = {
             createdDate: doc.created_date,
             entityType: "document",
             route: "/documents",
-            icon: "\ueb6f",
           },
           actionId: "document",
           renderComponentId: "document",

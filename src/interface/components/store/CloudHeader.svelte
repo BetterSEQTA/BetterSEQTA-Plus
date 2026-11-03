@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CircleUserRoundIcon from "@lucide/svelte/icons/circle-user-round";
   import { onMount } from "svelte";
   import { cloudAuth } from "@/seqta/utils/CloudAuth";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
@@ -72,7 +73,7 @@
   <button
     type="button"
     onclick={handleButtonClick}
-    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950 focus:outline-hidden dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
+    class="flex items-center gap-2 bg-zinc-100/80 font-medium text-zinc-700 transition-colors duration-150 hover:bg-zinc-200 hover:text-zinc-950  dark:bg-zinc-900/50 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:hover:text-white {compact ? 'h-8 rounded-lg px-3 text-[0.75rem]' : 'h-12 rounded-full px-4 text-sm'}"
   >
     {#if cloudState.isLoggedIn}
       {#if cloudState.user?.pfpUrl}
@@ -94,7 +95,7 @@
         {cloudState.user?.displayName || cloudState.user?.username || cloudState.user?.email || "User"}
       </span>
     {:else}
-      <span class="text-sm font-IconFamily" aria-hidden="true">{'\ued53'}</span>
+      <CircleUserRoundIcon size="1em" class="text-sm" />
       <span>Sign in</span>
     {/if}
   </button>

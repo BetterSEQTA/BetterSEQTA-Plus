@@ -1,3 +1,4 @@
+import type { SearchIconName } from "./searchIcons";
 import type { HomeTimetableLesson } from "@/seqta/utils/loaders/homePageTypes";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
@@ -7,7 +8,7 @@ export interface BaseCommandItem {
   id: string;
   text: string;
   category: string;
-  icon: string;
+  icon: SearchIconName;
   action: () => void;
   keywords?: string[];
   priority?: number;
@@ -134,7 +135,7 @@ function formatDate(date: Date): string {
 const staticCommands: StaticCommandItem[] = [
   {
     id: "home",
-    icon: "\ueb4c",
+    icon: "house",
     category: "navigation",
     text: "Home",
     action: () => {
@@ -145,7 +146,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "messages",
-    icon: "\uebfd",
+    icon: "message-square",
     category: "navigation",
     text: "Direct Messages",
     action: () => {
@@ -155,7 +156,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "timetable",
-    icon: "\ue9cd",
+    icon: "calendar",
     category: "navigation",
     text: "Timetable",
     action: () => {
@@ -165,7 +166,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "Current Lesson",
-    icon: "\ue9a5",
+    icon: "book-open",
     category: "navigation",
     text: "Current Lesson",
     priority: 4,
@@ -180,7 +181,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "assessments",
-    icon: "\ueac3",
+    icon: "clipboard-list",
     category: "navigation",
     text: "Assessments",
     keybind: ["alt+a"],
@@ -192,7 +193,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "dashboard",
-    icon: "\ueb87",
+    icon: "layout-dashboard",
     category: "navigation",
     text: "Dashboard",
     priority: 4,
@@ -202,7 +203,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "compose-message",
-    icon: "\ue924",
+    icon: "message-square-plus",
     category: "action",
     text: "Compose Message",
     action: () => {
@@ -222,7 +223,7 @@ const staticCommands: StaticCommandItem[] = [
   },
   {
     id: "toggle-dark-mode",
-    icon: "\uecfe",
+    icon: "sun",
     category: "action",
     text: "Toggle Dark Mode",
     action: () => (settingsState.DarkMode = !settingsState.DarkMode),

@@ -116,7 +116,6 @@ export const folioJob: Job = {
             fileCount: Array.isArray(detail?.files) ? detail!.files!.length : 0,
             entityType: "folio",
             route: "/folios/read",
-            icon: "\ueb16",
           },
           actionId: "folio",
           renderComponentId: "folio",

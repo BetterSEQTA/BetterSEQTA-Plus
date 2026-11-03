@@ -1,4 +1,6 @@
 <script lang="ts">
+  import PipetteIcon from "@lucide/svelte/icons/pipette";
+  import TrashIcon from "@lucide/svelte/icons/trash";
   import { untrack } from "svelte";
   import { slide } from "svelte/transition";
   import {
@@ -245,7 +247,7 @@
         type="button"
         role="radio"
         aria-checked={model.kind === mode.kind}
-        class="relative py-1 text-xs font-medium rounded-md transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:focus-visible:outline-white {model.kind === mode.kind
+        class="relative py-1 text-xs font-medium rounded-md transition-colors duration-200     {model.kind === mode.kind
           ? 'text-zinc-900 dark:text-white'
           : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white'}"
         onclick={() => setMode(mode.kind)}
@@ -292,7 +294,7 @@
             type="number"
             min="0"
             max="360"
-            class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number focus:ring-0"
+            class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number"
             aria-label="Gradient angle in degrees"
             value={model.angle}
             oninput={(event) => {
@@ -304,14 +306,12 @@
       {/if}
       <button
         type="button"
-        class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:outline-white"
+        class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 disabled:pointer-events-none dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
         aria-label="Remove selected stop"
         disabled={stops.length <= 2}
         onclick={() => removeStop(selected)}
       >
-        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" />
-        </svg>
+        <TrashIcon class="size-4" />
       </button>
     </div>
   {/if}
@@ -319,7 +319,7 @@
 
   <div
     bind:this={area}
-    class="relative h-40 rounded-lg cursor-crosshair touch-none outline-none ring-1 ring-inset ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-900 dark:ring-white/10 dark:focus-visible:ring-white"
+    class="relative h-40 rounded-lg cursor-crosshair touch-none outline-none ring-1 ring-inset ring-black/10 dark:ring-white/10"
     style="background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl({hsva.h} 100% 50%));"
     role="slider"
     tabindex="0"
@@ -345,13 +345,11 @@
     {#if EyeDropper}
       <button
         type="button"
-        class="grid shrink-0 place-items-center rounded-md transition size-8 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:outline-white"
+        class="grid shrink-0 place-items-center rounded-md transition size-8 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
         aria-label="Pick a colour from the screen"
         onclick={pickFromScreen}
       >
-        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="m2 22 1-1h3l9-9M3 21v-3l9-9m3-3 3.5-3.5a2.1 2.1 0 0 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" />
-        </svg>
+        <PipetteIcon class="size-4" />
       </button>
     {/if}
     <div class="flex flex-col flex-1 gap-3">
@@ -387,7 +385,7 @@
     <label class="flex flex-1 gap-1.5 items-center px-2.5 min-w-0 h-8 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70">
       <span class="text-zinc-500 dark:text-zinc-400">#</span>
       <input
-        class="flex-1 p-0 min-w-0 font-mono text-xs uppercase bg-transparent border-0 outline-none select-text focus:ring-0"
+        class="flex-1 p-0 min-w-0 font-mono text-xs uppercase bg-transparent border-0 outline-none select-text"
         aria-label="Hex colour"
         value={hex.slice(1)}
         spellcheck="false"
@@ -408,7 +406,7 @@
         type="number"
         min="0"
         max="100"
-        class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number focus:ring-0"
+        class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number"
         aria-label="Opacity percent"
         value={Math.round(active.a * 100)}
         oninput={(event) => {
@@ -424,7 +422,7 @@
       {#each shownPresets as preset (preset)}
         <button
           type="button"
-          class="rounded-md ring-1 ring-inset transition aspect-square ring-black/10 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:ring-white/10 dark:focus-visible:outline-white"
+          class="rounded-md ring-1 ring-inset transition aspect-square ring-black/10 hover:scale-110 dark:ring-white/10"
           style="background: {asLayer(preset)}, {CHECKERBOARD};"
           aria-label="Apply preset {preset}"
           onclick={() => applyPreset(preset)}
@@ -445,15 +443,6 @@
     box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
     transform: translate(-50%, -50%);
     transition: transform 120ms ease, box-shadow 120ms ease;
-  }
-
-  .handle:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px rgb(24 24 27), 0 1px 3px rgb(0 0 0 / 0.3);
-  }
-
-  :global(.dark) .handle:focus-visible {
-    box-shadow: 0 0 0 2px white, 0 1px 3px rgb(0 0 0 / 0.3);
   }
 
   .handle-selected {
@@ -484,15 +473,6 @@
     border-radius: 9999px;
     cursor: pointer;
     box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
-  }
-
-  .picker-track:focus-visible {
-    outline: 2px solid rgb(24 24 27);
-    outline-offset: 2px;
-  }
-
-  :global(.dark) .picker-track:focus-visible {
-    outline-color: white;
   }
 
   .picker-track::-webkit-slider-thumb {

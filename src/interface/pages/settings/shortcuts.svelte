@@ -1,4 +1,6 @@
 <script lang="ts">
+  import XIcon from "@lucide/svelte/icons/x";
+  import UploadIcon from "@lucide/svelte/icons/upload";
   import MotionDiv from '@/interface/components/MotionDiv.svelte';
   import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
   import Switch from "@/interface/components/Switch.svelte"
@@ -181,12 +183,10 @@
                         }
                       }}
                     >
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <XIcon class="w-4 h-4" />
                     </span>
                   {:else}
-                    <span class="font-IconFamily">{ '\ued47' }</span>
+                    <UploadIcon size="1em"  />
                     <span class="ml-2">SVG icon <span class="text-xs italic text-zinc-400 dark:text-zinc-500">(Optional)</span></span>
                   {/if}
                 </button>
@@ -215,9 +215,7 @@
       <div class="flex justify-between items-center px-4 py-3">
         {shortcut.name}
         <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <XIcon class="w-6 h-6" />
         </button>
       </div>
       {/if}

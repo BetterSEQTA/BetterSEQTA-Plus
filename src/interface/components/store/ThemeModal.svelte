@@ -1,4 +1,11 @@
 <script lang="ts">
+import ChevronLeftIcon from "@lucide/svelte/icons/chevron-left";
+import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+import DownloadIcon from "@lucide/svelte/icons/download";
+import HeartIcon from "@lucide/svelte/icons/heart";
+import LoaderCircleIcon from "@lucide/svelte/icons/loader-circle";
+import StarIcon from "@lucide/svelte/icons/star";
+import XIcon from '@lucide/svelte/icons/x'
 import type { Theme } from '@/interface/types/Theme'
 import { fade } from 'svelte/transition'
 import { animate } from 'motion'
@@ -220,11 +227,11 @@ tabindex="-1"
 <div class="absolute top-0 right-0 flex gap-1 items-center">
 <button
 type="button"
-class="p-2 text-xl font-bold text-gray-600 font-IconFamily dark:text-gray-200 transition-colors duration-200 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
+class="p-2 text-xl font-bold text-gray-600 dark:text-gray-200 transition-colors duration-200 rounded-lg hover:bg-black/5 dark:hover:bg-white/10"
 onclick={() => hideModal()}
 aria-label="Close"
 >
-{'\ued8a'}
+<XIcon size="1em"  />
 </button>
 </div>
 <div class="flex flex-wrap items-center gap-2 pr-12 mb-2">
@@ -244,13 +251,7 @@ Community
 class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-100"
 aria-label="Featured theme"
 >
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-3.5 h-3.5">
-<path
-fill-rule="evenodd"
-d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"
-clip-rule="evenodd"
-/>
-</svg>
+<StarIcon class="w-3.5 h-3.5" fill="currentColor" />
 Featured
 </span>
 {/if}
@@ -263,9 +264,7 @@ By {theme.author}
 <div class="flex gap-4 mb-4 text-sm text-zinc-600 dark:text-zinc-400">
 {#if !adminPreviewMode}
 <span class="flex items-center gap-1.5">
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
-<path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-</svg>
+<DownloadIcon class="w-4 h-4" />
 {modalDisplayDownloadCount.toLocaleString()} downloads
 </span>
 {:else}
@@ -273,9 +272,7 @@ By {theme.author}
 {/if}
 {#if showFavorites}
 <span class="flex items-center gap-1.5">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="1.5" class="w-4 h-4">
-<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-</svg>
+<HeartIcon class="w-4 h-4" fill={theme.is_favorited ? 'currentColor' : 'none'} />
 {(theme.favorite_count ?? 0).toLocaleString()} favorites
 </span>
 {/if}
@@ -301,22 +298,18 @@ onemblaInit={heroInit}
 <button
 type="button"
 onclick={heroPrev}
-class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white"
 aria-label="Previous hero slide"
 >
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-5 h-5">
-<path stroke-linecap="round" stroke-linejoin="round" d="m15.75 19.5-7.5-7.5 7.5-7.5" />
-</svg>
+<ChevronLeftIcon class="w-5 h-5" />
 </button>
 <button
 type="button"
 onclick={heroNext}
-class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+class="p-2 rounded-full bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white"
 aria-label="Next hero slide"
 >
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-5 h-5">
-<path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-</svg>
+<ChevronRightIcon class="w-5 h-5" />
 </button>
 </div>
 {/if}
@@ -375,7 +368,7 @@ Remove
 type="button"
 onclick={() => onMasterVariantClick('install')}
 disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
 title="Install {theme.name} (master)"
 >
 {#if masterThumb}
@@ -445,7 +438,7 @@ Remove
 type="button"
 onclick={() => onFlavourClick(flavourIdx, f.id, 'install')}
 disabled={installingId !== null}
-class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
+class="relative w-full overflow-hidden rounded-2xl min-h-38 sm:min-h-44 text-left shadow-md transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 group ring-1 ring-black/10 dark:ring-white/10"
 title="Install {f.name}"
 >
 {#if thumb}
@@ -474,14 +467,12 @@ title="Install {f.name}"
 {#if showFavorites && toggleFavorite && theme}
 <button
 type="button"
-class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800 {theme.is_favorited ? 'text-red-500 bg-red-500/10 dark:bg-red-500/20' : 'bg-zinc-200 dark:bg-zinc-700 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600'}"
+class="flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 hover:scale-105 active:scale-95      {theme.is_favorited ? 'text-red-500 bg-red-500/10 dark:bg-red-500/20' : 'bg-zinc-200 dark:bg-zinc-700 dark:text-white hover:bg-zinc-300 dark:hover:bg-zinc-600'}"
 onclick={handleFavoriteClick}
 title={isLoggedIn ? (theme.is_favorited ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
 aria-label={theme.is_favorited ? 'Unfavorite' : 'Favorite'}
 >
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={theme.is_favorited ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="w-5 h-5">
-<path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-</svg>
+<HeartIcon class="w-5 h-5" fill={theme.is_favorited ? 'currentColor' : 'none'} />
 {theme.is_favorited ? 'Favorited' : 'Favorite'}
 </button>
 {/if}
@@ -502,12 +493,10 @@ type="button"
 onclick={() => runApply(theme.id)}
 disabled={installingId !== null}
 style={variantApplyStyles(theme.id).apply}
-class="relative flex justify-center items-center px-4 py-2 min-w-32 rounded-lg transition-all duration-200 hover:brightness-90 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-offset-2 disabled:opacity-70"
+class="relative flex justify-center items-center px-4 py-2 min-w-32 rounded-lg transition-all duration-200 hover:brightness-90 active:scale-95 disabled:opacity-70"
 >
 {#if installingId === theme.id}
-<svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
-</svg>
+<LoaderCircleIcon class="absolute w-4 h-4 animate-spin" />
 {/if}
 <span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Apply</span>
 </button>
@@ -516,12 +505,10 @@ class="relative flex justify-center items-center px-4 py-2 min-w-32 rounded-lg t
 type="button"
 onclick={() => runRemove(theme.id)}
 disabled={installingId !== null}
-class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-70"
 >
 {#if installingId === theme.id}
-<svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
-</svg>
+<LoaderCircleIcon class="absolute w-4 h-4 animate-spin" />
 {/if}
 <span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">Remove</span>
 </button>
@@ -530,12 +517,10 @@ class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black r
 type="button"
 onclick={() => runInstall(theme.id)}
 disabled={installingId !== null}
-class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-70"
+class="relative flex justify-center items-center px-4 py-2 min-w-32 text-black rounded-lg dark:text-white bg-zinc-300 dark:bg-zinc-700 dark:hover:bg-zinc-600/50 hover:bg-zinc-200 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-70"
 >
 {#if installingId === theme.id}
-<svg class="absolute w-4 h-4 animate-spin" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-<path stroke="currentColor" fill="currentColor" class="origin-center animate-spin-fast" d="M2,12A11.2,11.2,0,0,1,13,1.05C12.67,1,12.34,1,12,1a11,11,0,0,0,0,22c.34,0,.67,0,1-.05C6,23,2,17.74,2,12Z"/>
-</svg>
+<LoaderCircleIcon class="absolute w-4 h-4 animate-spin" />
 {/if}
 <span class="{installingId === theme.id ? 'opacity-0' : 'opacity-100'}">{installActionLabel}</span>
 </button>
@@ -572,7 +557,7 @@ class="relative z-0 hover:z-20 w-full cursor-pointer rounded-xl overflow-hidden 
 <div class="flex justify-center items-center p-8 text-zinc-600 dark:text-zinc-300">
 <button
 type="button"
-class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-800"
+class="px-4 py-2 rounded-lg bg-zinc-200 dark:bg-zinc-700 transition-all duration-200 hover:scale-105 active:scale-95 dark:text-white"
 onclick={() => hideModal()}
 >
 Close

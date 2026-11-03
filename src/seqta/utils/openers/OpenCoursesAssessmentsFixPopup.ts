@@ -159,16 +159,9 @@ function injectCoursesFixPopupStyles() {
       transition: all 0.2s ease-in-out !important;
     }
 
-    #whatsnewbk.bsplus-courses-fix-overlay .bsplus-courses-fix-btn:focus {
-      outline: none !important;
-    }
-
     #whatsnewbk.bsplus-courses-fix-overlay .bsplus-courses-fix-btn:focus-visible {
-      box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #2563eb !important;
-    }
-
-    #whatsnewbk.bsplus-courses-fix-overlay.bsplus-courses-fix-overlay--dark .bsplus-courses-fix-btn:focus-visible {
-      box-shadow: 0 0 0 2px #1f2937, 0 0 0 4px #2563eb !important;
+      outline: var(--bsplus-focus-ring) !important;
+      outline-offset: 2px !important;
     }
 
     #whatsnewbk.bsplus-courses-fix-overlay .bsplus-courses-fix-btn--primary {

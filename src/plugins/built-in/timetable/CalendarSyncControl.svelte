@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CalendarIcon from "@lucide/svelte/icons/calendar";
   import { onMount } from "svelte";
   import type { Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
@@ -584,7 +585,7 @@
   >
     <span class="bsplus-cal-trigger-fill" aria-hidden="true"></span>
     <span class="bsplus-cal-trigger-content">
-      <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xe9cd;</span>
+      <CalendarIcon size="1em" class="bsplus-cal-trigger-icon" />
       <span class="bsplus-cal-trigger-text">{triggerStatusText}</span>
     </span>
   </button>
@@ -826,7 +827,7 @@
     />
     <path
       d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
-      fill="#EB4335"
+      fill="#EA4335"
     />
   </svg>
 {/snippet}
@@ -895,8 +896,7 @@
     gap: 6px;
   }
 
-  .bsplus-cal-trigger-icon {
-    font-family: "IconFamily" !important;
+  .bsplus-cal-trigger-content :global(.bsplus-cal-trigger-icon) {
     font-size: 16px;
     line-height: 1;
     opacity: 0.9;

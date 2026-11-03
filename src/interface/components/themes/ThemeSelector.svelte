@@ -1,4 +1,10 @@
 <script lang="ts">
+  import HeartIcon from "@lucide/svelte/icons/heart";
+  import CloudUploadIcon from "@lucide/svelte/icons/cloud-upload";
+  import PencilIcon from "@lucide/svelte/icons/pencil";
+  import PlusIcon from "@lucide/svelte/icons/plus";
+  import ShoppingCartIcon from "@lucide/svelte/icons/shopping-cart";
+  import UploadIcon from "@lucide/svelte/icons/upload";
   import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
   import { onDestroy, onMount } from 'svelte'
   import browser from '@/lib/browser'
@@ -202,9 +208,7 @@
                   tabindex="-1"
                   title={cloudLoggedIn ? ((favoriteStatus[theme.id] ?? false) ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="h-5 w-5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
+                  <HeartIcon class="h-5 w-5" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} />
                 </div>
               {/if}
 
@@ -216,7 +220,7 @@
                 tabindex="-1"
                 title="Export theme"
               >
-                <span class="text-lg font-IconFamily">&#xecb3;</span>
+                <UploadIcon size="1em" class="text-lg" />
               </div>
 
               {#if isLocalCustomTheme(theme)}
@@ -228,7 +232,7 @@
                   tabindex="-1"
                   title="Edit theme"
                 >
-                  <span class="text-lg font-IconFamily">&#xeaa5;</span>
+                  <PencilIcon size="1em" class="text-lg" />
                 </div>
                 <div
                   class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
@@ -238,7 +242,7 @@
                   tabindex="-1"
                   title="Submit to community"
                 >
-                  <span class="text-lg font-IconFamily">&#xe9fc;</span>
+                  <CloudUploadIcon size="1em" class="text-lg" />
                 </div>
               {/if}
             </div>
@@ -287,7 +291,7 @@
         onclick={() => void openStorePage()}
         class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
       >
-        <span class="text-xl font-IconFamily">&#xecc5;</span>
+        <ShoppingCartIcon size="1em" class="text-xl" />
         <span class="ml-2">Theme Store</span>
       </button>
 
@@ -295,7 +299,7 @@
         onclick={() => void openThemeCreator()}
         class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
       >
-        <span class="text-xl font-IconFamily">&#xec60;</span>
+        <PlusIcon size="1em" class="text-xl" />
         <span class="ml-2">Create your own</span>
       </button>
     {/if}

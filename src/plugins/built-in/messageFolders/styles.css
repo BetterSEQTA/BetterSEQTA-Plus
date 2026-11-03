@@ -233,9 +233,9 @@
     box-shadow 0.2s ease;
 }
 
-.bsplus-folder-input input:focus {
-  border-color: var(--better-main, #007bff);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+.bsplus-folder-input input:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 .bsplus-folder-icon-btn {

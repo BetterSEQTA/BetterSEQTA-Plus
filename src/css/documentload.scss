@@ -26,28 +26,17 @@
   font-display: swap;
 }
 
-@font-face {
-  font-family: "IconFamily";
-  src: url("@/resources/fonts/IconFamily.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: block;
-}
-
 @layer base, override;
 
 @layer override {
   .legacy-root,
-  .legacy-root *:not(.iconFamily) {
+  .legacy-root * {
     font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
   }
+}
 
-  .iconFamily,
-  .iconFamily *,
-  [class~="iconFamily"],
-  [class~="iconFamily"] * {
-    font-family: "IconFamily" !important;
-  }
+:root {
+  --bsplus-focus-ring: 2px solid var(--text-primary, currentColor);
 }
 
 html {
@@ -56,126 +45,78 @@ html {
   font-family: Roboto, system-ui, -apple-system, sans-serif !important;
 }
 
-.tooltip svg {
-  fill: var(--theme-primary);
-}
-.tooltip {
-  display: inline-block;
-  z-index: 5 !important;
-  width: 28px;
-  background: none;
-  box-shadow: none;
-  padding: 2px;
-  position: absolute;
-}
-.tooltip .tooltiptext {
-  width: 120px;
-  transform: scale(0);
-  transition: transform 0.2s;
-  transform-origin: top;
-  background: var(--background-primary);
-  color: var(--text-primary);
+.bsplus-tooltip-bubble {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  min-width: 50px;
+  max-width: 220px;
+  padding: 4px;
+  border: 0;
+  border-radius: 8px;
+  overflow: visible;
+  background: var(--text-primary);
+  color: var(--background-primary);
   text-align: center;
-  border-radius: 6px;
-  padding: 2px;
-  position: absolute;
-  z-index: 1;
-  top: 105%;
-  left: 50%;
-  margin-left: -62px;
+  transform: translateX(-50%) scale(0);
+  transform-origin: top center;
+  transition:
+    transform 0.15s,
+    overlay 0.15s allow-discrete,
+    display 0.15s allow-discrete;
+
+  &:popover-open {
+    transform: translateX(-50%) scale(1);
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    width: 100%;
+    height: 8px;
+  }
+
+  &::after {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border: 5px solid transparent;
+    border-bottom-color: var(--text-primary);
+  }
+
+  a,
+  button {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    padding: 2px 8px;
+    color: inherit;
+    text-decoration: none;
+    transition: background 200ms;
+
+    &:hover {
+      background: color-mix(in srgb, var(--background-primary) 20%, transparent);
+    }
+  }
 }
-.tooltip .tooltiptext::after {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent transparent var(--text-primary) transparent;
+.bsplus-tooltip:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
+  border-radius: 50%;
 }
-.tooltiptext p:hover {
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.3) !important;
-  transition: 200ms;
-}
-.tooltiptext p {
-  border-radius: 8px !important;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  margin: 2px;
-}
-.tooltip:hover .tooltiptext {
-  transform: scale(1);
-  transform-origin: top;
-  transition: transform 0.2s;
-}
-body:has(.outside-container:not(.hide)) #AddedSettings.tooltip:hover > .tooltiptext {
-  transform: scale(0);
-}
-.assessmenttooltip svg {
-  fill: var(--text-primary);
+@starting-style {
+  .bsplus-tooltip-bubble:popover-open {
+    transform: translateX(-50%) scale(0);
+  }
 }
 .assessmenttooltip {
-  bottom: 0px;
+  position: absolute;
+  bottom: 0;
   left: 5px;
-}
-.topmenutooltip {
-  top: 115% !important;
-  background: var(--text-primary) !important;
-  color: var(--theme-primary) !important;
-}
-.fixed-tooltip {
-  display: inline-block;
-  z-index: 5 !important;
   width: 28px;
-  background: none;
-  box-shadow: none;
   padding: 2px;
-  position: absolute;
-}
-.fixed-tooltip svg {
-  fill: var(--theme-primary);
-}
-.tooltiptext-fixed {
-  width: 120px;
-  transform: scale(0);
-  transition: transform 0.2s;
-  transform-origin: top;
-  background: var(--background-primary);
-  color: var(--text-primary);
-  text-align: center;
-  border-radius: 6px;
-  padding: 2px;
-  position: fixed;
-  z-index: 1000;
-  top: 0;
-  left: 0;
-  margin-left: -62px;
-}
-.tooltiptext-fixed::after {
-  content: "";
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: transparent transparent var(--text-primary) transparent;
-}
-.tooltiptext-fixed.show {
-  transform: scale(1);
-  transform-origin: top;
-  transition: transform 0.2s;
-}
-.tooltiptext-fixed p:hover {
-  cursor: pointer;
-  background: rgba(0, 0, 0, 0.3) !important;
-  transition: 200ms;
-}
-.tooltiptext-fixed p {
-  border-radius: 8px !important;
-  padding-top: 2px;
-  padding-bottom: 2px;
-  margin: 2px;
 }

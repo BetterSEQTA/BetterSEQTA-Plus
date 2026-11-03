@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
   let { value, onChange, options }: {
     value: string,
     onChange: (newValue: string) => void,
@@ -103,13 +104,7 @@
       {options.find((option) => option.value === value)?.label ?? value}
     </span>
     <span class="select-icon shrink-0" aria-hidden="true">
-      <svg viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
-        <path
-          fill-rule="evenodd"
-          d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.168l3.71-3.938a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z"
-          clip-rule="evenodd"
-        />
-      </svg>
+      <ChevronDownIcon class="h-4 w-4" />
     </span>
   </button>
 
@@ -147,8 +142,7 @@
     --sel-border: var(--theme-offset-bg, var(--theme-secondary, #e5e7eb));
     --sel-bg: var(--theme-primary, #ffffff);
     --sel-surface: var(--theme-secondary, #e5e7eb);
-    --sel-focus-border: color-mix(in srgb, var(--text-primary) 22%, var(--theme-secondary, #e5e7eb) 78%);
-    --sel-ring: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
+
     --sel-menu-shadow:
       0 10px 25px -5px rgb(0 0 0 / 0.25),
       0 8px 10px -6px rgb(0 0 0 / 0.2);
@@ -160,16 +154,8 @@
     color: var(--text-primary);
   }
 
-  .select-trigger:hover,
-  .select-trigger:focus-visible {
-    outline: none;
+  .select-trigger:hover {
     background: var(--sel-surface);
-    border-color: var(--sel-border);
-  }
-
-  .select-trigger:focus-visible {
-    border-color: var(--sel-focus-border);
-    box-shadow: var(--sel-ring);
   }
 
   .select-icon {
@@ -185,7 +171,6 @@
 
   .select-menu:focus-visible {
     outline: none;
-    box-shadow: var(--sel-menu-shadow), var(--sel-ring);
   }
 
   .select-option {

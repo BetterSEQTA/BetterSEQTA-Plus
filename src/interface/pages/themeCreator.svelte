@@ -1,4 +1,10 @@
 <script lang="ts">
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
+  import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
+  import Minimize2Icon from "@lucide/svelte/icons/minimize-2";
+  import CircleQuestionMarkIcon from "@lucide/svelte/icons/circle-question-mark";
+  import PlusIcon from "@lucide/svelte/icons/plus";
+  import XIcon from "@lucide/svelte/icons/x";
   import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import { fade } from 'svelte/transition';
@@ -28,8 +34,8 @@
   import { submitLocalThemeToCommunity } from '@/seqta/utils/customThemes/submitLocalTheme'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
   import { cloudAuth } from '@/seqta/utils/CloudAuth'
-  import LucideMoon from '@/interface/components/icons/LucideMoon.svelte'
-  import LucideSun from '@/interface/components/icons/LucideSun.svelte'
+  import MoonIcon from '@lucide/svelte/icons/moon'
+  import SunIcon from '@lucide/svelte/icons/sun'
   import SidebarAppearance from '@/interface/components/SidebarAppearance.svelte'
   import { FONT_PRESETS, DEFAULT_FONT_ID } from '@/seqta/ui/fonts/presets'
   import { applySelectedFont, ensureFontPickerFontsLoaded } from '@/seqta/ui/fonts/Manager'
@@ -137,7 +143,7 @@
 
   function toggleAccordion(title: string, e: MouseEvent | KeyboardEvent) {
     // if the target is the fullscreen button return
-    if (e.target instanceof HTMLButtonElement && e.target.classList.contains('fullscreen-toggle')) {
+    if (e.target instanceof Element && e.target.closest('.fullscreen-toggle')) {
       return;
     }
 
@@ -327,12 +333,12 @@
           <div class="flex justify-center items-center h-full text-xl font-light text-zinc-500 dark:text-zinc-300">
             {#if item.type === 'codeEditor'}
               <!-- Fullscreen toggle button -->
-              <button onclick={toggleCodeEditorFullscreen} class="px-2 mr-2 text-lg font-IconFamily fullscreen-toggle">
-                {'\uebdb'}
+              <button onclick={toggleCodeEditorFullscreen} class="px-2 mr-2 text-lg fullscreen-toggle" aria-label="Expand editor">
+                <Maximize2Icon size="1em"  />
               </button>
             {/if}
             
-            <span class='font-IconFamily transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}'>{'\ue9e6'}</span>
+            <ChevronDownIcon size="1em" class="transition-transform duration-300 {closedAccordions.includes(item.title) ? 'rotate-180' : ''}" />
           </div>
         {/if}
       </div>
@@ -368,7 +374,7 @@
                     class="grow flex-3 rounded-lg border-0 bg-zinc-200 p-2 transition dark:bg-zinc-600/50 dark:placeholder-zinc-300 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
                   />
                   <button onclick={() => onRemoveImage(image.id)} class="p-2 transition dark:text-white" type="button">
-                    <span class='text-xl font-IconFamily'>{'\ued8c'}</span>
+                    <XIcon size="1em" class="text-xl" />
                   </button>
                 </div>
                 <label class="block text-xs text-zinc-600 dark:text-zinc-300">
@@ -388,7 +394,7 @@
             {/each}
       
             <div class="flex overflow-hidden relative gap-1 justify-center place-items-center w-full h-8 rounded-lg transition bg-zinc-200 dark:bg-zinc-700">
-              <span class='font-IconFamily'>{'\uec60'}</span>
+              <PlusIcon size="1em"  />
               <span class='dark:text-white'>Add image</span>
               <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
@@ -404,13 +410,13 @@
                   out:fade={{ duration: 150 }}
                 >
                   {#if (item.props as LightDarkToggleProps).state}
-                    <LucideMoon class="w-5 h-5" />
+                    <MoonIcon class="w-5 h-5" />
                   {:else}
-                    <LucideSun class="w-5 h-5" />
+                    <SunIcon class="w-5 h-5" />
                   {/if}
                 </span>
               {/key}
-              <span class="opacity-0 inline-flex"><LucideMoon class="w-5 h-5" /></span>
+              <span class="opacity-0 inline-flex"><MoonIcon class="w-5 h-5" /></span>
             </button>
           {/if}
         </div>
@@ -425,7 +431,7 @@
       <div class="sticky top-0 px-2 h-screen">
         <div class="flex justify-between items-center my-4">
           <h2 class="text-xl font-bold">Custom CSS</h2>
-          <button onclick={toggleCodeEditorFullscreen} class="pr-14 text-xl font-IconFamily">{'\uec06'}</button>
+          <button onclick={toggleCodeEditorFullscreen} class="pr-14 text-xl" aria-label="Collapse editor"><Minimize2Icon size="1em"  /></button>
         </div>
         <CodeEditor
           className="editorHeight"
@@ -445,11 +451,11 @@
         aria-label="Close theme creator"
         onclick={() => void CloseThemeCreator()}
       >
-        ✕
+        <XIcon size="1em" />
       </button>
     </div>
     <a href='https://docs.betterseqta.org/theme-creation/' target='_blank' rel='noopener noreferrer' class='text-sm font-light text-zinc-500 dark:text-zinc-400'>
-      <span class='pr-0.5 no-underline font-IconFamily'>{'\ueb44'}</span>
+      <CircleQuestionMarkIcon size="1em" class="pr-0.5" />
       <span class='underline'>
         Need help? Check out the docs!
       </span>
@@ -473,7 +479,7 @@
         id='themeDescription'
         placeholder="Don't worry, this one's optional!"
         bind:value={theme.description}
-        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
+        class='p-2 w-full rounded-lg border-0 transition dark:placeholder-zinc-300 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600'></textarea>
     </div>
 
     <Divider />
@@ -531,7 +537,7 @@
               class="min-w-0 flex-1 rounded-lg border-0 bg-zinc-100 p-2 text-sm dark:bg-zinc-600 dark:text-white"
             />
             <button type="button" class="p-2 dark:text-white" onclick={() => onRemoveImage(image.id)}>
-              <span class="text-xl font-IconFamily">{'\ued8c'}</span>
+              <XIcon size="1em" class="text-xl" />
             </button>
           </div>
           <select
@@ -548,7 +554,7 @@
       {/each}
 
       <label class="flex h-10 cursor-pointer items-center justify-center gap-2 rounded-lg bg-zinc-200 dark:bg-zinc-700">
-        <span class="font-IconFamily">{'\uec60'}</span>
+        <PlusIcon size="1em"  />
         <span class="text-sm dark:text-white">Add image</span>
         <input type="file" accept="image/*" class="hidden" onchange={onImageUpload} />
       </label>
@@ -613,7 +619,7 @@
             .filter(Boolean);
           theme = { ...theme, adaptiveCssVariables: lines };
         }}
-        class="p-2 mt-2 w-full min-h-20 font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:outline-hidden focus:ring-1 focus:ring-zinc-100 dark:focus:ring-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
+        class="p-2 mt-2 w-full min-h-20 font-mono text-sm rounded-lg border-0 transition dark:placeholder-zinc-400 bg-zinc-200 dark:bg-zinc-700 focus:bg-zinc-300/50 dark:focus:bg-zinc-600"
       ></textarea>
     </div>
 

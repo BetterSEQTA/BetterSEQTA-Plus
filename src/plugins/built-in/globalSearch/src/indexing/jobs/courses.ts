@@ -163,7 +163,6 @@ export const coursesJob: Job = {
             isActive: true,
             route: `/courses/${subject.programme}:${subject.metaclass}`,
             entityType: "course",
-            icon: "\ueb4d",
           },
           actionId: "course",
           renderComponentId: "course",

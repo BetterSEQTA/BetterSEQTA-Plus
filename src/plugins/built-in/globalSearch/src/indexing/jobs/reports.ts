@@ -83,7 +83,6 @@ export const reportsJob: Job = {
           filename: report.filename,
           entityType: "report",
           route: "/reports",
-          icon: "\ueb70",
         },
         actionId: "report",
         renderComponentId: "report",

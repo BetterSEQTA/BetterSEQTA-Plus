@@ -90,7 +90,6 @@ export const goalsJob: Job = {
               updatedAt: goal.updated,
               entityType: "goal",
               route: `/goals/${year}`,
-              icon: "\uea15",
             },
             actionId: "goal",
             renderComponentId: "goal",

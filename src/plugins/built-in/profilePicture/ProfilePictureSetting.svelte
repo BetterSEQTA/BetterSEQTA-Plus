@@ -1,4 +1,6 @@
 <script lang="ts">
+  import RotateCwIcon from "@lucide/svelte/icons/rotate-cw";
+  import UploadIcon from "@lucide/svelte/icons/upload";
   import localforage from 'localforage'
   import { onMount } from 'svelte'
   import browser from '@/lib/browser'
@@ -127,7 +129,7 @@
         aria-label="Refresh from cloud"
         onclick={() => runCloud(pullCloudProfilePictureFromServer)}
       >
-        <span class="text-lg font-IconFamily dark:text-white">{'\uec79'}</span>
+        <RotateCwIcon size="1em" class="text-lg dark:text-white" />
       </button>
       <div class="w-px h-8 shrink-0 bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></div>
     {/if}
@@ -161,7 +163,7 @@
         </div>
       {:else}
         <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap">
-          <span class="text-lg font-IconFamily">{'\ued47'}</span>
+          <UploadIcon size="1em" class="text-lg" />
           <span>Upload</span>
         </div>
       {/if}

@@ -1,3 +1,5 @@
+import { icon } from "@/lib/icon";
+import { LogOut, Moon, Sun, Wrench } from "lucide-static";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
 import { addExtensionSettings } from "@/seqta/utils/adders/AddExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
@@ -10,6 +12,8 @@ import { waitForElm } from "@/seqta/utils/waitForElm";
 
 import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { appendBackgroundToUI } from "./ImageBackgrounds";
+import { attachTooltip } from "@/seqta/utils/tooltip";
+import { pageIcon } from "@/seqta/utils/pageIcons";
 import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -19,8 +23,6 @@ import {
   openThemeToggleSurprise,
   THEME_TOGGLE_SURPRISE_TRIGGER_AT,
 } from "@/seqta/utils/openers/openThemeToggleSurprise";
-import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
-import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import {
   ensureTitlebarFounderBadgeMounted,
   refreshTitlebarFounderBadge,
@@ -35,6 +37,8 @@ import {
   getSidebarDrillDepth,
 } from "@/seqta/ui/sidebar/sidebarDrillReturn";
 import { getUserInfo } from "@/seqta/utils/userInfo";
+
+const USER_AVATAR_SVG = `<svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg>`;
 
 let lightDarkToggleStreak = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
@@ -115,7 +119,7 @@ function createHomeButton(fragment: DocumentFragment) {
 
   fragment.appendChild(
     stringToHTML(
-      /* html */ `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>`,
+      /* html */ `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label>${pageIcon("home")}<span>Home</span></label></li>`,
     ).firstChild!,
   );
 }
@@ -151,9 +155,13 @@ function updateUserInfo(info: Awaited<ReturnType<typeof getUserInfo>>) {
 
   titlebar.append(
     stringToHTML(/* html */ `
-      <div class="userInfosvgdiv tooltip">
-        <svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg>
-        <div class="tooltiptext topmenutooltip" id="logouttooltip"></div>
+      <div class="userInfosvgdiv bsplus-tooltip" tabindex="0" aria-label="Account">
+        ${USER_AVATAR_SVG}
+        <div class="bsplus-tooltip-bubble">
+          <button class="bsplus-logout" type="button" aria-label="Log out">
+            ${icon(LogOut, { size: 20 })}
+          </button>
+        </div>
       </div>
     `).firstChild!,
   );
@@ -177,9 +185,12 @@ function updateUserInfo(info: Awaited<ReturnType<typeof getUserInfo>>) {
     `).firstChild!,
   );
 
-  document
-    .getElementById("logouttooltip")!
-    .appendChild(document.getElementsByClassName("logout")[0]);
+  const seqtaLogout = document.querySelector<HTMLElement>(".logout");
+  if (seqtaLogout) seqtaLogout.style.display = "none";
+  attachTooltip(titlebar.querySelector<HTMLElement>(".bsplus-tooltip")!);
+  titlebar.querySelector<HTMLElement>(".bsplus-logout")?.addEventListener("click", () => {
+    document.querySelector<HTMLElement>(".logout")?.click();
+  });
 }
 
 async function updateStudentInfo(
@@ -225,7 +236,7 @@ async function updateStudentInfo(
 function createNewsButton(fragment: DocumentFragment, menu: HTMLElement) {
   fragment.appendChild(
     stringToHTML(
-      '<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M20 3H4C2.89 3 2 3.89 2 5V19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V5C22 3.89 21.11 3 20 3M5 7H10V13H5V7M19 17H5V15H19V17M19 13H12V11H19V13M19 9H12V7H19V9Z" /></svg><span>News</span></label></li>',
+      `<li class="item" data-key="news" id="newsbutton" data-path="/news" data-betterseqta="true"><label>${pageIcon("news")}<span>News</span></label></li>`,
     ).firstChild!,
   );
 
@@ -274,9 +285,7 @@ async function createSettingsButton(parent?: Element) {
   target.append(
     stringToHTML(/* html */ `
       <button class="addedButton" id="AddedSettings" type="button" aria-label="BetterSEQTA+ settings">
-        <svg width="24" height="24" viewBox="0 0 24 24">
-          <g><g><path d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></g></g>
-        </svg>
+        ${icon(Wrench)}
       </button>
     `).firstChild!,
   );
@@ -289,7 +298,7 @@ async function injectEngageHomeButton() {
   if (!menuList || document.getElementById("homebutton")) return;
 
   const li = stringToHTML(
-    /* html */ `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label><svg style="width:24px;height:24px" viewBox="0 0 24 24"><path fill="currentColor" d="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" /></svg><span>Home</span></label></li>`,
+    /* html */ `<li class="item" data-key="home" id="homebutton" data-path="/home" data-betterseqta="true"><label>${pageIcon("home")}<span>Home</span></label></li>`,
   ).firstChild as HTMLElement;
   menuList.insertBefore(li, menuList.firstElementChild);
 
@@ -358,11 +367,11 @@ async function addEngageUserInfo() {
   ensureTitlebarFounderBadgeMounted();
 
   const iconNode = stringToHTML(/* html */ `
-    <div class="userInfosvgdiv tooltip" id="engage-logouttooltip-wrap">
-      <svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg>
-      <div class="tooltiptext topmenutooltip" id="engage-logouttooltip">
-        <button class="logout engage-logout">
-          <svg style="width:20px;height:20px;vertical-align:middle;" viewBox="0 0 24 24"><path fill="currentColor" d="M17 7L15.59 8.41L18.17 11H8V13H18.17L15.59 15.58L17 17L22 12M4 5H12V3H4C2.9 3 2 3.9 2 5V19C2 20.1 2.9 21 4 21H12V19H4V5Z"/></svg>
+    <div class="userInfosvgdiv bsplus-tooltip" id="engage-logouttooltip-wrap" tabindex="0" aria-label="Account">
+      ${USER_AVATAR_SVG}
+      <div class="bsplus-tooltip-bubble">
+        <button class="bsplus-logout" type="button" aria-label="Log out">
+          ${icon(LogOut, { size: 20 })}
         </button>
       </div>
     </div>
@@ -370,8 +379,9 @@ async function addEngageUserInfo() {
 
   titlebar.append(iconNode);
   content.appendChild(titlebar);
+  attachTooltip(iconNode as HTMLElement);
 
-  titlebar.querySelector<HTMLElement>(".engage-logout")?.addEventListener("click", async () => {
+  titlebar.querySelector<HTMLElement>(".bsplus-logout")?.addEventListener("click", async () => {
     await fetch(`${location.origin}/seqta/parent/logout`, { method: "POST" });
     location.reload();
   });
@@ -448,7 +458,7 @@ async function addDarkLightToggle(parent?: Element) {
   toggleTarget.append(
     stringToHTML(/* html */ `
       <button class="addedButton DarkLightButton" id="LightDarkModeButton" type="button" aria-label="${GetLightDarkModeString()}">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">${settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG}</svg>
+        ${icon(settingsState.DarkMode ? Sun : Moon)}
       </button>
     `).firstChild!,
   );
@@ -475,8 +485,7 @@ async function addDarkLightToggle(parent?: Element) {
     settingsState.DarkMode = !settingsState.DarkMode;
     updateAllColors();
 
-    const svgElement = lightDarkModeButtonElement.querySelector("svg")!;
-    svgElement.innerHTML = settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG;
+    lightDarkModeButtonElement.innerHTML = icon(settingsState.DarkMode ? Sun : Moon);
     lightDarkModeButtonElement.setAttribute("aria-label", GetLightDarkModeString());
   });
 }

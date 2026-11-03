@@ -1,3 +1,5 @@
+import { icon } from "@/lib/icon";
+import { ChevronLeft, ChevronRight } from "lucide-static";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
@@ -299,12 +301,8 @@ export async function loadEngageHomePage(): Promise<void> {
                 <select id="engage-child-selector" class="engage-child-select" aria-label="Student"></select>
               </div>
               <div class="timetable-arrows">
-                <svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="engage-home-timetable-back">
-                  <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-                </svg>
-                <svg width="24" height="24" viewBox="0 0 24 24" id="engage-home-timetable-forward">
-                  <g style="fill: currentcolor;"><path d="M8.578 16.359l4.594-4.594-4.594-4.594 1.406-1.406 6 6-6 6z"></path></g>
-                </svg>
+                ${icon(ChevronLeft, { id: "engage-home-timetable-back" })}
+                ${icon(ChevronRight, { id: "engage-home-timetable-forward" })}
               </div>
             </div>
             <div class="day-container loading" id="engage-day-container"></div>

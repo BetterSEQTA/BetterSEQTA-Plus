@@ -1,3 +1,5 @@
+import { icon } from "@/lib/icon";
+import { RotateCw } from "lucide-static";
 import type { AssessmentsAverageApi } from "./pluginApi";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -181,7 +183,7 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
     } else if (hasRefreshingWeighting) {
       warningHTML = /* html */ `
             <div style="margin-top: 4px; font-size: 11px; color: rgba(255, 255, 255, 0.55); opacity: 0.8; line-height: 1.3; white-space: nowrap;" title="Some weightings are being re-checked; the average may change shortly">
-              ↻ Refreshing weightings
+              ${icon(RotateCw, { size: "1em", style: "vertical-align: -0.125em" })} Refreshing weightings
             </div>
           `;
     }

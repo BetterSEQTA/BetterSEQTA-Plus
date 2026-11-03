@@ -41,7 +41,6 @@ import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpda
 
 import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
-import IconFamily from "@/resources/fonts/IconFamily.woff";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 
 import iframeCSS from "@/css/iframe.scss?raw";
@@ -773,7 +772,6 @@ export function init() {
     if (!onLogin) {
       loading();
     }
-    InjectCustomIcons();
     applyMenuItemVisibility();
     syncTimetableUrlMonitoring();
     tryLoad();
@@ -856,24 +854,8 @@ export function init() {
     }, 1000);
   } else {
     handleDisabled();
-    InjectCustomIcons();
     window.addEventListener("load", handleDisabled, { once: true });
   }
-}
-
-function InjectCustomIcons() {
-  verboseInfo("[BetterSEQTA+] Injecting Icons");
-
-  const style = document.createElement("style");
-  style.setAttribute("type", "text/css");
-  style.innerHTML = `
-    @font-face {
-      font-family: 'IconFamily';
-      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-  document.head.appendChild(style);
 }
 
 export function AppendElementsToDisabledPage() {

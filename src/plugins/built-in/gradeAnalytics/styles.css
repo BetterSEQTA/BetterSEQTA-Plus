@@ -238,7 +238,7 @@
 }
 
 .bsplus-analytics-btn:focus-visible {
-  outline: 2px solid var(--bsplus-analytics-accent);
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
 }
 
@@ -338,7 +338,7 @@
 }
 
 .bsplus-analytics-filters-clear:focus-visible {
-  outline: 2px solid var(--bsplus-analytics-accent);
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -547,7 +547,7 @@
 }
 
 .bsplus-analytics-checkbox input:focus-visible ~ .bsplus-analytics-checkmark {
-  outline: 2px solid var(--bsplus-analytics-accent);
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
 }
 
@@ -663,9 +663,9 @@
   );
 }
 
-.bsplus-analytics-select:focus,
-.bsplus-analytics-input:focus {
-  outline: 2px solid var(--bsplus-analytics-accent);
+.bsplus-analytics-select:focus-visible,
+.bsplus-analytics-input:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
   background-color: color-mix(
     in srgb,
@@ -680,7 +680,7 @@
   border-color: var(--bsplus-analytics-accent);
 }
 
-.bsplus-analytics-filters .bsplus-analytics-input:focus {
+.bsplus-analytics-filters .bsplus-analytics-input:focus-visible {
   background-color: var(--bsplus-analytics-control-bg-elevated);
   border-color: var(--bsplus-analytics-accent);
 }
@@ -721,8 +721,8 @@
   );
 }
 
-.bsplus-analytics-range-value:focus {
-  outline: 2px solid var(--bsplus-analytics-accent);
+.bsplus-analytics-range-value:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
   background-color: color-mix(
     in srgb,
@@ -821,7 +821,7 @@
 }
 
 .bsplus-analytics-dropdown-trigger:focus-visible {
-  outline: 2px solid var(--bsplus-analytics-accent);
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
   background-color: color-mix(
     in srgb,

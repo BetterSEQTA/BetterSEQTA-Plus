@@ -320,7 +320,6 @@ function passiveEntityToIndexItem(
       observedAt: new Date(ctx.observedAt).toISOString(),
       entityType: category,
       entityId,
-      icon: "\ueb71",
       sourcePage,
       ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
       ...deepLinkHints,

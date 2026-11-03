@@ -1,4 +1,6 @@
 <script lang="ts">
+  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
+  import XIcon from "@lucide/svelte/icons/x";
   import {
     createGradeBand,
     DEFAULT_ANALYTICS_GRADE_INFERENCE,
@@ -83,8 +85,7 @@
   >
     <span class="bsplus-analytics-field-label">Grade inference (optional)</span>
     <span class="bsplus-analytics-grade-inference-chevron" aria-hidden="true"
-      >{expanded ? "▾" : "▸"}</span
-    >
+      ><ChevronDownIcon size="1em" style={expanded ? undefined : "transform: rotate(-90deg)"} /></span>
   </button>
 
   {#if expanded}
@@ -136,7 +137,7 @@
               disabled={disabled || saving}
               onclick={() => removeBand(band.id)}
             >
-              ×
+              <XIcon size="1em" />
             </button>
           </div>
         {/each}

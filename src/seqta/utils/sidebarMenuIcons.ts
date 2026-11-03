@@ -1,4 +1,4 @@
-import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
+import { pageIcon } from "@/seqta/utils/pageIcons";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
@@ -61,9 +61,9 @@ export function replaceMenuSVG(element: HTMLElement, svg: string) {
 export function processMenuItemNode(node: HTMLElement) {
   if (!isTopLevelSidebarItem(node) || isMenuOptionsOpen()) return;
 
-  const key = node.dataset.key as keyof typeof MenuitemSVGKey | undefined;
-  if (key && MenuitemSVGKey[key]) {
-    replaceMenuSVG(node, MenuitemSVGKey[key]);
+  const svg = node.dataset.key ? pageIcon(node.dataset.key) : undefined;
+  if (svg) {
+    replaceMenuSVG(node, svg);
   } else {
     const label = getMenuLabel(node);
     if (label) wrapMenuLabelText(label);

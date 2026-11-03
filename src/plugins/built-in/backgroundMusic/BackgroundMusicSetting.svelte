@@ -1,4 +1,5 @@
 <script lang="ts">
+  import UploadIcon from "@lucide/svelte/icons/upload";
   import localforage from 'localforage'
   import { onMount } from 'svelte'
 
@@ -104,7 +105,7 @@
       </div>
     {:else}
       <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap">
-        <span class="text-lg font-IconFamily">{'\ued47'}</span>
+        <UploadIcon size="1em" class="text-lg" />
         <span>Upload audio</span>
       </div>
     {/if}

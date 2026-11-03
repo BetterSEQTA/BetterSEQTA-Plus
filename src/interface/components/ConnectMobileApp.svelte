@@ -1,4 +1,5 @@
 <script lang="ts">
+  import XIcon from "@lucide/svelte/icons/x";
   import { fade } from "svelte/transition";
   import browser from "@/lib/browser";
   import QRCode from "qrcode";
@@ -138,9 +139,7 @@
           onclick={closeModal}
           class="p-2 rounded-lg transition-colors text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-400 dark:hover:bg-zinc-700"
           aria-label="Close">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-          </svg>
+          <XIcon class="w-5 h-5" />
         </button>
       </div>
       <div class="flex justify-center p-4 bg-white rounded-xl dark:bg-zinc-900">

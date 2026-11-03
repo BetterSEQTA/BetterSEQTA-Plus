@@ -1,3 +1,5 @@
+import { icon } from "@/lib/icon";
+import { Eye, ZoomIn, ZoomOut } from "lucide-static";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
 import type { Plugin } from "../../core/types";
 import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
@@ -99,13 +101,15 @@ function handleTimetableZoom(): void {
 
   const zoomIn = document.createElement("button");
   zoomIn.type = "button";
-  zoomIn.className = "timetable-zoom iconFamily bsplus-timetable-control";
-  zoomIn.innerHTML = "&#xed93;"; // Unicode for zoom in icon (custom iconfamily)
+  zoomIn.className = "timetable-zoom bsplus-timetable-control";
+  zoomIn.setAttribute("aria-label", "Zoom in");
+  zoomIn.innerHTML = icon(ZoomIn, { size: 16 });
 
   const zoomOut = document.createElement("button");
   zoomOut.type = "button";
-  zoomOut.className = "timetable-zoom iconFamily bsplus-timetable-control";
-  zoomOut.innerHTML = "&#xed94;"; // Unicode for zoom out icon (custom iconfamily)
+  zoomOut.className = "timetable-zoom bsplus-timetable-control";
+  zoomOut.setAttribute("aria-label", "Zoom out");
+  zoomOut.innerHTML = icon(ZoomOut, { size: 16 });
 
   zoomControls.appendChild(zoomOut);
   zoomControls.appendChild(zoomIn);
@@ -144,8 +148,9 @@ function handleTimetableAssessmentHide(): void {
 
   const hideOn = document.createElement("button");
   hideOn.type = "button";
-  hideOn.className = "timetable-hide iconFamily bsplus-timetable-control";
-  hideOn.innerHTML = "&#xeab3;";
+  hideOn.className = "timetable-hide bsplus-timetable-control";
+  hideOn.setAttribute("aria-label", "Highlight assessments");
+  hideOn.innerHTML = icon(Eye, { size: 16 });
 
   hideControls.appendChild(hideOn);
 

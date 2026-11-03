@@ -150,10 +150,9 @@
   color: var(--bsplus-overview-text);
 }
 
-.filter-select:focus {
-  outline: none;
-  border-color: var(--bsplus-overview-accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-overview-accent) 22%, transparent);
+.filter-select:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 .filter-select:hover {
@@ -365,7 +364,8 @@
 }
 
 .menu-button:focus-visible {
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--bsplus-overview-accent) 35%, transparent) !important;
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 .menu-dropdown {

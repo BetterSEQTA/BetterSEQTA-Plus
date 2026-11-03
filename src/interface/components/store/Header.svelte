@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SearchIcon from "@lucide/svelte/icons/search";
+  import Minimize2Icon from "@lucide/svelte/icons/minimize-2";
   import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
   import lightLogo from "@/resources/icons/betterseqta-light-full.png";
   import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
@@ -93,15 +95,7 @@
     >
       <label class="relative block w-40 md:w-48 xl:w-56">
         <span class="sr-only">Search {activePage}</span>
-        <svg
-          class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-        >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z" />
-        </svg>
+        <SearchIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
         <input
           type="search"
           placeholder={activePage === "themes" ? "Search themes" : "Search backgrounds"}
@@ -119,9 +113,9 @@
 
     {#if onToggleSize}
       <button type="button" onclick={onToggleSize}
-        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
+        class="flex h-10 w-10 shrink-0 items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-white"
         aria-label="Collapse settings" title="Collapse settings" aria-expanded="true">
-        <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uec06"}</span>
+        <Minimize2Icon size="1em" class="text-2xl" />
       </button>
     {/if}
     <PlainCloseButton onclick={onClose} label="Close settings" />
@@ -150,12 +144,12 @@
     }
   }
 
-  .store-search,
-  .store-search:focus,
-  .store-search:focus-visible {
+  .store-search {
     appearance: none;
     border: 0 !important;
-    outline: 0 !important;
-    box-shadow: none !important;
+  }
+
+  .store-search:focus-visible {
+    outline-offset: -2px;
   }
 </style>

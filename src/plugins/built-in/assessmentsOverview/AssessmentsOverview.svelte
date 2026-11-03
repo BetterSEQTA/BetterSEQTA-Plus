@@ -10,11 +10,15 @@
   import { settingsState } from "@/seqta/utils/listeners/SettingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
-  import OverviewIcon from "./OverviewIcon.svelte";
+  import CalendarDaysIcon from "@lucide/svelte/icons/calendar-days";
+  import ClipboardListIcon from "@lucide/svelte/icons/clipboard-list";
+  import EllipsisVerticalIcon from "@lucide/svelte/icons/ellipsis-vertical";
+  import EyeIcon from "@lucide/svelte/icons/eye";
   import {
+    DEFAULT_COLUMN_ICON,
     GROUP_SORT_ICONS,
     STATUS_COLUMN_ICONS,
-    type OverviewIconName,
+    type OverviewIcon,
   } from "./icons";
   import confetti from "canvas-confetti";
 
@@ -30,18 +34,18 @@
     key: string;
     title: string;
     className: string;
-    icon: OverviewIconName;
+    icon: OverviewIcon;
   };
 
   const HIDDEN_ASSESSMENTS_KEY = "betterseqta-hidden-assessments";
   const COMPLETED_ASSESSMENTS_KEY = "betterseqta-completed-assessments";
 
   const STATUS_COLUMNS: Column[] = [
-    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: "calendar-days" },
-    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: "clock" },
-    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: "exclamation-triangle" },
-    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: "document-check" },
-    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: "check-circle" },
+    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: STATUS_COLUMN_ICONS.UPCOMING },
+    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: STATUS_COLUMN_ICONS.DUE_SOON },
+    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: STATUS_COLUMN_ICONS.OVERDUE },
+    { key: "SUBMITTED", title: "Submitted", className: "column-submitted", icon: STATUS_COLUMN_ICONS.SUBMITTED },
+    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: STATUS_COLUMN_ICONS.MARKS_RELEASED },
   ];
 
   const isEngage = isSeqtaEngageExperience();
@@ -156,7 +160,7 @@
       return { filteredAssessments: filtered, statusGroups: groups, columns: STATUS_COLUMNS };
     }
 
-    const icon = GROUP_SORT_ICONS[currentFilters.sortBy] ?? "queue-list";
+    const icon = GROUP_SORT_ICONS[currentFilters.sortBy] ?? DEFAULT_COLUMN_ICON;
     const keys = Object.keys(groups);
     const subjectTitles = new Map<string, string>(
       data?.subjects?.map((s: any) => [s.code, `${s.code} - ${s.title}`]) ?? [],
@@ -307,7 +311,7 @@
           onclick={() => (showVisibilityPanel = !showVisibilityPanel)}
           title="Manage hidden subjects and assessments"
         >
-          <OverviewIcon name="eye" size={18} />
+          <EyeIcon size={18} class="bsplus-overview-icon" />
           <span>Visibility ({hiddenSubjects.length + hiddenAssessmentsWithInfo.length})</span>
         </button>
       {/if}
@@ -349,7 +353,7 @@
   <div id="main-grid-content" class="bsplus-overview-animate bsplus-overview-delay-1">
     {#if board.filteredAssessments.length === 0}
       <div class="empty-state">
-        <OverviewIcon name="clipboard-document-list" size={40} class="empty-icon" />
+        <ClipboardListIcon size={40} class="bsplus-overview-icon empty-icon" />
         <p>No assessments found matching your filters</p>
       </div>
     {:else}
@@ -361,10 +365,7 @@
                 <div class="column-header">
                   <div class="column-title">
                   <span class="column-title-main">
-                    <OverviewIcon
-                      name={column.icon ?? STATUS_COLUMN_ICONS[column.key] ?? "queue-list"}
-                      size={18}
-                    />
+                    <column.icon size={18} class="bsplus-overview-icon" />
                     {column.title}
                   </span>
                   <span class="column-count">{board.statusGroups[column.key].length}</span>
@@ -407,7 +408,7 @@
                             onclick={(e) => toggleMenu(assessment.id, e)}
                             aria-label="Open menu"
                           >
-                            <OverviewIcon name="ellipsis-vertical" size={16} />
+                            <EllipsisVerticalIcon size={16} class="bsplus-overview-icon" />
                           </button>
                           <div class="menu-dropdown" style="display: {openMenuId === assessment.id ? 'block' : 'none'};">
                             {#if status !== "MARKS_RELEASED"}
@@ -434,7 +435,7 @@
                       {#if !assessmentHasGradeDisplay(assessment) && !isCompleted}
                         <div class="assessment-meta">
                           <div class="due-date {dueDateClass}">
-                            <OverviewIcon name="calendar-days" size={14} />
+                            <CalendarDaysIcon size={14} class="bsplus-overview-icon" />
                             {formatDate(assessment.due || assessment.date || assessment.dueDate || "", assessment.submitted)}
                           </div>
                         </div>

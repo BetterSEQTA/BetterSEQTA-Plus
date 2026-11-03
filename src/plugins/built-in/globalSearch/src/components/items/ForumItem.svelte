@@ -1,4 +1,5 @@
 <script lang="ts">
+  import SearchIcon from "../SearchIcon.svelte";
   import HighlightedText from '../../utils/HighlightedText.svelte';
   import type { DynamicContentItem } from '../../utils/dynamicItems';
   import type { FuseResultMatch } from '../../core/types';
@@ -18,7 +19,7 @@
   onclick={onclick}
   >
   <div class="flex items-center w-full">
-    <div class="flex-none scale-90 w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white bg-linear-to-br from-[#59aaf6] to-[#1b62c6] rounded-md">{item.metadata?.icon || '\uebe7'}</div>
+    <div class="flex-none scale-90 w-8 h-8 text-xl flex items-center justify-center text-white bg-linear-to-br from-[#59aaf6] to-[#1b62c6] rounded-md"><SearchIcon name="messages-square" /></div>
     <span class="ml-4 text-lg truncate {item.metadata?.closed ? 'line-through opacity-80' : ''}">
       <HighlightedText text={item.text} term={searchTerm} matches={matches} />
     </span>

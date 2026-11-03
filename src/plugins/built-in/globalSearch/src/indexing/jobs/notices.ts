@@ -168,7 +168,6 @@ export const noticesJob: Job = {
               timestamp: date,
               entityType: "notice",
               route: "/notices",
-              icon: "\ueb24",
             },
             actionId: "notice",
             renderComponentId: "notice",

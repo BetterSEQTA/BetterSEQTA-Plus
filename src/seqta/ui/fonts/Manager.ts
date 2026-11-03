@@ -86,11 +86,11 @@ const SEQTA_FONT_SCOPE = `
   .legacy-root,
   .legacy-root input,
   .legacy-root textarea,
-  .legacy-root button:not(.iconFamily),
+  .legacy-root button,
   .legacy-root select,
   .legacy-root option,
   .legacy-root .input,
-  .legacy-root *:not(.iconFamily),
+  .legacy-root *,
   #container,
   #container *
 `;
@@ -101,15 +101,6 @@ function buildFontOverrideCss(family: string): string {
   return `
     ${SEQTA_FONT_SCOPE} {
       ${rule}
-    }
-
-    .iconFamily,
-    .iconFamily *,
-    button.timetable-zoom.iconFamily,
-    button.bsplus-timetable-control.iconFamily,
-    [class~="iconFamily"],
-    [class~="iconFamily"] * {
-      font-family: "IconFamily" !important;
     }
   `;
 }

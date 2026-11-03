@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ArrowRightIcon from "@lucide/svelte/icons/arrow-right";
   import { onDestroy } from 'svelte';
   import { calculateExpression } from '../utils/calculator';
 
@@ -79,7 +80,7 @@
     <div class="flex flex-col shrink-0 justify-center items-center w-12">
       <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
       <div class="text-2xl text-zinc-900 dark:text-zinc-100">
-        →
+        <ArrowRightIcon size="1em" />
       </div>
       <div class="h-8 w-px bg-zinc-900/5 dark:bg-zinc-100/5"></div>
     </div>

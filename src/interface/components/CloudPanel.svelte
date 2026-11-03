@@ -140,7 +140,7 @@
           <p class="text-sm text-zinc-600 dark:text-zinc-400">
             Sign in to sync settings across devices, use your cloud profile picture, and more.
           </p>
-          <Button class="w-full" icon={""} text="Sign in with BetterSEQTA Cloud" onClick={handleSignIn} />
+          <Button class="w-full" text="Sign in with BetterSEQTA Cloud" onClick={handleSignIn} />
           {#if loginError}
             <p class="text-xs text-red-600 dark:text-red-400">{loginError}</p>
           {/if}

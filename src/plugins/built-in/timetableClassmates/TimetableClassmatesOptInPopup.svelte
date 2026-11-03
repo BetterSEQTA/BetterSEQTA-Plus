@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CircleCheckIcon from "@lucide/svelte/icons/circle-check";
   import { onMount } from "svelte";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
@@ -104,7 +105,7 @@
             <span class="bsplus-tc-cloud-user-sub">{cloudSubtitle(cloudUser)}</span>
           {/if}
         </div>
-        <span class="bsplus-tc-cloud-check iconFamily" aria-hidden="true">&#xe9db;</span>
+        <CircleCheckIcon size="1em" class="bsplus-tc-cloud-check" />
       </div>
     {:else}
       <p class="bsplus-tc-cloud-lead">

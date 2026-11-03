@@ -1,4 +1,6 @@
 <script lang="ts">
+  import SearchIcon from "../SearchIcon.svelte";
+  import { iconForCategory } from "../../core/searchIcons";
   import HighlightedText from '../../utils/HighlightedText.svelte';
   import type { DynamicContentItem } from '../../utils/dynamicItems';
   import type { FuseResultMatch } from '../../core/types';
@@ -39,28 +41,6 @@
     }
   };
 
-  const fallbackIcon = (category: string): string => {
-    switch (category) {
-      case 'courses':
-        return '\ueb4d';
-      case 'notices':
-        return '\ueb24';
-      case 'documents':
-        return '\ueb6f';
-      case 'folio':
-        return '\ueb16';
-      case 'portals':
-        return '\ueb01';
-      case 'reports':
-        return '\ueb70';
-      case 'goals':
-        return '\uea15';
-      case 'passive':
-        return '\ueb71';
-      default:
-        return '\ue924';
-    }
-  };
 </script>
 
 <button
@@ -70,9 +50,9 @@
 >
   <div class="flex items-center w-full">
     <div
-      class="flex-none scale-90 w-8 h-8 text-xl font-IconFamily flex items-center justify-center text-white rounded-md bg-linear-to-br {gradientForCategory(item.category)}"
+      class="flex-none scale-90 w-8 h-8 text-xl flex items-center justify-center text-white rounded-md bg-linear-to-br {gradientForCategory(item.category)}"
     >
-      {item.metadata?.icon || fallbackIcon(item.category)}
+      <SearchIcon name={iconForCategory(item.category)} />
     </div>
     <span class="ml-4 text-lg truncate">
       <HighlightedText text={item.text} term={searchTerm} matches={matches} />

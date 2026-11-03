@@ -76,7 +76,7 @@ const contentConfig: ContentConfig = {
     },
   },
   assessmentTitleInTooltip: {
-    selector: ".assessmenttooltip .tooltiptext p",
+    selector: ".assessmenttooltip .bsplus-tooltip-bubble a",
     action: (element) => {
       element.textContent = getRandomElement(mockData.assessmentTitles);
     },

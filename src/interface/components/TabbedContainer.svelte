@@ -38,7 +38,7 @@
         <button
           role="tab"
           aria-selected={activeTab === index}
-          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-hidden"
+          class="relative z-10 flex-1 px-4 py-2"
           onclick={() => (activeTab = index)}
         >
           {title}
@@ -55,7 +55,7 @@
       {#if activeTab === index}
         <div
           role="tabpanel"
-          class="focus:outline-hidden w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
+          class="w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
         >
           {#if tab.loader}
             <LazyPanel loader={tab.loader} props={tab.props} />

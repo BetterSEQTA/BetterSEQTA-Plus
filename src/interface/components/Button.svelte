@@ -1,17 +1,19 @@
 <script lang="ts">
+  import type { Component } from "svelte";
+
   let {
     onClick,
     text,
     disabled = false,
     variant = "secondary",
-    icon,
+    icon: Icon,
     class: className = "",
   }: {
     onClick: () => void;
     text: string;
     disabled?: boolean;
     variant?: "primary" | "secondary" | "ghost";
-    icon?: string;
+    icon?: Component<{ class?: string; size?: string | number }>;
     class?: string;
   } = $props();
 
@@ -26,8 +28,8 @@
   type="button"
   onclick={onClick}
   disabled={disabled}
-  class="inline-flex items-center justify-center gap-1.5 px-5 py-1.5 text-[0.75rem] shadow-2xl border rounded-lg transition enabled:active:scale-[0.96] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-zinc-400 disabled:cursor-not-allowed disabled:opacity-50 {variants[variant]} {className}"
+  class="inline-flex items-center justify-center gap-1.5 px-5 py-1.5 text-[0.75rem] shadow-2xl border rounded-lg transition enabled:active:scale-[0.96] disabled:cursor-not-allowed disabled:opacity-50 {variants[variant]} {className}"
 >
-  {#if icon}<span class="font-IconFamily text-base" aria-hidden="true">{icon}</span>{/if}
+  {#if Icon}<Icon size="1em" class="text-base" />{/if}
   {text}
 </button>

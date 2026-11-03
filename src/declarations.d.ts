@@ -1,6 +1,5 @@
 declare module "*.mp4";
 declare module "*.webm";
-declare module "*.woff";
 declare module "*.scss";
 declare module "*.png";
 declare module "*.webp";

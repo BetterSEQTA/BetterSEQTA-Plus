@@ -1,4 +1,4 @@
-import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
+import { pageIcon } from "@/seqta/utils/pageIcons";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import {
@@ -14,7 +14,7 @@ import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
-const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
+const ANALYTICS_MENU_ICON = pageIcon("analytics")!;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 export const ANALYTICS_MENU_KEY = "analytics";
 

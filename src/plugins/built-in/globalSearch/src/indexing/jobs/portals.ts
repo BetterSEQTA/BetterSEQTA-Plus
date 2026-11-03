@@ -76,7 +76,6 @@ export const portalsJob: Job = {
           url,
           isPowerPortal: !!portal.is_power_portal,
           entityType: "portal",
-          icon: "\ueb01",
         },
         actionId: "portal",
         renderComponentId: "portal",

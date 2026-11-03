@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CheckIcon from "@lucide/svelte/icons/check";
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
   import type {
@@ -413,7 +414,7 @@
                     aria-pressed={selected}
                     onclick={() => selectTimeRange(option.value)}
                   >
-                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{#if selected}<CheckIcon size="1em" />{/if}</span>
                     <span>{option.label}</span>
                   </button>
                 {/each}
@@ -469,7 +470,7 @@
                   aria-pressed={allSelected}
                   onclick={selectAllSubjects}
                 >
-                  <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{allSelected ? "✓" : ""}</span>
+                  <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{#if allSelected}<CheckIcon size="1em" />{/if}</span>
                   <span>All subjects</span>
                 </button>
                 {#each uniqueSubjects as subject (subject)}
@@ -481,7 +482,7 @@
                     aria-pressed={selected}
                     onclick={() => toggleSubject(subject)}
                   >
-                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{#if selected}<CheckIcon size="1em" />{/if}</span>
                     <span class="bsplus-analytics-filter-subject-name">{subject}</span>
                   </button>
                 {/each}

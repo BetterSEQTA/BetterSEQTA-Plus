@@ -1,4 +1,5 @@
 <script lang="ts">
+  import XIcon from "@lucide/svelte/icons/x";
   import SkeletonLoader from "@/interface/components/SkeletonLoader.svelte";
   import ModalFrame from "./ModalFrame.svelte";
   import type { CommunityThemesState } from "@/interface/hooks/communityThemesState.svelte";
@@ -36,7 +37,7 @@
         aria-label="Close"
         onclick={() => communityState.closeDetail()}
       >
-        ✕
+        <XIcon size="1em" />
       </button>
     </div>
 

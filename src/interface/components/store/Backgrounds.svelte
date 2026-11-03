@@ -1,4 +1,6 @@
 <script lang="ts">
+  import DownloadIcon from "@lucide/svelte/icons/download";
+  import TrashIcon from "@lucide/svelte/icons/trash";
   import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
   import Spinner from '../Spinner.svelte';
   import { settingsState } from '@/seqta/utils/listeners/SettingsState'
@@ -240,12 +242,12 @@
                   <Spinner />
                 {:else if savedBackgrounds.includes(background.id)}
                   <span class="flex items-center text-white">
-                    <span class="mr-2 text-2xl not-italic font-IconFamily" aria-hidden="true">&#xed2c;</span>
+                    <TrashIcon size="1em" class="mr-2 text-2xl" />
                     <span class="text-sm font-semibold">Remove</span>
                   </span>
                 {:else}
                   <span class="flex items-center text-white">
-                    <span class="mr-2 text-2xl not-italic font-IconFamily" aria-hidden="true">&#xea9a;</span>
+                    <DownloadIcon size="1em" class="mr-2 text-2xl" />
                     <span class="text-sm font-semibold">Install</span>
                   </span>
                 {/if}

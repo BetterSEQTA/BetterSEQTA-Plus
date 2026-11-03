@@ -2,6 +2,8 @@
   import BackgroundSelector from "@/interface/components/themes/BackgroundSelector.svelte"
   import ThemeSelector from "@/interface/components/themes/ThemeSelector.svelte"
   import Button from "@/interface/components/Button.svelte"
+  import CheckIcon from "@lucide/svelte/icons/check"
+  import PencilIcon from "@lucide/svelte/icons/pencil"
   import { standalone } from "@/interface/utils/standalone.svelte"
 
   let { section = "all" }: {
@@ -35,7 +37,7 @@
           <Button
             onClick={() => editMode = !editMode}
             text={editMode ? 'Done' : 'Remove'}
-            icon={editMode ? '\ue9e4' : '\uec38'}
+            icon={editMode ? CheckIcon : PencilIcon}
           />
         </div>
       {/if}
@@ -48,7 +50,6 @@
           <Button
             variant="primary"
             class="w-full mb-4"
-            icon={""}
             text="Open theme builder"
             onClick={() =>
               void import("@/seqta/utils/launchPageThemeBuilder").then(({ launchPageThemeBuilder }) =>

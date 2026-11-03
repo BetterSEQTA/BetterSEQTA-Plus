@@ -1,4 +1,10 @@
 <script lang="ts">
+  import MessageSquareIcon from "@lucide/svelte/icons/message-square";
+  import SearchIcon from "@lucide/svelte/icons/search";
+  import InfoIcon from "@lucide/svelte/icons/info";
+  import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
+  import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
+  import ShieldIcon from "@lucide/svelte/icons/shield";
   import TabbedContainer from "../components/TabbedContainer.svelte";
   import LazyPanel from "../components/LazyPanel.svelte";
   import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -465,9 +471,9 @@
   };
 
   const utilityActions = [
-    { label: "About", icon: "\ueb73", onclick: openAbout },
-    { label: "What's new", icon: "\ue929", onclick: openChangelog },
-    { label: "Privacy", icon: "\uecba", onclick: openPrivacyStatement },
+    { label: "About", icon: InfoIcon, onclick: openAbout },
+    { label: "What's new", icon: MegaphoneIcon, onclick: openChangelog },
+    { label: "Privacy", icon: ShieldIcon, onclick: openPrivacyStatement },
   ] as const;
 
   onMount(() => {
@@ -566,25 +572,12 @@
         {#if activePage === "settings"}
           <label class="relative mb-4 block shrink-0">
             <span class="sr-only">Search settings</span>
-            <svg
-              class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
-              />
-            </svg>
+            <SearchIcon class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
             <input
               type="search"
               placeholder="Search settings"
               bind:value={settingsSearch}
-              class="h-10 w-full rounded-lg bg-zinc-200/70 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors duration-200 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-white dark:placeholder:text-zinc-500 dark:focus:bg-zinc-800 dark:focus:ring-offset-zinc-900"
+              class="h-10 w-full rounded-lg bg-zinc-200/70 pl-9 pr-3 text-sm text-zinc-900 placeholder:text-zinc-400 transition-colors duration-200 focus:bg-white dark:bg-zinc-800/80 dark:text-white dark:placeholder:text-zinc-500 dark:focus:bg-zinc-800"
             />
           </label>
         {/if}
@@ -618,9 +611,9 @@
             <button
               type="button"
               onclick={action.onclick}
-              class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white dark:focus:ring-offset-zinc-900"
+              class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white"
             >
-              <span class="w-5 text-center font-IconFamily text-[18px]" aria-hidden="true">{action.icon}</span>
+              <action.icon size={18} class="shrink-0" />
               <span>{action.label}</span>
             </button>
           {/each}
@@ -628,20 +621,9 @@
           <button
             type="button"
             onclick={() => openFeedback()}
-            class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 focus:ring-offset-2 dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700 dark:focus:ring-offset-zinc-900"
+            class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
-            <svg
-              class="w-5 h-5 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
+            <MessageSquareIcon class="w-5 h-5 shrink-0" />
             <span>Send us feedback!</span>
           </button>
         </div>
@@ -756,9 +738,9 @@
       />
       {#if !standalone}
         <button type="button" onclick={toggleExpanded}
-          class="mt-2 flex h-11 w-11 shrink-0 self-start items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] focus:outline-hidden dark:text-zinc-400 dark:hover:text-white"
+          class="mt-2 flex h-11 w-11 shrink-0 self-start items-center justify-center text-zinc-500 transition-[color,transform] duration-150 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-400 dark:hover:text-white"
           aria-label="Expand settings" title="Expand settings" aria-expanded="false">
-          <span class="font-IconFamily text-2xl" aria-hidden="true">{"\uebdb"}</span>
+          <Maximize2Icon size="1em" class="text-2xl" />
         </button>
       {/if}
     </div>

@@ -57,9 +57,9 @@
       : "background-color:#fff;color:#18181b;border-color:#e4e4e7;color-scheme:light",
   );
   const field =
-    "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border focus:outline-hidden focus:ring-2 focus:ring-zinc-400";
+    "feedback-field w-full px-3 py-2.5 text-[18px] rounded-lg border   ";
   const btn =
-    "px-4 py-2 text-[18px] font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-hidden focus:ring-2 focus:ring-zinc-400 disabled:opacity-50";
+    "px-4 py-2 text-[18px] font-medium rounded-lg transition-all duration-200 hover:scale-105 active:scale-95    disabled:opacity-50";
   const btnMuted = $derived(
     `${btn} ${isDark ? "bg-zinc-700 text-zinc-200" : "bg-zinc-200 text-zinc-700"}`,
   );
@@ -461,7 +461,7 @@
                   <button
                     type="button"
                     onclick={() => openStatusItem(item.id)}
-                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01] focus:outline-hidden focus:ring-2 focus:ring-zinc-400 {isDark
+                    class="w-full p-3 text-left rounded-lg border transition-all duration-200 hover:scale-[1.01]    {isDark
                       ? 'border-zinc-700 bg-zinc-900/40'
                       : 'border-zinc-200 bg-white'}"
                   >

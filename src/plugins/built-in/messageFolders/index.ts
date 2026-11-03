@@ -1,3 +1,29 @@
+import { icon } from "@/lib/icon";
+import {
+  Book,
+  Briefcase,
+  Calendar,
+  Check,
+  ChevronDown,
+  FileText,
+  Flame,
+  Folder,
+  GripHorizontal,
+  Heart,
+  House,
+  Inbox,
+  Lightbulb,
+  MessageSquare,
+  Music,
+  NotepadText,
+  Pencil,
+  Plus,
+  Star,
+  Target,
+  Trash,
+  Users,
+  X,
+} from "lucide-static";
 import type { Plugin } from "../../core/types";
 import type { MessageFoldersSettings } from "./lazy";
 import { waitForElm } from "@/seqta/utils/waitForElm";
@@ -6,7 +32,8 @@ interface Folder {
   id: string;
   name: string;
   color: string;
-  emoji: string;
+  icon: FolderIconName;
+  emoji?: string;
 }
 
 const FOLDER_COLORS = [
@@ -20,73 +47,70 @@ const FOLDER_COLORS = [
   "#f97316",
 ];
 
-const folderHeroicon = (inner: string) =>
-  `<svg style="width:16px;height:16px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${inner}</svg>`;
+const FOLDER_ICONS = {
+  folder: Folder,
+  inbox: Inbox,
+  star: Star,
+  heart: Heart,
+  flame: Flame,
+  lightbulb: Lightbulb,
+  "file-text": FileText,
+  target: Target,
+  calendar: Calendar,
+  "notepad-text": NotepadText,
+  users: Users,
+  "message-square": MessageSquare,
+  briefcase: Briefcase,
+  house: House,
+  book: Book,
+  music: Music,
+};
 
-const FOLDER_HEROICONS = [
-  folderHeroicon(
-    '<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>',
-  ),
-  folderHeroicon(
-    '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
-  ),
-  folderHeroicon(
-    '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
-  ),
-  folderHeroicon(
-    '<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>',
-  ),
-  folderHeroicon(
-    '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
-  ),
-  folderHeroicon(
-    '<path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/>',
-  ),
-  folderHeroicon(
-    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>',
-  ),
-  folderHeroicon(
-    '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-  ),
-  folderHeroicon(
-    '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>',
-  ),
-  folderHeroicon(
-    '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>',
-  ),
-  folderHeroicon(
-    '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
-  ),
-  folderHeroicon('<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'),
-  folderHeroicon(
-    '<rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>',
-  ),
-  folderHeroicon(
-    '<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>',
-  ),
-  folderHeroicon(
-    '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>',
-  ),
-  folderHeroicon(
-    '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
-  ),
+type FolderIconName = keyof typeof FOLDER_ICONS;
+
+const FOLDER_ICON_NAMES = Object.keys(FOLDER_ICONS) as FolderIconName[];
+
+const LEGACY_FOLDER_ICON_MARKERS: [string, FolderIconName][] = [
+  ["10 9 9 9 8 9", "file-text"],
+  ["M22 19a2", "folder"],
+  ["22 12 16 12", "inbox"],
+  ["12 2 15.09", "star"],
+  ["M20.84 4.61", "heart"],
+  ["M8.5 14.5", "flame"],
+  ["M9 18h6", "lightbulb"],
+  ["M14 2H6", "notepad-text"],
+  ['r="10"', "target"],
+  ['y="4" width="18"', "calendar"],
+  ["M17 21v-2", "users"],
+  ["M21 15a2", "message-square"],
+  ['y="7" width="20"', "briefcase"],
+  ["M3 9l9-7", "house"],
+  ["M4 19.5A2.5", "book"],
+  ["M9 18V5", "music"],
 ];
 
-const FOLDER_ICON_SVG = `<svg style="width:24px;height:24px;flex-shrink:0" viewBox="0 0 24 24"><path fill="currentColor" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`;
-const PLUS_SVG = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>`;
-const CHECK_SVG_WHITE = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#fff" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>`;
-const CLOSE_SVG = `<svg style="width:14px;height:14px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>`;
-const EDIT_SVG = `<svg style="width:12px;height:12px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>`;
-const TRASH_SVG = `<svg style="width:12px;height:12px;flex-shrink:0" viewBox="0 0 24 24"><path fill="#888" d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
-const CHEVRON_SVG = `<svg style="width:12px;height:12px;flex-shrink:0;transition:transform .2s" viewBox="0 0 24 24"><path fill="#888" d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>`;
-const DRAG_SVG = `<svg style="width:14px;height:14px;flex-shrink:0;cursor:grab" viewBox="0 0 24 24"><path fill="#888" d="M6.5 12.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5.5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>`;
+const folderIconSvg = (name: FolderIconName) => icon(FOLDER_ICONS[name], { size: 16 });
+
+const FOLDER_ICON_SVG = icon(Folder);
+const PLUS_SVG = icon(Plus, { size: 14, style: "color: #888" });
+const CHECK_SVG_WHITE = icon(Check, { size: 14, style: "color: #fff" });
+const CLOSE_SVG = icon(X, { size: 14, style: "color: #888" });
+const EDIT_SVG = icon(Pencil, { size: 12, style: "color: #888" });
+const TRASH_SVG = icon(Trash, { size: 12, style: "color: #888" });
+const CHEVRON_SVG = icon(ChevronDown, {
+  size: 12,
+  style: "color: #888; transition: transform 0.2s",
+});
+const DRAG_SVG = icon(GripHorizontal, { size: 14, style: "color: #888; cursor: grab" });
 
 function isAllowedFolderColor(color: unknown): color is string {
   return typeof color === "string" && FOLDER_COLORS.includes(color);
 }
 
-function isAllowedFolderIcon(icon: unknown): icon is string {
-  return typeof icon === "string" && FOLDER_HEROICONS.includes(icon);
+function folderIconName(value: unknown): FolderIconName {
+  if (typeof value !== "string") return "folder";
+  if (Object.hasOwn(FOLDER_ICONS, value)) return value as FolderIconName;
+  return LEGACY_FOLDER_ICON_MARKERS.find(([marker]) => value.includes(marker))?.[1] ?? "folder";
 }
 
 function normalizeFolder(folder: Folder): Folder {
@@ -94,26 +118,22 @@ function normalizeFolder(folder: Folder): Folder {
     id: typeof folder.id === "string" && folder.id ? folder.id : crypto.randomUUID(),
     name: typeof folder.name === "string" ? folder.name.trim().slice(0, 30) : "Folder",
     color: isAllowedFolderColor(folder.color) ? folder.color : FOLDER_COLORS[0],
-    emoji: isAllowedFolderIcon(folder.emoji) ? folder.emoji : FOLDER_HEROICONS[0],
+    icon: folderIconName(folder.icon ?? folder.emoji),
   };
 }
 
-function setSvgIconContent(parent: HTMLElement, svgMarkup: string): void {
-  parent.replaceChildren();
-  const template = document.createElement("template");
-  template.innerHTML = svgMarkup.trim();
-  const node = template.content.firstElementChild;
-  if (node) parent.appendChild(node);
+function setFolderIcon(parent: HTMLElement, name: FolderIconName): void {
+  parent.innerHTML = folderIconSvg(name);
 }
 
 function appendFolderBadgeContent(badge: HTMLElement, folder: Folder): void {
   badge.replaceChildren();
-  if (folder.emoji) {
+  if (folder.icon) {
     const iconWrap = document.createElement("span");
     iconWrap.style.display = "inline-flex";
     iconWrap.style.verticalAlign = "middle";
     iconWrap.style.marginRight = "2px";
-    setSvgIconContent(iconWrap, folder.emoji);
+    setFolderIcon(iconWrap, folder.icon);
     badge.appendChild(iconWrap);
   }
   badge.appendChild(document.createTextNode(folder.name));
@@ -335,7 +355,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
       const allItem = document.createElement("div");
       allItem.className = `bsplus-folder-item bsplus-all-msgs${activeFolderId === null ? " bsplus-folder-active" : ""}`;
       allItem.innerHTML = `
-        <svg width="14" height="14" viewBox="0 0 24 24" style="fill: currentcolor; opacity: 0.5; flex-shrink: 0;"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        ${icon(Inbox, { size: 14, style: "opacity: 0.5" })}
         <span class="bsplus-folder-name">All Messages</span>
       `;
       allItem.addEventListener("click", () => {
@@ -368,7 +388,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
 
         const iconSpan = document.createElement("span");
         iconSpan.className = "bsplus-folder-icon";
-        setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
+        setFolderIcon(iconSpan, folder.icon);
         item.appendChild(iconSpan);
 
         const name = document.createElement("span");
@@ -525,7 +545,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
       let selectedColor =
         editFolder?.color ?? FOLDER_COLORS[Math.floor(Math.random() * FOLDER_COLORS.length)];
       let selectedIcon =
-        editFolder?.emoji ?? FOLDER_HEROICONS[Math.floor(Math.random() * FOLDER_HEROICONS.length)];
+        editFolder?.icon ?? FOLDER_ICON_NAMES[Math.floor(Math.random() * FOLDER_ICON_NAMES.length)];
 
       const row = document.createElement("div");
       row.className = "bsplus-folder-input";
@@ -539,7 +559,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
       const iconBtn = document.createElement("button");
       iconBtn.className = "bsplus-folder-icon-btn";
       iconBtn.title = "Pick icon";
-      iconBtn.innerHTML = selectedIcon;
+      iconBtn.innerHTML = folderIconSvg(selectedIcon);
       iconBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         const picker = container.querySelector(".bsplus-icon-picker") as HTMLElement | null;
@@ -547,9 +567,9 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
           picker.remove();
           return;
         }
-        showIconPicker(container, (iconSvg) => {
-          selectedIcon = iconSvg;
-          iconBtn.innerHTML = iconSvg;
+        showIconPicker(container, (name) => {
+          selectedIcon = name;
+          iconBtn.innerHTML = folderIconSvg(name);
         });
       });
 
@@ -592,7 +612,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
         if (!name) return;
         if (editFolder) {
           const folders = getFolders().map((f) =>
-            f.id === editFolder.id ? { ...f, name, color: selectedColor, emoji: selectedIcon } : f,
+            f.id === editFolder.id ? { ...f, name, color: selectedColor, icon: selectedIcon } : f,
           );
           saveFolders(folders);
         } else {
@@ -600,7 +620,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
             id: crypto.randomUUID(),
             name,
             color: selectedColor,
-            emoji: selectedIcon,
+            icon: selectedIcon,
           };
           saveFolders([...getFolders(), folder]);
         }
@@ -626,19 +646,20 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
       requestAnimationFrame(() => input.focus());
     };
 
-    const showIconPicker = (container: Element, onSelect: (iconSvg: string) => void) => {
+    const showIconPicker = (container: Element, onSelect: (name: FolderIconName) => void) => {
       const existing = container.querySelector(".bsplus-icon-picker");
       if (existing) existing.remove();
 
       const picker = document.createElement("div");
       picker.className = "bsplus-icon-picker";
-      for (const icon of FOLDER_HEROICONS) {
+      for (const name of FOLDER_ICON_NAMES) {
         const btn = document.createElement("button");
         btn.className = "bsplus-icon-opt";
-        btn.innerHTML = icon;
+        btn.setAttribute("aria-label", name);
+        btn.innerHTML = folderIconSvg(name);
         btn.addEventListener("click", (e) => {
           e.stopPropagation();
-          onSelect(icon);
+          onSelect(name);
           picker.remove();
         });
         picker.appendChild(btn);
@@ -710,7 +731,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
 
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
+          setFolderIcon(iconSpan, folder.icon);
 
           const name = document.createElement("span");
           name.textContent = folder.name;
@@ -815,7 +836,7 @@ const messageFoldersPlugin: Pick<Plugin<MessageFoldersSettings, MessageFoldersSt
           dot.style.background = folder.color;
           const iconSpan = document.createElement("span");
           iconSpan.className = "bsplus-folder-icon";
-          setSvgIconContent(iconSpan, folder.emoji || FOLDER_HEROICONS[0]);
+          setFolderIcon(iconSpan, folder.icon);
           const name = document.createElement("span");
           name.textContent = folder.name;
           item.appendChild(dot);

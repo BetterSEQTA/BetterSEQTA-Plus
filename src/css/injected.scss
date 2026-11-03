@@ -31,20 +31,23 @@
   pointer-events: none;
 }
 
-.hidden {
-  display: none;
+@mixin lucide-icon($name, $size) {
+  content: "";
+  display: inline-block;
+  width: $size;
+  height: $size;
+  background: currentColor;
+  mask: url("lucide-static/icons/#{$name}.svg") center / contain no-repeat;
 }
 
-button.timetable-zoom.iconFamily,
-button.bsplus-timetable-control.iconFamily,
-.iconFamily {
-  font-family: "IconFamily" !important;
+.hidden {
+  display: none;
 }
 
 body,
 .legacy-root input,
 .legacy-root textarea,
-.legacy-root button:not(.iconFamily),
+.legacy-root button,
 .legacy-root select,
 .legacy-root option,
 .legacy-root .input,
@@ -87,14 +90,16 @@ select:hover {
 }
 
 select:focus {
-  outline: none !important;
   background: var(--theme-secondary, var(--background-secondary)) !important;
   border-color: color-mix(
     in srgb,
     var(--text-primary) 18%,
     var(--theme-offset-bg, var(--theme-secondary, var(--background-secondary))) 82%
   ) !important;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent) !important;
+}
+select:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 select:not([multiple]):not([size]),
@@ -133,7 +138,7 @@ select option {
   background: var(--auto-background) !important;
 }
 .legacy-root,
-.legacy-root *:not(.iconFamily) {
+.legacy-root * {
   font-family: var(--betterseqta-font-family, Rubik), sans-serif !important;
 }
 
@@ -210,9 +215,6 @@ html:not(.dark) .legacy-root {
   pointer-events: none !important;
 }
 
-.connectedNotificationsWrapper > div > button > svg > g {
-  fill: var(--theme-primary) !important;
-}
 #main {
   color: var(--text-primary);
   position: relative;
@@ -269,7 +271,7 @@ html:not(.dark) .legacy-root {
   }
 
   &:focus-visible {
-    outline: 2px solid var(--better-main);
+    outline: var(--bsplus-focus-ring) !important;
     outline-offset: 2px;
   }
 }
@@ -363,6 +365,10 @@ html:not(.dark) .legacy-root {
   cursor: pointer;
   padding: 4px 8px;
 }
+.legacy-root .bsplus-timetable-control > svg {
+  width: 16px;
+  height: 16px;
+}
 
 #main > .dashboard {
   grid-template-columns: repeat(autofit, minmax(200px, 400px)) !important;
@@ -447,7 +453,6 @@ ul.magicDelete > li.deleting {
   display: block;
   margin: 0;
   flex-shrink: 0;
-  fill: var(--theme-primary);
   color: var(--theme-primary);
 }
 #menu,
@@ -1232,15 +1237,12 @@ td.colourBar {
   padding-left: 30px;
 }
 #toolbar span:has(.search)::before {
-  content: "\eca5";
+  @include lucide-icon("search", 16px);
   position: absolute;
   left: 8px;
   z-index: 10;
   top: 50%;
   transform: translateY(-50%);
-  color: currentColor;
-  font-size: 16px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 #container #content .search {
@@ -1368,6 +1370,10 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
 .assessmentsWrapper .message {
   display: none;
 }
+#menu li,
+#menu section {
+  cursor: pointer;
+}
 #menu li:hover:not(.active) {
   background: rgba(0, 0, 0, 0.15) !important;
 }
@@ -1377,8 +1383,8 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
 
 #menu li:focus-visible,
 #menu section:focus-visible {
-  outline: 1px solid rgb(from currentColor r g b / 0.55);
-  outline-offset: -1px;
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: -2px;
   background: rgba(0, 0, 0, 0.2) !important;
 }
 
@@ -2027,6 +2033,15 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   z-index: 21 !important;
   color: var(--better-sub);
   padding: 8px;
+
+  > svg {
+    display: none;
+  }
+
+  &::before {
+    @include lucide-icon(bell, 24px);
+    background: var(--theme-primary);
+  }
 }
 .legacy-root button > svg,
 .legacy-root a > svg {
@@ -2037,12 +2052,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   background: var(--better-alert-highlight);
   width: 25px;
   height: 25px;
-}
-.dark .legacy-root button.iconFamily::after {
-  background: white;
-}
-.legacy-root button.iconFamily::after {
-  background: currentColor;
 }
 .legacy-root button:not([disabled]):focus {
   border-color: var(--better-sub);
@@ -2057,8 +2066,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   margin-bottom: 4px !important;
 
   > [class*="notifications__dismiss___"] {
-    background: rgba(0, 0, 0, 0.1) !important;
-    color: var(--text-primary);
     margin: auto 0;
   }
 
@@ -2100,10 +2107,27 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
 }
 [class*="notifications__actions___"] {
   background: var(--auto-background);
+}
+[class*="notifications__actions___"] button,
+[class*="notifications__dismiss___"] {
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent) !important;
+  color: var(--text-primary) !important;
+  transition: background 200ms;
 
-  button {
-    background: none !important;
-    border: 1px solid white;
+  &::after {
+    content: none !important;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--text-primary) 18%, transparent) !important;
+  }
+
+  &:focus-visible {
+    outline: var(--bsplus-focus-ring) !important;
+    outline-offset: 2px;
   }
 }
 [class*="notifications__details___"] {
@@ -2140,7 +2164,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   content: "";
   font-size: 12px;
   margin-right: 4px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 
@@ -2176,7 +2199,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   font-size: 16px;
   margin-left: 8px;
   margin-top: auto;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 [class*="Input__Input___"] {
@@ -3252,18 +3274,40 @@ body:not(.clr-open) .clr-picker,
   justify-content: space-between;
   align-items: center;
 }
-.logout {
+.bsplus-tooltip-bubble .bsplus-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 32px;
+  padding: 0;
+  border: none !important;
+  border-radius: 6px;
+  box-shadow: none !important;
   background: none !important;
-  padding: 5px 10px;
-}
+  color: var(--background-primary) !important;
+  opacity: 1;
+  cursor: pointer;
+  transition: opacity 150ms;
 
-#logouttooltip {
-  width: 50px !important;
-  margin-left: -28px !important;
-  top: 105% !important;
+  &::after {
+    content: none !important;
+  }
 
-  .uiButton svg g {
-    color: var(--background-primary) !important;
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none !important;
+    stroke: currentColor !important;
+  }
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--background-primary) !important;
+    outline-offset: -2px;
   }
 }
 .svg {
@@ -3300,35 +3344,23 @@ body:not(.clr-open) .clr-picker,
   align-items: center;
 }
 [data-label="inbox"] > [class*="LabelList__name___"]::before {
-  content: "\eb70";
-  color: currentColor;
-  font-size: 16px;
+  @include lucide-icon("inbox", 16px);
   margin-right: 8px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="outbox"] > [class*="LabelList__name___"]::before {
-  content: "\eca6";
-  color: currentColor;
-  font-size: 16px;
+  @include lucide-icon("send", 16px);
   margin-right: 8px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="starred"] > [class*="LabelList__name___"]::before {
-  content: "\ece8";
-  color: currentColor;
-  font-size: 16px;
+  @include lucide-icon("star", 16px);
   margin-right: 8px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="trash"] > [class*="LabelList__name___"]::before {
-  content: "\ed2c";
-  color: currentColor;
-  font-size: 16px;
+  @include lucide-icon("trash", 16px);
   margin-right: 8px;
-  font-family: "IconFamily";
   pointer-events: none;
 }
 .outer-circle {
@@ -3365,6 +3397,7 @@ body:not(.clr-open) .clr-picker,
   width: 25px;
   position: absolute;
   bottom: 20px;
+  color: inherit;
 }
 #userActions > .details > .code {
   text-transform: initial;
@@ -3785,11 +3818,9 @@ div.day-empty {
     color 0.2s ease-in-out;
 }
 
-.engage-child-select:focus {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--background-primary),
-    0 0 0 4px rgba(59, 130, 246, 0.45);
+.engage-child-select:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 #engage-day-container:has(> .day-empty) {
@@ -3806,27 +3837,6 @@ div.day-empty {
   text-align: center;
 }
 
-#engage-logouttooltip {
-  width: 50px !important;
-  margin-left: -28px !important;
-  top: 105% !important;
-
-  .engage-logout {
-    background: none !important;
-    border: none;
-    cursor: pointer;
-    color: var(--background-primary) !important;
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px;
-
-    svg {
-      fill: var(--background-primary) !important;
-    }
-  }
-}
 .pagename {
   align-items: center;
   display: flex;
@@ -3924,7 +3934,7 @@ div.day-empty {
     visibility 0s linear 0.45s;
 }
 .titlebar .bsplus-titlebar-badge:focus-visible {
-  outline: 2px solid var(--theme-primary);
+  outline: var(--bsplus-focus-ring) !important;
   outline-offset: 2px;
 }
 .bsplus-founder-badge-slot--static .bsplus-titlebar-badge {
@@ -3973,17 +3983,9 @@ div.day-empty {
 .bsplus-founder-badge:hover {
   transform: scale(1.02);
 }
-.bsplus-founder-badge:focus {
-  outline: none;
-}
-.bsplus-founder-badge:focus-visible .bsplus-founder-badge__glass {
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.78),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52),
-    inset 0 2px 8px rgba(255, 255, 255, 0.14),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
-    0 0 0 2px var(--theme-primary, #f97316),
-    0 0 0 4px rgba(249, 115, 22, 0.35);
+.bsplus-founder-badge:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 .bsplus-founder-badge__glass {
   position: relative;
@@ -4155,10 +4157,8 @@ div.day-empty {
   transition: all 0.2s ease;
 }
 .bsplus-founder-badge-actions .bsplus-cal-btn:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px var(--background-primary, #fff),
-    0 0 0 4px var(--better-main, #3b82f6);
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 .bsplus-founder-badge-actions .bsplus-cal-btn--ghost {
   background: color-mix(in srgb, var(--text-primary, #111) 8%, transparent);
@@ -4186,6 +4186,9 @@ div.day-empty {
   z-index: 3;
   position: absolute;
 }
+.userInfosvg path {
+  transition: fill 200ms;
+}
 .userInfosvgdiv {
   width: 50px !important;
   height: 50px !important;
@@ -4207,9 +4210,7 @@ div.day-empty {
   left: 15%;
   transition: background 200ms;
 }
-.userInfosvg path {
-  transition: fill 200ms;
-}
+
 .userInfohouse {
   padding: 2px 8px;
   font-size: 14px;
@@ -4484,14 +4485,9 @@ div.day-empty {
     transition: all 0.2s ease-in-out;
   }
 
-  .bsplus-tos-btn:focus {
-    outline: none;
-  }
-
   .bsplus-tos-btn:focus-visible {
-    box-shadow:
-      0 0 0 2px var(--background-primary),
-      0 0 0 4px color-mix(in srgb, var(--text-primary) 45%, transparent);
+    outline: var(--bsplus-focus-ring) !important;
+    outline-offset: 2px;
   }
 
   .bsplus-tos-btn--primary {
@@ -4599,6 +4595,13 @@ div.day-empty {
 .whatsnewFooter a {
   border: none;
 }
+.whatsnewFooter .socials {
+  display: flex;
+  align-items: center;
+  margin: 0 5px;
+  padding: 0;
+  background: none !important;
+}
 .whatsnewFooter div {
   margin: 0 15px;
   display: flex;
@@ -4613,10 +4616,7 @@ div.day-empty {
   cursor: pointer;
 }
 #whatsnewclosebutton::before {
-  content: "\ed8a";
-  color: currentColor;
-  font-size: 24px;
-  font-family: "IconFamily";
+  @include lucide-icon("x", 24px);
   pointer-events: none;
 }
 .whatsnewTextContainer h1:not(.whatsnewTextHeader) {
@@ -5243,12 +5243,19 @@ div.day-empty {
 .popup-media-fullscreenable:hover {
   opacity: 0.95;
 }
-.popup-media-fullscreenable:focus {
-  outline: none;
+[class*="Input__Input___"]:has(> input:focus-visible) {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
+}
+.betterseqta-weight-input:focus-visible,
+#betterseqta-weight-override:focus-visible,
+#theme-of-the-month-card button:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 .popup-media-fullscreenable:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--text-primary) 70%, transparent);
-  outline-offset: 4px;
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 .bsplus-popup-media-overlay-backdrop {
@@ -5934,10 +5941,7 @@ h2.home-subtitle {
 }
 
 .bsplus-ld-surprise-close::before {
-  content: "\ed8a";
-  font-family: "IconFamily";
-  font-size: 20px;
-  line-height: 1;
+  @include lucide-icon("x", 20px);
   pointer-events: none;
 }
 
