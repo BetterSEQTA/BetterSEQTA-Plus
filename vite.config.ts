@@ -17,7 +17,7 @@ import { edge } from "./src/manifests/edge.ts";
 import { firefox } from "./src/manifests/firefox.ts";
 import { opera } from "./src/manifests/opera.ts";
 import { safari } from "./src/manifests/safari.ts";
-import { crx } from "@crxjs/vite-plugin";
+import { crx, type CrxPlugin } from "@crxjs/vite-plugin";
 
 const targets: BuildTarget[] = [chrome, brave, edge, firefox, opera, safari];
 
@@ -89,6 +89,14 @@ export default defineConfig(({ command, mode: viteMode }) => {
       fixCrxWorkerLiveReload(),
       stabilizeCrxDevHmr(),
       ...(command === "build" ? [firefoxStripFunctionProbe()] : []),
+      {
+        name: "stable-manifest-resources",
+        enforce: "post",
+        renderCrxManifest(manifest) {
+          for (const group of manifest.web_accessible_resources ?? []) group.resources.sort();
+          return manifest;
+        },
+      } satisfies CrxPlugin,
     ],
     root: resolve(repoRoot, "./src"),
     resolve: {

@@ -52,7 +52,7 @@ jobs:
           cd "$RUNNER_TEMP/source-rebuild"
           npm ci
           npm run build:firefox
-          diff -qr "$GITHUB_WORKSPACE/dist/firefox" dist/firefox
+          diff -ru "$GITHUB_WORKSPACE/dist/firefox" dist/firefox
 
       - name: Record publisher version and package checksums
         id: publisher
