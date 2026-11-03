@@ -20,15 +20,8 @@ import {
   type CalendarMessageHandlerMap,
 } from "./background/calendarBackground";
 import { createCustomThemesHandlers } from "./background/customThemesHandlers";
-import {
-  createRemoteConfigHandlers,
-  initRemoteConfigBackground,
-  refreshRemoteConfig,
-} from "./background/remoteConfig";
-import { BSPLUS_INSTALL_REGISTERED_AT_KEY } from "@/seqta/utils/remoteConfig/storageKeys";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "@/seqta/ui/defaultBackgroundKey";
 import { handleSearchThemeStockPhotos } from "./background/searchThemeStockPhotos";
-import { bsplusApiQueryParams, withBsplusApiQuery } from "@/seqta/utils/bsplusClientContext";
 import { initTimetableClassmatesBackgroundSync } from "./background/timetableClassmatesSync";
 import { runStorageMigrations } from "./background/storageMigrations";
 
@@ -113,11 +106,7 @@ function normalizeFetchThemesResponse(json: unknown): {
 function handleFetchThemes(_request: unknown, sendResponse: MessageSender): boolean {
   void (async () => {
     const token = await getAccessTokenFromStorage();
-    const params = await bsplusApiQueryParams();
-    params.set("type", "betterseqta");
-    params.set("limit", "100");
-    params.set("nocache", String(Date.now()));
-    const apiUrl = `${apiBase()}/api/themes?${params}`;
+    const apiUrl = `${apiBase()}/api/themes?type=betterseqta&limit=100&nocache=${Date.now()}`;
     const githubUrl = `https://raw.githubusercontent.com/BetterSEQTA/BetterSEQTA-Themes/main/store/themes.json?nocache=${Date.now()}`;
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
@@ -166,10 +155,7 @@ function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: Messa
     const token = await getAccessTokenFromStorage();
     const headers: Record<string, string> = {};
     if (token) headers["Authorization"] = `Bearer ${token}`;
-    const detailUrl = await withBsplusApiQuery(
-      `${apiBase()}/api/themes/${encodeURIComponent(themeId)}`,
-    );
-    fetch(detailUrl, { cache: "no-store", headers })
+    fetch(`${apiBase()}/api/themes/${themeId}`, { cache: "no-store", headers })
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
@@ -561,11 +547,8 @@ const customThemesHandlers = createCustomThemesHandlers({
   getAccessTokenFromStorage,
 });
 
-const remoteConfigHandlers = createRemoteConfigHandlers(apiBase);
-
 const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
   ...customThemesHandlers,
-  ...remoteConfigHandlers,
   searchThemeStockPhotos: handleSearchThemeStockPhotos,
   reloadTabs: () => reloadSeqtaPages(),
   setDevApiBase: handleSetDevApiBase,
@@ -710,14 +693,10 @@ browser.runtime.onInstalled.addListener(function (event) {
 
   if (event.reason === "update" && event.previousVersion) {
     void runStorageMigrations(event.previousVersion);
-    void browser.storage.local.remove(BSPLUS_INSTALL_REGISTERED_AT_KEY).then(() => {
-      void refreshRemoteConfig(apiBase);
-    });
     reloadSeqtaPages();
   }
 
   if (event.reason === "install") {
-    void refreshRemoteConfig(apiBase);
     void browser.storage.local.set({ [DEFAULT_BACKGROUND_PENDING_KEY]: true });
     void defaultsReady
       .catch(() => undefined)
@@ -734,6 +713,5 @@ browser.runtime.onStartup.addListener(() => {
 });
 
 initCloudSettingsAutoSync({ reloadSeqtaPages });
-initRemoteConfigBackground(apiBase);
 initTimetableClassmatesBackgroundSync();
 void ensureSyncableStorageDefaults();

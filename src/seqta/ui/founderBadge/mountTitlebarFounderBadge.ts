@@ -9,7 +9,7 @@ import {
   type BadgeItem,
 } from "@/seqta/utils/founderBadges";
 import { openFounderBadgeModal } from "@/seqta/ui/founderBadge/openFounderBadgeModal";
-import { remoteChromeGateAllowed } from "@/seqta/utils/remoteConfig/routeGate";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
 let subscribed = false;
 let refreshPending = false;
@@ -82,7 +82,7 @@ async function syncTitlebarFounderBadge(): Promise<void> {
   if (
     settingsState.showTitlebarFounderBadge === false ||
     !cloudAuth.state.isLoggedIn ||
-    !remoteChromeGateAllowed("ui.titlebar.founderBadge")
+    isFeatureDisabled("ui.titlebar.founderBadge")
   ) {
     return;
   }

@@ -9,7 +9,7 @@ import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
 import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
 import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { checkRemoteFeature } from "@/seqta/utils/remoteConfig/runtime";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
@@ -30,7 +30,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
   if (isSeqtaEngageExperience()) {
     return () => {};
   }
-  if (checkRemoteFeature("page.analytics").hide) {
+  if (isFeatureDisabled("page.analytics")) {
     return () => {};
   }
 

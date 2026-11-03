@@ -8,13 +8,10 @@ import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { animate, stagger } from "motion";
 import { verboseInfo } from "@/utils/verboseLog";
 import { toNewsArticles, type NewsPayload } from "@/seqta/utils/newsFeed";
-import {
-  applyPageFeatureGateEarly,
-  injectPageFeatureBanner,
-} from "@/seqta/utils/remoteConfig/runtime";
+import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
 export async function SendNewsPage() {
-  if (applyPageFeatureGateEarly("news")) return;
+  if (isFeatureDisabled("page.news")) return;
 
   verboseInfo("[BetterSEQTA+] Started Loading News Page");
   document.title = "News ― SEQTA Learn";
@@ -57,7 +54,6 @@ export async function SendNewsPage() {
   </div>`);
 
   main.append(html.firstChild!);
-  injectPageFeatureBanner("news", "#news-container");
 
   void import("@/seqta/ui/titlebar/mountCustomTitleBar").then((mod) => {
     mod.setCustomTitleBarText("News");

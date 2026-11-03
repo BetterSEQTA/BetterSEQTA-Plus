@@ -10,13 +10,8 @@
   import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
   import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
-  import { getRemoteConfigSnapshot, resolveEffectiveRemoteTheme } from '@/seqta/utils/remoteConfig/runtime'
 
   const themeManager = ThemeManager.getInstance();
-  const remoteDirective = $derived(resolveEffectiveRemoteTheme(getRemoteConfigSnapshot()));
-  const remoteThemeForced = $derived(
-    remoteDirective?.mode === 'forced' && (remoteDirective.applicationMode ?? 'replace') === 'replace',
-  );
 
   let themes = $state<ThemeList | null>(null);
   let { isEditMode, showNavigation = true }: {
@@ -41,7 +36,7 @@
   });
 
   const handleThemeClick = async (theme: CustomTheme, e: MouseEvent) => {
-    if (isEditMode || remoteThemeForced) return;
+    if (isEditMode) return;
     if (theme.id === themes?.selectedTheme) {
       themeManager.setTransitionPoint(e.clientX, e.clientY);
       await themeManager.disableTheme();
@@ -167,12 +162,7 @@
   role="list"
   tabindex="-1"
 >
-  {#if remoteThemeForced}
-    <p class="mb-3 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
-      Your school has applied a theme. Theme selection is locked until it is removed.
-    </p>
-  {/if}
-  <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'} {remoteThemeForced ? 'pointer-events-none opacity-50' : ''}">
+  <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button

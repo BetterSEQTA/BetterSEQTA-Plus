@@ -3,6 +3,7 @@ import IconFamily from "@/resources/fonts/IconFamily.woff";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
 import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { loadRemoteStatus } from "@/seqta/utils/remoteStatus";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
 
 function InjectCustomIcons() {
@@ -31,6 +32,7 @@ if (!mountPoint) {
 
   void (async () => {
     await initializeSettingsState();
+    await loadRemoteStatus();
     initVerboseLogging();
     const { syncApiBaseToBackground } = await import("@/seqta/utils/DevApiBase");
     syncApiBaseToBackground();

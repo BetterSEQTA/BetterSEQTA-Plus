@@ -13,7 +13,7 @@ import {
 getThemeApplyButtonStyles,
 resolveStoreVariantAccentColor,
 } from '@/interface/utils/themeListFilters'
-import { isRemoteThemeStoreDisabled } from '@/seqta/utils/remoteConfig/runtime'
+import { isFeatureDisabled } from '@/seqta/utils/remoteStatus'
 let {
 theme,
 currentThemes,
@@ -52,7 +52,7 @@ adminPreviewMode?: boolean
 } = $props()
 const installActionLabel = $derived(adminPreviewMode ? 'Preview & apply' : 'Install')
 const isCommunity = $derived(variant === 'community')
-const themeStoreInstallLocked = $derived(isRemoteThemeStoreDisabled() && !adminPreviewMode)
+const themeStoreInstallLocked = $derived(isFeatureDisabled('themeStore.install') && !adminPreviewMode)
 const showFavorites = $derived(!isCommunity)
 function variantApplyStyles(variantId: string) {
 if (!theme) {
