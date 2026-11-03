@@ -1,4 +1,4 @@
-const GAP_PX = 8;
+const GAP_PX = 2;
 
 export function attachTooltip(anchor: HTMLElement) {
   const bubble = anchor.querySelector<HTMLElement>(":scope > .bsplus-tooltip-bubble");
@@ -9,10 +9,10 @@ export function attachTooltip(anchor: HTMLElement) {
 
   const show = () => {
     if (isOpen()) return;
-    const rect = anchor.getBoundingClientRect();
-    bubble.style.left = `${rect.left + rect.width / 2}px`;
-    bubble.style.top = `${rect.bottom + GAP_PX}px`;
     bubble.showPopover();
+    const rect = anchor.getBoundingClientRect();
+    bubble.style.left = `${Math.round(rect.left + (rect.width - bubble.offsetWidth) / 2)}px`;
+    bubble.style.top = `${Math.round(rect.bottom + GAP_PX)}px`;
   };
   const hide = () => {
     if (isOpen()) bubble.hidePopover();

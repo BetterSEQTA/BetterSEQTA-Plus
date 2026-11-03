@@ -2106,7 +2106,16 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   margin-top: 5px;
 }
 [class*="notifications__actions___"] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 4px 4px !important;
   background: var(--auto-background);
+
+  button {
+    margin: 0 !important;
+  }
 }
 [class*="notifications__actions___"] button,
 [class*="notifications__dismiss___"] {
@@ -3274,21 +3283,29 @@ body:not(.clr-open) .clr-picker,
   justify-content: space-between;
   align-items: center;
 }
+.bsplus-tooltip-bubble:has(> .bsplus-logout) {
+  min-width: 0;
+}
 .bsplus-tooltip-bubble .bsplus-logout {
-  display: flex;
+  display: flex !important;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 32px;
-  padding: 0;
+  width: 40px !important;
+  height: 32px !important;
+  margin: 0 !important;
+  padding: 0 !important;
   border: none !important;
   border-radius: 6px;
   box-shadow: none !important;
   background: none !important;
-  color: var(--background-primary) !important;
-  opacity: 1;
+  color: #fff !important;
+  opacity: 1 !important;
   cursor: pointer;
-  transition: opacity 150ms;
+  transition: background 150ms;
+
+  html.dark & {
+    color: #000 !important;
+  }
 
   &::after {
     content: none !important;
@@ -3302,11 +3319,11 @@ body:not(.clr-open) .clr-picker,
   }
 
   &:hover {
-    opacity: 0.7;
+    background: color-mix(in srgb, currentColor 12%, transparent) !important;
   }
 
   &:focus-visible {
-    outline: 2px solid var(--background-primary) !important;
+    outline: 2px solid currentColor !important;
     outline-offset: -2px;
   }
 }
