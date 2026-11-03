@@ -129,6 +129,7 @@ export function resolveGradeFromAssessmentPayload(
     };
   }
 
+  const c0 = criteria?.[0]?.results;
   if (settings.rollupCriteriaGrades) {
     const rolled = rollupPercentFromCriteria(criteria, settings);
     if (rolled !== undefined) {
@@ -139,7 +140,6 @@ export function resolveGradeFromAssessmentPayload(
       };
     }
   } else {
-    const c0 = criteria?.[0]?.results;
     const firstCriterionPercent =
       c0?.percentage !== undefined && c0?.score !== undefined
         ? parsePercent(c0.percentage)
@@ -153,7 +153,7 @@ export function resolveGradeFromAssessmentPayload(
     }
   }
 
-  if (criteria?.[0]?.results != null || results != null) {
+  if (c0?.percentage !== undefined || results?.percentage !== undefined) {
     return { letterGrade: extractLetterFromPayload(assessment) };
   }
   const letter = extractLetterFromPayload(assessment);
