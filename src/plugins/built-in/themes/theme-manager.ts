@@ -4,6 +4,7 @@ import {
   type CustomTheme,
   getForcedDarkMode,
   type LoadedCustomTheme,
+  type ThemeCreatorMeta,
   shouldForceThemeAppearance,
 } from "@/types/customThemes";
 import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloudSettingsSync";
@@ -35,6 +36,12 @@ import {
   validateThemeScript,
 } from "./theme-runtime";
 import { base64ToBlob, blobToBase64Data, stripBase64Prefix } from "@/seqta/utils/base64";
+import { mergeThemeWithCreatorMeta } from "@/interface/utils/themeCreatorMeta";
+
+function resolveThemeCustomCss(theme: LoadedCustomTheme): string {
+  if (!theme.creatorMeta) return theme.CustomCSS || "";
+  return mergeThemeWithCreatorMeta(theme, theme.creatorMeta).CustomCSS;
+}
 
 type ThemeContent = {
   id: string;
@@ -49,6 +56,7 @@ type ThemeContent = {
   forceDark?: boolean;
   adaptiveCssVariables?: string[];
   images?: { id: string; variableName: string; data: string }[]; // data: base64
+  creatorMeta?: ThemeCreatorMeta;
   themeScript?: ThemeScriptSpec;
   themeDom?: ThemeDomSpec;
 };
@@ -335,7 +343,7 @@ export class ThemeManager {
       // Custom CSS + images must be applied in page context (Firefox).
       verboseDebug("[BetterSEQTA+] ThemeManager: Applying theme styles in page context");
       await syncThemeToPage({
-        customCss: theme.CustomCSS || "",
+        customCss: resolveThemeCustomCss(theme as LoadedCustomTheme),
         images: theme.CustomImages ?? [],
       });
       if (theme.CustomImages?.length) {
@@ -801,6 +809,7 @@ export class ThemeManager {
         adaptiveCssVariables: themeData.adaptiveCssVariables,
         themeScript: themeData.themeScript,
         themeDom: themeData.themeDom,
+        creatorMeta: themeData.creatorMeta,
       };
 
       await this.saveTheme(theme);
@@ -961,7 +970,7 @@ export class ThemeManager {
   public async previewTheme(theme: LoadedCustomTheme): Promise<void> {
     verboseDebug("[BetterSEQTA+] ThemeManager: Previewing theme:", theme.name);
     try {
-      const { CustomCSS, CustomImages, defaultColour } = theme;
+      const { CustomImages, defaultColour } = theme;
 
       // Store original settings only if this is a new theme
       if (!theme.webURL) {
@@ -976,7 +985,7 @@ export class ThemeManager {
 
       // Apply custom CSS + images in page context (preview stylesheet)
       await syncThemeToPage({
-        previewCss: CustomCSS,
+        previewCss: resolveThemeCustomCss(theme),
         images: CustomImages,
       });
       this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
