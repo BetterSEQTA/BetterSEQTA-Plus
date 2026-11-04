@@ -361,6 +361,7 @@ export async function deleteSyncedEventsFromCalendar(
   };
 
   let remoteEvents: RemoteSyncedEvent[] = [];
+  let duplicateIds: string[] = [];
   try {
     remoteEvents = await provider.listSyncedEvents(
       accessToken,
@@ -368,12 +369,18 @@ export async function deleteSyncedEventsFromCalendar(
       refreshAccessToken,
       { includeUnkeyed: true },
     );
-    mergeRemoteEventsIntoMap(eventMap, origin, remoteEvents, eventMapKey);
+    duplicateIds = mergeRemoteEventsIntoMap(eventMap, origin, remoteEvents, eventMapKey);
   } catch (err) {
     verboseLog(`[BetterSEQTA+] ${provider.label} cleanup list failed:`, err);
   }
 
   const entries = collectOriginDeleteEntries(eventMap, origin, remoteEvents, eventMapKey);
+  const deleteIds = new Set(entries.map(([, id]) => id));
+  for (const id of duplicateIds) {
+    if (deleteIds.has(id)) continue;
+    entries.push([`${DUPLICATE_EVENT_MAP_KEY_PREFIX}${id}`, id]);
+    deleteIds.add(id);
+  }
   if (entries.length === 0) {
     clearOriginEventMapEntries(eventMap, origin);
     await provider.writeState({ eventMap });

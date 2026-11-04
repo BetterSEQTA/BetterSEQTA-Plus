@@ -18,13 +18,16 @@ import {
   readOutlookCalendarState,
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
-  BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
   CALENDAR_SYNC_HEARTBEAT_MS,
+  calendarSyncInProgressStorageKey,
+  clearCalendarSyncInProgressMarker,
   getSyncAssessmentDueDates,
   getSyncWeeksAhead,
   isCalendarSyncRunningElsewhere,
   readResumableCalendarSync,
-  type PendingCalendarSync,
+  releaseCalendarSyncLock,
+  tryAcquireCalendarSyncLock,
+  type CalendarSyncProvider,
 } from "@/seqta/utils/calendarSync/settings";
 import type {
   GoogleCalendarStatus,
@@ -32,7 +35,7 @@ import type {
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 
-export type CalendarProvider = "google" | "outlook";
+export type { CalendarSyncProvider as CalendarProvider };
 
 const MSG = {
   accessToken: { google: "googleCalendarGetAccessToken", outlook: "outlookCalendarGetAccessToken" },
@@ -128,27 +131,22 @@ async function runExclusiveCalendarSync(
   config: CalendarSyncRunnerConfig,
   params: RunCalendarSyncParams,
 ): Promise<GoogleCalendarSyncResult> {
-  if (await isCalendarSyncRunningElsewhere()) {
+  const mode = params.mode ?? "full";
+  const lock = await tryAcquireCalendarSyncLock(config.provider, mode);
+  if (!lock.acquired) {
     return {
       success: false,
       error: "A calendar sync is already running in another SEQTA tab. Try again in a minute.",
     };
   }
 
-  const mode = params.mode ?? "full";
+  const { lockId, marker } = lock;
+  const storageKey = calendarSyncInProgressStorageKey(config.provider);
   const weeksAhead = await getSyncWeeksAhead();
 
-  const marker: PendingCalendarSync = {
-    provider: config.provider,
-    mode,
-    origin: location.origin,
-    startedAt: Date.now(),
-    heartbeatAt: Date.now(),
-  };
-  await browser.storage.local.set({ [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: marker });
   const heartbeat = setInterval(() => {
     void browser.storage.local.set({
-      [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: { ...marker, heartbeatAt: Date.now() },
+      [storageKey]: { ...marker, heartbeatAt: Date.now(), lockId },
     });
   }, CALENDAR_SYNC_HEARTBEAT_MS);
 
@@ -189,7 +187,7 @@ async function runExclusiveCalendarSync(
     );
   } finally {
     clearInterval(heartbeat);
-    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    await releaseCalendarSyncLock(config.provider, lockId);
   }
 }
 
@@ -199,14 +197,14 @@ export async function resumeInterruptedCalendarSync(
   const pending = await readResumableCalendarSync();
   if (!pending) return null;
   // Another tab is still mid-sync — leave its marker alone; a later page load resumes if it dies.
-  if (await isCalendarSyncRunningElsewhere()) return null;
+  if (await isCalendarSyncRunningElsewhere(pending.provider)) return null;
 
   const state =
     pending.provider === "google"
       ? await readGoogleCalendarState()
       : await readOutlookCalendarState();
   if (!state.refreshToken && !state.accessToken) {
-    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    await clearCalendarSyncInProgressMarker(pending.provider);
     return null;
   }
 
@@ -219,3 +217,8 @@ export const runGoogleCalendarSync = (params?: RunCalendarSyncParams) =>
 
 export const runOutlookCalendarSync = (params?: RunCalendarSyncParams) =>
   runCalendarSync(OUTLOOK_SYNC_RUNNER, params);
+
+/** @internal Test hook for in-tab sync coalescing. */
+export function __resetActiveCalendarSyncsForTests(): void {
+  activeSyncs.clear();
+}
