@@ -1,29 +1,20 @@
 <script lang="ts">
-  import HeartIcon from "@lucide/svelte/icons/heart";
-  import CloudUploadIcon from "@lucide/svelte/icons/cloud-upload";
-  import PencilIcon from "@lucide/svelte/icons/pencil";
-  import PlusIcon from "@lucide/svelte/icons/plus";
-  import ShoppingCartIcon from "@lucide/svelte/icons/shopping-cart";
-  import UploadIcon from "@lucide/svelte/icons/upload";
-  import type { CustomTheme, ThemeList } from "@/types/customThemes";
-  import { onDestroy, onMount } from "svelte";
-  import browser from "@/lib/browser";
-  import { themeUpdates } from "@/interface/hooks/themeUpdates";
-  import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-  import { cloudAuth } from "@/seqta/utils/cloudAuth";
-  import SignInToFavoriteModal from "@/interface/components/SignInToFavoriteModal.svelte";
-  import ThemeBlobImage from "@/interface/components/themes/ThemeBlobImage.svelte";
-  import ThemePlaceholderCover from "@/interface/components/themes/ThemePlaceholderCover.svelte";
-  import { isLocalCustomTheme } from "@/interface/utils/themeListFilters";
-  import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
+  import type { CustomTheme, ThemeList } from '@/types/customThemes'
+  import { onDestroy, onMount } from 'svelte'
+  import browser from '@/lib/browser'
+  import { themeUpdates } from '@/interface/hooks/themeUpdates'
+  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+  import { cloudAuth } from '@/seqta/utils/cloudAuth'
+  import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
+  import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
+  import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
+  import { isLocalCustomTheme } from '@/interface/utils/themeListFilters'
+  import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
 
   const themeManager = ThemeManager.getInstance();
 
   let themes = $state<ThemeList | null>(null);
-  let {
-    isEditMode,
-    showNavigation = true,
-  }: {
+  let { isEditMode, showNavigation = true }: {
     isEditMode: boolean;
     showNavigation?: boolean;
   } = $props();
@@ -49,74 +40,75 @@
     if (theme.id === themes?.selectedTheme) {
       themeManager.setTransitionPoint(e.clientX, e.clientY);
       await themeManager.disableTheme();
-      themes.selectedTheme = "";
+      themes.selectedTheme = '';
     } else {
       themeManager.setTransitionPoint(e.clientX, e.clientY);
       await themeManager.setTheme(theme.id);
       if (!themes) return;
       themes.selectedTheme = theme.id;
     }
-  };
+  }
 
   const handleThemeDelete = async (themeId: string) => {
     try {
       await themeManager.deleteTheme(themeId);
       if (!themes) return;
 
-      themes.themes = themes.themes.filter((theme) => theme.id !== themeId);
+      themes.themes = themes.themes.filter(theme => theme.id !== themeId);
       if (themeId === themes.selectedTheme) {
-        themes.selectedTheme = "";
+        themes.selectedTheme = '';
         await themeManager.disableTheme();
       }
     } catch (error) {
-      console.error("Error deleting theme:", error);
+      console.error('Error deleting theme:', error);
     }
-  };
+  }
 
   const handleShareTheme = async (theme: CustomTheme) => {
     try {
       await themeManager.shareTheme(theme.id);
     } catch (error) {
-      console.error("Error sharing theme:", error);
+      console.error('Error sharing theme:', error);
     }
-  };
+  }
 
   const fetchThemes = async () => {
     themes = {
       themes: await themeManager.getAvailableThemes(),
-      selectedTheme: themeManager.getSelectedThemeId() || "",
-    };
+      selectedTheme: themeManager.getSelectedThemeId() || '',
+    }
     if (themes && cloudLoggedIn) {
       const status: Record<string, boolean> = {};
       await Promise.all(
         themes.themes.map(async (t) => {
           try {
             const res = (await browser.runtime.sendMessage({
-              type: "fetchThemeDetails",
+              type: 'fetchThemeDetails',
               themeId: t.id,
             })) as { success?: boolean; data?: { theme?: { is_favorited?: boolean } } };
-            if (res?.success && res?.data?.theme) {
-              status[t.id] = !!res.data.theme.is_favorited;
+              if (res?.success && res?.data?.theme) {
+                status[t.id] = !!res.data.theme.is_favorited;
+              }
+            } catch {
+              // Theme may not exist on store (e.g. locally created)
             }
-          } catch {
-            // Theme may not exist on store (e.g. locally created)
-          }
-        }),
-      );
-      favoriteStatus = status;
+          })
+        );
+        favoriteStatus = status;
     } else {
       favoriteStatus = {};
     }
-  };
+  }
 
   const openStorePage = async () => {
-    await (await import("@/seqta/ui/renderStore")).openStorePage();
-  };
+    const { openStorePage } = await import('@/seqta/ui/renderStore')
+    await openStorePage()
+  }
 
   const openThemeCreator = async (themeId?: string) => {
-    const { launchPageThemeBuilder } = await import("@/seqta/utils/launchPageThemeBuilder");
-    await launchPageThemeBuilder(themeId);
-  };
+    const { launchPageThemeBuilder } = await import('@/seqta/utils/launchPageThemeBuilder')
+    await launchPageThemeBuilder(themeId)
+  }
 
   const submitCustomTheme = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
@@ -127,14 +119,14 @@
     }
     submittingThemeId = theme.id;
     try {
-      const { submitThemeById } = await import("@/seqta/utils/customThemes/submitLocalTheme");
+      const { submitThemeById } = await import('@/seqta/utils/customThemes/submitLocalTheme');
       await submitThemeById(theme.id, theme.description?.trim() || undefined);
     } catch (err) {
       submitError = formatCustomThemeApiError(err);
     } finally {
       submittingThemeId = null;
     }
-  };
+  }
 
   const handleToggleFavorite = async (theme: CustomTheme, e: MouseEvent) => {
     e.stopPropagation();
@@ -144,23 +136,23 @@
     }
     const isFavorite = !favoriteStatus[theme.id];
     const result = (await browser.runtime.sendMessage({
-      type: "cloudFavorite",
+      type: 'cloudFavorite',
       themeId: theme.id,
-      action: isFavorite ? "favorite" : "unfavorite",
+      action: isFavorite ? 'favorite' : 'unfavorite',
     })) as { success?: boolean };
     if (result?.success) {
       favoriteStatus = { ...favoriteStatus, [theme.id]: isFavorite };
     }
-  };
+  }
 
   onMount(async () => {
     await fetchThemes();
     themeUpdates.addListener(fetchThemes);
-  });
+  })
 
   onDestroy(() => {
     themeUpdates.removeListener(fetchThemes);
-  });
+  })
 
   const useTwoColumnLayout = $derived(!showNavigation);
 </script>
@@ -170,26 +162,18 @@
   role="list"
   tabindex="-1"
 >
-  <div class={useTwoColumnLayout ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2 px-2"}>
+  <div class="{useTwoColumnLayout ? 'grid grid-cols-2 gap-3' : 'flex flex-col gap-2 px-2'}">
     {#if themes}
       {#each themes.themes as theme (theme.id)}
         <button
-          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id ===
-          themes.selectedTheme
-            ? 'dark:ring-2 ring-4'
-            : 'ring-0'}"
+          class="relative group w-full aspect-theme flex justify-center items-center rounded-xl transition ring-3 dark:ring-white ring-zinc-300 {theme.id === themes.selectedTheme ? 'dark:ring-2 ring-4' : 'ring-0'}"
           onclick={(e) => handleThemeClick(theme, e)}
         >
           {#if isEditMode}
             <div
               class="flex absolute top-2 right-2 z-20 place-items-center p-2 w-6 h-6 text-white bg-red-600 rounded-full opacity-100"
-              onclick={(event) => {
-                event.stopPropagation();
-                handleThemeDelete(theme.id);
-              }}
-              onkeydown={(event) => {
-                if (event.key === "Enter" || event.key === " ") handleThemeDelete(theme.id);
-              }}
+              onclick={(event) => { event.stopPropagation(); handleThemeDelete(theme.id) }}
+              onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleThemeDelete(theme.id) }}
               role="button"
               tabindex="-1"
             >
@@ -198,93 +182,59 @@
           {/if}
 
           {#if !isEditMode}
-            <div
-              class="absolute inset-y-0 right-3 z-20 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100"
-            >
+            <div class="absolute inset-y-0 right-3 z-20 flex items-center gap-2 opacity-0 transition-opacity group-hover:opacity-100">
               {#if !isLocalCustomTheme(theme)}
                 <div
-                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-center {(favoriteStatus[
-                    theme.id
-                  ] ?? false)
-                    ? 'text-red-400'
-                    : 'text-white/80'}"
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-center {(favoriteStatus[theme.id] ?? false) ? 'text-red-400' : 'text-white/80'}"
                   onclick={(event) => handleToggleFavorite(theme, event)}
-                  onkeydown={(event) => {
-                    if (event.key === "Enter" || event.key === " ")
-                      handleToggleFavorite(theme, event as any);
-                  }}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleToggleFavorite(theme, event as any) }}
                   role="button"
                   tabindex="-1"
-                  title={cloudLoggedIn
-                    ? (favoriteStatus[theme.id] ?? false)
-                      ? "Remove from favorites"
-                      : "Add to favorites"
-                    : "Sign in to favorite themes"}
+                  title={cloudLoggedIn ? ((favoriteStatus[theme.id] ?? false) ? 'Remove from favorites' : 'Add to favorites') : 'Sign in to favorite themes'}
                 >
-                  <HeartIcon
-                    class="h-5 w-5"
-                    fill={(favoriteStatus[theme.id] ?? false) ? "currentColor" : "none"}
-                  />
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill={(favoriteStatus[theme.id] ?? false) ? 'currentColor' : 'none'} stroke="currentColor" stroke-width="2" class="h-5 w-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
                 </div>
               {/if}
 
               <div
                 class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white/80"
-                onclick={(event) => {
-                  event.stopPropagation();
-                  handleShareTheme(theme);
-                }}
-                onkeydown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") handleShareTheme(theme);
-                }}
+                onclick={(event) => { event.stopPropagation(); handleShareTheme(theme) }}
+                onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') handleShareTheme(theme) }}
                 role="button"
                 tabindex="-1"
                 title="Export theme"
               >
-                <UploadIcon size="1em" class="text-lg" />
+                <span class="text-lg font-IconFamily">&#xecb3;</span>
               </div>
 
               {#if isLocalCustomTheme(theme)}
                 <div
                   class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white"
-                  onclick={(event) => {
-                    event.stopPropagation();
-                    void openThemeCreator(theme.id);
-                  }}
-                  onkeydown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") void openThemeCreator(theme.id);
-                  }}
+                  onclick={(event) => { event.stopPropagation(); void openThemeCreator(theme.id) }}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void openThemeCreator(theme.id) }}
                   role="button"
                   tabindex="-1"
                   title="Edit theme"
                 >
-                  <PencilIcon size="1em" class="text-lg" />
+                  <span class="text-lg font-IconFamily">&#xeaa5;</span>
                 </div>
                 <div
-                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId ===
-                  theme.id
-                    ? 'opacity-60'
-                    : ''}"
+                  class="flex h-8 w-8 place-items-center rounded-full bg-black/50 p-2 text-white {submittingThemeId === theme.id ? 'opacity-60' : ''}"
                   onclick={(event) => void submitCustomTheme(theme, event)}
-                  onkeydown={(event) => {
-                    if (event.key === "Enter" || event.key === " ")
-                      void submitCustomTheme(theme, event as unknown as MouseEvent);
-                  }}
+                  onkeydown={(event) => { if (event.key === 'Enter' || event.key === ' ') void submitCustomTheme(theme, event as unknown as MouseEvent) }}
                   role="button"
                   tabindex="-1"
                   title="Submit to community"
                 >
-                  <CloudUploadIcon size="1em" class="text-lg" />
+                  <span class="text-lg font-IconFamily">&#xe9fc;</span>
                 </div>
               {/if}
             </div>
           {/if}
 
-          <div
-            class="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900 {isEditMode
-              ? 'animate-shake brightness-90'
-              : ''}"
-          >
+          <div class="relative top-0 z-10 flex justify-center w-full h-full overflow-hidden transition dark:text-white rounded-xl group place-items-center bg-zinc-100 dark:bg-zinc-900 { isEditMode ? 'animate-shake brightness-90' : ''}">
             {#if theme.coverImage}
               <ThemeBlobImage
                 source={theme.coverImage}
@@ -306,31 +256,18 @@
     {/if}
 
     {#if themes && themes.themes.length === 0}
-      <div
-        class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center {useTwoColumnLayout
-          ? 'col-span-2'
-          : ''}"
-      >
+      <div class="flex min-h-56 flex-col items-center justify-center px-4 py-10 text-center {useTwoColumnLayout ? 'col-span-2' : ''}">
         <h3 class="text-xl font-semibold text-zinc-900 dark:text-white" style="text-wrap: balance">
           No themes installed
         </h3>
-        <p
-          class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400"
-          style="text-wrap: pretty"
-        >
+        <p class="mt-2 max-w-md text-base text-zinc-500 dark:text-zinc-400" style="text-wrap: pretty">
           Install a theme from the store or create one of your own.
         </p>
       </div>
     {/if}
 
     {#if submitError}
-      <p
-        class="whitespace-pre-line text-sm text-red-600 dark:text-red-400 {useTwoColumnLayout
-          ? 'col-span-2'
-          : ''}"
-      >
-        {submitError}
-      </p>
+      <p class="whitespace-pre-line text-sm text-red-600 dark:text-red-400 {useTwoColumnLayout ? 'col-span-2' : ''}">{submitError}</p>
     {/if}
 
     {#if themes && showNavigation}
@@ -340,7 +277,7 @@
         onclick={() => void openStorePage()}
         class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
       >
-        <ShoppingCartIcon size="1em" class="text-xl" />
+        <span class="text-xl font-IconFamily">&#xecc5;</span>
         <span class="ml-2">Theme Store</span>
       </button>
 
@@ -348,7 +285,7 @@
         onclick={() => void openThemeCreator()}
         class="flex justify-center items-center w-full rounded-xl transition aspect-theme bg-zinc-100 dark:bg-zinc-900 dark:text-white"
       >
-        <PlusIcon size="1em" class="text-xl" />
+        <span class="text-xl font-IconFamily">&#xec60;</span>
         <span class="ml-2">Create your own</span>
       </button>
     {/if}

@@ -1,7 +1,4 @@
 <script lang="ts">
-  import UploadIcon from "@lucide/svelte/icons/upload";
-  import UserIcon from "@lucide/svelte/icons/user";
-  import XIcon from "@lucide/svelte/icons/x";
   import { onMount } from "svelte";
   import browser from "@/lib/browser";
   import { cloudAuth } from "@/seqta/utils/cloudAuth";
@@ -70,7 +67,7 @@
       aria-label="Remove profile picture"
       onclick={() => setLocalPicture(null)}
     >
-      <XIcon size={16} />
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
     </button>
     <div
       class="flex overflow-hidden justify-center items-center rounded-full size-10 bg-zinc-200 dark:bg-zinc-700 text-zinc-400"
@@ -78,7 +75,7 @@
       {#if src}
         <img {src} alt="Your avatar" class="object-cover size-full" />
       {:else}
-        <UserIcon size={20} />
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z" /></svg>
       {/if}
     </div>
     <button
@@ -92,7 +89,7 @@
         void save(event.dataTransfer?.files[0]);
       }}
     >
-      <UploadIcon size={16} />
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
       Upload
     </button>
     <input

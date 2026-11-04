@@ -1,11 +1,11 @@
-import { icon } from "@/lib/icon";
-import { Wrench } from "lucide-static";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { addExtensionSettings } from "@/seqta/utils/adders/addExtensionSettings";
 import { setupSettingsButton } from "@/seqta/utils/setupSettingsButton";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
+
+const SETTINGS_WRENCH_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path fill="currentColor" d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></svg>`;
 
 export async function ensureSettingsAccess(): Promise<void> {
   addExtensionSettings();
@@ -48,7 +48,7 @@ export async function ensureSettingsAccess(): Promise<void> {
     parent.append(
       stringToHTML(/* html */ `
         <button class="addedButton" id="AddedSettings" type="button" aria-label="BetterSEQTA+ settings">
-          ${icon(Wrench)}
+          ${SETTINGS_WRENCH_SVG}
         </button>
       `).firstChild!,
     );

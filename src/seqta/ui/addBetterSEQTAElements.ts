@@ -1,5 +1,5 @@
-import { icon } from "@/lib/icon";
-import { LogOut, Moon, Sun, Wrench } from "lucide-static";
+import { LUCIDE_MOON_ICON_SVG } from "@/lib/icons/lucideMoon";
+import { LUCIDE_SUN_ICON_SVG } from "@/lib/icons/lucideSun";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
 import { addExtensionSettings } from "@/seqta/utils/adders/addExtensionSettings";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
@@ -38,6 +38,15 @@ import {
 import { getUserInfo } from "@/seqta/utils/userInfo";
 
 const USER_AVATAR_SVG = `<svg class="userInfosvg" viewBox="0 0 24 24"><path fill="var(--text-primary)" d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z"></path></svg>`;
+
+const LOGOUT_ICON_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>`;
+
+const SETTINGS_WRENCH_SVG = `<svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.182,6.923c-.29,0-3.662,2.122-4.142,2.4l-2.8-1.555V4.511l4.257-2.456a.518.518,0,0,0,.233-.408.479.479,0,0,0-.233-.407,6.511,6.511,0,1,0-3.327,12.107,6.582,6.582,0,0,0,6.148-4.374,5.228,5.228,0,0,0,.333-1.542A.461.461,0,0,0,23.182,6.923Z"></path><path fill="currentColor" d="M9.73,10.418,7.376,12.883c-.01.01-.021.016-.03.025L1.158,19.1a2.682,2.682,0,1,0,3.793,3.793l4.583-4.582,0,0,4.1-4.005-.037-.037A9.094,9.094,0,0,1,9.73,10.418ZM3.053,21.888A.894.894,0,1,1,3.946,21,.893.893,0,0,1,3.053,21.888Z"></path></svg>`;
+
+function themeToggleIconMarkup(): string {
+  const path = settingsState.DarkMode ? LUCIDE_SUN_ICON_SVG : LUCIDE_MOON_ICON_SVG;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">${path}</svg>`;
+}
 
 let lightDarkToggleStreak = 0;
 let sidebarAccessibilityObserver: MutationObserver | null = null;
@@ -158,7 +167,7 @@ function updateUserInfo(info: Awaited<ReturnType<typeof getUserInfo>>) {
         ${USER_AVATAR_SVG}
         <div class="bsplus-tooltip-bubble">
           <button class="bsplus-logout" type="button" aria-label="Log out">
-            ${icon(LogOut, { size: 20 })}
+            ${LOGOUT_ICON_SVG}
           </button>
         </div>
       </div>
@@ -284,7 +293,7 @@ async function createSettingsButton(parent?: Element) {
   target.append(
     stringToHTML(/* html */ `
       <button class="addedButton" id="AddedSettings" type="button" aria-label="BetterSEQTA+ settings">
-        ${icon(Wrench)}
+        ${SETTINGS_WRENCH_SVG}
       </button>
     `).firstChild!,
   );
@@ -370,7 +379,7 @@ async function addEngageUserInfo() {
       ${USER_AVATAR_SVG}
       <div class="bsplus-tooltip-bubble">
         <button class="bsplus-logout" type="button" aria-label="Log out">
-          ${icon(LogOut, { size: 20 })}
+          ${LOGOUT_ICON_SVG}
         </button>
       </div>
     </div>
@@ -457,7 +466,7 @@ async function addDarkLightToggle(parent?: Element) {
   toggleTarget.append(
     stringToHTML(/* html */ `
       <button class="addedButton DarkLightButton" id="LightDarkModeButton" type="button" aria-label="${getLightDarkModeString()}">
-        ${icon(settingsState.DarkMode ? Sun : Moon)}
+        ${themeToggleIconMarkup()}
       </button>
     `).firstChild!,
   );
@@ -484,7 +493,7 @@ async function addDarkLightToggle(parent?: Element) {
     settingsState.DarkMode = !settingsState.DarkMode;
     updateAllColors();
 
-    lightDarkModeButtonElement.innerHTML = icon(settingsState.DarkMode ? Sun : Moon);
+    lightDarkModeButtonElement.innerHTML = themeToggleIconMarkup();
     lightDarkModeButtonElement.setAttribute("aria-label", getLightDarkModeString());
   });
 }

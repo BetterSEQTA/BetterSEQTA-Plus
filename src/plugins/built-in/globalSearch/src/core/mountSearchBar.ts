@@ -1,5 +1,3 @@
-import { icon } from "@/lib/icon";
-import { Search } from "lucide-static";
 import SearchBar from "../components/SearchBar.svelte";
 import { unmount } from "svelte";
 import { warmUpVectorSearchOnInteraction } from "../search/vector/vectorSearch";
@@ -22,7 +20,8 @@ type AppRef = {
   ownedTrigger?: boolean;
 };
 
-const SEARCH_SVG = icon(Search, { size: 16 });
+const SEARCH_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>';
 
 async function resolveTriggerWrapper(titleElement: Element): Promise<HTMLElement | null> {
   const existing = titleElement.querySelector(".search-trigger-wrapper") as HTMLElement | null;
@@ -113,7 +112,7 @@ export async function mountSearchBar(titleElement: Element, api: GlobalSearchApi
     !progressBar ||
     !progressText
   ) {
-    console.error("[BetterSEQTA+] Global Search: Search trigger markup incomplete");
+    console.error("[Global Search] Search trigger markup incomplete");
     return;
   }
 

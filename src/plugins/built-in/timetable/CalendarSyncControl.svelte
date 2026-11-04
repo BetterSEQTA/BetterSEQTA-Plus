@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CalendarIcon from "@lucide/svelte/icons/calendar";
   import { onMount } from "svelte";
   import type { Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
@@ -77,9 +76,7 @@
   const isBusy = $derived(busy !== null);
   const anyConnected = $derived(googleStatus.connected || outlookStatus.connected);
   const modalOpen = $derived(showDisconnect || showDeleteEvents);
-  const modalBusy = $derived(
-    showDisconnect ? busy?.phase === "disconnect" : busy?.phase === "delete",
-  );
+  const modalBusy = $derived(showDisconnect ? busy?.phase === "disconnect" : busy?.phase === "delete");
   const providerLabel = $derived(calendarProviderLabel(modalProvider ?? "google"));
   const showTriggerProgress = $derived(
     isBusy &&
@@ -381,7 +378,11 @@
 
     busy = { provider, phase: "disconnect" };
     try {
-      const ok = await disconnectProvider(provider, label, `Disconnected from ${label} Calendar.`);
+      const ok = await disconnectProvider(
+        provider,
+        label,
+        `Disconnected from ${label} Calendar.`,
+      );
       if (ok) showDisconnect = false;
     } catch (err) {
       showToastMessage(err instanceof Error ? err.message : "Disconnect failed.", true);
@@ -583,7 +584,7 @@
   >
     <span class="bsplus-cal-trigger-fill" aria-hidden="true"></span>
     <span class="bsplus-cal-trigger-content">
-      <CalendarIcon size="1em" class="bsplus-cal-trigger-icon" />
+      <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xe9cd;</span>
       <span class="bsplus-cal-trigger-text">{triggerStatusText}</span>
     </span>
   </button>
@@ -599,9 +600,7 @@
     >
       <div class="bsplus-cal-menu-header">
         <span class="bsplus-cal-menu-title">Calendar sync</span>
-        <span class="bsplus-cal-menu-sub"
-          >Sync classes and optional assessment due dates to Google or Outlook</span
-        >
+        <span class="bsplus-cal-menu-sub">Sync classes and optional assessment due dates to Google or Outlook</span>
       </div>
 
       {@render providerPanel(
@@ -656,9 +655,7 @@
           <label class="bsplus-cal-setting bsplus-cal-setting--toggle">
             <div class="bsplus-cal-setting-copy">
               <span class="bsplus-cal-setting-label">Sync assessment due dates</span>
-              <span class="bsplus-cal-setting-desc"
-                >Uses the same weeks window. Update calendar once after enabling.</span
-              >
+              <span class="bsplus-cal-setting-desc">Uses the same weeks window. Update calendar once after enabling.</span>
             </div>
             <input
               type="checkbox"
@@ -699,8 +696,8 @@
             Disconnect {providerLabel} Calendar?
           </h2>
           <p class="bsplus-cal-modal-body">
-            Disconnecting normally removes synced classes from {providerLabel} Calendar and signs you
-            out. Keep this tab open while that runs. You can also disconnect without deleting your events.
+            Disconnecting normally removes synced classes from {providerLabel} Calendar and signs you out.
+            Keep this tab open while that runs. You can also disconnect without deleting your events.
           </p>
           <div class="bsplus-cal-modal-actions bsplus-cal-modal-actions--disconnect">
             <button
@@ -729,7 +726,9 @@
             </button>
           </div>
         {:else}
-          <h2 id="bsplus-cal-modal-title" class="bsplus-cal-modal-title">Delete synced classes?</h2>
+          <h2 id="bsplus-cal-modal-title" class="bsplus-cal-modal-title">
+            Delete synced classes?
+          </h2>
           <p class="bsplus-cal-modal-body">
             Removes every BetterSEQTA+ timetable event from your {providerLabel} Calendar for this school.
             Your account stays connected — use Update calendar to sync again.
@@ -773,8 +772,8 @@
           Do not close this tab
         </h2>
         <p id="bsplus-cal-disconnect-desc" class="bsplus-cal-disconnect-body">
-          Removing synced classes and disconnecting {providerLabel} Calendar. Closing SEQTA now may leave
-          events behind or interrupt sign-out.
+          Removing synced classes and disconnecting {providerLabel} Calendar. Closing SEQTA now may
+          leave events behind or interrupt sign-out.
         </p>
         <div
           class="bsplus-cal-disconnect-progress"
@@ -784,7 +783,9 @@
           aria-valuenow={overlayProgressPercent}
           aria-label={overlayStatusText}
         >
-          <span class="bsplus-cal-disconnect-progress-fill" style:width="{overlayProgressPercent}%"
+          <span
+            class="bsplus-cal-disconnect-progress-fill"
+            style:width="{overlayProgressPercent}%"
           ></span>
         </div>
         <p class="bsplus-cal-disconnect-status">{overlayStatusText}</p>
@@ -825,7 +826,7 @@
     />
     <path
       d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
-      fill="#EA4335"
+      fill="#EB4335"
     />
   </svg>
 {/snippet}
@@ -894,7 +895,8 @@
     gap: 6px;
   }
 
-  .bsplus-cal-trigger-content :global(.bsplus-cal-trigger-icon) {
+  .bsplus-cal-trigger-icon {
+    font-family: "IconFamily" !important;
     font-size: 16px;
     line-height: 1;
     opacity: 0.9;
@@ -942,8 +944,7 @@
     margin: 8px 0 10px;
     padding: 10px;
     border-radius: 10px;
-    border: 1px solid
-      var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
+    border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
     background: color-mix(in srgb, var(--bsplus-cal-surface, #fff) 92%, transparent);
     display: grid;
     gap: 8px;
@@ -984,8 +985,7 @@
     flex: 0 0 auto;
     padding: 6px 8px;
     border-radius: 10px;
-    border: 1px solid
-      var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 18%, transparent));
+    border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 18%, transparent));
     background: var(--bsplus-cal-surface, #fff);
     color: var(--bsplus-cal-text, var(--text-primary, #111));
     font-size: 12px;
@@ -1007,8 +1007,7 @@
     border-radius: 14px;
     background: var(--bsplus-cal-surface, #fff);
     color: var(--bsplus-cal-text, #18181b);
-    border: 1px solid
-      var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
+    border: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 12%, transparent));
     box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
     font-family: var(--bsplus-cal-font-family, var(--betterseqta-font-family, Rubik), sans-serif);
   }
@@ -1019,8 +1018,7 @@
 
   .bsplus-cal-menu-header {
     padding: 6px 8px 10px;
-    border-bottom: 1px solid
-      var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 10%, transparent));
+    border-bottom: 1px solid var(--bsplus-cal-border, color-mix(in srgb, var(--bsplus-cal-text) 10%, transparent));
     margin-bottom: 8px;
   }
 
@@ -1040,10 +1038,7 @@
   .bsplus-cal-provider {
     padding: 8px;
     border-radius: 10px;
-    background: var(
-      --bsplus-cal-surface-muted,
-      color-mix(in srgb, var(--bsplus-cal-text) 4%, transparent)
-    );
+    background: var(--bsplus-cal-surface-muted, color-mix(in srgb, var(--bsplus-cal-text) 4%, transparent));
     margin-bottom: 8px;
   }
 
@@ -1117,10 +1112,7 @@
   }
 
   .bsplus-cal-action--ghost {
-    background: var(
-      --bsplus-cal-surface-muted,
-      color-mix(in srgb, var(--bsplus-cal-text) 8%, transparent)
-    );
+    background: var(--bsplus-cal-surface-muted, color-mix(in srgb, var(--bsplus-cal-text) 8%, transparent));
     color: var(--bsplus-cal-text, #18181b);
   }
 

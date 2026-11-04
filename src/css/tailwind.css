@@ -29,6 +29,8 @@
   --animate-spin-fast: spin 0.4s linear infinite;
 
   --aspect-theme: 5 / 1;
+
+  --font-IconFamily: IconFamily;
 }
 
 @layer base {

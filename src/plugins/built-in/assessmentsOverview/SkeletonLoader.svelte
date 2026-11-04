@@ -1,41 +1,18 @@
 <script lang="ts">
-  import { STATUS_COLUMN_ICONS, type OverviewIcon } from "./icons";
+  import OverviewIcon from "./OverviewIcon.svelte";
+  import type { OverviewIconName } from "./icons";
 
   const columns: {
     key: string;
     title: string;
     className: string;
-    icon: OverviewIcon;
+    icon: OverviewIconName;
     skeletonCount: number;
   }[] = [
-    {
-      key: "UPCOMING",
-      title: "Upcoming",
-      className: "column-upcoming",
-      icon: STATUS_COLUMN_ICONS.UPCOMING,
-      skeletonCount: 3,
-    },
-    {
-      key: "DUE_SOON",
-      title: "Due Soon",
-      className: "column-due-soon",
-      icon: STATUS_COLUMN_ICONS.DUE_SOON,
-      skeletonCount: 2,
-    },
-    {
-      key: "OVERDUE",
-      title: "Overdue",
-      className: "column-overdue",
-      icon: STATUS_COLUMN_ICONS.OVERDUE,
-      skeletonCount: 1,
-    },
-    {
-      key: "MARKS_RELEASED",
-      title: "Marked",
-      className: "column-marked",
-      icon: STATUS_COLUMN_ICONS.MARKS_RELEASED,
-      skeletonCount: 4,
-    },
+    { key: "UPCOMING", title: "Upcoming", className: "column-upcoming", icon: "calendar-days", skeletonCount: 3 },
+    { key: "DUE_SOON", title: "Due Soon", className: "column-due-soon", icon: "clock", skeletonCount: 2 },
+    { key: "OVERDUE", title: "Overdue", className: "column-overdue", icon: "exclamation-triangle", skeletonCount: 1 },
+    { key: "MARKS_RELEASED", title: "Marked", className: "column-marked", icon: "check-circle", skeletonCount: 4 },
   ];
 </script>
 
@@ -63,7 +40,7 @@
             <div class="column-header">
               <div class="column-title">
                 <span class="column-title-main">
-                  <column.icon size={18} class="bsplus-overview-icon" />
+                  <OverviewIcon name={column.icon} size={18} />
                   {column.title}
                 </span>
                 <span class="column-count">…</span>

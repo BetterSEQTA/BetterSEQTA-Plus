@@ -1,10 +1,4 @@
 <script lang="ts">
-  import MessageSquareIcon from "@lucide/svelte/icons/message-square";
-  import SearchIcon from "@lucide/svelte/icons/search";
-  import InfoIcon from "@lucide/svelte/icons/info";
-  import Maximize2Icon from "@lucide/svelte/icons/maximize-2";
-  import MegaphoneIcon from "@lucide/svelte/icons/megaphone";
-  import ShieldIcon from "@lucide/svelte/icons/shield";
   import TabbedContainer from "../components/TabbedContainer.svelte";
   import LazyPanel from "../components/LazyPanel.svelte";
   import darkLogo from "@/resources/icons/betterseqta-dark-full.png";
@@ -483,9 +477,9 @@
   };
 
   const utilityActions = [
-    { label: "About", icon: InfoIcon, onclick: openAbout },
-    { label: "What's new", icon: MegaphoneIcon, onclick: openChangelog },
-    { label: "Privacy", icon: ShieldIcon, onclick: openPrivacyStatement },
+    { label: "About", icon: "\ueb73", onclick: openAbout },
+    { label: "What's new", icon: "\ue929", onclick: openChangelog },
+    { label: "Privacy", icon: "\uecba", onclick: openPrivacyStatement },
   ] as const;
 
   onMount(() => {
@@ -584,9 +578,20 @@
         {#if activePage === "settings"}
           <label class="relative mb-4 block shrink-0">
             <span class="sr-only">Search settings</span>
-            <SearchIcon
+            <svg
               class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400"
-            />
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m21 21-4.35-4.35m1.35-5.65a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+              />
+            </svg>
             <input
               type="search"
               placeholder="Search settings"
@@ -625,7 +630,7 @@
               onclick={action.onclick}
               class="flex h-10 w-full items-center gap-3 rounded-lg px-3 text-left text-[16px] font-medium text-zinc-600 transition-[color,background-color,transform] duration-150 hover:bg-zinc-200/70 hover:text-zinc-950 active:scale-[0.96] dark:text-zinc-300 dark:hover:bg-zinc-700/70 dark:hover:text-white"
             >
-              <action.icon size={18} class="shrink-0" />
+              <span class="w-5 text-center font-IconFamily text-[18px]" aria-hidden="true">{action.icon}</span>
               <span>{action.label}</span>
             </button>
           {/each}
@@ -635,7 +640,18 @@
             onclick={() => openFeedback()}
             class="mt-2 flex w-full items-center gap-3 rounded-lg bg-zinc-200/70 px-3 py-2.5 text-left text-[16px] font-medium text-zinc-700 transition-[color,background-color,transform] duration-150 hover:bg-zinc-300/80 active:scale-[0.96] dark:bg-zinc-800/80 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
-            <MessageSquareIcon class="w-5 h-5 shrink-0" />
+            <svg
+              class="w-5 h-5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
             <span>Send us feedback!</span>
           </button>
         </div>
@@ -762,7 +778,18 @@
           title="Expand settings"
           aria-expanded="false"
         >
-          <Maximize2Icon size="1em" class="text-2xl" />
+          <svg
+            class="text-2xl"
+            width="1em"
+            height="1em"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            aria-hidden="true"
+          >
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+          </svg>
         </button>
       {/if}
     </div>

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import CheckIcon from "@lucide/svelte/icons/check";
-  import XIcon from "@lucide/svelte/icons/x";
   import { fade, scale } from "svelte/transition";
   import type { AnalyticsClassGroup, AnalyticsClassOption } from "./types";
   import { animationsEnabled } from "@/seqta/utils/performanceMode";
@@ -147,7 +145,7 @@
             aria-label="Delete {group.name}"
             onclick={() => deleteGroup(group.id)}
           >
-            <XIcon size="1em" />
+            ×
           </button>
         </li>
       {/each}
@@ -178,10 +176,7 @@
     >
       <header class="bsplus-analytics-class-groups-dialog-head">
         <div>
-          <h2
-            id="bsplus-class-group-modal-title"
-            class="bsplus-analytics-class-groups-dialog-title"
-          >
+          <h2 id="bsplus-class-group-modal-title" class="bsplus-analytics-class-groups-dialog-title">
             {editingId ? "Edit combined classes" : "Combine classes"}
           </h2>
           <p class="bsplus-analytics-class-groups-dialog-desc">
@@ -194,7 +189,7 @@
           aria-label="Close"
           onclick={cancelEditor}
         >
-          <XIcon size="1em" />
+          ×
         </button>
       </header>
 
@@ -227,7 +222,7 @@
                   onchange={() => toggleDraftClass(option.key)}
                 />
                 <span class="bsplus-analytics-class-groups-check" aria-hidden="true">
-                  {#if picked}<CheckIcon size="1em" />{/if}
+                  {#if picked}✓{/if}
                 </span>
                 <span class="bsplus-analytics-class-groups-pick-text">
                   <span class="bsplus-analytics-class-groups-pick-label">{option.title}</span>
@@ -240,7 +235,9 @@
       </div>
 
       <footer class="bsplus-analytics-class-groups-dialog-actions">
-        <button type="button" class="bsplus-analytics-btn" onclick={cancelEditor}> Cancel </button>
+        <button type="button" class="bsplus-analytics-btn" onclick={cancelEditor}>
+          Cancel
+        </button>
         <button
           type="button"
           class="bsplus-analytics-btn bsplus-analytics-btn-primary"

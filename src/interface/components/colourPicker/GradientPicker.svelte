@@ -1,7 +1,4 @@
 <script lang="ts">
-  import PipetteIcon from "@lucide/svelte/icons/pipette";
-  import PlusIcon from "@lucide/svelte/icons/plus";
-  import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import { untrack } from "svelte";
   import { slide } from "svelte/transition";
   import {
@@ -324,7 +321,7 @@
           title="Add colour stop"
           onclick={() => addStop(50)}
         >
-          <PlusIcon class="size-4" />
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
         </button>
         {#if model.kind === "linear"}
           <label
@@ -351,7 +348,9 @@
           disabled={stops.length <= 2}
           onclick={() => removeStop(selected)}
         >
-          <Trash2Icon class="size-4" />
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" />
+          </svg>
         </button>
       </div>
     {/if}
@@ -389,7 +388,9 @@
         aria-label="Pick a colour from the screen"
         onclick={pickFromScreen}
       >
-        <PipetteIcon class="size-4" />
+        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="m2 22 1-1h3l9-9M3 21v-3l9-9m3-3 3.5-3.5a2.1 2.1 0 0 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z" />
+        </svg>
       </button>
     {/if}
     <div class="flex flex-col flex-1 gap-3">

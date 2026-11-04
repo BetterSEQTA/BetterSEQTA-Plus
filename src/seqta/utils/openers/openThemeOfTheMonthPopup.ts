@@ -1,5 +1,3 @@
-import { icon } from "@/lib/icon";
-import { ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-static";
 import browser from "@/lib/browser";
 import stringToHTML from "../stringToHTML";
 import { settingsState } from "../listeners/settingsState";
@@ -192,8 +190,8 @@ function renderGallerySlidesHtml(slides: PopupGallerySlide[]): string {
   const nav =
     slides.length > 1
       ? `
-        <button type="button" class="themeOfTheMonthCardGalleryPrev" aria-label="Previous image">${icon(ChevronLeft, { size: "1em" })}</button>
-        <button type="button" class="themeOfTheMonthCardGalleryNext" aria-label="Next image">${icon(ChevronRight, { size: "1em" })}</button>
+        <button type="button" class="themeOfTheMonthCardGalleryPrev" aria-label="Previous image">‹</button>
+        <button type="button" class="themeOfTheMonthCardGalleryNext" aria-label="Next image">›</button>
         <div class="themeOfTheMonthCardGalleryDots" role="tablist" aria-label="Theme previews">
           ${slides
             .map(
@@ -212,8 +210,8 @@ function renderGallerySlidesHtml(slides: PopupGallerySlide[]): string {
   `;
 }
 
-const POPOUT_EXPAND_SVG = /* svg */ icon(Maximize2, { size: 15 });
-const POPOUT_COLLAPSE_SVG = /* svg */ icon(Minimize2, { size: 15 });
+const POPOUT_EXPAND_SVG = /* svg */ `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>`;
+const POPOUT_COLLAPSE_SVG = /* svg */ `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14h6v6"/><path d="M20 10h-6V4"/><path d="M14 10l7-7"/><path d="M3 21l7-7"/></svg>`;
 
 const TOTM_MARGIN_PX = 18;
 const TOTM_EXPANDED_SHELL_MAX_PX = 560;

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import XIcon from "@lucide/svelte/icons/x";
   import SkeletonLoader from "@/interface/components/SkeletonLoader.svelte";
   import ModalFrame from "./ModalFrame.svelte";
   import type { CommunityThemesState } from "@/interface/hooks/communityThemesState.svelte";
@@ -26,9 +25,7 @@
       <div>
         <h2 class="text-2xl font-bold">{theme.name}</h2>
         <span
-          class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {statusBadgeClass(
-            theme.status,
-          )}"
+          class="mt-1 inline-flex rounded-full px-2 py-0.5 text-xs font-semibold {statusBadgeClass(theme.status)}"
         >
           {formatCustomThemeStatus(theme.status)}
         </span>
@@ -39,7 +36,7 @@
         aria-label="Close"
         onclick={() => communityState.closeDetail()}
       >
-        <XIcon size="1em" />
+        ✕
       </button>
     </div>
 
@@ -125,8 +122,7 @@
             accept=".zip,application/zip"
             class="block w-full text-sm"
             onchange={(e) => {
-              communityState.replaceZipFile =
-                (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
+              communityState.replaceZipFile = (e.currentTarget as HTMLInputElement).files?.[0] ?? null;
             }}
           />
           <button

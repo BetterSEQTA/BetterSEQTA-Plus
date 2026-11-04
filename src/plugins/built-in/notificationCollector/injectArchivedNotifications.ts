@@ -1,5 +1,3 @@
-import { icon } from "@/lib/icon";
-import { Check } from "lucide-static";
 import type { PluginAPI, PluginSettings } from "../../core/types";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import { delay } from "@/seqta/utils/delay";
@@ -81,7 +79,7 @@ export function applyBackupBadges(archive: ArchiveMap) {
         const badge = document.createElement("span");
         badge.className = BACKUP_BADGE_CLASS;
         badge.title = "Saved locally";
-        badge.innerHTML = icon(Check, { size: "1em" });
+        badge.textContent = "✓";
         itemEl.appendChild(badge);
       }
     } else {

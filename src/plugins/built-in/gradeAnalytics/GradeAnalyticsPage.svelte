@@ -1,8 +1,11 @@
 <script lang="ts">
-  import CheckIcon from "@lucide/svelte/icons/check";
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
-  import type { AnalyticsClassGroup, AnalyticsClassOption, Assessment } from "./types";
+  import type {
+    AnalyticsClassGroup,
+    AnalyticsClassOption,
+    Assessment,
+  } from "./types";
   import {
     loadGradeAnalytics,
     syncGradeAnalytics,
@@ -39,7 +42,8 @@
 
   let { simpleMode = false }: { simpleMode?: boolean } = $props();
 
-  const LOAD_ERROR = "Unable to load analytics. Check your connection, then select Refresh data.";
+  const LOAD_ERROR =
+    "Unable to load analytics. Check your connection, then select Refresh data.";
   const SYNC_ERROR_WITH_DATA =
     "Unable to sync. Showing saved data. Select Refresh data to try again.";
 
@@ -62,7 +66,9 @@
   let classCatalog: AnalyticsClassOption[] = $state([]);
   let activeClassGroupId: string | null = $state(null);
   let studentId: number | null = $state(null);
-  let gradeInference = $state<AnalyticsGradeInferenceSettings>(DEFAULT_ANALYTICS_GRADE_INFERENCE);
+  let gradeInference = $state<AnalyticsGradeInferenceSettings>(
+    DEFAULT_ANALYTICS_GRADE_INFERENCE,
+  );
 
   let timeRangeTrigger: HTMLButtonElement | null = $state(null);
   let subjectsTrigger: HTMLButtonElement | null = $state(null);
@@ -80,7 +86,9 @@
     return lastUpdated ? formatLastUpdated(lastUpdated) : "";
   });
 
-  const activeClassGroup = $derived(classGroups.find((g) => g.id === activeClassGroupId) ?? null);
+  const activeClassGroup = $derived(
+    classGroups.find((g) => g.id === activeClassGroupId) ?? null,
+  );
 
   const activeClassKeys = $derived(activeClassGroup?.classKeys ?? []);
 
@@ -122,7 +130,9 @@
     filterAssessmentsByTimeRange(filteredData, timeRange, customTimeRange),
   );
 
-  const gradedFiltered = $derived(timeScopedData.filter((a) => a.finalGrade !== undefined));
+  const gradedFiltered = $derived(
+    timeScopedData.filter((a) => a.finalGrade !== undefined),
+  );
 
   const statsAverage = $derived.by(() => {
     if (!gradedFiltered.length) return null;
@@ -130,7 +140,9 @@
     return Math.round((sum / gradedFiltered.length) * 10) / 10;
   });
 
-  const statsSubjectCount = $derived(new Set(timeScopedData.map((a) => a.subject)).size);
+  const statsSubjectCount = $derived(
+    new Set(timeScopedData.map((a) => a.subject)).size,
+  );
 
   const timeRangeLabel = $derived(getTimeRangeLabel(timeRange, customTimeRange));
 
@@ -319,7 +331,8 @@
     }
 
     const ttl = getCacheTtlMs(24);
-    const needsSync = !lastUpdated || Date.now() - lastUpdated.getTime() > ttl;
+    const needsSync =
+      !lastUpdated || Date.now() - lastUpdated.getTime() > ttl;
     if (needsSync) {
       void runSync();
     }
@@ -343,11 +356,7 @@
   <p class="bsplus-analytics-sr-only" role="status">{statusMessage}</p>
 
   {#if error && hasData}
-    <p
-      class="bsplus-analytics-alert bsplus-analytics-animate"
-      role="alert"
-      transition:fade={{ duration: fadeDuration }}
-    >
+    <p class="bsplus-analytics-alert bsplus-analytics-animate" role="alert" transition:fade={{ duration: fadeDuration }}>
       {error}
     </p>
   {/if}
@@ -368,16 +377,18 @@
         <div class="bsplus-analytics-filters-head">
           <h2 class="bsplus-analytics-filters-title">Filters</h2>
           {#if hasActiveFilters}
-            <button type="button" class="bsplus-analytics-filters-clear" onclick={clearFilters}>
+            <button
+              type="button"
+              class="bsplus-analytics-filters-clear"
+              onclick={clearFilters}
+            >
               Clear all
             </button>
           {/if}
         </div>
 
         <div class="bsplus-analytics-filter-group">
-          <span class="bsplus-analytics-field-label" id="bsplus-analytics-time-label"
-            >Time period</span
-          >
+          <span class="bsplus-analytics-field-label" id="bsplus-analytics-time-label">Time period</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
               bind:this={timeRangeTrigger}
@@ -402,9 +413,7 @@
                     aria-pressed={selected}
                     onclick={() => selectTimeRange(option.value)}
                   >
-                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true"
-                      >{#if selected}<CheckIcon size="1em" />{/if}</span
-                    >
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
                     <span>{option.label}</span>
                   </button>
                 {/each}
@@ -436,9 +445,7 @@
         </div>
 
         <div class="bsplus-analytics-filter-group">
-          <span class="bsplus-analytics-field-label" id="bsplus-analytics-subjects-label"
-            >Subjects</span
-          >
+          <span class="bsplus-analytics-field-label" id="bsplus-analytics-subjects-label">Subjects</span>
           <div class="bsplus-analytics-dropdown" data-analytics-dropdown>
             <button
               bind:this={subjectsTrigger}
@@ -462,9 +469,7 @@
                   aria-pressed={allSelected}
                   onclick={selectAllSubjects}
                 >
-                  <span class="bsplus-analytics-dropdown-check" aria-hidden="true"
-                    >{#if allSelected}<CheckIcon size="1em" />{/if}</span
-                  >
+                  <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{allSelected ? "✓" : ""}</span>
                   <span>All subjects</span>
                 </button>
                 {#each uniqueSubjects as subject (subject)}
@@ -476,9 +481,7 @@
                     aria-pressed={selected}
                     onclick={() => toggleSubject(subject)}
                   >
-                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true"
-                      >{#if selected}<CheckIcon size="1em" />{/if}</span
-                    >
+                    <span class="bsplus-analytics-dropdown-check" aria-hidden="true">{selected ? "✓" : ""}</span>
                     <span class="bsplus-analytics-filter-subject-name">{subject}</span>
                   </button>
                 {/each}
@@ -520,9 +523,7 @@
             role="group"
             aria-labelledby="bsplus-analytics-grade-label"
           >
-            <span class="bsplus-analytics-field-label" id="bsplus-analytics-grade-label"
-              >Grade range</span
-            >
+            <span class="bsplus-analytics-field-label" id="bsplus-analytics-grade-label">Grade range</span>
             <GradeRangeSlider bind:value={gradeRange} />
           </div>
 
@@ -565,10 +566,7 @@
           <p class="bsplus-analytics-meta">Loading analytics…</p>
         </div>
       {:else if hasData}
-        <div
-          class="bsplus-analytics-stats bsplus-analytics-animate"
-          aria-label="Summary statistics"
-        >
+        <div class="bsplus-analytics-stats bsplus-analytics-animate" aria-label="Summary statistics">
           <div class="bsplus-analytics-stat">
             <div class="bsplus-analytics-stat-label">Average grade</div>
             <div class="bsplus-analytics-stat-value">
@@ -617,8 +615,8 @@
           {:else}
             <h2>No analytics data yet</h2>
             <p>
-              Data syncs when you visit this page. Assessments with released marks will appear here
-              with trends and grade breakdowns.
+              Data syncs when you visit this page. Assessments with released marks will
+              appear here with trends and grade breakdowns.
             </p>
           {/if}
         </div>

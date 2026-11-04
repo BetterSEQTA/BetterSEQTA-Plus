@@ -1,5 +1,4 @@
 <script lang="ts">
-  import XIcon from "@lucide/svelte/icons/x";
   import { fade } from "svelte/transition";
   import browser from "@/lib/browser";
   import QRCode from "qrcode";
@@ -80,7 +79,7 @@
       qrDataUrl = dataUrl;
       showQrModal = true;
     } catch (err) {
-      console.error("[BetterSEQTA+] ConnectMobileApp: Failed to generate QR:", err);
+      console.error("[ConnectMobileApp] Failed to generate QR:", err);
       errorMessage = "Failed to generate QR code. Please try again.";
     } finally {
       isLoading = false;
@@ -108,11 +107,7 @@
 </script>
 
 <div class="flex flex-col gap-1 items-end">
-  <Button
-    onClick={generateQrCode}
-    disabled={isLoading}
-    text={isLoading ? "Generating..." : "Generate QR"}
-  />
+  <Button onClick={generateQrCode} disabled={isLoading} text={isLoading ? "Generating..." : "Generate QR"} />
   {#if errorMessage}
     <p class="text-xs text-right text-amber-600 dark:text-amber-400">{errorMessage}</p>
   {/if}
@@ -121,9 +116,7 @@
 {#if showQrModal && qrDataUrl}
   <div
     use:portal
-    class="fixed cursor-auto inset-0 z-10000 flex justify-center items-center bg-black/50 {isStandalone
-      ? 'backdrop-blur-xs'
-      : ''} {$settingsState.DarkMode ? 'dark' : ''}"
+    class="fixed cursor-auto inset-0 z-10000 flex justify-center items-center bg-black/50 {isStandalone ? 'backdrop-blur-xs' : ''} {$settingsState.DarkMode ? 'dark' : ''}"
     role="button"
     tabindex="-1"
     onclick={(e) => {
@@ -132,23 +125,22 @@
     onkeydown={(e) => {
       if (e.key === "Escape") closeModal();
     }}
-    transition:fade={{ duration: 150 }}
-  >
+    transition:fade={{ duration: 150 }}>
     <!-- svelte-ignore a11y_no_static_element_interactions -->
     <div
       class="p-6 mx-4 w-full max-w-sm bg-white rounded-2xl shadow-2xl dark:bg-zinc-800"
       onclick={(e) => e.stopPropagation()}
-      onkeydown={(e) => e.stopPropagation()}
-    >
+      onkeydown={(e) => e.stopPropagation()}>
       <div class="flex justify-between items-center mb-4">
         <h2 class="text-lg font-bold text-zinc-900 dark:text-white">Scan with DesQTA</h2>
         <button
           type="button"
           onclick={closeModal}
           class="p-2 rounded-lg transition-colors text-zinc-500 hover:text-zinc-700 hover:bg-zinc-100 dark:hover:text-zinc-400 dark:hover:bg-zinc-700"
-          aria-label="Close"
-        >
-          <XIcon class="w-5 h-5" />
+          aria-label="Close">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
       </div>
       <div class="flex justify-center p-4 bg-white rounded-xl dark:bg-zinc-900">
@@ -158,15 +150,13 @@
         <button
           type="button"
           onclick={openAppLink}
-          class="px-4 py-2.5 w-full text-sm font-medium text-white bg-indigo-600 rounded-lg transition-colors dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600"
-        >
+          class="px-4 py-2.5 w-full text-sm font-medium text-white bg-indigo-600 rounded-lg transition-colors dark:bg-indigo-500 hover:bg-indigo-700 dark:hover:bg-indigo-600">
           Sign into DesQTA Desktop
         </button>
         <button
           type="button"
           onclick={downloadQrImage}
-          class="px-4 py-2 w-full text-xs font-medium rounded-lg border transition-colors text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
-        >
+          class="px-4 py-2 w-full text-xs font-medium rounded-lg border transition-colors text-zinc-500 dark:text-zinc-400 border-zinc-200 dark:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
           Download QR as image
         </button>
       </div>

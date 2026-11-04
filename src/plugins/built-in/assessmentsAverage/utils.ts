@@ -1,5 +1,3 @@
-import { icon } from "@/lib/icon";
-import { RotateCw } from "lucide-static";
 import { getUserInfo } from "@/seqta/utils/userInfo";
 import ReactFiber from "@/seqta/utils/ReactFiber.ts";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
@@ -319,7 +317,7 @@ function updateWeightLabelContent(
     input.placeholder = "Set %";
     input.setAttribute("aria-label", "Assessment weighting percentage");
     input.style.cssText =
-      "width:52px;padding:1px 4px;border-radius:4px;border:1px solid rgba(128,128,128,0.35);background:rgba(128,128,128,0.08);color:inherit;font-size:inherit;";
+      "width:52px;padding:1px 4px;border-radius:4px;border:1px solid rgba(128,128,128,0.35);background:rgba(128,128,128,0.08);color:inherit;font-size:inherit;outline:none;";
     attachWeightInputListeners(input, api, assessmentID);
     weightLabel.appendChild(input);
     weightLabel.title = "Enter assessment weighting %";
@@ -329,8 +327,7 @@ function updateWeightLabelContent(
   const span = document.createElement("span");
   span.className = "betterseqta-weight-value";
   const baseText = weighting && weighting !== "N/A" ? formatWeightDisplay(weighting) : "N/A";
-  span.textContent = baseText;
-  if (refreshing) span.insertAdjacentHTML("beforeend", ` ${icon(RotateCw, { size: "1em" })}`);
+  span.textContent = refreshing ? `${baseText} ↻` : baseText;
   if (refreshing) {
     span.style.opacity = "0.7";
     weightLabel.title = "Re-checking weighting…";
@@ -1096,6 +1093,7 @@ function renderWeightingTabHtml(sheet: HTMLElement, context: WeightingTabContext
             background:rgba(128,128,128,0.08);
             color:inherit;
             font-size:13px;
+            outline:none;
           "
         />
       </div>

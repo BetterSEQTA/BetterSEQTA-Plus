@@ -1,5 +1,5 @@
-import { icon } from "@/lib/icon";
-import { BookOpen, ChevronLeft, ChevronRight, ClipboardList } from "lucide-static";
+import assessmentsicon from "@/seqta/icons/assessmentsIcon";
+import coursesicon from "@/seqta/icons/coursesIcon";
 import { animate, stagger } from "motion";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
@@ -36,6 +36,11 @@ let lessonInterval: ReturnType<typeof setInterval> | null = null;
 let homeTeardown: (() => void) | null = null;
 let currentSelectedDate = new Date();
 let loadingTimeout: ReturnType<typeof setTimeout> | null = null;
+
+const TIMETABLE_CHEVRON_BACK = `<svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="home-timetable-back"><path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>`;
+const TIMETABLE_CHEVRON_FORWARD = `<svg width="24" height="24" viewBox="0 0 24 24" id="home-timetable-forward"><path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>`;
+const ASSESSMENTS_ICON_LG = `<svg style="width:28px;height:28px;border-radius:0;" viewBox="0 0 24 24"><path fill="currentColor" d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z" /></svg>`;
+const ASSESSMENTS_ICON_WHITE = `<svg viewBox="0 0 24 24" style="width:35px;height:35px;fill:white;"><path d="M6 20H13V22H6C4.89 22 4 21.11 4 20V4C4 2.9 4.89 2 6 2H18C19.11 2 20 2.9 20 4V12.54L18.5 11.72L18 12V4H13V12L10.5 9.75L8 12V4H6V20M24 17L18.5 14L13 17L18.5 20L24 17M15 19.09V21.09L18.5 23L22 21.09V19.09L18.5 21L15 19.09Z" /></svg>`;
 
 function clearLessonInterval(): void {
   if (lessonInterval !== null) {
@@ -78,8 +83,8 @@ export async function loadHomePage() {
           <div class="home-subtitle">
             <h2 id="home-lesson-subtitle">Today's Lessons</h2>
             <div class="timetable-arrows">
-              ${icon(ChevronLeft, { id: "home-timetable-back" })}
-              ${icon(ChevronRight, { id: "home-timetable-forward" })}
+              ${TIMETABLE_CHEVRON_BACK}
+              ${TIMETABLE_CHEVRON_FORWARD}
             </div>
           </div>
           <div class="day-container loading" id="day-container">
@@ -467,8 +472,8 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
   if (type == "class") {
     if (programmeID !== 0) {
       lessonString += `
-        <a class="day-button clickable" style="right: 5px;" href="${buildAssessmentURL(programmeID, metaID)}" aria-label="Assessments">${icon(ClipboardList)}</a>
-        <a class="day-button clickable" style="right: 35px;" href="../#?page=/courses/${programmeID}:${metaID}" aria-label="Course">${icon(BookOpen)}</a>
+        <a class="day-button clickable" style="right: 5px;" href="${buildAssessmentURL(programmeID, metaID)}" aria-label="Assessments">${assessmentsicon}</a>
+        <a class="day-button clickable" style="right: 35px;" href="../#?page=/courses/${programmeID}:${metaID}" aria-label="Course">${coursesicon}</a>
       `;
     }
 
@@ -482,7 +487,7 @@ function makeLessonDiv(lesson: HomeTimetableLesson, num: number) {
 
       lessonString += `
         <div class="bsplus-tooltip assessmenttooltip" tabindex="0" aria-label="Assessments for this lesson">
-          ${icon(ClipboardList, { size: 28, style: "color: #ed3939" })}
+          ${ASSESSMENTS_ICON_LG}
           <div class="bsplus-tooltip-bubble">${assessmentString}</div>
         </div>
       `;
@@ -678,7 +683,7 @@ function createAssessmentDateDiv(
     const titlediv = document.createElement("div");
     titlediv.classList.add("upcoming-subject-title");
     titlediv.append(
-      stringToHTML(icon(ClipboardList, { size: 35, style: "color: #fff" })).firstChild!,
+      stringToHTML(ASSESSMENTS_ICON_WHITE).firstChild!,
     );
 
     const detailsdiv = document.createElement("div");

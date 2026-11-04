@@ -31,13 +31,10 @@
   pointer-events: none;
 }
 
-@mixin lucide-icon($name, $size) {
-  content: "";
-  display: inline-block;
-  width: $size;
-  height: $size;
-  background: currentColor;
-  mask: url("lucide-static/icons/#{$name}.svg") center / contain no-repeat;
+button.timetable-zoom.iconFamily,
+button.bsplus-timetable-control.iconFamily,
+.iconFamily {
+  font-family: "IconFamily" !important;
 }
 
 .hidden {
@@ -1236,12 +1233,15 @@ td.colourBar {
   padding-left: 30px;
 }
 #toolbar span:has(.search)::before {
-  @include lucide-icon("search", 16px);
+  content: "\eca5";
   position: absolute;
   left: 8px;
   z-index: 10;
   top: 50%;
   transform: translateY(-50%);
+  color: currentColor;
+  font-size: 16px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 #container #content .search {
@@ -2033,15 +2033,6 @@ html.transparencyEffects [class*="BasicPanel__BasicPanel___q92_U"] > ol > li + l
   z-index: 21 !important;
   color: var(--better-sub);
   padding: 8px;
-
-  > svg {
-    display: none;
-  }
-
-  &::before {
-    @include lucide-icon(bell, 24px);
-    background: var(--theme-primary);
-  }
 }
 .legacy-root button > svg,
 .legacy-root a > svg {
@@ -3353,23 +3344,35 @@ body:not(.clr-open) .clr-picker,
   align-items: center;
 }
 [data-label="inbox"] > [class*="LabelList__name___"]::before {
-  @include lucide-icon("inbox", 16px);
+  content: "\eb70";
+  color: currentColor;
+  font-size: 16px;
   margin-right: 8px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="outbox"] > [class*="LabelList__name___"]::before {
-  @include lucide-icon("send", 16px);
+  content: "\eca6";
+  color: currentColor;
+  font-size: 16px;
   margin-right: 8px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="starred"] > [class*="LabelList__name___"]::before {
-  @include lucide-icon("star", 16px);
+  content: "\ece8";
+  color: currentColor;
+  font-size: 16px;
   margin-right: 8px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 [data-label="trash"] > [class*="LabelList__name___"]::before {
-  @include lucide-icon("trash", 16px);
+  content: "\ed2c";
+  color: currentColor;
+  font-size: 16px;
   margin-right: 8px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 .outer-circle {
@@ -4513,7 +4516,10 @@ div.day-empty {
   cursor: pointer;
 }
 #whatsnewclosebutton::before {
-  @include lucide-icon("x", 24px);
+  content: "\ed8a";
+  color: currentColor;
+  font-size: 24px;
+  font-family: "IconFamily";
   pointer-events: none;
 }
 .whatsnewTextContainer h1:not(.whatsnewTextHeader) {
@@ -5699,7 +5705,10 @@ h2.home-subtitle {
 }
 
 .bsplus-ld-surprise-close::before {
-  @include lucide-icon("x", 20px);
+  content: "\ed8a";
+  font-family: "IconFamily";
+  font-size: 20px;
+  line-height: 1;
   pointer-events: none;
 }
 

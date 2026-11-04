@@ -1,5 +1,4 @@
 <script lang="ts">
-  import UsersIcon from "@lucide/svelte/icons/users";
   import { onMount } from "svelte";
   import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { syncCalendarSyncTheme } from "@/plugins/built-in/timetable/calendarSyncUi";
@@ -72,7 +71,7 @@
     onclick={() => void handleClick()}
   >
     <span class="bsplus-cal-trigger-content">
-      <UsersIcon size="1em" class="bsplus-cal-trigger-icon" />
+      <span class="bsplus-cal-trigger-icon iconFamily" aria-hidden="true">&#xed66;</span>
       <span class="bsplus-cal-trigger-text">
         {busy ? "Syncing…" : error ? "Sync failed" : "Sync with Friends"}
       </span>

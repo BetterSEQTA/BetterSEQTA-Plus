@@ -1,5 +1,3 @@
-import { icon } from "@/lib/icon";
-import { ChevronLeft, ChevronRight } from "lucide-static";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";
@@ -19,6 +17,9 @@ import {
 } from "@/seqta/utils/loaders/engageParentTimetable";
 import { resolveNoticeFilterTokens } from "@/seqta/utils/notices/noticeLabelFilters";
 import { fetchNoticesForDate } from "@/seqta/utils/notices/noticeHomeUi";
+
+const TIMETABLE_CHEVRON_BACK = `<svg width="24" height="24" viewBox="0 0 24 24" style="transform: scale(-1,1)" id="engage-home-timetable-back"><path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>`;
+const TIMETABLE_CHEVRON_FORWARD = `<svg width="24" height="24" viewBox="0 0 24 24" id="engage-home-timetable-forward"><path fill="currentColor" d="M8.59,16.58L13.17,12L8.59,7.41L10,6L16,12L10,18L8.59,16.58Z" /></svg>`;
 
 export function updateEngageHomeMenuActive(isHome: boolean): void {
   const home = document.getElementById("homebutton");
@@ -290,8 +291,8 @@ export async function loadEngageHomePage(): Promise<void> {
                 <select id="engage-child-selector" class="engage-child-select" aria-label="Student"></select>
               </div>
               <div class="timetable-arrows">
-                ${icon(ChevronLeft, { id: "engage-home-timetable-back" })}
-                ${icon(ChevronRight, { id: "engage-home-timetable-forward" })}
+                ${TIMETABLE_CHEVRON_BACK}
+                ${TIMETABLE_CHEVRON_FORWARD}
               </div>
             </div>
             <div class="day-container loading" id="engage-day-container"></div>

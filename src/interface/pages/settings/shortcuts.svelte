@@ -1,12 +1,10 @@
 <script lang="ts">
-  import XIcon from "@lucide/svelte/icons/x";
-  import UploadIcon from "@lucide/svelte/icons/upload";
-  import MotionDiv from "@/interface/components/MotionDiv.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/settingsState.ts";
-  import Switch from "@/interface/components/Switch.svelte";
-  import Button from "@/interface/components/Button.svelte";
-  import { onMount } from "svelte";
-  import Shortcuts from "@/seqta/content/links.json";
+  import MotionDiv from '@/interface/components/MotionDiv.svelte';
+  import { settingsState } from "@/seqta/utils/listeners/settingsState.ts"
+  import Switch from "@/interface/components/Switch.svelte"
+  import Button from "@/interface/components/Button.svelte"
+  import { onMount } from 'svelte';
+  import Shortcuts from "@/seqta/content/links.json"
 
   let { searchQuery = "" }: { searchQuery?: string } = $props();
   const q = $derived(searchQuery.trim().toLowerCase());
@@ -31,14 +29,19 @@
 
   const switchChange = (shortcut: any) => {
     const current = settingsState.shortcuts ?? [];
-    const idx = current.findIndex((s) => s.name === shortcut);
+    const idx = current.findIndex(s => s.name === shortcut);
     if (idx !== -1) {
-      const updated = current.map((s) => (s.name === shortcut ? { ...s, enabled: !s.enabled } : s));
+      const updated = current.map(s =>
+        s.name === shortcut ? { ...s, enabled: !s.enabled } : s
+      );
       settingsState.setKey("shortcuts", updated);
     } else {
-      settingsState.setKey("shortcuts", [...current, { name: shortcut, enabled: true }]);
+      settingsState.setKey("shortcuts", [
+        ...current,
+        { name: shortcut, enabled: true },
+      ]);
     }
-  };
+  }
 
   let isFormVisible = $state(false);
   let newTitle = $state("");
@@ -73,12 +76,9 @@
   };
 
   const isValidTitle = (title: string) => title.trim() !== "";
-
+  
   const isValidURL = (url: string) => {
-    const pattern = new RegExp(
-      "^(https?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\-]+)*(?::\\d+)?(/[\\w\\-./]*)*$",
-      "i",
-    );
+    const pattern = new RegExp("^(https?:\\/\\/)?[\\w.-]+(?:\\.[\\w\\-]+)*(?::\\d+)?(/[\\w\\-./]*)*$", "i");
     return pattern.test(url);
   };
 
@@ -111,37 +111,37 @@
 <div class="flex flex-col pt-4 divide-y divide-zinc-100 dark:divide-zinc-700">
   {#if isLoaded}
     {#if !q}
-      <div>
-        <MotionDiv
-          initial={{ opacity: 0, height: 0 }}
-          animate={isFormVisible ? { opacity: 1, height: "auto" } : { opacity: 0, height: 0 }}
-          exit={{ opacity: 0, height: 0 }}
-          transition={{
-            type: "spring",
-            config: { stiffness: 400, damping: 25 },
-          }}
-        >
-          {#if isFormVisible}
-            <div class="flex flex-col items-center">
-              <MotionDiv
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0, duration: 0.2 }}
-                class="w-full"
-              >
-                <input
-                  class="p-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
-                  type="text"
-                  placeholder="Shortcut Name"
-                  bind:value={newTitle}
-                />
-              </MotionDiv>
-              <MotionDiv
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05, duration: 0.2 }}
-                class="flex gap-2 w-full"
-              >
+    <div>
+      <MotionDiv
+        initial={{ opacity: 0, height: 0 }}
+        animate={isFormVisible ? { opacity: 1, height: 'auto' } : { opacity: 0, height: 0 }}
+        exit={{ opacity: 0, height: 0 }}
+        transition={{
+          type: 'spring',
+          config: { stiffness: 400, damping: 25 }
+        }}
+      >
+        {#if isFormVisible}
+          <div class="flex flex-col items-center">
+            <MotionDiv
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0, duration: 0.2 }}
+              class="w-full"
+            >
+              <input
+                class="p-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
+                type="text"
+                placeholder="Shortcut Name"
+                bind:value={newTitle}
+              />
+            </MotionDiv>
+            <MotionDiv
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.05, duration: 0.2 }}
+              class="flex gap-2 w-full"
+            >
                 <input
                   class="p-2 my-2 w-full rounded-lg border-0 transition placeholder-zinc-300 bg-zinc-100 dark:bg-zinc-700 focus:bg-zinc-200/50 dark:focus:bg-zinc-600"
                   type="text"
@@ -164,11 +164,7 @@
                   {#if newIcon}
                     <div class="flex overflow-hidden items-center">
                       <div class="shrink-0 mr-2 w-6 h-6">
-                        <img
-                          src={`data:image/svg+xml;base64,${btoa(newIcon)}`}
-                          alt="Selected Icon"
-                          class="object-contain w-full h-full"
-                        />
+                        <img src={`data:image/svg+xml;base64,${btoa(newIcon)}`} alt="Selected Icon" class="object-contain w-full h-full" />
                       </div>
                       <span class="truncate">Selected Icon</span>
                     </div>
@@ -177,76 +173,70 @@
                       aria-label="Clear icon"
                       role="button"
                       tabindex="0"
-                      onclick={(event) => {
-                        event.stopPropagation();
-                        clearIcon();
-                      }}
+                      onclick={(event) => { event.stopPropagation(); clearIcon(); }}
                       onkeydown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
+                        if (event.key === 'Enter' || event.key === ' ') {
                           event.preventDefault();
                           clearIcon();
                         }
                       }}
                     >
-                      <XIcon class="w-4 h-4" />
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
                     </span>
                   {:else}
-                    <UploadIcon size="1em" />
-                    <span class="ml-2"
-                      >SVG icon <span class="text-xs italic text-zinc-400 dark:text-zinc-500"
-                        >(Optional)</span
-                      ></span
-                    >
+                    <span class="font-IconFamily">{ '\ued47' }</span>
+                    <span class="ml-2">SVG icon <span class="text-xs italic text-zinc-400 dark:text-zinc-500">(Optional)</span></span>
                   {/if}
                 </button>
-              </MotionDiv>
-            </div>
-          {/if}
-        </MotionDiv>
+            </MotionDiv>
+          </div>
+        {/if}
+      </MotionDiv>
 
-        <MotionDiv
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Button
-            class="w-full mb-4"
-            text={isFormVisible ? "Add" : "Add Custom Shortcut"}
-            onClick={isFormVisible ? addNewCustomShortcut : toggleForm}
-          />
-        </MotionDiv>
-      </div>
+      <MotionDiv
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+      >
+        <Button
+          class="w-full mb-4"
+          text={isFormVisible ? "Add" : "Add Custom Shortcut"}
+          onClick={isFormVisible ? addNewCustomShortcut : toggleForm}
+        />
+      </MotionDiv>
+    </div>
     {/if}
 
     <!-- Custom Shortcuts Section -->
-    {#each $settingsState.customshortcuts ?? [] as shortcut, index}
+    {#each ($settingsState.customshortcuts ?? []) as shortcut, index}
       {#if !q || shortcut.name.toLowerCase().includes(q)}
-        <div class="flex justify-between items-center px-4 py-3">
-          {shortcut.name}
-          <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>
-            <XIcon class="w-6 h-6" />
-          </button>
-        </div>
+      <div class="flex justify-between items-center px-4 py-3">
+        {shortcut.name}
+        <button aria-label="Delete Shortcut" onclick={() => deleteCustomShortcut(index)}>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width={1.5} stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
       {/if}
     {/each}
 
     {#each Object.entries(Shortcuts) as shortcut}
-      {#if !q || shortcut[1].DisplayName?.toLowerCase().includes(q) || shortcut[0]
-          .toLowerCase()
-          .includes(q)}
-        <div class="flex justify-between items-center px-4 py-3">
-          <div class="pr-4">
-            <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
-            <h2 class="text-lg font-medium">{shortcut[1].DisplayName || shortcut[0]}</h2>
-          </div>
-          <Switch
-            state={$settingsState.shortcuts.find((s) => s.name === shortcut[0])?.enabled ?? false}
-            onChange={() => switchChange(shortcut[0])}
-          />
+      {#if !q || shortcut[1].DisplayName?.toLowerCase().includes(q) || shortcut[0].toLowerCase().includes(q)}
+      <div class="flex justify-between items-center px-4 py-3">
+        <div class="pr-4">
+          <!-- Use DisplayName if it exists, otherwise use the key (shortcut[0]) as a fallback -->
+          <h2 class="text-lg font-medium">{shortcut[1].DisplayName || shortcut[0]}</h2>
         </div>
+        <Switch state={$settingsState.shortcuts.find(s => s.name === shortcut[0])?.enabled ?? false} onChange={() => switchChange(shortcut[0])} />
+      </div>
       {/if}
     {/each}
   {:else}
-    <div class="p-4 text-center">Loading shortcuts...</div>
+    <div class="p-4 text-center">
+      Loading shortcuts...
+    </div>
   {/if}
 </div>

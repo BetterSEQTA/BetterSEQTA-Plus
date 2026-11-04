@@ -1,6 +1,4 @@
 <script lang="ts">
-  import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
-  import XIcon from "@lucide/svelte/icons/x";
   import {
     createGradeBand,
     DEFAULT_ANALYTICS_GRADE_INFERENCE,
@@ -33,7 +31,9 @@
   function updateBand(id: string, patch: Partial<GradeBandMapping>) {
     draft = {
       ...draft,
-      gradeBands: draft.gradeBands.map((band) => (band.id === id ? { ...band, ...patch } : band)),
+      gradeBands: draft.gradeBands.map((band) =>
+        band.id === id ? { ...band, ...patch } : band,
+      ),
     };
   }
 
@@ -83,10 +83,7 @@
   >
     <span class="bsplus-analytics-field-label">Grade inference (optional)</span>
     <span class="bsplus-analytics-grade-inference-chevron" aria-hidden="true"
-      ><ChevronDownIcon
-        size="1em"
-        style={expanded ? undefined : "transform: rotate(-90deg)"}
-      /></span
+      >{expanded ? "▾" : "▸"}</span
     >
   </button>
 
@@ -101,7 +98,8 @@
         type="checkbox"
         checked={draft.useCustomGradeBands}
         disabled={disabled || saving}
-        onchange={(e) => updateDraft({ useCustomGradeBands: e.currentTarget.checked })}
+        onchange={(e) =>
+          updateDraft({ useCustomGradeBands: e.currentTarget.checked })}
       />
       <span>Map rubric / letter bands to percentages</span>
     </label>
@@ -116,7 +114,8 @@
               placeholder="Band label (e.g. A, Proficient)"
               value={band.label}
               disabled={disabled || saving}
-              oninput={(e) => updateBand(band.id, { label: e.currentTarget.value })}
+              oninput={(e) =>
+                updateBand(band.id, { label: e.currentTarget.value })}
             />
             <input
               type="number"
@@ -126,7 +125,8 @@
               step="1"
               value={band.percent}
               disabled={disabled || saving}
-              oninput={(e) => updateBand(band.id, { percent: Number(e.currentTarget.value) })}
+              oninput={(e) =>
+                updateBand(band.id, { percent: Number(e.currentTarget.value) })}
             />
             <span class="bsplus-analytics-grade-band-suffix">%</span>
             <button
@@ -136,7 +136,7 @@
               disabled={disabled || saving}
               onclick={() => removeBand(band.id)}
             >
-              <XIcon size="1em" />
+              ×
             </button>
           </div>
         {/each}
@@ -156,7 +156,8 @@
         type="checkbox"
         checked={draft.rollupCriteriaGrades}
         disabled={disabled || saving}
-        onchange={(e) => updateDraft({ rollupCriteriaGrades: e.currentTarget.checked })}
+        onchange={(e) =>
+          updateDraft({ rollupCriteriaGrades: e.currentTarget.checked })}
       />
       <span>Estimate overall % from marked criteria (sub-assessments)</span>
     </label>

@@ -1,5 +1,4 @@
 <script lang="ts">
-  import CircleCheckIcon from "@lucide/svelte/icons/circle-check";
   import { onMount } from "svelte";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
   import { cloudAuth, type CloudUser } from "@/seqta/utils/cloudAuth";
@@ -50,9 +49,7 @@
     return null;
   }
 
-  const canSubmit = $derived(
-    agreeShare && agreeJoin && cloudLoggedIn && !busy && $accountsAvailability.available,
-  );
+  const canSubmit = $derived(agreeShare && agreeJoin && cloudLoggedIn && !busy && $accountsAvailability.available);
   const checksDisabled = $derived(busy || !cloudLoggedIn);
 
   async function signInWithCloud() {
@@ -107,7 +104,7 @@
             <span class="bsplus-tc-cloud-user-sub">{cloudSubtitle(cloudUser)}</span>
           {/if}
         </div>
-        <CircleCheckIcon size="1em" class="bsplus-tc-cloud-check" />
+        <span class="bsplus-tc-cloud-check iconFamily" aria-hidden="true">&#xe9db;</span>
       </div>
     {:else}
       <p class="bsplus-tc-cloud-lead">
