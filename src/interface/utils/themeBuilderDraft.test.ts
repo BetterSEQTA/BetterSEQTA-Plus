@@ -42,4 +42,16 @@ describe("themeBuilderDraft", () => {
       "Theme name is required",
     );
   });
+
+  it("does not wrap gradient accent colours in color-mix (invalid CSS)", () => {
+    const gradient =
+      "linear-gradient(90deg, rgb(128, 44, 44) 0%, rgba(188, 63, 23, 1) 35%, rgba(249, 74, 74, 1) 100%)";
+    const css = buildThemeBuilderCss(getFontPreset("rubik"), ["custom-image-0"], {
+      accentColor: gradient,
+      overlayOpacity: 0.35,
+      backgroundBlurPx: 0,
+    });
+    expect(css).not.toMatch(/color-mix\(in srgb, linear-gradient/);
+    expect(css).toContain("var(--custom-image-0)");
+  });
 });

@@ -24,6 +24,20 @@ function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
+/** Accent colours from the picker may be full `linear-gradient(...)` values — invalid inside `color-mix()`. */
+function isCssGradient(value: string): boolean {
+  return /gradient\s*\(/i.test(value.trim());
+}
+
+function buildOverlayGradientLayer(
+  accentColor: string,
+  endColor: string,
+  angle: number,
+  overlay: number,
+): string {
+  return `linear-gradient(${angle}deg, color-mix(in srgb, ${accentColor} ${Math.round(overlay * 100)}%, transparent), color-mix(in srgb, ${endColor} ${Math.round(overlay * 100)}%, transparent))`;
+}
+
 export function buildThemeBuilderCss(
   font: FontPreset,
   imageVariables: string[],
@@ -41,7 +55,11 @@ export function buildThemeBuilderCss(
   const angle = draft.gradientAngle ?? 135;
   const overlay = clamp(draft.overlayOpacity ?? 0.35, 0, 0.85);
   const blurPx = clamp(draft.backgroundBlurPx ?? 0, 0, 24);
+  const accentColor = draft.accentColor.trim();
   const endColor = (draft.gradientEnd ?? draft.accentColor).trim();
+  const accentIsGradient = isCssGradient(accentColor);
+  const endIsGradient = isCssGradient(endColor);
+  const canUseColorMixOverlay = !accentIsGradient && !endIsGradient;
 
   const rules: string[] = [
     `${importLine}body, #container, .dashboard {
@@ -51,7 +69,9 @@ export function buildThemeBuilderCss(
 
   const imageLayer =
     imageVariables.length > 0 ? imageVariables.map((name) => `var(--${name})`).join(", ") : "";
-  const gradientLayer = `linear-gradient(${angle}deg, color-mix(in srgb, ${draft.accentColor} ${Math.round(overlay * 100)}%, transparent), color-mix(in srgb, ${endColor} ${Math.round(overlay * 100)}%, transparent))`;
+  const gradientLayer = canUseColorMixOverlay
+    ? buildOverlayGradientLayer(accentColor, endColor, angle, overlay)
+    : "";
 
   rules.push(`#container {
   isolation: isolate;
@@ -72,21 +92,25 @@ export function buildThemeBuilderCss(
   filter: blur(${blurPx}px);
   transform: scale(1.04);
 }`);
+    const blurBgLayers = gradientLayer ? [gradientLayer] : [];
     rules.push(`#container {
-  background-image: ${gradientLayer} !important;
+  background-image: ${blurBgLayers.join(", ") || "none"} !important;
   background-size: cover !important;
   background-position: center !important;
   background-attachment: fixed !important;
 }`);
   } else {
-    const bgLayers: string[] = [gradientLayer];
+    const bgLayers: string[] = [];
+    if (gradientLayer) bgLayers.push(gradientLayer);
     if (imageLayer) bgLayers.push(imageLayer);
-    rules.push(`#container {
+    if (bgLayers.length > 0) {
+      rules.push(`#container {
   background-image: ${bgLayers.join(", ")} !important;
   background-size: cover !important;
   background-position: center !important;
   background-attachment: fixed !important;
 }`);
+    }
   }
 
   rules.push(`#container::before {
