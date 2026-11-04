@@ -35,7 +35,7 @@ import type {
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 
-export type { CalendarSyncProvider as CalendarProvider };
+export type CalendarProvider = CalendarSyncProvider;
 
 const MSG = {
   accessToken: { google: "googleCalendarGetAccessToken", outlook: "outlookCalendarGetAccessToken" },

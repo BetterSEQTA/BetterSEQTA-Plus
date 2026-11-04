@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "@jest/globals";
+import { beforeEach, describe, expect, it, jest } from "@jest/globals";
 import browser from "@/lib/browser";
 import {
   BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
@@ -75,8 +75,9 @@ describe("calendar sync cross-tab lock", () => {
 
   it("loses acquire when storage contains another tab's lockId after write", async () => {
     const key = calendarSyncInProgressStorageKey("google");
-    const originalSet = browser.storage.local.set.getMockImplementation();
-    browser.storage.local.set.mockImplementation(async (items: Record<string, unknown>) => {
+    const setMock = jest.mocked(browser.storage.local.set);
+    const originalSet = setMock.getMockImplementation();
+    setMock.mockImplementation(async (items: Record<string, unknown>) => {
       if (key in items) {
         await originalSet?.({
           [key]: {
