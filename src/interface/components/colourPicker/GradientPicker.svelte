@@ -1,6 +1,7 @@
 <script lang="ts">
   import PipetteIcon from "@lucide/svelte/icons/pipette";
-  import TrashIcon from "@lucide/svelte/icons/trash";
+  import PlusIcon from "@lucide/svelte/icons/plus";
+  import Trash2Icon from "@lucide/svelte/icons/trash-2";
   import { untrack } from "svelte";
   import { slide } from "svelte/transition";
   import {
@@ -183,15 +184,26 @@
     dragging = index;
   }
 
-  function addStop(event: PointerEvent) {
+  function addStop(position: number) {
     const m = snapshot();
     if (m.kind === "solid") return;
-    const position = barPosition(event);
     const colour = colourAt(m.stops, position);
     commit(withStops(m, (all) => [...all, { colour, position }]));
     selectStop(m.stops.length);
-    bar!.setPointerCapture(event.pointerId);
-    dragging = m.stops.length;
+  }
+
+  function selectStopAtPosition(event: PointerEvent) {
+    const m = snapshot();
+    if (m.kind === "solid") return;
+    const position = barPosition(event);
+    const nearest = m.stops.reduce(
+      (closest, stop, index) =>
+        Math.abs(stop.position - position) < Math.abs(m.stops[closest].position - position)
+          ? index
+          : closest,
+      0,
+    );
+    selectStop(nearest);
   }
 
   function removeStop(index: number) {
@@ -277,7 +289,7 @@
           class="flex-1 px-2.5 py-1.5 cursor-copy touch-none"
           role="group"
           aria-label="Gradient stops"
-          onpointerdown={addStop}
+          onpointerdown={selectStopAtPosition}
           onpointermove={(event) => {
             if (dragging !== null) moveStop(dragging, barPosition(event));
           }}
@@ -305,6 +317,15 @@
             {/each}
           </div>
         </div>
+        <button
+          type="button"
+          class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+          aria-label="Add colour stop"
+          title="Add colour stop"
+          onclick={() => addStop(50)}
+        >
+          <PlusIcon class="size-4" />
+        </button>
         {#if model.kind === "linear"}
           <label
             class="flex shrink-0 items-center px-2 w-14 h-7 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70"
@@ -330,7 +351,7 @@
           disabled={stops.length <= 2}
           onclick={() => removeStop(selected)}
         >
-          <TrashIcon class="size-4" />
+          <Trash2Icon class="size-4" />
         </button>
       </div>
     {/if}
