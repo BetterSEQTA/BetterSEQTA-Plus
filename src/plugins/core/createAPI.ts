@@ -8,10 +8,10 @@ import type {
   SettingValue,
   StorageAPI,
 } from "./types";
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import ReactFiber from "@/seqta/utils/ReactFiber";
 import browser from "@/lib/browser";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import type { SettingsState } from "@/types/storage";
 
 function createSEQTAAPI(): SEQTAAPI {

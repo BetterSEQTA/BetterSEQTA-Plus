@@ -5,7 +5,7 @@
   import MotionDiv from "../MotionDiv.svelte";
   import PlainCloseButton from "../PlainCloseButton.svelte";
   import CloudHeader from "./CloudHeader.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   type SettingsPage = "settings" | "themes" | "backgrounds";
 

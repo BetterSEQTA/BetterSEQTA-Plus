@@ -1,11 +1,12 @@
 import tailwindStyles from "@/css/tailwind.css?inline";
 import pluginStyles from "./styles.css?inline";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isSimpleAnalyticsUi } from "@/seqta/utils/performanceMode";
 import { mount, unmount } from "svelte";
 import GradeAnalyticsPage from "./GradeAnalyticsPage.svelte";
 import { buildContrastAccentPalette } from "./utils/accentColor";
-import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
+import { copyPageTheme, resolvePageAccentColor } from "@/seqta/ui/colors/pageTheme";
+import { isAnalyticsRoute } from "./injectAnalyticsMenuItem";
 
 type ThemeSettingKey =
   | "selectedColor"
@@ -23,18 +24,22 @@ type ThemeListenerRegistration = {
 let currentApp: ReturnType<typeof mount> | null = null;
 let shadowHost: HTMLElement | null = null;
 let analyticsRoot: HTMLElement | null = null;
-let darkModeObserver: MutationObserver | null = null;
 let themeStyleObserver: MutationObserver | null = null;
 let themeListeners: ThemeListenerRegistration[] = [];
 
-const ANALYTICS_STACKING_STYLE_ID = "bsplus-analytics-stacking-styles";
+const ANALYTICS_PAGE_STYLE_ID = "bsplus-analytics-page-styles";
 
-/** Light-DOM stacking scope so toolbar/dropdown z-index cannot paint over ExtensionPopup. */
-function ensureAnalyticsStackingScope() {
-  if (document.getElementById(ANALYTICS_STACKING_STYLE_ID)) return;
+/** Light-DOM styles: stacking scope below ExtensionPopup, and #main sizing only while Analytics is shown. */
+function ensureAnalyticsPageStyles() {
+  if (document.getElementById(ANALYTICS_PAGE_STYLE_ID)) return;
   const style = document.createElement("style");
-  style.id = ANALYTICS_STACKING_STYLE_ID;
+  style.id = ANALYTICS_PAGE_STYLE_ID;
   style.textContent = `
+    #main:has(> #analytics-view-container) {
+      overflow: auto;
+      width: 100%;
+      max-width: none;
+    }
     #analytics-view-container,
     .bsplus-analytics-container,
     .bsplus-analytics-host {
@@ -46,61 +51,17 @@ function ensureAnalyticsStackingScope() {
   document.head.appendChild(style);
 }
 
-const THEME_CSS_VARS = [
-  "--better-main",
-  "--better-pale",
-  "--better-light",
-  "--text-color",
-  "--background-primary",
-  "--background-secondary",
-  "--text-primary",
-  "--theme-offset-bg",
-  "--better-sub",
-] as const;
-
-const ACCENT_CSS_VARS = [
-  "--better-main",
-  "--accent-color-value",
-  "--accentColor",
-  "--colour-betterseqta-blue",
-] as const;
-
 const THEME_ACCENT_OVERRIDES: Record<string, string> = {
   "bb0aaf40-55ef-40f7-bc64-93b67ef96c01": "#4ade80",
 };
 
-function resolvePageAccentColor(): string {
-  const themeId = settingsState.selectedTheme;
-  if (themeId && themeId in THEME_ACCENT_OVERRIDES) {
-    return THEME_ACCENT_OVERRIDES[themeId];
-  }
-  const computed = getComputedStyle(document.documentElement);
-  for (const name of ACCENT_CSS_VARS) {
-    const solid = extractSolidColor(computed.getPropertyValue(name));
-    if (solid) return solid;
-  }
-  const fromSettings = settingsState.selectedColor?.trim();
-  if (fromSettings) {
-    const solid = extractSolidColor(fromSettings);
-    if (solid) return solid;
-  }
-  return "#007bff";
-}
-
 function syncThemeFromPage(target: HTMLElement) {
-  const computed = getComputedStyle(document.documentElement);
+  copyPageTheme(target);
 
-  for (const name of THEME_CSS_VARS) {
-    const value =
-      document.documentElement.style.getPropertyValue(name).trim() ||
-      computed.getPropertyValue(name).trim();
-    if (value) target.style.setProperty(name, value);
-  }
-
-  const accent = resolvePageAccentColor();
+  const accent =
+    THEME_ACCENT_OVERRIDES[settingsState.selectedTheme ?? ""] ?? resolvePageAccentColor();
   const surface =
     target.style.getPropertyValue("--background-primary").trim() ||
-    computed.getPropertyValue("--background-primary").trim() ||
     (target.classList.contains("dark") ? "#1e293b" : "#ffffff");
   const palette = buildContrastAccentPalette(accent, surface);
 
@@ -114,7 +75,6 @@ function syncThemeFromPage(target: HTMLElement) {
   target.style.setProperty("--better-main", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-bg", palette.accent);
   target.style.setProperty("--bsplus-theme-btn-primary-color", palette.onAccent);
-  target.classList.toggle("dark", document.documentElement.classList.contains("dark"));
 }
 
 function syncThemeToAnalyticsUi() {
@@ -159,7 +119,12 @@ function watchThemeChanges() {
   });
 }
 
+function onRouteChange() {
+  if (!isAnalyticsRoute()) teardown();
+}
+
 function teardown() {
+  window.removeEventListener("hashchange", onRouteChange);
   clearThemeListeners();
   themeStyleObserver?.disconnect();
   themeStyleObserver = null;
@@ -168,8 +133,6 @@ function teardown() {
     unmount(currentApp);
     currentApp = null;
   }
-  darkModeObserver?.disconnect();
-  darkModeObserver = null;
   shadowHost?.remove();
   shadowHost = null;
   analyticsRoot = null;
@@ -178,7 +141,8 @@ function teardown() {
 export function renderAnalyticsPage(container: HTMLElement) {
   teardown();
 
-  ensureAnalyticsStackingScope();
+  ensureAnalyticsPageStyles();
+  window.addEventListener("hashchange", onRouteChange);
 
   container.innerHTML = "";
   container.className = "bsplus-analytics-container";
@@ -199,12 +163,6 @@ export function renderAnalyticsPage(container: HTMLElement) {
   shadow.appendChild(analyticsRoot);
 
   watchThemeChanges();
-
-  darkModeObserver = new MutationObserver(() => syncThemeToAnalyticsUi());
-  darkModeObserver.observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
 
   currentApp = mount(GradeAnalyticsPage, {
     target: analyticsRoot,

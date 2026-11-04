@@ -43,18 +43,18 @@ export const subjectsJob: Job = {
     try {
       list = await fetchSubjects();
     } catch (e) {
-      console.error("[Subjects job] list fetch failed:", e);
+      console.error("[BetterSEQTA+] Subjects job: list fetch failed:", e);
       return [];
     }
 
     if (list.status !== "200") {
-      console.error("[Subjects job] API returned non-200 status:", list.status);
+      console.error("[BetterSEQTA+] Subjects job: API returned non-200 status:", list.status);
       return [];
     }
 
     // Check if we have the expected data structure
     if (!list.payload || !Array.isArray(list.payload)) {
-      console.error("[Subjects job] Unexpected API response structure:", list);
+      console.error("[BetterSEQTA+] Subjects job: Unexpected API response structure:", list);
       return [];
     }
 
@@ -62,7 +62,7 @@ export const subjectsJob: Job = {
 
     for (const semester of list.payload) {
       if (!semester.subjects || !Array.isArray(semester.subjects)) {
-        console.warn("[Subjects job] Skipping invalid semester:", semester);
+        console.warn("[BetterSEQTA+] Subjects job: Skipping invalid semester:", semester);
         continue;
       }
 
@@ -70,7 +70,7 @@ export const subjectsJob: Job = {
       for (const subject of semester.subjects) {
         // Skip if subject doesn't have required fields
         if (!subject || !subject.code || !subject.title) {
-          console.warn("[Subjects job] Skipping invalid subject:", subject);
+          console.warn("[BetterSEQTA+] Subjects job: Skipping invalid subject:", subject);
           continue;
         }
 
@@ -124,7 +124,7 @@ export const subjectsJob: Job = {
       }
     }
 
-    verboseDebug(`[Subjects job] Indexed ${items.length} subject items`);
+    verboseDebug(`[BetterSEQTA+] Subjects job: Indexed ${items.length} subject items`);
     return items;
   },
 

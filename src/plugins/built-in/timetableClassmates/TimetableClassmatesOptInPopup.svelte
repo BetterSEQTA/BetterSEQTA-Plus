@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
-  import { cloudAuth, type CloudUser } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth, type CloudUser } from "@/seqta/utils/cloudAuth";
   import { ACCOUNTS_BASE } from "./constants";
   import { markResumeOptInAfterCloudLogin } from "./optInResume";
   import { registerOptIn } from "./syncOrchestrator";

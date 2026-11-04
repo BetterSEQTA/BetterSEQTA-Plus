@@ -1,10 +1,10 @@
 <script lang="ts">
-  import type { CustomTheme, ThemeList } from '@/types/CustomThemes'
+  import type { CustomTheme, ThemeList } from '@/types/customThemes'
   import { onDestroy, onMount } from 'svelte'
   import browser from '@/lib/browser'
-  import { themeUpdates } from '@/interface/hooks/ThemeUpdates'
+  import { themeUpdates } from '@/interface/hooks/themeUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
-  import { cloudAuth } from '@/seqta/utils/CloudAuth'
+  import { cloudAuth } from '@/seqta/utils/cloudAuth'
   import SignInToFavoriteModal from '@/interface/components/SignInToFavoriteModal.svelte'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import ThemePlaceholderCover from '@/interface/components/themes/ThemePlaceholderCover.svelte'
@@ -101,8 +101,8 @@
   }
 
   const openStorePage = async () => {
-    const { OpenStorePage } = await import('@/seqta/ui/renderStore')
-    await OpenStorePage()
+    const { openStorePage } = await import('@/seqta/ui/renderStore')
+    await openStorePage()
   }
 
   const openThemeCreator = async (themeId?: string) => {

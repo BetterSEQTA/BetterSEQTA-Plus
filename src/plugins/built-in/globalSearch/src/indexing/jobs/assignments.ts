@@ -25,7 +25,7 @@ const fetchUpcomingAssessments = async (student: number) => {
     });
     return Array.isArray(res.payload) ? res.payload : [];
   } catch (e) {
-    console.error("[Assignments job] Failed to fetch upcoming assessments:", e);
+    console.error("[BetterSEQTA+] Assignments job: Failed to fetch upcoming assessments:", e);
     return [];
   }
 };
@@ -40,7 +40,7 @@ const fetchSubjects = async () => {
         ?.flatMap((s) => (Array.isArray(s.subjects) ? (s.subjects as OverviewSubject[]) : [])) ?? []
     );
   } catch (e) {
-    console.error("[Assignments job] Failed to fetch subjects:", e);
+    console.error("[BetterSEQTA+] Assignments job: Failed to fetch subjects:", e);
     return [];
   }
 };
@@ -80,7 +80,7 @@ const fetchPastAssessments = async (student: number, subjects: OverviewSubject[]
         }
       } catch (e) {
         console.warn(
-          `[Assignments job] Failed to fetch past assessments for subject ${subject.code || "unknown"}:`,
+          `[BetterSEQTA+] Assignments job: Failed to fetch past assessments for subject ${subject.code || "unknown"}:`,
           e,
         );
       }
@@ -114,16 +114,19 @@ function buildAssignmentIndexItem(
   const metaclassId = assessment.metaclassID || assessment.metaclass;
 
   if (!programmeId || !metaclassId || !assessment.id) {
-    console.warn(`[Assignments job] Skipping assignment ${assessment.id} - missing required IDs:`, {
-      programmeId,
-      metaclassId,
-      assessmentId: assessment.id,
-      programmeID: assessment.programmeID,
-      metaclassID: assessment.metaclassID,
-      programme: assessment.programme,
-      metaclass: assessment.metaclass,
-      assessment,
-    });
+    console.warn(
+      `[BetterSEQTA+] Assignments job: Skipping assignment ${assessment.id} - missing required IDs:`,
+      {
+        programmeId,
+        metaclassId,
+        assessmentId: assessment.id,
+        programmeID: assessment.programmeID,
+        metaclassID: assessment.metaclassID,
+        programme: assessment.programme,
+        metaclass: assessment.metaclass,
+        assessment,
+      },
+    );
     return null;
   }
 
@@ -132,7 +135,7 @@ function buildAssignmentIndexItem(
 
   if (finalProgrammeId === undefined || finalMetaclassId === undefined) {
     console.error(
-      `[Assignments job] ❌ Skipping assignment ${assessment.id} - invalid IDs after conversion:`,
+      `[BetterSEQTA+] Assignments job: ❌ Skipping assignment ${assessment.id} - invalid IDs after conversion:`,
       {
         programmeId: finalProgrammeId,
         metaclassId: finalMetaclassId,
@@ -173,7 +176,7 @@ function buildAssignmentIndexItem(
     renderComponentId: "assessment",
   };
 
-  verboseDebug(`[Assignments job] ✅ Created item for assignment ${assessment.id}:`, {
+  verboseDebug(`[BetterSEQTA+] Assignments job: ✅ Created item for assignment ${assessment.id}:`, {
     id: item.id,
     programmeId: item.metadata.programmeId,
     programmeID: item.metadata.programmeID,
@@ -226,12 +229,12 @@ export const assignmentsJob: Job = {
 
     const { id: student } = await getUserInfo();
     if (student == null) {
-      verboseDebug("[Assignments job] No student id; skipping run");
+      verboseDebug("[BetterSEQTA+] Assignments job: No student id; skipping run");
       return [];
     }
 
     verboseDebug(
-      "[Assignments job] Starting indexing - fetching all assessments (upcoming and past)...",
+      "[BetterSEQTA+] Assignments job: Starting indexing - fetching all assessments (upcoming and past)...",
     );
 
     const [upcoming, subjects] = await Promise.all([
@@ -240,12 +243,12 @@ export const assignmentsJob: Job = {
     ]);
 
     verboseDebug(
-      `[Assignments job] Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`,
+      `[BetterSEQTA+] Assignments job: Fetched ${upcoming.length} upcoming assessments and ${subjects.length} subjects`,
     );
 
     const past = await fetchPastAssessments(student, subjects);
 
-    verboseDebug(`[Assignments job] Fetched ${past.length} past assessments`);
+    verboseDebug(`[BetterSEQTA+] Assignments job: Fetched ${past.length} past assessments`);
 
     const subjectLookup = new Map<string, { programme: number; metaclass: number }>();
     subjects.forEach((s: OverviewSubject) => {
@@ -317,7 +320,7 @@ export const assignmentsJob: Job = {
     const pastCount = assessmentArray.filter((a) => !a.isUpcoming).length;
     const upcomingCount = assessmentArray.filter((a) => a.isUpcoming).length;
     verboseDebug(
-      `[Assignments job] Processing ${assessmentArray.length} total assessments (${upcomingCount} upcoming, ${pastCount} past)`,
+      `[BetterSEQTA+] Assignments job: Processing ${assessmentArray.length} total assessments (${upcomingCount} upcoming, ${pastCount} past)`,
     );
     const batchSize = 15;
 
@@ -344,7 +347,7 @@ export const assignmentsJob: Job = {
     const newItemsCount = items.filter((item) => !existingIds.has(item.id)).length;
     const updatedItemsCount = items.length - newItemsCount;
     verboseDebug(
-      `[Assignments job] Indexed ${items.length} assignment items (${newItemsCount} new, ${updatedItemsCount} updated)`,
+      `[BetterSEQTA+] Assignments job: Indexed ${items.length} assignment items (${newItemsCount} new, ${updatedItemsCount} updated)`,
     );
     return items;
   },

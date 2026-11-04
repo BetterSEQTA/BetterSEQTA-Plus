@@ -1,6 +1,6 @@
 <script lang="ts">
   import MotionDiv from '@/interface/components/MotionDiv.svelte';
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState.ts"
+  import { settingsState } from "@/seqta/utils/listeners/settingsState.ts"
   import Switch from "@/interface/components/Switch.svelte"
   import Button from "@/interface/components/Button.svelte"
   import { onMount } from 'svelte';

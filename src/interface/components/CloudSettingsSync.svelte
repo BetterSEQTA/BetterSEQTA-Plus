@@ -1,11 +1,13 @@
 <script lang="ts">
   import browser from "@/lib/browser";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import Button from "./Button.svelte";
   import Switch from "./Switch.svelte";
 
-  let { showDisclaimer }: {
+  let {
+    showDisclaimer,
+  }: {
     showDisclaimer: (onConfirm: () => void, onCancel: () => void) => void;
   } = $props();
 
@@ -73,7 +75,9 @@
     <div class="flex items-center justify-between gap-3">
       <div>
         <p class="text-[11px] font-semibold text-zinc-800 dark:text-zinc-100">Automatic sync</p>
-        <p class="text-[10px] text-zinc-500 dark:text-zinc-400">Syncs settings when SEQTA loads and when you make changes</p>
+        <p class="text-[10px] text-zinc-500 dark:text-zinc-400">
+          Syncs settings when SEQTA loads and when you make changes
+        </p>
       </div>
       <div class="shrink-0">
         <Switch
@@ -84,11 +88,7 @@
     </div>
 
     <div class="flex flex-wrap gap-2">
-      <Button
-        text={busy ? "Please wait\u2026" : "Upload"}
-        onClick={upload}
-        disabled={busy}
-      />
+      <Button text={busy ? "Please wait\u2026" : "Upload"} onClick={upload} disabled={busy} />
       <Button
         text={busy ? "Please wait\u2026" : "Download"}
         onClick={promptDownload}
@@ -110,7 +110,8 @@
         target="_blank"
         rel="noopener noreferrer"
         class="font-medium text-emerald-600 underline decoration-emerald-600/50 underline-offset-2 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 rounded-xs"
-      >Privacy policy</a>
+        >Privacy policy</a
+      >
     </p>
   </div>
 {/if}

@@ -13,7 +13,7 @@
     type DistributionMode,
   } from "./gradeDistribution";
   import { loadDistributionMode, saveDistributionMode } from "./storage";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   interface Props {
     data: Assessment[];
@@ -28,12 +28,9 @@
   let modeReady = $state(false);
   let studentId: number | null = $state(null);
 
-  const accentColor =
-    "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
+  const accentColor = "var(--bsplus-analytics-accent, var(--better-main, #007bff))";
 
-  const distribution = $derived(() =>
-    buildGradeDistribution(data, distributionMode),
-  );
+  const distribution = $derived(() => buildGradeDistribution(data, distributionMode));
 
   const chartData = $derived(() =>
     distribution().buckets.map((b) => ({
@@ -71,8 +68,7 @@
   const totalAssessments = $derived(distribution().gradedCount);
 
   const modeOptionLabel = $derived(
-    DISTRIBUTION_MODE_OPTIONS.find((o) => o.value === distributionMode)?.label ??
-      "Auto",
+    DISTRIBUTION_MODE_OPTIONS.find((o) => o.value === distributionMode)?.label ?? "Auto",
   );
 
   const subtitle = $derived(() => {
@@ -132,11 +128,14 @@
 
   <div class="bsplus-analytics-card-body">
     {#if totalAssessments > 0 && chartData().length > 0}
-      <Chart.Container config={chartConfig()} class="bsplus-chart-surface bsplus-chart-surface-bar w-full">
+      <Chart.Container
+        config={chartConfig()}
+        class="bsplus-chart-surface bsplus-chart-surface-bar w-full"
+      >
         <BarChart
           data={chartData()}
           xScale={scaleBand().padding(distribution().modeUsed === "letter" ? 0.22 : 0.28)}
-          yScale={yScale}
+          {yScale}
           x="grade"
           y="count"
           axis={true}
@@ -156,7 +155,11 @@
               radius: 10,
               insets: { left: 4, right: 4 },
               motion: {
-                y: { type: "tween", duration: $settingsState.animations ? 600 : 0, easing: cubicInOut },
+                y: {
+                  type: "tween",
+                  duration: $settingsState.animations ? 600 : 0,
+                  easing: cubicInOut,
+                },
               },
             },
             highlight: { area: { fill: "none" } },

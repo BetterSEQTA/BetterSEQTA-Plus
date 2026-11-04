@@ -1,15 +1,15 @@
 <script lang="ts">
   import { fade } from "svelte/transition";
   import { onMount } from "svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { FONT_PRESETS, DEFAULT_FONT_ID, getFontPreset } from "@/seqta/ui/fonts/presets";
   import {
     applySelectedFont,
     buildFontPreviewCss,
     ensureFontPickerFontsLoaded,
-  } from "@/seqta/ui/fonts/Manager";
+  } from "@/seqta/ui/fonts/fontManager";
   import { portal } from "@/interface/utils/portal";
-  import { syncPageThemeToElement } from "@/interface/utils/syncPageTheme";
+  import { copyPageTheme, resolvePageAccentColor } from "@/seqta/ui/colors/pageTheme";
   import fontPickerStyles from "./fontPickerModal.css?inline";
 
   let { hidePicker }: { hidePicker: () => void } = $props();
@@ -33,15 +33,16 @@
   }
 
   function syncTheme() {
-    if (rootEl) syncPageThemeToElement(rootEl);
+    if (rootEl) {
+      copyPageTheme(rootEl);
+      rootEl.style.setProperty("--better-main", resolvePageAccentColor());
+    }
   }
 
   onMount(() => {
     void ensureFontPickerFontsLoaded();
 
-    styleEl = document.getElementById(
-      "betterseqta-font-picker-styles",
-    ) as HTMLStyleElement | null;
+    styleEl = document.getElementById("betterseqta-font-picker-styles") as HTMLStyleElement | null;
     if (!styleEl) {
       styleEl = document.createElement("style");
       styleEl.id = "betterseqta-font-picker-styles";
@@ -77,7 +78,8 @@
   class="bsplus-font-picker-overlay bsplus-font-picker-root"
   onclick={handleBackdropClick}
   onkeydown={(event) => {
-    if (event.key === "Enter" || event.key === " ") handleBackdropClick(event as unknown as MouseEvent);
+    if (event.key === "Enter" || event.key === " ")
+      handleBackdropClick(event as unknown as MouseEvent);
   }}
   role="presentation"
   transition:fade={{ duration: 200 }}
@@ -112,12 +114,8 @@
         </button>
       </div>
       <div class="bsplus-font-picker-header-text">
-        <h2 id="font-picker-title" class="bsplus-font-picker-title">
-          Choose a font
-        </h2>
-        <p class="bsplus-font-picker-desc">
-          Choose a typeface for SEQTA Learn.
-        </p>
+        <h2 id="font-picker-title" class="bsplus-font-picker-title">Choose a font</h2>
+        <p class="bsplus-font-picker-desc">Choose a typeface for SEQTA Learn.</p>
       </div>
     </header>
 
@@ -130,7 +128,7 @@
           data-font-id={preset.id}
         >
           <div class="bsplus-font-picker-option-head">
-            <span 
+            <span
               class="bsplus-font-picker-option-name"
               style="font-family: {preset.stack} !important;"
             >

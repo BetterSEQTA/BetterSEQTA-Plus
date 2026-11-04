@@ -1,10 +1,10 @@
 <script lang="ts">
-  let { size = 'md', color = 'currentColor' } = $props();
+  let { size = "md", color = "currentColor" } = $props();
 
   const sizeMap = {
-    sm: '1rem',
-    md: '2rem',
-    lg: '3rem',
+    sm: "1rem",
+    md: "2rem",
+    lg: "3rem",
   };
 
   let dimensions = $derived(sizeMap[size as keyof typeof sizeMap] || size);
@@ -18,14 +18,7 @@
   width={dimensions}
   height={dimensions}
 >
-  <circle
-    class="opacity-25"
-    cx="12"
-    cy="12"
-    r="10"
-    stroke={color}
-    stroke-width="4"
-  ></circle>
+  <circle class="opacity-25" cx="12" cy="12" r="10" stroke={color} stroke-width="4"></circle>
   <path
     class="opacity-75"
     fill={color}

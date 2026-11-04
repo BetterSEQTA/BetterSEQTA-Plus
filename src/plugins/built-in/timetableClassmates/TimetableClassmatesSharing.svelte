@@ -1,6 +1,6 @@
 <script lang="ts">
   import Button from "@/interface/components/Button.svelte";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
   import { runTimetableClassmatesSync } from "./syncOrchestrator";
   import { loadSession, resolveClassmatesScope } from "./rosterStore";
@@ -88,11 +88,25 @@
 
   {#if syncOptIn}
     <div class="flex flex-wrap gap-2 justify-end">
-      <Button text="Sync now" onClick={() => void syncNow()} disabled={busy || !$accountsAvailability.available} />
-      <Button variant="ghost" class="text-red-600 dark:text-red-400" text="Opt out…" onClick={startOptOut} disabled={busy} />
+      <Button
+        text="Sync now"
+        onClick={() => void syncNow()}
+        disabled={busy || !$accountsAvailability.available}
+      />
+      <Button
+        variant="ghost"
+        class="text-red-600 dark:text-red-400"
+        text="Opt out…"
+        onClick={startOptOut}
+        disabled={busy}
+      />
     </div>
   {:else}
-    <Button text="Opt in…" onClick={startOptIn} disabled={busy || !$accountsAvailability.available} />
+    <Button
+      text="Opt in…"
+      onClick={startOptIn}
+      disabled={busy || !$accountsAvailability.available}
+    />
   {/if}
 
   {#if $accountsAvailability.message}

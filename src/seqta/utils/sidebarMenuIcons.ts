@@ -1,11 +1,11 @@
 import MenuitemSVGKey from "@/seqta/content/MenuItemSVGKey.json";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForEngageMenuList } from "@/seqta/utils/waitForEngageMenuList";
 import { waitForElm } from "@/seqta/utils/waitForElm";
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
 
 const BETTERSEQTA_ICON_ATTR = "data-betterseqta-icon";
@@ -83,7 +83,7 @@ function processTopLevelMenuItems(reorder = !isSeqtaEngageExperience()) {
   }
 
   if (reorder) {
-    ChangeMenuItemPositions(settingsState.menuorder);
+    changeMenuItemPositions(settingsState.menuorder);
   }
 }
 
@@ -139,7 +139,7 @@ export async function observeMenuItemPosition() {
 
       if (!isMenuOptionsOpen()) {
         processMenuItemNode(node);
-        ChangeMenuItemPositions(settingsState.menuorder);
+        changeMenuItemPositions(settingsState.menuorder);
         (element as Element & Record<symbol, boolean>)[processedSymbol] = true;
       }
     },

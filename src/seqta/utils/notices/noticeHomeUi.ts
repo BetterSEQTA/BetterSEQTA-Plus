@@ -1,10 +1,9 @@
 import { animate } from "motion";
 import LogoLight from "@/resources/icons/betterseqta-light-icon.png";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { getMockNotices } from "@/seqta/ui/dev/hideSensitiveContent";
-import debounce from "@/seqta/utils/debounce";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { noticeMatchesLabelFilter } from "@/seqta/utils/notices/noticeLabelFilters";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 
@@ -110,7 +109,7 @@ function elementScale(el: HTMLElement) {
 
 export function processNoticeColor(colour: unknown): string | undefined {
   if (typeof colour !== "string") return undefined;
-  const rgb = GetThresholdOfColor(colour);
+  const rgb = getThresholdOfColor(colour);
   if (rgb < 100 && settingsState.DarkMode) return undefined;
   return colour;
 }
@@ -343,41 +342,4 @@ export async function fetchNoticesForDate(
     data = { payload: [] };
   }
   renderNoticesIntoContainer(containerId, data, labelTokens);
-}
-
-export type SetupNoticesSectionOptions = {
-  containerId: string;
-  dateInput: HTMLInputElement | string;
-  noticesUrl: string;
-  labelTokens: string[];
-  initialDate: string;
-};
-
-/** Wire date picker + initial fetch for a home-page notices block. Returns cleanup. */
-export function setupNoticesSection(options: SetupNoticesSectionOptions): () => void {
-  const dateControl =
-    typeof options.dateInput === "string"
-      ? (document.querySelector(options.dateInput) as HTMLInputElement | null)
-      : options.dateInput;
-
-  if (dateControl) dateControl.value = options.initialDate;
-
-  const debouncedInputChange = debounce((e: Event) => {
-    void fetchNoticesForDate(
-      options.containerId,
-      (e.target as HTMLInputElement).value,
-      options.noticesUrl,
-      options.labelTokens,
-    );
-  }, 250);
-
-  dateControl?.addEventListener("input", debouncedInputChange);
-  void fetchNoticesForDate(
-    options.containerId,
-    options.initialDate,
-    options.noticesUrl,
-    options.labelTokens,
-  );
-
-  return () => dateControl?.removeEventListener("input", debouncedInputChange);
 }

@@ -4,7 +4,7 @@
  * parent SEQTA popup does not close.
  */
 
-import { settingsState } from "../listeners/SettingsState";
+import { settingsState } from "../listeners/settingsState";
 import { allowedPopupImageUrl } from "./allowedPopupImageUrl";
 
 const FULLSCREENABLE_CLASS = "popup-media-fullscreenable";

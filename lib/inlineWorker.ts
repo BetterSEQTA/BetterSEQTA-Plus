@@ -3,7 +3,7 @@ import { build } from "esbuild";
 import { resolve } from "node:path";
 
 /** Bundle worker entry points imported with `?inlineWorker` as Blob-backed Workers in dev. */
-export default function InlineWorkerDevPlugin(): Plugin {
+export default function inlineWorkerDevPlugin(): Plugin {
   return {
     name: "vite:inline-worker-dev",
     async load(id) {

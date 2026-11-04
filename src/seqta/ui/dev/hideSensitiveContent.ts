@@ -76,7 +76,7 @@ const contentConfig: ContentConfig = {
     },
   },
   assessmentTitleInTooltip: {
-    selector: ".assessmenttooltip .tooltiptext p",
+    selector: ".assessmenttooltip .bsplus-tooltip-bubble a",
     action: (element) => {
       element.textContent = getRandomElement(mockData.assessmentTitles);
     },
@@ -104,12 +104,6 @@ const contentConfig: ContentConfig = {
     action: (element) => {
       element.textContent =
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.";
-    },
-  },
-  upcomingCheckboxes: {
-    selector: ".upcoming-checkbox-container",
-    action: (element) => {
-      element.firstChild!.textContent = "SUBJ";
     },
   },
   dates: {

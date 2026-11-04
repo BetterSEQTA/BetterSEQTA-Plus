@@ -14,7 +14,8 @@
     <span class="mb-1 block text-sm font-medium">Status</span>
     <Select
       value={communityState.reviewStatusFilter}
-      onChange={(v) => (communityState.reviewStatusFilter = v as typeof communityState.reviewStatusFilter)}
+      onChange={(v) =>
+        (communityState.reviewStatusFilter = v as typeof communityState.reviewStatusFilter)}
       options={[
         { value: "pending", label: "Pending" },
         { value: "approved", label: "Approved" },
@@ -73,7 +74,10 @@
       onApply={(id) => void communityState.applyInstalledTheme(id)}
     />
     {#if communityState.reviewPreviewError}
-      <p class="fixed bottom-6 left-1/2 z-100000 -translate-x-1/2 rounded-lg bg-red-600 px-4 py-2 text-sm text-white" role="alert">
+      <p
+        class="fixed bottom-6 left-1/2 z-100000 -translate-x-1/2 rounded-lg bg-red-600 px-4 py-2 text-sm text-white"
+        role="alert"
+      >
         {communityState.reviewPreviewError}
       </p>
     {/if}

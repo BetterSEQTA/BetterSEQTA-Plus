@@ -76,14 +76,13 @@ export const portalsJob: Job = {
           url,
           isPowerPortal: !!portal.is_power_portal,
           entityType: "portal",
-          icon: "\ueb01",
         },
         actionId: "portal",
         renderComponentId: "portal",
       });
     }
 
-    verboseDebug(`[Portals job] Indexed ${items.length} portal entries.`);
+    verboseDebug(`[BetterSEQTA+] Portals job: Indexed ${items.length} portal entries.`);
     return items;
   },
 

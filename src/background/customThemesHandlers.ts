@@ -45,7 +45,7 @@ export function createCustomThemesHandlers(deps: {
     }
     const normalized = normalizeCustomThemeApiResponse(body, r.status, text);
     if (!r.ok || normalized.success === false) {
-      console.error("[BetterSEQTA+ CustomThemes]", r.status, r.url, normalized);
+      console.error("[BetterSEQTA+] CustomThemes:", r.status, r.url, normalized);
     }
     return normalized;
   }
@@ -112,7 +112,7 @@ export function createCustomThemesHandlers(deps: {
           : `/api/custom-themes?${params}`;
         sendResponse(await customThemesJsonFetch(path));
       } catch (err) {
-        console.error("[Background] fetchCustomThemes error:", err);
+        console.error("[BetterSEQTA+] Background: fetchCustomThemes error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Fetch failed",
@@ -135,7 +135,7 @@ export function createCustomThemesHandlers(deps: {
         if (request.status) params.set("status", String(request.status));
         sendResponse(await customThemesJsonFetch(`/api/custom-themes/mine?${params}`, {}, true));
       } catch (err) {
-        console.error("[Background] fetchMyCustomThemes error:", err);
+        console.error("[BetterSEQTA+] Background: fetchMyCustomThemes error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Fetch failed",
@@ -164,7 +164,7 @@ export function createCustomThemesHandlers(deps: {
           ),
         );
       } catch (err) {
-        console.error("[Background] fetchMyCustomThemeDetail error:", err);
+        console.error("[BetterSEQTA+] Background: fetchMyCustomThemeDetail error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Fetch failed",
@@ -187,7 +187,7 @@ export function createCustomThemesHandlers(deps: {
       try {
         sendResponse(await customThemesMultipartPost("/api/custom-themes/mine", payload!));
       } catch (err) {
-        console.error("[Background] submitCustomTheme error:", err);
+        console.error("[BetterSEQTA+] Background: submitCustomTheme error:", err);
         sendResponse({
           success: false,
           error: { message: err instanceof Error ? err.message : "Upload failed" },
@@ -222,7 +222,7 @@ export function createCustomThemesHandlers(deps: {
           ),
         );
       } catch (err) {
-        console.error("[Background] replaceCustomThemeFiles error:", err);
+        console.error("[BetterSEQTA+] Background: replaceCustomThemeFiles error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Upload failed",
@@ -255,7 +255,7 @@ export function createCustomThemesHandlers(deps: {
           ),
         );
       } catch (err) {
-        console.error("[Background] updateCustomThemeMetadata error:", err);
+        console.error("[BetterSEQTA+] Background: updateCustomThemeMetadata error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Update failed",
@@ -284,7 +284,7 @@ export function createCustomThemesHandlers(deps: {
           ),
         );
       } catch (err) {
-        console.error("[Background] deleteCustomTheme error:", err);
+        console.error("[BetterSEQTA+] Background: deleteCustomTheme error:", err);
         sendResponse({
           success: false,
           error: err instanceof Error ? err.message : "Delete failed",

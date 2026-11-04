@@ -60,7 +60,7 @@ export class VectorWorkerManager {
     // Skip initialization if vector search is not supported (e.g., Firefox)
     if (!isVectorSearchSupported()) {
       verboseDebug(
-        "[VectorWorkerManager] Vector search not supported - skipping worker initialization",
+        "[BetterSEQTA+] VectorWorkerManager: Vector search not supported - skipping worker initialization",
       );
       this.isInitialized = false;
       return Promise.resolve();
@@ -194,7 +194,9 @@ export class VectorWorkerManager {
       if (this.vectorizationLockCount > 0) return;
       if (this.streamingSession?.isActive) return;
       if (!this.isInitialized) return;
-      verboseDebug("[VectorWorker] Auto-shutting down due to 2 minutes of inactivity");
+      verboseDebug(
+        "[BetterSEQTA+] VectorWorker: Auto-shutting down due to 2 minutes of inactivity",
+      );
       this.resetWorkerState();
     }, 120000); // 2 minutes
   }
@@ -226,7 +228,7 @@ export class VectorWorkerManager {
     this.unloadTimer = setTimeout(() => {
       if (this.vectorizationLockCount > 0) return;
       if (!this.streamingSession?.isActive && this.isInitialized) {
-        verboseDebug("[VectorWorker] Auto-unloading after processing complete");
+        verboseDebug("[BetterSEQTA+] VectorWorker: Auto-unloading after processing complete");
         this.resetWorkerState();
       }
     }, delay);
@@ -385,7 +387,9 @@ export class VectorWorkerManager {
   ): Promise<boolean> {
     // Skip if vector search is not supported
     if (!isVectorSearchSupported()) {
-      verboseDebug("[VectorWorker] Vector search not supported - skipping streaming session");
+      verboseDebug(
+        "[BetterSEQTA+] VectorWorker: Vector search not supported - skipping streaming session",
+      );
       if (onProgress) {
         onProgress({
           status: "complete",
@@ -397,7 +401,9 @@ export class VectorWorkerManager {
 
     // Only initialize if we expect items to process
     if (totalExpectedItems === 0) {
-      verboseDebug("[VectorWorker] No items expected, not starting streaming session");
+      verboseDebug(
+        "[BetterSEQTA+] VectorWorker: No items expected, not starting streaming session",
+      );
       return false;
     }
 
@@ -459,7 +465,9 @@ export class VectorWorkerManager {
     }
 
     if (!this.streamingSession?.isActive) {
-      verboseDebug("[VectorWorker] streamItems skipped — no active streaming session");
+      verboseDebug(
+        "[BetterSEQTA+] VectorWorker: streamItems skipped — no active streaming session",
+      );
       return;
     }
 
@@ -469,7 +477,7 @@ export class VectorWorkerManager {
 
     if (uniqueItems.length !== items.length) {
       verboseDebug(
-        `[Streaming] Filtered out ${items.length - uniqueItems.length} duplicate items before streaming`,
+        `[BetterSEQTA+] Streaming: Filtered out ${items.length - uniqueItems.length} duplicate items before streaming`,
       );
     }
 
@@ -484,7 +492,9 @@ export class VectorWorkerManager {
 
       this.streamingSession.inactivityTimer = setTimeout(() => {
         if (this.streamingSession?.isActive) {
-          verboseDebug("[VectorWorker] Auto-ending streaming session due to inactivity");
+          verboseDebug(
+            "[BetterSEQTA+] VectorWorker: Auto-ending streaming session due to inactivity",
+          );
           this.endStreamingSession();
         }
       }, 30000);

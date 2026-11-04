@@ -43,7 +43,7 @@ export const goalsJob: Job = {
       { mode: "years" },
     );
     if (!Array.isArray(years) || years.length === 0) {
-      verboseDebug("[Goals job] No goal years available; skipping.");
+      verboseDebug("[BetterSEQTA+] Goals job: No goal years available; skipping.");
       return [];
     }
 
@@ -90,19 +90,18 @@ export const goalsJob: Job = {
               updatedAt: goal.updated,
               entityType: "goal",
               route: `/goals/${year}`,
-              icon: "\uea15",
             },
             actionId: "goal",
             renderComponentId: "goal",
           });
         }
       } catch (e) {
-        console.warn(`[Goals job] Failed to fetch goals for year ${year}:`, e);
+        console.warn(`[BetterSEQTA+] Goals job: Failed to fetch goals for year ${year}:`, e);
       }
       await delay(PER_YEAR_DELAY_MS);
     }
 
-    verboseDebug(`[Goals job] Indexed ${items.length} goal entries.`);
+    verboseDebug(`[BetterSEQTA+] Goals job: Indexed ${items.length} goal entries.`);
     return items;
   },
 

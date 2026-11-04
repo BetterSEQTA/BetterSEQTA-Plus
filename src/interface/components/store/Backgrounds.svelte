@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/BackgroundDataLoader';
+  import { hasEnoughStorageSpace, isIndexedDBSupported, writeData, openDatabase, readAllData, deleteData } from '@/interface/hooks/backgroundDataLoader';
   import Spinner from '../Spinner.svelte';
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
-  import { backgroundUpdates } from '@/interface/hooks/BackgroundUpdates'
+  import { settingsState } from '@/seqta/utils/listeners/settingsState'
+  import { backgroundUpdates } from '@/interface/hooks/backgroundUpdates'
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
 
   const themeManager = ThemeManager.getInstance();

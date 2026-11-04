@@ -1,6 +1,6 @@
 import browser from "@/lib/browser";
 import { getInstanceHostname } from "@/seqta/utils/feedback/client";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 import {
   deleteOptIn,
   fetchPeers,

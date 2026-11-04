@@ -1,5 +1,5 @@
-import type { CustomTheme } from "@/types/CustomThemes";
-import type { Theme } from "@/interface/types/Theme";
+import type { CustomTheme } from "@/types/customThemes";
+import type { Theme } from "@/interface/types/theme";
 import {
   getThemeApplyButtonStyles,
   getCommunityInstalledThemeIds,

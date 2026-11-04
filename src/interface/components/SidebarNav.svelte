@@ -14,7 +14,11 @@
     }[];
   };
 
-  let { groups, selectedId, onselect }: {
+  let {
+    groups,
+    selectedId,
+    onselect,
+  }: {
     groups: NavGroup[];
     selectedId: string;
     onselect: (id: string) => void;
@@ -74,7 +78,9 @@
       {/if}
       {#each group.items as item (item.id)}
         {#if item.divided}
-          <div class="my-2 border-t border-zinc-200 dark:border-zinc-700 {item.nested ? 'ml-4' : ''}"></div>
+          <div
+            class="my-2 border-t border-zinc-200 dark:border-zinc-700 {item.nested ? 'ml-4' : ''}"
+          ></div>
         {/if}
         <SidebarNavItem
           label={item.label}

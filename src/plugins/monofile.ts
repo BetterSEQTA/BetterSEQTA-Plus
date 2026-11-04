@@ -1,10 +1,10 @@
 import { getCkeditorGlobal } from "@/seqta/utils/ckeditorGlobal";
-import { GetThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
+import { getThresholdOfColor } from "@/seqta/ui/colors/getThresholdColour";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { delay } from "@/seqta/utils/delay";
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { MessageHandler } from "@/seqta/utils/listeners/MessageListener";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { MessageHandler } from "@/seqta/utils/listeners/MessageHandler";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import {
   animationsEnabled,
   fullMotionEffectsEnabled,
@@ -12,27 +12,27 @@ import {
   syncPerformanceModeEffects,
 } from "@/seqta/utils/performanceMode";
 import { animatePopupOpen } from "@/seqta/utils/popupAnimation";
-import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChanges";
-import { eventManager } from "@/seqta/utils/listeners/EventManager";
+import { StorageChangeHandler } from "@/seqta/utils/listeners/StorageChangeHandler";
+import { eventManager } from "@/seqta/utils/listeners/eventManager";
 import debounce from "@/seqta/utils/debounce";
 
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
-import RegisterClickListeners from "@/seqta/utils/listeners/ClickListeners";
-import { AddBetterSEQTAElements } from "@/seqta/ui/AddBetterSEQTAElements";
-import { updateAllColors } from "@/seqta/ui/colors/Manager";
-import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import registerClickListeners from "@/seqta/utils/listeners/clickListeners";
+import { addBetterSEQTAElements } from "@/seqta/ui/addBetterSEQTAElements";
+import { updateAllColors } from "@/seqta/ui/colors/colorManager";
+import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 import { verboseInfo, verboseLog } from "@/utils/verboseLog";
-import loading, { stopLoadingAnimation } from "@/seqta/ui/Loading";
-import { SendNewsPage } from "@/seqta/utils/SendNewsPage";
+import loading, { stopLoadingAnimation } from "@/seqta/ui/loading";
+import { sendNewsPage } from "@/seqta/utils/sendNewsPage";
 import { getEngageRoutePage } from "@/seqta/utils/engageRoute";
 import {
   loadEngageHomePage,
   updateEngageHomeMenuActive,
-} from "@/seqta/utils/loaders/LoadEngageHomePage";
-import { loadHomePage } from "@/seqta/utils/loaders/LoadHomePage";
+} from "@/seqta/utils/loaders/loadEngageHomePage";
+import { loadHomePage } from "@/seqta/utils/loaders/loadHomePage";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
-import { runStartupPopupQueue } from "@/seqta/utils/openers/StartupPopupQueue";
-import { OpenCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/OpenCoursesAssessmentsFixPopup";
+import { runStartupPopupQueue } from "@/seqta/utils/openers/startupPopupQueue";
+import { openCoursesAssessmentsFixPopup } from "@/seqta/utils/openers/openCoursesAssessmentsFixPopup";
 
 import {
   syncTimetableUrlMonitoring,
@@ -42,7 +42,6 @@ import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpda
 
 import { observeMenuItemPosition } from "@/seqta/utils/sidebarMenuIcons";
 
-import IconFamily from "@/resources/fonts/IconFamily.woff";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 
 import iframeCSS from "@/css/iframe.scss?raw";
@@ -109,7 +108,7 @@ export async function finishLoad() {
   void runStartupPopupQueue();
 }
 
-export function GetCSSElement(file: string) {
+export function getCSSElement(file: string) {
   const cssFile = resolveExtensionAssetUrl(file);
   const fileref = document.createElement("link");
   fileref.setAttribute("rel", "stylesheet");
@@ -183,7 +182,7 @@ function applyDarkModeToIframe(iframe: HTMLIFrameElement, cssLink: HTMLStyleElem
   }
 }
 
-function SortMessagePageItems() {
+function sortMessagePageItems() {
   try {
     const filterbutton = document.createElement("div");
     filterbutton.classList.add("messages-filterbutton");
@@ -196,8 +195,8 @@ function SortMessagePageItems() {
   }
 }
 
-async function LoadPageElements(): Promise<void> {
-  await AddBetterSEQTAElements();
+async function loadPageElements(): Promise<void> {
+  await addBetterSEQTAElements();
   if (!isFeatureDisabled("ui.sidebar.styled")) {
     void import("@/seqta/ui/sidebar/applyNativeSidebar").then((mod) => {
       void mod.applyNativeSidebar();
@@ -223,7 +222,7 @@ async function LoadPageElements(): Promise<void> {
 
   eventManager.register("messagesAdded", { selector: "div.messages" }, handleMessages);
 
-  eventManager.register("noticesAdded", { selector: "div.notices" }, CheckNoticeTextColour);
+  eventManager.register("noticesAdded", { selector: "div.notices" }, checkNoticeTextColour);
 
   eventManager.register("dashboardAdded", { selector: "div.dashboard" }, handleDashboard);
 
@@ -238,7 +237,7 @@ async function LoadPageElements(): Promise<void> {
 
   eventManager.register("noticesAdded", { selector: "div.notice" }, handleNotices);
 
-  RegisterClickListeners();
+  registerClickListeners();
 
   await handleSublink(sublink);
 }
@@ -342,7 +341,7 @@ async function handleNewsPage(): Promise<void> {
 
   verboseInfo("[BetterSEQTA+] Started Init");
   try {
-    await SendNewsPage();
+    await sendNewsPage();
   } catch (error) {
     console.error("[BetterSEQTA+] Failed to load news page:", error);
   }
@@ -366,30 +365,32 @@ async function handleMessages(node: Element): Promise<void> {
     if (legacy instanceof HTMLElement) legacy.innerText = titleText;
   }
   document.title = "Direct Messages ― SEQTA Learn";
-  SortMessagePageItems();
+  sortMessagePageItems();
 
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  // Hides messages on page load
   const style = document.createElement("style");
-  style.classList.add("messageHider");
-  style.innerHTML = "[data-message]{opacity: 0 !important;}";
+  style.textContent = "[data-message]{opacity: 0 !important;}";
   document.head.append(style);
 
-  await waitForElm("[data-message]", true, 10);
-  const messages = Array.from(document.querySelectorAll("[data-message]")).slice(0, 35);
-  const { animate, stagger } = await loadMotion();
-  animate(
-    messages,
-    { opacity: [0, 1], y: [10, 0] },
-    {
-      delay: stagger(0.03),
-      duration: 0.5,
-      ease: [0.22, 0.03, 0.26, 1],
-    },
-  );
-
-  document.head.querySelector("style.messageHider")?.remove();
+  try {
+    await waitForElm("[data-message]", true, 10, 300);
+    const messages = Array.from(document.querySelectorAll("[data-message]")).slice(0, 35);
+    const { animate, stagger } = await loadMotion();
+    animate(
+      messages,
+      { opacity: [0, 1], y: [10, 0] },
+      {
+        delay: stagger(0.03),
+        duration: 0.5,
+        ease: [0.22, 0.03, 0.26, 1],
+      },
+    );
+  } catch {
+    return;
+  } finally {
+    style.remove();
+  }
 }
 
 async function handleDashboard(node: Element): Promise<void> {
@@ -397,12 +398,11 @@ async function handleDashboard(node: Element): Promise<void> {
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
   const style = document.createElement("style");
-  style.classList.add("dashboardHider");
-  style.innerHTML = ".dashboard{opacity: 0 !important;}";
+  style.textContent = ".dashboard{opacity: 0 !important;}";
   document.head.append(style);
 
-  await waitForElm(".dashlet", true, 10);
   try {
+    await waitForElm(".dashlet", true, 10, 300);
     const children = document.querySelectorAll(".dashboard > *");
     if (children.length) {
       const { animate, stagger } = await loadMotion();
@@ -418,17 +418,17 @@ async function handleDashboard(node: Element): Promise<void> {
     }
   } catch {
     // Avoid uncaught errors if motion hits an unexpected DOM state during load.
+  } finally {
+    style.remove();
   }
-
-  document.head.querySelector("style.dashboardHider")?.remove();
 }
 
 async function handleDocuments(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  await waitForElm(".document", true, 10);
   try {
+    await waitForElm(".document", true, 10, 300);
     const rows = document.querySelectorAll(".documents tbody tr.document");
     if (rows.length) {
       const { animate, stagger } = await loadMotion();
@@ -451,8 +451,8 @@ async function handleReports(node: Element): Promise<void> {
   if (!(node instanceof HTMLElement)) return;
   if (!animationsEnabled() || !fullMotionEffectsEnabled()) return;
 
-  await waitForElm(".report", true, 10);
   try {
+    await waitForElm(".report", true, 10, 300);
     const items = document.querySelectorAll(".reports .item");
     if (items.length) {
       const { animate, stagger } = await loadMotion();
@@ -476,7 +476,7 @@ let noticeColourObserver: MutationObserver | null = null;
 
 const adjustNoticeColor = (node: Element) => {
   const hex = (node as HTMLElement).style.cssText.split(" ")[1];
-  if (!hex || !settingsState.DarkMode || GetThresholdOfColor(hex.slice(0, -1)) >= 100) return;
+  if (!hex || !settingsState.DarkMode || getThresholdOfColor(hex.slice(0, -1)) >= 100) return;
   (node as HTMLElement).style.cssText = "--color: undefined;";
 };
 
@@ -490,7 +490,7 @@ const scanAddedNotices = debounce((mutations: MutationRecord[]) => {
     for (const node of m.addedNodes) if (node instanceof Element) scanNotices(node);
 }, 50);
 
-function CheckNoticeTextColour(notice: Element) {
+function checkNoticeTextColour(notice: Element) {
   scanNotices(notice);
   if (noticeContainers.has(notice)) return;
   if (!noticeColourObserver) {
@@ -571,10 +571,10 @@ export function tryLoad() {
       }
       if (mode === "timeout") {
         finishLoad();
-        void waitForElm("#content").then(() => void LoadPageElements());
+        void waitForElm("#content").then(() => void loadPageElements());
         return;
       }
-      await LoadPageElements();
+      await loadPageElements();
     };
 
     if (document.readyState === "complete") {
@@ -605,7 +605,7 @@ export function tryLoad() {
   });
 
   waitForElm(".code", true, 50).then((elm: Element) => {
-    if (!(elm as HTMLElement).innerText.includes("BetterSEQTA")) LoadPageElements();
+    if (!(elm as HTMLElement).innerText.includes("BetterSEQTA")) loadPageElements();
   });
 
   updateIframesWithDarkMode();
@@ -696,8 +696,8 @@ export function init() {
       }
     }
 
-    AppendElementsToDisabledPage();
-    OpenCoursesAssessmentsFixPopup();
+    appendElementsToDisabledPage();
+    openCoursesAssessmentsFixPopup();
   };
 
   const handleDisabled = () => {
@@ -773,7 +773,6 @@ export function init() {
     if (!onLogin) {
       loading();
     }
-    InjectCustomIcons();
     applyMenuItemVisibility();
     syncTimetableUrlMonitoring();
     tryLoad();
@@ -856,31 +855,15 @@ export function init() {
     }, 1000);
   } else {
     handleDisabled();
-    InjectCustomIcons();
     window.addEventListener("load", handleDisabled, { once: true });
   }
 }
 
-function InjectCustomIcons() {
-  verboseInfo("[BetterSEQTA+] Injecting Icons");
-
-  const style = document.createElement("style");
-  style.setAttribute("type", "text/css");
-  style.innerHTML = `
-    @font-face {
-      font-family: 'IconFamily';
-      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-  document.head.appendChild(style);
-}
-
-export function AppendElementsToDisabledPage() {
+export function appendElementsToDisabledPage() {
   if (document.getElementById("AddedSettings")) return;
 
   verboseInfo("[BetterSEQTA+] Appending elements to disabled page");
-  AddBetterSEQTAElements();
+  addBetterSEQTAElements();
 
   const settingsStyle = document.createElement("style");
   settingsStyle.innerHTML = /* css */ `

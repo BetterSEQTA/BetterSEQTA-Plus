@@ -108,7 +108,7 @@ const fetchAssessmentName = async (
       return json.payload;
     } catch (error) {
       console.warn(
-        `[Notifications job] Failed to fetch assessments from ${endpoint} (attempt ${retryCount + 1}):`,
+        `[BetterSEQTA+] Notifications job: Failed to fetch assessments from ${endpoint} (attempt ${retryCount + 1}):`,
         error,
       );
 
@@ -149,7 +149,7 @@ const fetchAssessmentName = async (
     }
 
     console.error(
-      `[Notifications job] Failed to fetch assessment name for ID ${assessmentId} after ${retryCount + 1} attempts:`,
+      `[BetterSEQTA+] Notifications job: Failed to fetch assessment name for ID ${assessmentId} after ${retryCount + 1} attempts:`,
       error,
     );
     return `Assessment ${assessmentId}`;
@@ -175,7 +175,7 @@ export const notificationsJob: Job = {
     try {
       notifications = await fetchNotifications();
     } catch (e) {
-      console.error("[Notifications job] fetch failed:", e);
+      console.error("[BetterSEQTA+] Notifications job: fetch failed:", e);
       progress.failedRequests++;
       progress.currentDelay = Math.min(
         progress.currentDelay * NOTIFICATIONS_RATE_LIMIT.backoffMultiplier,
@@ -194,7 +194,7 @@ export const notificationsJob: Job = {
           estimatedTotal,
           (progressData) => {
             verboseLog(
-              `[Notifications job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
+              `[BetterSEQTA+] Notifications job: Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
           NOTIFICATIONS_RATE_LIMIT.vectorBatchSize,
@@ -202,11 +202,11 @@ export const notificationsJob: Job = {
         );
         if (progress.streamingStarted) {
           verboseLog(
-            `[Notifications job] Started streaming vectorization session for ~${estimatedTotal} items`,
+            `[BetterSEQTA+] Notifications job: Started streaming vectorization session for ~${estimatedTotal} items`,
           );
         }
       } catch (error) {
-        console.warn("[Notifications job] Failed to start streaming session:", error);
+        console.warn("[BetterSEQTA+] Notifications job: Failed to start streaming session:", error);
       }
     }
 
@@ -218,7 +218,11 @@ export const notificationsJob: Job = {
         ]);
         return inAssessments || inMessages;
       } catch (error) {
-        console.warn("[Notifications job] Error checking if notification is indexed:", id, error);
+        console.warn(
+          "[BetterSEQTA+] Notifications job: Error checking if notification is indexed:",
+          id,
+          error,
+        );
         return false;
       }
     };
@@ -231,7 +235,7 @@ export const notificationsJob: Job = {
 
     if (progress.retryQueue.length > 0) {
       verboseLog(
-        `[Notifications job] Processing ${Math.min(progress.retryQueue.length, 3)} items from retry queue`,
+        `[BetterSEQTA+] Notifications job: Processing ${Math.min(progress.retryQueue.length, 3)} items from retry queue`,
       );
 
       const retryBatch = progress.retryQueue.slice(0, 3);
@@ -262,7 +266,7 @@ export const notificationsJob: Job = {
           }
         } catch (error) {
           console.error(
-            `[Notifications job] Retry failed for notification ${notificationId}:`,
+            `[BetterSEQTA+] Notifications job: Retry failed for notification ${notificationId}:`,
             error,
           );
           progress.failedRequests++;
@@ -302,7 +306,11 @@ export const notificationsJob: Job = {
           }
         }
       } catch (error) {
-        console.error("[Notifications job] Failed to process notification:", id, error);
+        console.error(
+          "[BetterSEQTA+] Notifications job: Failed to process notification:",
+          id,
+          error,
+        );
 
         if (progress.retryQueue.length < 10) {
           progress.retryQueue.push(notif.notificationID);
@@ -324,11 +332,14 @@ export const notificationsJob: Job = {
           await vectorWorker.streamItems([...itemsToStream]);
           itemsStreamedToVector += itemsToStream.length;
           verboseLog(
-            `[Notifications job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
+            `[BetterSEQTA+] Notifications job: Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
           itemsToStream.length = 0;
         } catch (error) {
-          console.warn("[Notifications job] Failed to stream items to vector worker:", error);
+          console.warn(
+            "[BetterSEQTA+] Notifications job: Failed to stream items to vector worker:",
+            error,
+          );
         }
       }
 
@@ -342,7 +353,7 @@ export const notificationsJob: Job = {
             publishDynamicItemsUpdate(await loadAllStoredItems(), "notifications", items.length);
           } catch (error) {
             console.warn(
-              "[Notifications job] Failed to dispatch incremental search update:",
+              "[BetterSEQTA+] Notifications job: Failed to dispatch incremental search update:",
               error,
             );
           }
@@ -355,10 +366,13 @@ export const notificationsJob: Job = {
         await vectorWorker.streamItems([...itemsToStream]);
         itemsStreamedToVector += itemsToStream.length;
         verboseLog(
-          `[Notifications job] Streamed final ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
+          `[BetterSEQTA+] Notifications job: Streamed final ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
         );
       } catch (error) {
-        console.warn("[Notifications job] Failed to stream final items to vector worker:", error);
+        console.warn(
+          "[BetterSEQTA+] Notifications job: Failed to stream final items to vector worker:",
+          error,
+        );
       }
     }
 
@@ -366,11 +380,11 @@ export const notificationsJob: Job = {
       try {
         await vectorWorker.endStreamingSession();
         verboseLog(
-          `[Notifications job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
+          `[BetterSEQTA+] Notifications job: Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
         progress.streamingStarted = false;
       } catch (error) {
-        console.warn("[Notifications job] Failed to end streaming session:", error);
+        console.warn("[BetterSEQTA+] Notifications job: Failed to end streaming session:", error);
       }
     }
 
@@ -381,7 +395,7 @@ export const notificationsJob: Job = {
 
     await ctx.setProgress(progress);
     verboseLog(
-      `[Notifications job] Processed ${processedCount} notifications, ${progress.retryQueue.length} in retry queue, ${progress.failedRequests} failures, ${itemsStreamedToVector} items streamed to vector worker`,
+      `[BetterSEQTA+] Notifications job: Processed ${processedCount} notifications, ${progress.retryQueue.length} in retry queue, ${progress.failedRequests} failures, ${itemsStreamedToVector} items streamed to vector worker`,
     );
 
     return items;
@@ -453,7 +467,7 @@ async function processNotification(
 
     return { success: false };
   } catch (error) {
-    console.error("[Notifications job] Error processing notification:", id, error);
+    console.error("[BetterSEQTA+] Notifications job: Error processing notification:", id, error);
     return { success: false };
   }
 }

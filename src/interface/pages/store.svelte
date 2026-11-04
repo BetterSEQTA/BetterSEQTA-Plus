@@ -1,25 +1,29 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  
-  import CoverSwiper from '../components/store/CoverSwiper.svelte';
-  import ThemeGrid from '../components/store/ThemeGrid.svelte';
-  import SkeletonLoader from '../components/SkeletonLoader.svelte';
-  import type { Theme } from '../types/Theme'
-  import { visibleStoreThemes, buildCoverSlidesForThemes, normalizeStoreTheme } from '@/interface/utils/themeStoreFlavours'
-  import browser from '@/lib/browser'
-  import ThemeModal from '../components/store/ThemeModal.svelte'
-  import { themeUpdates } from '../hooks/ThemeUpdates'
-  import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
+  import { onMount } from "svelte";
 
-  import { loadBackground } from '@/seqta/ui/ImageBackgrounds'
-  import Backgrounds from '../components/store/Backgrounds.svelte'
-  import { cloudAuth } from '@/seqta/utils/CloudAuth'
-  import SignInToFavoriteModal from '../components/SignInToFavoriteModal.svelte'
-  import { getStoreInstalledThemeIds } from '@/interface/utils/themeListFilters'
-  import { consumePendingHighlightThemeId } from '@/seqta/utils/openThemeStoreWithHighlight'
+  import CoverSwiper from "../components/store/CoverSwiper.svelte";
+  import ThemeGrid from "../components/store/ThemeGrid.svelte";
+  import SkeletonLoader from "../components/SkeletonLoader.svelte";
+  import type { Theme } from "../types/theme";
+  import {
+    visibleStoreThemes,
+    buildCoverSlidesForThemes,
+    normalizeStoreTheme,
+  } from "@/interface/utils/themeStoreFlavours";
+  import browser from "@/lib/browser";
+  import ThemeModal from "../components/store/ThemeModal.svelte";
+  import { themeUpdates } from "../hooks/themeUpdates";
+  import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
+
+  import { loadBackground } from "@/seqta/ui/imageBackgrounds";
+  import Backgrounds from "../components/store/Backgrounds.svelte";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import SignInToFavoriteModal from "../components/SignInToFavoriteModal.svelte";
+  import { getStoreInstalledThemeIds } from "@/interface/utils/themeListFilters";
+  import { consumePendingHighlightThemeId } from "@/seqta/utils/openThemeStoreWithHighlight";
 
   const themeManager = ThemeManager.getInstance();
-  type StoreTab = 'themes' | 'backgrounds';
+  type StoreTab = "themes" | "backgrounds";
   let {
     activeTab,
     searchTerm,
@@ -38,7 +42,9 @@
   let cloudLoggedIn = $state(cloudAuth.state.isLoggedIn);
 
   $effect(() => {
-    const unsub = cloudAuth.subscribe((s) => { cloudLoggedIn = s.isLoggedIn; });
+    const unsub = cloudAuth.subscribe((s) => {
+      cloudLoggedIn = s.isLoggedIn;
+    });
     return unsub;
   });
 
@@ -52,9 +58,9 @@
   let loading = $state(true);
   let displayTheme = $state<Theme | null>(null);
   let currentThemes = $state<string[]>([]);
-  let selectedThemeId = $state('');
+  let selectedThemeId = $state("");
   let installedThemeColors = $state<Record<string, string>>({});
-  
+
   let error = $state<string | null>(null);
   let fetchAttempt = $state(0);
   let selectedBackground = $state<string | null>(null);
@@ -67,7 +73,15 @@
     return Promise.race([
       browser.runtime.sendMessage(message) as Promise<T>,
       new Promise<T>((_, reject) => {
-        setTimeout(() => reject(new Error('Theme store request timed out — reload the SEQTA page after updating the extension.')), FETCH_MESSAGE_TIMEOUT_MS);
+        setTimeout(
+          () =>
+            reject(
+              new Error(
+                "Theme store request timed out — reload the SEQTA page after updating the extension.",
+              ),
+            ),
+          FETCH_MESSAGE_TIMEOUT_MS,
+        );
       }),
     ]);
   }
@@ -75,7 +89,7 @@
   const fetchCurrentThemes = async () => {
     const themes = await themeManager.getAvailableThemes();
     currentThemes = getStoreInstalledThemeIds(themes);
-    selectedThemeId = themeManager.getSelectedThemeId() || '';
+    selectedThemeId = themeManager.getSelectedThemeId() || "";
     installedThemeColors = Object.fromEntries(
       themes
         .filter((theme) => theme != null && theme.installedFromStore === true)
@@ -86,7 +100,7 @@
   const setDisplayTheme = (theme: Theme | null) => {
     displayTheme = theme;
   };
-  
+
   /** Featured themes first; within each group, newest by `created_at` (API: Unix seconds). */
   function compareStoreThemes(a: Theme, b: Theme): number {
     const fa = a.featured === true ? 1 : 0;
@@ -102,16 +116,20 @@
     if (!cloudLoggedIn) return;
     const isFavorite = !theme.is_favorited;
     const result = (await browser.runtime.sendMessage({
-      type: 'cloudFavorite',
+      type: "cloudFavorite",
       themeId: theme.id,
-      action: isFavorite ? 'favorite' : 'unfavorite',
+      action: isFavorite ? "favorite" : "unfavorite",
     })) as { success?: boolean };
     if (result?.success) {
       const delta = isFavorite ? 1 : -1;
       themes = themes.map((t) =>
         t.id === theme.id
-          ? { ...t, is_favorited: isFavorite, favorite_count: Math.max(0, (t.favorite_count ?? 0) + delta) }
-          : t
+          ? {
+              ...t,
+              is_favorited: isFavorite,
+              favorite_count: Math.max(0, (t.favorite_count ?? 0) + delta),
+            }
+          : t,
       );
       if (displayTheme?.id === theme.id) {
         displayTheme = {
@@ -135,10 +153,10 @@
         data?: { themes: unknown[] };
         error?: string;
       }>({
-        type: 'fetchThemes',
+        type: "fetchThemes",
       });
       if (!data?.success || !Array.isArray(data?.data?.themes)) {
-        throw new Error(data?.error || 'Failed to fetch themes');
+        throw new Error(data?.error || "Failed to fetch themes");
       }
       themes = data.data.themes
         .map((row) => normalizeStoreTheme(row as Record<string, unknown>))
@@ -147,13 +165,13 @@
       error = null;
       loading = false;
     } catch (err) {
-      console.error('Failed to fetch themes', err);
+      console.error("Failed to fetch themes", err);
       fetchAttempt += 1;
       if (fetchAttempt >= MAX_FETCH_ATTEMPTS) {
         error =
           err instanceof Error
             ? err.message
-            : 'Could not load themes. Reload the SEQTA page, then open the store again.';
+            : "Could not load themes. Reload the SEQTA page, then open the store again.";
         loading = false;
         return;
       }
@@ -162,24 +180,25 @@
   };
 
   function focusThemeById(themeId: string) {
-    const match = themes.find((t) => t.id === themeId)
-      ?? themes.find((t) => t.flavours?.some((f) => f.id === themeId));
+    const match =
+      themes.find((t) => t.id === themeId) ??
+      themes.find((t) => t.flavours?.some((f) => f.id === themeId));
     if (match) {
-      setActiveTab('themes');
-      setSearchTerm('');
+      setActiveTab("themes");
+      setSearchTerm("");
       displayTheme = match;
     }
   }
 
   function onHighlightThemeEvent(e: Event) {
     const detail = (e as CustomEvent).detail;
-    if (detail?.themeId && typeof detail.themeId === 'string') {
+    if (detail?.themeId && typeof detail.themeId === "string") {
       focusThemeById(detail.themeId);
     }
   }
 
   onMount(() => {
-    window.addEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+    window.addEventListener("bsplus:highlight-theme", onHighlightThemeEvent);
     themeUpdates.addListener(fetchCurrentThemes);
 
     const load = async () => {
@@ -196,7 +215,7 @@
     }
 
     return () => {
-      window.removeEventListener('bsplus:highlight-theme', onHighlightThemeEvent);
+      window.removeEventListener("bsplus:highlight-theme", onHighlightThemeEvent);
       themeUpdates.removeListener(fetchCurrentThemes);
     };
   });
@@ -205,8 +224,8 @@
   let filteredThemes = $derived(
     listThemes.filter((theme) => {
       const q = searchTerm.toLowerCase();
-      const name = (theme.name ?? '').toLowerCase();
-      const description = (theme.description ?? '').toLowerCase();
+      const name = (theme.name ?? "").toLowerCase();
+      const description = (theme.description ?? "").toLowerCase();
       return name.includes(q) || description.includes(q);
     }),
   );
@@ -225,7 +244,9 @@
     await themeManager.setTheme(themeId);
     themeUpdates.triggerUpdate();
     await fetchCurrentThemes();
-    void browser.runtime.sendMessage({ type: 'cloudSettingsRequestDebouncedUpload' }).catch(() => {});
+    void browser.runtime
+      .sendMessage({ type: "cloudSettingsRequestDebouncedUpload" })
+      .catch(() => {});
   }
 
   async function removeThemeFromStore(themeId: string) {
@@ -238,7 +259,9 @@
     await themeManager.setTheme(themeId);
     selectedThemeId = themeId;
     themeUpdates.triggerUpdate();
-    void browser.runtime.sendMessage({ type: 'cloudSettingsRequestDebouncedUpload' }).catch(() => {});
+    void browser.runtime
+      .sendMessage({ type: "cloudSettingsRequestDebouncedUpload" })
+      .catch(() => {});
   }
 
   $effect(() => {
@@ -265,10 +288,10 @@
 </script>
 
 <div class="relative flex h-full min-h-0 flex-col overflow-hidden text-zinc-900 dark:text-white">
-    <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 dark:bg-zinc-900/40">
-      <div class={activeTab === 'backgrounds' ? 'h-full' : 'px-6 py-6 md:px-8 lg:px-10'}>
-        <!-- Loading State -->
-        {#if loading}
+  <main class="min-h-0 flex-1 overflow-y-auto bg-zinc-50/80 dark:bg-zinc-900/40">
+    <div class={activeTab === "backgrounds" ? "h-full" : "px-6 py-6 md:px-8 lg:px-10"}>
+      <!-- Loading State -->
+      {#if loading}
         <div class="grid grid-cols-1 gap-4 py-12 mx-auto sm:grid-cols-2 lg:grid-cols-3">
           {#each Array(6) as _, i (i)}
             <SkeletonLoader width="100%" height="200px" />
@@ -276,10 +299,13 @@
         </div>
       {:else if error}
         <div class="flex flex-col items-center justify-center py-24 text-center max-w-lg mx-auto">
-          <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Couldn&apos;t load themes</h2>
+          <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            Couldn&apos;t load themes
+          </h2>
           <p class="mt-3 text-zinc-600 dark:text-zinc-300">{error}</p>
           <p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
-            After an extension update, reload your SEQTA tab so the new version can talk to the browser.
+            After an extension update, reload your SEQTA tab so the new version can talk to the
+            browser.
           </p>
           <button
             type="button"
@@ -295,11 +321,11 @@
         </div>
       {:else}
         <!-- Themes Tab Content -->
-        {#if activeTab === 'themes'}
-          {#if searchTerm === ''}
+        {#if activeTab === "themes"}
+          {#if searchTerm === ""}
             <CoverSwiper slides={coverSlides} {setDisplayTheme} />
           {/if}
-    
+
           <!-- ThemeGrid to display filtered themes -->
           <ThemeGrid
             themes={filteredThemes}
@@ -311,10 +337,10 @@
             onRequestSignIn={() => (showSignInOverlay = true)}
             installedThemeIds={currentThemes}
           />
-    
+
           {#if displayTheme}
             <ThemeModal
-              currentThemes={currentThemes}
+              {currentThemes}
               allThemes={listThemes}
               allStoreThemeRows={themes}
               theme={displayTheme}
@@ -329,7 +355,7 @@
                 if (displayTheme) await installThemeFromStore(themeId, displayTheme);
               }}
               onRemove={async (themeId: string) => {
-                console.debug('deleting theme', themeId);
+                console.debug("deleting theme", themeId);
                 await removeThemeFromStore(themeId);
               }}
               onApply={async (themeId: string) => {
@@ -337,16 +363,16 @@
               }}
             />
           {/if}
-        {:else if activeTab === 'backgrounds'}
+        {:else if activeTab === "backgrounds"}
           <Backgrounds
             {searchTerm}
             selectedCategory={selectedBackgroundCategory}
             onCategoriesChange={setBackgroundCategories}
           />
         {/if}
-        {/if}
-      </div>
-    </main>
+      {/if}
+    </div>
+  </main>
 
   {#if showSignInOverlay}
     <SignInToFavoriteModal onClose={() => (showSignInOverlay = false)} />

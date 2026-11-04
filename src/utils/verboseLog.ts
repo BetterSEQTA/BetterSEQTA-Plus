@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 const VERBOSE_LOG_ATTR = "data-bsplus-verbose-log";
 

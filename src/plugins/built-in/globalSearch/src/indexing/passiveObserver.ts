@@ -320,7 +320,6 @@ function passiveEntityToIndexItem(
       observedAt: new Date(ctx.observedAt).toISOString(),
       entityType: category,
       entityId,
-      icon: "\ueb71",
       sourcePage,
       ...(isPeopleSupport ? { supportRecord: true, priority: "low" } : {}),
       ...deepLinkHints,
@@ -368,7 +367,7 @@ async function persistItems(items: IndexItem[]): Promise<void> {
       await put(STORE_ID, item, item.id);
       pendingChangedItems.set(item.id, item);
     } catch (e) {
-      console.warn(`[Passive Observer] Failed to persist item ${item.id}:`, e);
+      console.warn(`[BetterSEQTA+] Passive Observer: Failed to persist item ${item.id}:`, e);
     }
   }
 
@@ -417,7 +416,7 @@ async function flushDynamicItems(): Promise<void> {
       }),
     );
   } catch (e) {
-    console.warn("[Passive Observer] Failed to refresh dynamic items:", e);
+    console.warn("[BetterSEQTA+] Passive Observer: Failed to refresh dynamic items:", e);
   }
 }
 
@@ -509,7 +508,7 @@ export function installPassiveObserver(): void {
       }
     } catch (e) {
       // Never let observer errors bubble up to the host page.
-      verboseDebug("[Passive Observer] fetch hook error:", e);
+      verboseDebug("[BetterSEQTA+] Passive Observer: fetch hook error:", e);
     }
 
     return response;
@@ -561,7 +560,7 @@ export function installPassiveObserver(): void {
               if (payload === null) return;
               void handleCapturedPayload(route, parsed, payload);
             } catch (e) {
-              verboseDebug("[Passive Observer] xhr load error:", e);
+              verboseDebug("[BetterSEQTA+] Passive Observer: xhr load error:", e);
             }
           });
         }
@@ -572,7 +571,7 @@ export function installPassiveObserver(): void {
     };
   }
 
-  verboseDebug("[Passive Observer] Installed.");
+  verboseDebug("[BetterSEQTA+] Passive Observer: Installed.");
 }
 
 /**

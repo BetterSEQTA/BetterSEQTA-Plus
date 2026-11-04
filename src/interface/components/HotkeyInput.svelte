@@ -1,9 +1,15 @@
 <script lang="ts">
-  import { isValidHotkey, parseHotkey } from '@/plugins/built-in/globalSearch/src/utils/hotkeyUtils';
+  import {
+    isValidHotkey,
+    parseHotkey,
+  } from "@/plugins/built-in/globalSearch/src/utils/hotkeyUtils";
 
-  let { value, onChange }: { 
-    value: string, 
-    onChange: (newValue: string) => void 
+  let {
+    value,
+    onChange,
+  }: {
+    value: string;
+    onChange: (newValue: string) => void;
   } = $props();
 
   let isRecording = $state(false);
@@ -13,43 +19,43 @@
   const formatKeyForHotkey = (key: string): string => {
     // Map special keys to their hotkey format
     const keyMap: Record<string, string> = {
-      'Control': 'ctrl',
-      'Meta': 'cmd',
-      'Alt': 'alt',
-      'Shift': 'shift',
-      ' ': 'space',
-      'ArrowUp': 'up',
-      'ArrowDown': 'down',
-      'ArrowLeft': 'left',
-      'ArrowRight': 'right',
-      'Escape': 'esc',
-      'Enter': 'enter',
-      'Tab': 'tab',
-      'Backspace': 'backspace',
-      'Delete': 'delete',
+      Control: "ctrl",
+      Meta: "cmd",
+      Alt: "alt",
+      Shift: "shift",
+      " ": "space",
+      ArrowUp: "up",
+      ArrowDown: "down",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      Escape: "esc",
+      Enter: "enter",
+      Tab: "tab",
+      Backspace: "backspace",
+      Delete: "delete",
     };
 
     return keyMap[key] || key.toLowerCase();
   };
 
   const formatKeyForDisplay = (key: string): string => {
-    const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+    const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
     const keyMap: Record<string, string> = {
-      'ctrl': isMac ? '⌃' : 'Ctrl',
-      'cmd': '⌘',
-      'meta': '⌘',
-      'alt': isMac ? '⌥' : 'Alt',
-      'shift': isMac ? '⇧' : 'Shift',
-      'space': 'Space',
-      'up': '↑',
-      'down': '↓',
-      'left': '←',
-      'right': '→',
-      'esc': 'Esc',
-      'enter': 'Enter',
-      'tab': 'Tab',
-      'backspace': 'Backspace',
-      'delete': 'Delete',
+      ctrl: isMac ? "⌃" : "Ctrl",
+      cmd: "⌘",
+      meta: "⌘",
+      alt: isMac ? "⌥" : "Alt",
+      shift: isMac ? "⇧" : "Shift",
+      space: "Space",
+      up: "↑",
+      down: "↓",
+      left: "←",
+      right: "→",
+      esc: "Esc",
+      enter: "Enter",
+      tab: "Tab",
+      backspace: "Backspace",
+      delete: "Delete",
     };
 
     return keyMap[key.toLowerCase()] || key.toUpperCase();
@@ -62,15 +68,15 @@
 
     const parsed = parseHotkey(hotkeyString);
     const parts: string[] = [];
-    
+
     // Add modifiers in a consistent order
-    if (parsed.ctrl) parts.push('ctrl');
-    if (parsed.meta) parts.push('cmd');
-    if (parsed.alt) parts.push('alt');
-    if (parsed.shift) parts.push('shift');
-    
+    if (parsed.ctrl) parts.push("ctrl");
+    if (parsed.meta) parts.push("cmd");
+    if (parsed.alt) parts.push("alt");
+    if (parsed.shift) parts.push("shift");
+
     if (parsed.key) parts.push(parsed.key);
-    
+
     return parts;
   };
 
@@ -82,8 +88,8 @@
 
   const stopRecording = () => {
     if (recordedKeys.size > 0) {
-      if (recordedKeys.has('esc')) {
-        onChange('');
+      if (recordedKeys.has("esc")) {
+        onChange("");
         isRecording = false;
         recordedKeys = new Set();
         inputElement?.blur();
@@ -91,10 +97,10 @@
       }
 
       const modifiers: string[] = [];
-      let mainKey = '';
+      let mainKey = "";
 
       for (const key of recordedKeys) {
-        if (['ctrl', 'cmd', 'alt', 'shift'].includes(key)) {
+        if (["ctrl", "cmd", "alt", "shift"].includes(key)) {
           modifiers.push(key);
         } else {
           mainKey = key;
@@ -102,13 +108,13 @@
       }
 
       if (mainKey) {
-        const hotkeyString = [...modifiers, mainKey].join('+');
+        const hotkeyString = [...modifiers, mainKey].join("+");
         if (isValidHotkey(hotkeyString)) {
           onChange(hotkeyString);
         }
       }
     }
-    
+
     isRecording = false;
     recordedKeys = new Set();
     inputElement?.blur();
@@ -122,24 +128,24 @@
 
   const handleKeyDown = (e: KeyboardEvent) => {
     if (!isRecording) return;
-    
+
     e.preventDefault();
     e.stopPropagation();
 
     const key = formatKeyForHotkey(e.key);
-    
-    if (e.ctrlKey) addRecordedKey('ctrl');
-    if (e.metaKey) addRecordedKey('cmd');
-    if (e.altKey) addRecordedKey('alt');
-    if (e.shiftKey) addRecordedKey('shift');
-    
+
+    if (e.ctrlKey) addRecordedKey("ctrl");
+    if (e.metaKey) addRecordedKey("cmd");
+    if (e.altKey) addRecordedKey("alt");
+    if (e.shiftKey) addRecordedKey("shift");
+
     // Add the main key (ignore modifier keys themselves)
-    if (!['ctrl', 'cmd', 'alt', 'shift'].includes(key)) {
+    if (!["ctrl", "cmd", "alt", "shift"].includes(key)) {
       addRecordedKey(key);
     }
 
     // Auto-stop recording if we have a main key
-    if (!['ctrl', 'cmd', 'alt', 'shift'].includes(key)) {
+    if (!["ctrl", "cmd", "alt", "shift"].includes(key)) {
       setTimeout(stopRecording, 100);
     }
   };
@@ -162,16 +168,18 @@
     }
   });
 
-  const hotkeyParts = $derived(isRecording 
-    ? Array.from(recordedKeys).map(formatKeyForDisplay)
-    : getHotkeyParts(value).map(formatKeyForDisplay));
+  const hotkeyParts = $derived(
+    isRecording
+      ? Array.from(recordedKeys).map(formatKeyForDisplay)
+      : getHotkeyParts(value).map(formatKeyForDisplay),
+  );
 </script>
 
 <div class="flex gap-2 items-center">
   <div class="relative">
     {#if isRecording}
       <!-- Recording state -->
-      <div 
+      <div
         class="flex items-center justify-center px-3 py-1.5 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30 dark:text-white border cursor-pointer text-nowrap"
         onclick={startRecording}
         onkeydown={startRecording}
@@ -182,7 +190,7 @@
       </div>
     {:else if hotkeyParts.length > 0}
       <!-- Display current hotkey -->
-      <div 
+      <div
         class="flex gap-1 items-center text-sm rounded-md border-none cursor-pointer dark:text-white"
         onclick={startRecording}
         onkeydown={startRecording}
@@ -190,14 +198,16 @@
         tabindex="0"
       >
         {#each hotkeyParts as part}
-          <div class="size-8 text-sm flex items-center justify-center rounded-md border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30">
+          <div
+            class="size-8 text-sm flex items-center justify-center rounded-md border dark:bg-[#38373D]/50 bg-[#DDDDDD]/50 border-[#DDDDDD]/30 dark:border-[#38373D]/30"
+          >
             {part}
           </div>
         {/each}
       </div>
     {:else}
       <!-- Empty state -->
-      <div 
+      <div
         class="flex items-center justify-center px-3 py-2 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD] dark:text-white border-none cursor-pointer text-nowrap"
         onclick={startRecording}
         onkeydown={startRecording}
@@ -225,4 +235,4 @@
   input:focus {
     outline: none;
   }
-</style> 
+</style>

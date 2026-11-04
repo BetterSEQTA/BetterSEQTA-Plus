@@ -4,7 +4,7 @@
   import QRCode from "qrcode";
   import Button from "./Button.svelte";
   import { portal } from "../utils/portal";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   let showQrModal = $state(false);
   let qrDataUrl = $state<string | null>(null);

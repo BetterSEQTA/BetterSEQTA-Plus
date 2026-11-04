@@ -27,7 +27,7 @@ export const forumsJob: Job = {
     try {
       list = await fetchForums();
     } catch (e) {
-      console.error("[Forums job] list fetch failed:", e);
+      console.error("[BetterSEQTA+] Forums job: list fetch failed:", e);
       return [];
     }
 

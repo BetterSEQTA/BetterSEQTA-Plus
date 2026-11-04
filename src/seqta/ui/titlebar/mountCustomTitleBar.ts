@@ -1,5 +1,5 @@
 import { mount, unmount } from "svelte";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";
 import { waitForSeqtaTitle } from "@/seqta/utils/waitForSeqtaShell";

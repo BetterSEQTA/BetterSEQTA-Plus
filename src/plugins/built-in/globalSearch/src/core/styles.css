@@ -60,7 +60,11 @@
   justify-content: center;
   flex: none;
   height: 32px;
-  border-radius: 0;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background-color: rgba(248, 250, 252, 0.94) !important;
+  color: #555 !important;
   cursor: pointer;
   transition:
     background-color 0.2s ease,
@@ -71,10 +75,12 @@
   user-select: none;
 
   svg {
+    color: #555;
     opacity: 0.8;
   }
 
   p {
+    color: #555 !important;
     display: flex;
     align-self: stretch;
     align-items: center;
@@ -82,23 +88,6 @@
     margin: 0 48px 0 8px;
     line-height: 1;
     font-weight: 400;
-  }
-}
-
-/* Light mode chip */
-.search-trigger {
-  border: 1px solid rgba(0, 0, 0, 0.1) !important;
-  border-bottom: none;
-  border-radius: 8px 8px 0 0;
-  background-color: rgba(248, 250, 252, 0.94) !important;
-  color: #555 !important;
-
-  p {
-    color: #555 !important;
-  }
-
-  svg {
-    color: #555;
   }
 }
 

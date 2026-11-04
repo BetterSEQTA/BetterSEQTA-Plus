@@ -1,7 +1,7 @@
 import { mount, unmount } from "svelte";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import { extractSolidColor } from "@/seqta/ui/colors/parseCssColor";
-import { ensureFontLoaded } from "@/seqta/ui/fonts/Manager";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
+import { copyPageTheme, resolvePageAccentColor } from "@/seqta/ui/colors/pageTheme";
+import { ensureFontLoaded } from "@/seqta/ui/fonts/fontManager";
 import { getFontPreset } from "@/seqta/ui/fonts/presets";
 import type { GoogleCalendarSyncProgress } from "@/seqta/utils/googleCalendar/types";
 import hostStyles from "./calendarSyncHost.css?inline";
@@ -32,25 +32,6 @@ export function syncProgressPercent(progress: GoogleCalendarSyncProgress | null)
 const CONTROLS_CLASS = "timetable-calendar-controls";
 const HOST_STYLE_ID = "bsplus-calendar-sync-host-styles";
 
-const THEME_CSS_VARS = [
-  "--better-main",
-  "--better-pale",
-  "--better-light",
-  "--text-color",
-  "--background-primary",
-  "--background-secondary",
-  "--text-primary",
-  "--theme-offset-bg",
-  "--better-sub",
-] as const;
-
-const ACCENT_CSS_VARS = [
-  "--better-main",
-  "--accent-color-value",
-  "--accentColor",
-  "--colour-betterseqta-blue",
-] as const;
-
 let currentApp: ReturnType<typeof mount> | null = null;
 
 export function portalToBody(node: HTMLElement) {
@@ -78,28 +59,8 @@ export function syncCalendarSyncTheme(target: HTMLElement): void {
   ensureFontLoaded(fontPreset);
   target.style.setProperty("--bsplus-cal-font-family", fontPreset.stack);
 
-  for (const name of THEME_CSS_VARS) {
-    const value =
-      document.documentElement.style.getPropertyValue(name).trim() ||
-      computed.getPropertyValue(name).trim();
-    if (value) target.style.setProperty(name, value);
-  }
-
-  let accent = "#3b82f6";
-  for (const name of ACCENT_CSS_VARS) {
-    const solid = extractSolidColor(computed.getPropertyValue(name));
-    if (solid) {
-      accent = solid;
-      break;
-    }
-  }
-  if (accent === "#3b82f6") {
-    const fromSettings = settingsState.selectedColor?.trim();
-    if (fromSettings) {
-      const solid = extractSolidColor(fromSettings);
-      if (solid) accent = solid;
-    }
-  }
+  copyPageTheme(target);
+  const accent = resolvePageAccentColor("#3b82f6");
   target.style.setProperty("--bsplus-cal-accent", accent);
   target.style.setProperty("--better-main", accent);
   target.classList.toggle("dark", dark);

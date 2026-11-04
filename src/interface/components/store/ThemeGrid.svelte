@@ -1,6 +1,6 @@
 <script lang="ts">
-  import type { Theme } from '@/interface/types/Theme'
-  import ThemeCard from './ThemeCard.svelte';
+  import type { Theme } from "@/interface/types/theme";
+  import ThemeCard from "./ThemeCard.svelte";
 
   let {
     themes,
@@ -11,7 +11,7 @@
     onRequestSignIn,
     allStoreThemeRows,
     installedThemeIds = [],
-    variant = 'official',
+    variant = "official",
   }: {
     themes: Theme[];
     searchTerm: string;
@@ -22,17 +22,19 @@
     /** Raw API list (includes `slave` rows) for master download aggregation */
     allStoreThemeRows?: Theme[];
     installedThemeIds?: string[];
-    variant?: 'official' | 'community';
+    variant?: "official" | "community";
   } = $props();
-  
-  let filteredThemes = $derived(themes.filter((theme: Theme) => {
-    const q = searchTerm.toLowerCase();
-    const name = (theme.name ?? '').toLowerCase();
-    const description = (theme.description ?? '').toLowerCase();
-    return name.includes(q) || description.includes(q);
-  }));
 
-  const isCommunity = $derived(variant === 'community');
+  let filteredThemes = $derived(
+    themes.filter((theme: Theme) => {
+      const q = searchTerm.toLowerCase();
+      const name = (theme.name ?? "").toLowerCase();
+      const description = (theme.description ?? "").toLowerCase();
+      return name.includes(q) || description.includes(q);
+    }),
+  );
+
+  const isCommunity = $derived(variant === "community");
 </script>
 
 <div class="relative">
@@ -64,7 +66,9 @@
     </div>
   {:else}
     <div class="absolute top-0 flex h-96 w-full flex-col items-center justify-center text-center">
-      <h1 class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl">
+      <h1
+        class="mt-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl"
+      >
         That doesn't exist! 😭😭😭
       </h1>
       <p class="mt-6 text-lg leading-7 text-zinc-600 dark:text-zinc-300">

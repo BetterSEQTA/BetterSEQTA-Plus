@@ -6,10 +6,10 @@
   import SidebarAppearance from "@/interface/components/SidebarAppearance.svelte";
   import SettingRow from "../SettingRow.svelte";
   import PluginSettingsBlocks from "../PluginSettingsBlocks.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
-  import type { SettingsList } from "@/interface/types/SettingsProps";
+  import type { SettingsList } from "@/interface/types/settingsProps";
 
   let {
     showColourPicker,
@@ -21,26 +21,9 @@
   const isEngage = isSeqtaEngageExperience();
 </script>
 
-{#if matchesSearch(searchQuery, "Custom Theme Colour", "Interface Font", "Customise the overall theme colour of SEQTA Learn", "Choose the typeface used across SEQTA Learn")}
+{#if matchesSearch(searchQuery, "Custom Theme Colour", "Interface Font", "Theme of the Month", "Customise the overall theme colour of SEQTA Learn", "Choose the typeface used across SEQTA Learn", "Show the monthly featured theme popup when a new entry is available")}
   <SettingsCard class="divide-y divide-zinc-200/60 dark:divide-zinc-700/40">
-    {#each (
-      [
-        {
-          title: "Custom Theme Colour",
-          description: "Customise the overall theme colour of SEQTA Learn",
-          id: 4,
-          Component: PickerSwatch,
-          props: { onClick: showColourPicker },
-        },
-        {
-          title: "Interface Font",
-          description: "Choose the typeface used across SEQTA Learn",
-          id: 16,
-          Component: Button,
-          props: { onClick: showFontPicker, text: "Change" },
-        },
-      ] as unknown as SettingsList[]
-    ) as option (option.id)}
+    {#each [{ title: "Custom Theme Colour", description: "Customise the overall theme colour of SEQTA Learn", id: 4, Component: PickerSwatch, props: { onClick: showColourPicker } }, { title: "Interface Font", description: "Choose the typeface used across SEQTA Learn", id: 16, Component: Button, props: { onClick: showFontPicker, text: "Change" } }, { title: "Theme of the Month", description: "Show the monthly featured theme popup when a new entry is available", id: 15, Component: Switch, props: { state: !($settingsState.themeOfTheMonthDisabled ?? false), onChange: (isOn: boolean) => (settingsState.themeOfTheMonthDisabled = !isOn) } }] as unknown as SettingsList[] as option (option.id)}
       <SettingRow {...option} {searchQuery} />
     {/each}
   </SettingsCard>
@@ -50,7 +33,7 @@
   <SidebarAppearance {searchQuery} />
 {/if}
 
-{#if matchesSearch(searchQuery, "Adaptive Theme Colour", "Soft Gradient", "Smooth colour transition")}
+{#if matchesSearch(searchQuery, "Adaptive Theme Colour", "Soft Gradient", "Smooth Colour Transition")}
   <SettingsCard>
     <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">
@@ -88,7 +71,7 @@
         class="flex justify-between items-center px-4 py-3 pl-6 border-t border-zinc-100 dark:border-zinc-700/50"
       >
         <div class="pr-4">
-          <h2 class="text-sm font-bold">Smooth colour transition</h2>
+          <h2 class="text-sm font-bold">Smooth Colour Transition</h2>
           <p class="text-xs text-zinc-600 dark:text-zinc-300">
             Ease between class/subject colours when navigating instead of switching instantly
           </p>

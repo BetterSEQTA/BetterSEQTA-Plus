@@ -1,5 +1,5 @@
 <script lang="ts">
-import type { Theme } from '@/interface/types/Theme'
+import type { Theme } from '@/interface/types/theme'
 import { fade } from 'svelte/transition'
 import { animate } from 'motion'
 import emblaCarouselSvelte from 'embla-carousel-svelte'

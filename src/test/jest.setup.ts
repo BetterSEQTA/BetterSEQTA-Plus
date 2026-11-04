@@ -12,7 +12,7 @@ if (typeof globalThis.CSS === "undefined") {
 }
 
 // requestAnimationFrame / cancelAnimationFrame polyfill
-// SettingsState.ts calls requestAnimationFrame to batch subscriber
+// settingsState.ts calls requestAnimationFrame to batch subscriber
 // notifications, but that API doesn't exist under the Node test
 // environment. This provides a minimal setTimeout-based stand-in.
 if (typeof globalThis.requestAnimationFrame === "undefined") {

@@ -1,5 +1,5 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
-import { openPopup } from "@/seqta/utils/openers/PopupManager";
+import { openPopup } from "@/seqta/utils/openers/popupManager";
 
 /** Grade Analytics privacy — uses the shared BetterSEQTA+ whatsnew popup shell. */
 export function openAnalyticsPrivacyPopup() {

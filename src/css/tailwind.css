@@ -26,11 +26,11 @@
   --text-13xl: 16rem;
   --text-14xl: 18rem;
 
-  --font-IconFamily: IconFamily;
-
   --animate-spin-fast: spin 0.4s linear infinite;
 
   --aspect-theme: 5 / 1;
+
+  --font-IconFamily: IconFamily;
 }
 
 @layer base {
@@ -44,5 +44,29 @@
 
   button {
     cursor: pointer;
+  }
+
+  :root,
+  :host {
+    --bsplus-focus-ring: 2px solid var(--color-zinc-900);
+  }
+
+  .dark {
+    --bsplus-focus-ring: 2px solid var(--color-white);
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    box-shadow: none !important;
+  }
+
+  :focus-visible,
+  input:focus-visible,
+  [type]:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: var(--bsplus-focus-ring);
+    outline-offset: 2px;
   }
 }

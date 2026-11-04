@@ -6,9 +6,9 @@ import {
   insertMenuItemAfterKey,
 } from "@/seqta/utils/openers/analyticsMenuOrder";
 import { processMenuItemNode } from "@/seqta/utils/sidebarMenuIcons";
-import { ChangeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
+import { changeMenuItemPositions } from "@/seqta/utils/openers/menuOrder";
 import { isMenuOptionsOpen } from "@/seqta/utils/openers/menuOptionsState";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { applyMenuItemVisibility } from "@/seqta/utils/menuItemVisibility";
 import { getNativeMenuList } from "@/seqta/ui/sidebar/parseNativeMenu";
@@ -17,6 +17,8 @@ import { rafThrottle } from "@/seqta/utils/rafThrottle";
 const ANALYTICS_MENU_ICON = MenuitemSVGKey.analytics;
 export const ANALYTICS_MENU_CLASS = "betterseqta-grade-analytics-item";
 export const ANALYTICS_MENU_KEY = "analytics";
+
+export const isAnalyticsRoute = () => location.hash.startsWith("#?page=/analytics");
 
 function loadAnalyticsPageLazy() {
   void import("./loadAnalyticsPage").then((m) => m.loadAnalyticsPage());
@@ -70,7 +72,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
 
     ensureAnalyticsMenuOrder();
     if (settingsState.menuorder.length > 0) {
-      ChangeMenuItemPositions(settingsState.menuorder);
+      changeMenuItemPositions(settingsState.menuorder);
     }
     processMenuItemNode(analyticsItem);
     applyMenuItemVisibility();
@@ -96,8 +98,7 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
     ) {
       return;
     }
-    e.preventDefault();
-    window.history.pushState({}, "", "/#?page=/analytics");
+    if (!isAnalyticsRoute()) location.hash = "?page=/analytics";
     loadAnalyticsPageLazy();
   };
   analyticsItem.addEventListener("click", onClick);
@@ -106,5 +107,6 @@ export async function injectAnalyticsMenuItem(): Promise<() => void> {
     menuObserver.disconnect();
     analyticsItem.removeEventListener("click", onClick);
     analyticsItem.remove();
+    if (isAnalyticsRoute()) void import("./ui").then((m) => m.unmountAnalyticsPage());
   };
 }

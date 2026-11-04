@@ -1,5 +1,5 @@
 import localforage from "localforage";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 
 const ACCOUNTS_BASE = "https://accounts.betterseqta.org";
 
@@ -81,13 +81,8 @@ export async function clearCloudPfpCache(userId?: string): Promise<void> {
   await clearLocal(id);
 }
 
-export type ResolveCloudPfpResult = {
-  src: string;
-  fromCache: boolean;
-};
-
-function cachedBlobUrl(blob: Blob): ResolveCloudPfpResult {
-  return { src: URL.createObjectURL(blob), fromCache: true };
+export function revokePfpUrl(url: string | null | undefined): void {
+  if (url?.startsWith("blob:")) URL.revokeObjectURL(url);
 }
 
 function sessionPfpHash(viewerId: string | null, userId: string): string | null {
@@ -99,11 +94,11 @@ function localHashHit(
   serverHash: string | null | undefined,
   localHash: string | null | undefined,
   localBlob: Blob | null | undefined,
-): ResolveCloudPfpResult | null {
+): string | null {
   if (!serverHash || serverHash !== localHash || !(localBlob instanceof Blob)) {
     return null;
   }
-  return cachedBlobUrl(localBlob);
+  return URL.createObjectURL(localBlob);
 }
 
 async function fetchAndCachePfp(
@@ -112,7 +107,7 @@ async function fetchAndCachePfp(
   serverHash: string,
   localHash: string | null | undefined,
   localBlob: Blob | null | undefined,
-): Promise<ResolveCloudPfpResult | null> {
+): Promise<string | null> {
   const imageUrl = pfpUrlWithHash(pfpUrl, serverHash);
   const headers: HeadersInit = {};
   if (localHash) {
@@ -126,27 +121,22 @@ async function fetchAndCachePfp(
   const res = await fetch(imageUrl, { headers });
   if (res.status === 304 && localBlob instanceof Blob) {
     await store.setItem(hashKey(userId), serverHash);
-    return cachedBlobUrl(localBlob);
+    return URL.createObjectURL(localBlob);
   }
   if (!res.ok) return null;
 
   const blob = await res.blob();
   await store.setItem(blobKey(userId), blob);
   await store.setItem(hashKey(userId), serverHash);
-  return { src: URL.createObjectURL(blob), fromCache: false };
+  return URL.createObjectURL(blob);
 }
 
 /**
  * Returns an object URL or direct URL for the cloud profile picture.
  * Order: session hash match → local blob; else meta → download → store blob then hash.
  */
-export async function resolveCloudPfp(
-  userId: string,
-  pfpUrl: string,
-): Promise<ResolveCloudPfpResult | null> {
-  if (!isAccountsHostedPfpUrl(pfpUrl)) {
-    return { src: pfpUrl, fromCache: false };
-  }
+export async function resolveCloudPfp(userId: string, pfpUrl: string): Promise<string | null> {
+  if (!isAccountsHostedPfpUrl(pfpUrl)) return pfpUrl;
 
   const viewerId = cloudAuth.state.user?.id ?? null;
   const localHash = await store.getItem<string>(hashKey(userId));

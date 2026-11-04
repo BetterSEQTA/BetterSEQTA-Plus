@@ -264,7 +264,7 @@ export async function seqtaFetchJson<T = unknown>(
 
         if (json.status && json.status !== "200") {
           console.warn(
-            `[Global Search API] Non-200 SEQTA status "${json.status}" for ${route} — returning payload anyway`,
+            `[BetterSEQTA+] Global Search API: Non-200 SEQTA status "${json.status}" for ${route} — returning payload anyway`,
           );
         }
 
@@ -302,7 +302,10 @@ export async function seqtaFetchPayload<T = unknown>(
     const res = await seqtaFetchJson<T>(path, body, options);
     return res.payload ?? null;
   } catch (e) {
-    console.warn(`[Global Search API] Request to ${normalizeSeqtaPath(path)} failed:`, e);
+    console.warn(
+      `[BetterSEQTA+] Global Search API: Request to ${normalizeSeqtaPath(path)} failed:`,
+      e,
+    );
     return null;
   }
 }

@@ -11,7 +11,10 @@
     props?: Record<string, unknown>;
   };
 
-  let { tabs, activeTab = $bindable(0) }: {
+  let {
+    tabs,
+    activeTab = $bindable(0),
+  }: {
     tabs: TabDef[];
     activeTab?: number;
   } = $props();
@@ -28,7 +31,10 @@
 </script>
 
 <div class="flex flex-col h-full min-h-0">
-  <div class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container" role="tablist">
+  <div
+    class="top-0 z-10 shrink-0 text-[0.875rem] pb-0.5 mx-4 px-2 tab-width-container"
+    role="tablist"
+  >
     <div class="flex relative">
       <div
         class="absolute top-0 left-0 z-0 h-full bg-linear-to-tr dark:from-[#38373D]/80 dark:to-[#38373D] from-[#DDDDDD]/80 to-[#DDDDDD] rounded-full opacity-40 tab-width"
@@ -38,7 +44,7 @@
         <button
           role="tab"
           aria-selected={activeTab === index}
-          class="relative z-10 flex-1 px-4 py-2 focus-visible:outline-hidden"
+          class="relative z-10 flex-1 px-4 py-2"
           onclick={() => (activeTab = index)}
         >
           {title}
@@ -55,7 +61,7 @@
       {#if activeTab === index}
         <div
           role="tabpanel"
-          class="focus:outline-hidden w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
+          class="w-full h-full min-h-0 pt-2 overflow-y-auto no-scrollbar pb-6 tab active relative"
         >
           {#if tab.loader}
             <LazyPanel loader={tab.loader} props={tab.props} />
@@ -70,6 +76,8 @@
 
 <style>
   @media (prefers-reduced-motion: reduce) {
-    .tab-width { transition: none !important; }
+    .tab-width {
+      transition: none !important;
+    }
   }
 </style>

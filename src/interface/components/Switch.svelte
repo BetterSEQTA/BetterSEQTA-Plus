@@ -1,15 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { standalone } from '../utils/standalone.svelte';
-  import { fullMotionEffectsEnabled } from '@/seqta/utils/performanceMode';
+  import { standalone } from "../utils/standalone.svelte";
+  import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 
-  let { state: checked, onChange }: { state: boolean, onChange: (newState: boolean) => void } = $props();
+  let { state: checked, onChange }: { state: boolean; onChange: (newState: boolean) => void } =
+    $props();
 
   let motionReady = $state(false);
   onMount(() => {
     // Paint the hydrated position before enabling transitions for later toggles.
     let frame = requestAnimationFrame(() => {
-      frame = requestAnimationFrame(() => { motionReady = true; });
+      frame = requestAnimationFrame(() => {
+        motionReady = true;
+      });
     });
     return () => cancelAnimationFrame(frame);
   });
@@ -18,7 +21,9 @@
 </script>
 
 <div
-  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-linear-to-tr select-none shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30 {checked ? 'to-[#30D259]/80 from-[#30D259] dark:from-[#30D259]/40 dark:to-[#30D259]' : 'dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD]'}"
+  class="flex w-14 p-1 cursor-pointer transition-all duration-150 rounded-full bg-linear-to-tr select-none shadow-2xl ring-[1px] ring-[#DDDDDD]/30 dark:ring-[#38373D]/30 {checked
+    ? 'to-[#30D259]/80 from-[#30D259] dark:from-[#30D259]/40 dark:to-[#30D259]'
+    : 'dark:from-[#38373D]/50 dark:to-[#38373D] to-[#DDDDDD]/50 from-[#DDDDDD]'}"
   onclick={() => onChange(!checked)}
   onkeydown={(e) => e.key === "Enter" && onChange(!checked)}
   role="switch"
@@ -33,6 +38,8 @@
 
 <style>
   @media (prefers-reduced-motion: reduce) {
-    [role="switch"] > div { transition: none !important; }
+    [role="switch"] > div {
+      transition: none !important;
+    }
   }
 </style>

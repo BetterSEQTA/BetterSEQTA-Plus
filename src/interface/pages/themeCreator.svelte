@@ -6,9 +6,9 @@
   import {
     type LoadedCustomTheme,
     shouldForceThemeAppearance,
-  } from '@/types/CustomThemes'
+  } from '@/types/customThemes'
 
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import { settingsState } from '@/seqta/utils/listeners/settingsState'
 
   import Divider from '@/interface/components/themeCreator/divider.svelte'
   import Switch from '@/interface/components/Switch.svelte'
@@ -23,16 +23,16 @@
     handleImageVariableChange,
   } from '../utils/themeImageHandlers';
   import { ThemeManager } from '@/plugins/built-in/themes/theme-manager'
-  import { themeUpdates } from '../hooks/ThemeUpdates'
-  import { CloseThemeCreator } from '@/plugins/built-in/themes/ThemeCreator'
+  import { themeUpdates } from '../hooks/themeUpdates'
+  import { closeThemeCreator } from '@/plugins/built-in/themes/themeCreator'
   import { submitLocalThemeToCommunity } from '@/seqta/utils/customThemes/submitLocalTheme'
   import { formatCustomThemeApiError } from '@/seqta/utils/customThemes/apiErrors'
-  import { cloudAuth } from '@/seqta/utils/CloudAuth'
+  import { cloudAuth } from '@/seqta/utils/cloudAuth'
   import LucideMoon from '@/interface/components/icons/LucideMoon.svelte'
   import LucideSun from '@/interface/components/icons/LucideSun.svelte'
   import SidebarAppearance from '@/interface/components/SidebarAppearance.svelte'
   import { FONT_PRESETS, DEFAULT_FONT_ID } from '@/seqta/ui/fonts/presets'
-  import { applySelectedFont, ensureFontPickerFontsLoaded } from '@/seqta/ui/fonts/Manager'
+  import { applySelectedFont, ensureFontPickerFontsLoaded } from '@/seqta/ui/fonts/fontManager'
   import {
     applySidebarSettings,
     defaultThemeCreatorMeta,
@@ -41,7 +41,7 @@
   } from '@/interface/utils/themeCreatorMeta'
   import { ensureThemeCoverImage } from '@/interface/utils/themePlaceholderCover'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
-  import type { ThemeCreatorMeta } from '@/types/CustomThemes'
+  import type { ThemeCreatorMeta } from '@/types/customThemes'
 
   const { themeID }: { themeID: string } = $props()
   const themeManager = ThemeManager.getInstance();
@@ -242,7 +242,7 @@
     await themeManager.saveTheme(themeClone);
     await themeManager.setTheme(themeClone.id);
     themeUpdates.triggerUpdate();
-    await CloseThemeCreator({ restoreTheme: false });
+    await closeThemeCreator({ restoreTheme: false });
   }
 
   async function submitThemeToCommunity() {
@@ -263,7 +263,7 @@
       await themeManager.setTheme(themeClone.id);
       await submitLocalThemeToCommunity(themeClone, theme.description?.trim() || undefined);
       themeUpdates.triggerUpdate();
-      await CloseThemeCreator({ restoreTheme: false });
+      await closeThemeCreator({ restoreTheme: false });
     } catch (err) {
       communityError = formatCustomThemeApiError(err);
     } finally {
@@ -443,7 +443,7 @@
         type="button"
         class="rounded-lg p-2 text-zinc-500 transition hover:bg-zinc-200 dark:hover:bg-zinc-700"
         aria-label="Close theme creator"
-        onclick={() => void CloseThemeCreator()}
+        onclick={() => void closeThemeCreator()}
       >
         ✕
       </button>

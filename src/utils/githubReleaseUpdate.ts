@@ -1,6 +1,6 @@
 import semver from "semver";
 import browser from "@/lib/browser";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 const CHECK_THROTTLE_MS = 6 * 60 * 60 * 1000;
 const LAST_CHECK_KEY = "bsplus_lastGhReleaseCheck";

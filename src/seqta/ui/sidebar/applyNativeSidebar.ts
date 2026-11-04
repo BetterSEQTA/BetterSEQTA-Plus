@@ -1,5 +1,5 @@
 import type { SettingsState } from "@/types/storage";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import { applySidebarLook, applySidebarStyleClass, clearSidebarAppearance } from "./sidebarStyles";

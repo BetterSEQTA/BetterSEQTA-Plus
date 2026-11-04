@@ -168,14 +168,13 @@ export const noticesJob: Job = {
               timestamp: date,
               entityType: "notice",
               route: "/notices",
-              icon: "\ueb24",
             },
             actionId: "notice",
             renderComponentId: "notice",
           });
         }
       } catch (e) {
-        console.warn(`[Notices job] Failed to fetch notices for ${date}:`, e);
+        console.warn(`[BetterSEQTA+] Notices job: Failed to fetch notices for ${date}:`, e);
       }
       await delay(FETCH_DELAY_MS);
     }
@@ -196,7 +195,7 @@ export const noticesJob: Job = {
 
     const newCount = items.filter((i) => !existingIds.has(i.id)).length;
     verboseDebug(
-      `[Notices job] Indexed ${items.length} notices across ${dates.length} dates (${newCount} new).`,
+      `[BetterSEQTA+] Notices job: Indexed ${items.length} notices across ${dates.length} dates (${newCount} new).`,
     );
     return items;
   },

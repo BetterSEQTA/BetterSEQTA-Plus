@@ -233,9 +233,9 @@
     box-shadow 0.2s ease;
 }
 
-.bsplus-folder-input input:focus {
-  border-color: var(--better-main, #007bff);
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+.bsplus-folder-input input:focus-visible {
+  outline: var(--bsplus-focus-ring) !important;
+  outline-offset: 2px;
 }
 
 .bsplus-folder-icon-btn {
@@ -537,20 +537,6 @@
   height: 16px;
   stroke: currentColor;
   fill: none;
-}
-
-.bsplus-context-item:hover {
-  background: var(--theme-offset-bg-more, rgba(128, 128, 128, 0.08));
-}
-
-.bsplus-context-item span {
-  flex: 1;
-}
-
-.bsplus-context-checkmark {
-  color: var(--better-main, #007bff) !important;
-  font-weight: bold;
-  flex: 0 !important;
 }
 
 .bsplus-context-empty {

@@ -9,7 +9,7 @@ Exhaustive reference for every value that **is** or **would be** included in a B
 - Auto-sync (debounce, poll, triggers): `src/background/cloudSettingsAutoSync.ts`
 - Core defaults: `src/seqta/utils/defaultSettings.ts`
 - Full-schema initializer: `src/seqta/utils/ensureSyncableStorageDefaults.ts`
-- In-memory settings + persistence: `src/seqta/utils/listeners/SettingsState.ts`
+- In-memory settings + persistence: `src/seqta/utils/listeners/settingsState.ts`
 - Type definitions: `src/types/storage.ts`
 
 ---
@@ -488,13 +488,13 @@ Keys (from `SettingsState`):
 
 #### `shortcuts`
 
-|                |                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------- |
-| **Type**       | `array`                                                                               |
-| **Default**    | Outlook, Office, Google — each `enabled: true`                                        |
-| **UI**         | Settings → Shortcuts                                                                  |
-| **Item shape** | `{ "name": string, "enabled": boolean }`                                              |
-| **Notes**      | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"YouTube"`) |
+|                |                                                                                      |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Type**       | `array`                                                                              |
+| **Default**    | Outlook, Office, Google — each `enabled: true`                                       |
+| **UI**         | Settings → Shortcuts                                                                 |
+| **Item shape** | `{ "name": string, "enabled": boolean }`                                             |
+| **Notes**      | `name` matches keys in `src/seqta/content/links.json` (e.g. `"Outlook"`, `"Google"`) |
 
 **Example:**
 
@@ -1195,7 +1195,7 @@ Implementation: `ensureSyncableStorageDefaults()` + `getSyncableStorageDefaults(
 
 ### Settings persistence and live UI
 
-`SettingsState` (`src/seqta/utils/listeners/SettingsState.ts`):
+`SettingsState` (`src/seqta/utils/listeners/settingsState.ts`):
 
 - Assignments (`settingsState.foo = …`) and `setKey()` persist to `chrome.storage.local` and **notify registered listeners** in the same context (required for embedded SEQTA settings).
 - `saveToStorage()` omits `undefined` values so optional keys are not accidentally stripped.

@@ -1,7 +1,7 @@
 import type { SettingsState } from "@/types/storage";
 
 /** Reorder `#menu > ul` children to match a saved `menuorder` key list. */
-export function ChangeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
+export function changeMenuItemPositions(menuorder: SettingsState["menuorder"]) {
   const menuRoot = document.querySelector("#menu")?.firstChild;
   if (!menuRoot) return;
 

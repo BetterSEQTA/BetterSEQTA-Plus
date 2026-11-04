@@ -1,4 +1,4 @@
-import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState, settingsState } from "@/seqta/utils/listeners/settingsState";
 import documentLoadCSS from "@/css/documentload.scss?inline";
 import icon48 from "@/resources/icons/icon-48.png?base64";
 import browser from "@/lib/browser";
@@ -107,8 +107,8 @@ async function init() {
       if (settingsState.onoff !== false && !isPaused()) {
         await main();
 
-        const { init: Monofile } = await import("@/plugins/monofile");
-        Monofile();
+        const { init: initMonofile } = await import("@/plugins/monofile");
+        initMonofile();
 
         if (settingsState.onoff) {
           const { initializePlugins } = await import("@/plugins/index");

@@ -29,10 +29,7 @@
 
   const pageCount = $derived(Math.max(1, Math.ceil(sortedData.length / itemsPerPage)));
   const pageData = $derived(
-    sortedData.slice(
-      currentPage * itemsPerPage,
-      (currentPage + 1) * itemsPerPage,
-    ),
+    sortedData.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage),
   );
 
   $effect(() => {
@@ -55,14 +52,15 @@
   }
 
   function formatStatus(status: string) {
-    return status.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase());
+    return status
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (c) => c.toUpperCase());
   }
 
   function gradeDisplay(a: Assessment) {
     if (a.finalGrade !== undefined) {
-      const base = a.letterGrade
-        ? `${a.finalGrade}% (${a.letterGrade})`
-        : `${a.finalGrade}%`;
+      const base = a.letterGrade ? `${a.finalGrade}% (${a.letterGrade})` : `${a.finalGrade}%`;
       if (a.gradeSource === "criteriaRollup") return `${base} · est. from parts`;
       if (a.gradeSource === "customBand") return `${base} · custom band`;
       if (a.gradeSource === "defaultLetter") return `${base} · approx.`;
@@ -81,13 +79,7 @@
     <table class="bsplus-analytics-table">
       <thead>
         <tr>
-          {#each [
-            ["title", "Title"],
-            ["subject", "Subject"],
-            ["due", "Due"],
-            ["status", "Status"],
-            ["finalGrade", "Grade"],
-          ] as [col, label]}
+          {#each [["title", "Title"], ["subject", "Subject"], ["due", "Due"], ["status", "Status"], ["finalGrade", "Grade"]] as [col, label]}
             <th>
               <button type="button" onclick={() => toggleSort(col as keyof Assessment)}>
                 {label}
@@ -122,7 +114,10 @@
           </tr>
         {:else}
           <tr>
-            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--bsplus-analytics-muted)">
+            <td
+              colspan="5"
+              style="text-align: center; padding: 2rem; color: var(--bsplus-analytics-muted)"
+            >
               No assessments match your filters
             </td>
           </tr>

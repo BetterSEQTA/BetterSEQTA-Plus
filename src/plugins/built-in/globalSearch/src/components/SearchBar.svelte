@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
+  import { settingsState } from '@/seqta/utils/listeners/settingsState'
   import { fade, scale } from 'svelte/transition';
   import { circOut, quintOut } from 'svelte/easing';
   import { type StaticCommandItem } from '../core/commands';

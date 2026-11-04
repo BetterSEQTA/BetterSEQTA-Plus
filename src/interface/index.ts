@@ -1,25 +1,8 @@
 import Settings from "./pages/settings.svelte";
-import IconFamily from "@/resources/fonts/IconFamily.woff";
-import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
 import renderSvelte from "./main";
-import { initializeSettingsState } from "@/seqta/utils/listeners/SettingsState";
+import { initializeSettingsState } from "@/seqta/utils/listeners/settingsState";
 import { loadRemoteStatus } from "@/seqta/utils/remoteStatus";
 import { initVerboseLogging, verboseInfo } from "@/utils/verboseLog";
-
-function InjectCustomIcons() {
-  verboseInfo("[BetterSEQTA+] Injecting Icons");
-
-  const style = document.createElement("style");
-  style.setAttribute("type", "text/css");
-  style.innerHTML = `
-    @font-face {
-      font-family: 'IconFamily';
-      src: url('${resolveExtensionAssetUrl(IconFamily)}') format('woff');
-      font-weight: normal;
-      font-style: normal;
-    }`;
-  document.head.appendChild(style);
-}
 
 const mountPoint = document.getElementById("app");
 if (!mountPoint) {
@@ -28,8 +11,6 @@ if (!mountPoint) {
   // has `#app` — never throw on SEQTA tabs.
   verboseInfo("[BetterSEQTA+] Settings bootstrap skipped (no #app — not the settings page)");
 } else {
-  InjectCustomIcons();
-
   void (async () => {
     await initializeSettingsState();
     await loadRemoteStatus();

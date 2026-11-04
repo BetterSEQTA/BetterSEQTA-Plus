@@ -15,7 +15,7 @@ export function getCurrentVersion(): string {
   try {
     return browser.runtime.getManifest().version;
   } catch (e) {
-    console.warn("[Version Check] Failed to get manifest version:", e);
+    console.warn("[BetterSEQTA+] Version Check: Failed to get manifest version:", e);
     return "0.0.0";
   }
 }
@@ -24,7 +24,7 @@ export function getStoredVersion(): string | null {
   try {
     return localStorage.getItem(VERSION_STORAGE_KEY);
   } catch (e) {
-    console.warn("[Version Check] Failed to get stored version:", e);
+    console.warn("[BetterSEQTA+] Version Check: Failed to get stored version:", e);
     return null;
   }
 }
@@ -34,7 +34,7 @@ export function storeVersion(version: string): void {
     localStorage.setItem(VERSION_STORAGE_KEY, version);
     localStorage.setItem(VERSION_CACHE_KEY, version);
   } catch (e) {
-    console.warn("[Version Check] Failed to store version:", e);
+    console.warn("[BetterSEQTA+] Version Check: Failed to store version:", e);
   }
 }
 
@@ -47,7 +47,9 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
   const storedVersion = getStoredVersion();
 
   if (!storedVersion) {
-    verboseDebug(`[Version Check] First run detected, storing version ${currentVersion}`);
+    verboseDebug(
+      `[BetterSEQTA+] Version Check: First run detected, storing version ${currentVersion}`,
+    );
     storeVersion(currentVersion);
     return false;
   }
@@ -55,7 +57,7 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
   if (storedVersion === currentVersion) return false;
 
   verboseLog(
-    `[Version Check] Extension updated from ${storedVersion} to ${currentVersion}, resetting search index...`,
+    `[BetterSEQTA+] Version Check: Extension updated from ${storedVersion} to ${currentVersion}, resetting search index...`,
   );
 
   await clearAllCaches();
@@ -63,10 +65,10 @@ export async function checkAndHandleUpdate(): Promise<boolean> {
   try {
     await resetSearchIndexes();
     verboseLog(
-      "[Version Check] Search index reset; next indexing pass will repopulate from scratch.",
+      "[BetterSEQTA+] Version Check: Search index reset; next indexing pass will repopulate from scratch.",
     );
   } catch (e) {
-    console.warn("[Version Check] resetSearchIndexes failed:", e);
+    console.warn("[BetterSEQTA+] Version Check: resetSearchIndexes failed:", e);
   }
 
   storeVersion(currentVersion);
@@ -84,7 +86,7 @@ export async function clearAllCaches(): Promise<void> {
       try {
         clearSearchCache();
       } catch (e) {
-        verboseDebug("[Version Check] Could not clear search cache:", e);
+        verboseDebug("[BetterSEQTA+] Version Check: Could not clear search cache:", e);
       }
 
       try {
@@ -92,12 +94,12 @@ export async function clearAllCaches(): Promise<void> {
         clearEmbeddingCache();
       } catch (e) {
         if (!isAssetLoadError(e))
-          verboseDebug("[Version Check] Could not clear embedding cache:", e);
+          verboseDebug("[BetterSEQTA+] Version Check: Could not clear embedding cache:", e);
       }
     }, 50);
 
-    verboseDebug("[Version Check] All caches cleared");
+    verboseDebug("[BetterSEQTA+] Version Check: All caches cleared");
   } catch (e) {
-    console.error("[Version Check] Error clearing caches:", e);
+    console.error("[BetterSEQTA+] Version Check: Error clearing caches:", e);
   }
 }

@@ -1,5 +1,5 @@
 import { DEFAULT_FONT_ID, getFontPreset, type FontPreset } from "@/seqta/ui/fonts/presets";
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 
 export type ThemeBuilderDraft = {
   name: string;

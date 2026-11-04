@@ -85,7 +85,10 @@
     return $state.snapshot(model) as ColourValue;
   }
 
-  function withStops(m: ColourValue, update: (stops: GradientStop[]) => GradientStop[]): ColourValue {
+  function withStops(
+    m: ColourValue,
+    update: (stops: GradientStop[]) => GradientStop[],
+  ): ColourValue {
     return m.kind === "solid" ? m : { ...m, stops: update(m.stops) };
   }
 
@@ -94,7 +97,9 @@
     commit(
       m.kind === "solid"
         ? { kind: "solid", colour }
-        : withStops(m, (all) => all.map((stop, i) => (i === selected ? { ...stop, colour } : stop))),
+        : withStops(m, (all) =>
+            all.map((stop, i) => (i === selected ? { ...stop, colour } : stop)),
+          ),
     );
   }
 
@@ -162,7 +167,11 @@
   }
 
   function moveStop(index: number, position: number) {
-    commit(withStops(snapshot(), (all) => all.map((stop, i) => (i === index ? { ...stop, position } : stop))));
+    commit(
+      withStops(snapshot(), (all) =>
+        all.map((stop, i) => (i === index ? { ...stop, position } : stop)),
+      ),
+    );
   }
 
   function startStopDrag(event: PointerEvent, index: number) {
@@ -172,15 +181,26 @@
     dragging = index;
   }
 
-  function addStop(event: PointerEvent) {
+  function addStop(position: number) {
     const m = snapshot();
     if (m.kind === "solid") return;
-    const position = barPosition(event);
     const colour = colourAt(m.stops, position);
     commit(withStops(m, (all) => [...all, { colour, position }]));
     selectStop(m.stops.length);
-    bar!.setPointerCapture(event.pointerId);
-    dragging = m.stops.length;
+  }
+
+  function selectStopAtPosition(event: PointerEvent) {
+    const m = snapshot();
+    if (m.kind === "solid") return;
+    const position = barPosition(event);
+    const nearest = m.stops.reduce(
+      (closest, stop, index) =>
+        Math.abs(stop.position - position) < Math.abs(m.stops[closest].position - position)
+          ? index
+          : closest,
+      0,
+    );
+    selectStop(nearest);
   }
 
   function removeStop(index: number) {
@@ -234,92 +254,111 @@
 
 <div class="flex flex-col gap-3 w-72 max-w-full text-zinc-900 select-none dark:text-white">
   <div>
-  <div class="grid relative grid-cols-3 p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-700/70" role="radiogroup" aria-label="Fill type">
     <div
-      class="absolute left-0.5 inset-y-0.5 w-[calc((100%-0.25rem)/3)] rounded-md bg-white shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none dark:bg-zinc-600"
-      style="transform: translateX({modeIndex * 100}%);"
-      aria-hidden="true"
-    ></div>
-    {#each MODES as mode (mode.kind)}
-      <button
-        type="button"
-        role="radio"
-        aria-checked={model.kind === mode.kind}
-        class="relative py-1 text-xs font-medium rounded-md transition-colors duration-200 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:focus-visible:outline-white {model.kind === mode.kind
-          ? 'text-zinc-900 dark:text-white'
-          : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white'}"
-        onclick={() => setMode(mode.kind)}
-      >
-        {mode.label}
-      </button>
-    {/each}
-  </div>
-
-  {#if model.kind !== "solid"}
-    <div class="flex gap-2 items-center pt-3" transition:slide={{ duration: 180 }}>
+      class="grid relative grid-cols-3 p-0.5 rounded-lg bg-zinc-100 dark:bg-zinc-700/70"
+      role="radiogroup"
+      aria-label="Fill type"
+    >
       <div
-        class="flex-1 px-2.5 py-1.5 cursor-copy touch-none"
-        role="group"
-        aria-label="Gradient stops"
-        onpointerdown={addStop}
-        onpointermove={(event) => {
-          if (dragging !== null) moveStop(dragging, barPosition(event));
-        }}
-        onpointerup={() => (dragging = null)}
-        onpointercancel={() => (dragging = null)}
-      >
-        <div
-          bind:this={bar}
-          class="relative h-3 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
-          style="background: linear-gradient(to right, {formatStops(stops)}), {CHECKERBOARD};"
+        class="absolute left-0.5 inset-y-0.5 w-[calc((100%-0.25rem)/3)] rounded-md bg-white shadow-sm transition-transform duration-200 ease-out motion-reduce:transition-none dark:bg-zinc-600"
+        style="transform: translateX({modeIndex * 100}%);"
+        aria-hidden="true"
+      ></div>
+      {#each MODES as mode (mode.kind)}
+        <button
+          type="button"
+          role="radio"
+          aria-checked={model.kind === mode.kind}
+          class="relative py-1 text-xs font-medium rounded-md transition-colors duration-200 {model.kind ===
+          mode.kind
+            ? 'text-zinc-900 dark:text-white'
+            : 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white'}"
+          onclick={() => setMode(mode.kind)}
         >
-          {#each stops as stop, index (index)}
-            <button
-              type="button"
-              class="absolute top-1/2 handle cursor-grab active:cursor-grabbing {index === selected ? 'handle-selected' : ''}"
-              style="left: {stop.position}%; --swatch: {formatColour(stop.colour)};"
-              aria-label="Colour stop at {Math.round(stop.position)}%"
-              aria-pressed={index === selected}
-              onpointerdown={(event) => startStopDrag(event, index)}
-              onkeydown={(event) => stopKeys(event, index)}
-            ></button>
-          {/each}
-        </div>
-      </div>
-      {#if model.kind === "linear"}
-        <label class="flex shrink-0 items-center px-2 w-14 h-7 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70">
-          <input
-            type="number"
-            min="0"
-            max="360"
-            class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number focus:ring-0"
-            aria-label="Gradient angle in degrees"
-            value={model.angle}
-            oninput={(event) => {
-              if (event.currentTarget.value !== "") setAngle(Number(event.currentTarget.value));
-            }}
-          />
-          <span class="text-zinc-500 dark:text-zinc-400">°</span>
-        </label>
-      {/if}
-      <button
-        type="button"
-        class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 disabled:pointer-events-none focus-visible:outline-2 focus-visible:outline-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:outline-white"
-        aria-label="Remove selected stop"
-        disabled={stops.length <= 2}
-        onclick={() => removeStop(selected)}
-      >
-        <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" />
-        </svg>
-      </button>
+          {mode.label}
+        </button>
+      {/each}
     </div>
-  {/if}
+
+    {#if model.kind !== "solid"}
+      <div class="flex gap-2 items-center pt-3" transition:slide={{ duration: 180 }}>
+        <div
+          class="flex-1 px-2.5 py-1.5 cursor-copy touch-none"
+          role="group"
+          aria-label="Gradient stops"
+          onpointerdown={selectStopAtPosition}
+          onpointermove={(event) => {
+            if (dragging !== null) moveStop(dragging, barPosition(event));
+          }}
+          onpointerup={() => (dragging = null)}
+          onpointercancel={() => (dragging = null)}
+        >
+          <div
+            bind:this={bar}
+            class="relative h-3 rounded-full ring-1 ring-inset ring-black/10 dark:ring-white/10"
+            style="background: linear-gradient(to right, {formatStops(stops)}), {CHECKERBOARD};"
+          >
+            {#each stops as stop, index (index)}
+              <button
+                type="button"
+                class="absolute top-1/2 handle cursor-grab active:cursor-grabbing {index ===
+                selected
+                  ? 'handle-selected'
+                  : ''}"
+                style="left: {stop.position}%; --swatch: {formatColour(stop.colour)};"
+                aria-label="Colour stop at {Math.round(stop.position)}%"
+                aria-pressed={index === selected}
+                onpointerdown={(event) => startStopDrag(event, index)}
+                onkeydown={(event) => stopKeys(event, index)}
+              ></button>
+            {/each}
+          </div>
+        </div>
+        <button
+          type="button"
+          class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+          aria-label="Add colour stop"
+          title="Add colour stop"
+          onclick={() => addStop(50)}
+        >
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+        </button>
+        {#if model.kind === "linear"}
+          <label
+            class="flex shrink-0 items-center px-2 w-14 h-7 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70"
+          >
+            <input
+              type="number"
+              min="0"
+              max="360"
+              class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number"
+              aria-label="Gradient angle in degrees"
+              value={model.angle}
+              oninput={(event) => {
+                if (event.currentTarget.value !== "") setAngle(Number(event.currentTarget.value));
+              }}
+            />
+            <span class="text-zinc-500 dark:text-zinc-400">°</span>
+          </label>
+        {/if}
+        <button
+          type="button"
+          class="grid shrink-0 place-items-center rounded-md transition size-7 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 disabled:opacity-30 disabled:pointer-events-none dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+          aria-label="Remove selected stop"
+          disabled={stops.length <= 2}
+          onclick={() => removeStop(selected)}
+        >
+          <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 6h18M8 6V4h8v2m-9 0 1 14h8l1-14" />
+          </svg>
+        </button>
+      </div>
+    {/if}
   </div>
 
   <div
     bind:this={area}
-    class="relative h-40 rounded-lg cursor-crosshair touch-none outline-none ring-1 ring-inset ring-black/10 focus-visible:ring-2 focus-visible:ring-zinc-900 dark:ring-white/10 dark:focus-visible:ring-white"
+    class="relative h-40 rounded-lg cursor-crosshair touch-none outline-none ring-1 ring-inset ring-black/10 dark:ring-white/10"
     style="background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, hsl({hsva.h} 100% 50%));"
     role="slider"
     tabindex="0"
@@ -345,7 +384,7 @@
     {#if EyeDropper}
       <button
         type="button"
-        class="grid shrink-0 place-items-center rounded-md transition size-8 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 focus-visible:outline-2 focus-visible:outline-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white dark:focus-visible:outline-white"
+        class="grid shrink-0 place-items-center rounded-md transition size-8 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
         aria-label="Pick a colour from the screen"
         onclick={pickFromScreen}
       >
@@ -370,7 +409,9 @@
         min="0"
         max="100"
         class="picker-track"
-        style="background: linear-gradient(to right, transparent, {hex}), {CHECKERBOARD}; --swatch: {formatColour(active)};"
+        style="background: linear-gradient(to right, transparent, {hex}), {CHECKERBOARD}; --swatch: {formatColour(
+          active,
+        )};"
         aria-label="Opacity"
         value={Math.round(hsva.a * 100)}
         oninput={(event) => updateHsva({ a: Number(event.currentTarget.value) / 100 })}
@@ -384,10 +425,12 @@
   </div>
 
   <div class="flex gap-2">
-    <label class="flex flex-1 gap-1.5 items-center px-2.5 min-w-0 h-8 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70">
+    <label
+      class="flex flex-1 gap-1.5 items-center px-2.5 min-w-0 h-8 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70"
+    >
       <span class="text-zinc-500 dark:text-zinc-400">#</span>
       <input
-        class="flex-1 p-0 min-w-0 font-mono text-xs uppercase bg-transparent border-0 outline-none select-text focus:ring-0"
+        class="flex-1 p-0 min-w-0 font-mono text-xs uppercase bg-transparent border-0 outline-none select-text"
         aria-label="Hex colour"
         value={hex.slice(1)}
         spellcheck="false"
@@ -403,16 +446,19 @@
         }}
       />
     </label>
-    <label class="flex shrink-0 items-center px-2.5 w-16 h-8 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70">
+    <label
+      class="flex shrink-0 items-center px-2.5 w-16 h-8 text-xs rounded-md bg-zinc-100 dark:bg-zinc-700/70"
+    >
       <input
         type="number"
         min="0"
         max="100"
-        class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number focus:ring-0"
+        class="p-0 w-full min-w-0 text-xs text-right bg-transparent border-0 outline-none select-text picker-number"
         aria-label="Opacity percent"
         value={Math.round(active.a * 100)}
         oninput={(event) => {
-          if (event.currentTarget.value !== "") updateHsva({ a: clamp(Number(event.currentTarget.value), 0, 100) / 100 });
+          if (event.currentTarget.value !== "")
+            updateHsva({ a: clamp(Number(event.currentTarget.value), 0, 100) / 100 });
         }}
       />
       <span class="text-zinc-500 dark:text-zinc-400">%</span>
@@ -424,7 +470,7 @@
       {#each shownPresets as preset (preset)}
         <button
           type="button"
-          class="rounded-md ring-1 ring-inset transition aspect-square ring-black/10 hover:scale-110 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-zinc-900 dark:ring-white/10 dark:focus-visible:outline-white"
+          class="rounded-md ring-1 ring-inset transition aspect-square ring-black/10 hover:scale-110 dark:ring-white/10"
           style="background: {asLayer(preset)}, {CHECKERBOARD};"
           aria-label="Apply preset {preset}"
           onclick={() => applyPreset(preset)}
@@ -440,30 +486,30 @@
     height: 1.125rem;
     border-radius: 9999px;
     border: 2px solid white;
-    background: linear-gradient(var(--swatch), var(--swatch)),
+    background:
+      linear-gradient(var(--swatch), var(--swatch)),
       repeating-conic-gradient(#d4d4d8 0% 25%, #ffffff 0% 50%) 50% / 6px 6px;
-    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.15),
+      0 1px 3px rgb(0 0 0 / 0.3);
     transform: translate(-50%, -50%);
-    transition: transform 120ms ease, box-shadow 120ms ease;
-  }
-
-  .handle:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px rgb(24 24 27), 0 1px 3px rgb(0 0 0 / 0.3);
-  }
-
-  :global(.dark) .handle:focus-visible {
-    box-shadow: 0 0 0 2px white, 0 1px 3px rgb(0 0 0 / 0.3);
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease;
   }
 
   .handle-selected {
     z-index: 1;
     transform: translate(-50%, -50%) scale(1.2);
-    box-shadow: 0 0 0 2px rgb(24 24 27 / 0.85), 0 2px 6px rgb(0 0 0 / 0.35);
+    box-shadow:
+      0 0 0 2px rgb(24 24 27 / 0.85),
+      0 2px 6px rgb(0 0 0 / 0.35);
   }
 
   :global(.dark) .handle-selected {
-    box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9), 0 2px 6px rgb(0 0 0 / 0.5);
+    box-shadow:
+      0 0 0 2px rgb(255 255 255 / 0.9),
+      0 2px 6px rgb(0 0 0 / 0.5);
   }
 
   .picker-number {
@@ -486,15 +532,6 @@
     box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
   }
 
-  .picker-track:focus-visible {
-    outline: 2px solid rgb(24 24 27);
-    outline-offset: 2px;
-  }
-
-  :global(.dark) .picker-track:focus-visible {
-    outline-color: white;
-  }
-
   .picker-track::-webkit-slider-thumb {
     appearance: none;
     width: 1.125rem;
@@ -502,7 +539,9 @@
     border: 2px solid white;
     border-radius: 9999px;
     background: var(--swatch);
-    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.15),
+      0 1px 3px rgb(0 0 0 / 0.3);
   }
 
   .picker-track::-moz-range-thumb {
@@ -512,6 +551,8 @@
     border: 2px solid white;
     border-radius: 9999px;
     background: var(--swatch);
-    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.15), 0 1px 3px rgb(0 0 0 / 0.3);
+    box-shadow:
+      0 0 0 1px rgb(0 0 0 / 0.15),
+      0 1px 3px rgb(0 0 0 / 0.3);
   }
 </style>
