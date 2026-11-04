@@ -682,9 +682,7 @@ function createAssessmentDateDiv(
 
     const titlediv = document.createElement("div");
     titlediv.classList.add("upcoming-subject-title");
-    titlediv.append(
-      stringToHTML(ASSESSMENTS_ICON_WHITE).firstChild!,
-    );
+    titlediv.append(stringToHTML(ASSESSMENTS_ICON_WHITE).firstChild!);
 
     const detailsdiv = document.createElement("div");
     detailsdiv.classList.add("upcoming-details");
