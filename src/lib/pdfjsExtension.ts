@@ -1,4 +1,3 @@
-import * as pdfjs from "pdfjs-dist";
 import browser from "@/lib/browser";
 
 /** Static copies in `src/public` (see `scripts/copy-runtime-assets.mjs`, manifest web_accessible_resources). */
@@ -9,13 +8,25 @@ function extensionAssetUrl(relativePath: string): string {
   return browser.runtime.getURL(relativePath.replace(/^\/+/, ""));
 }
 
-let workerConfigured = false;
+let pdfjsLoad: Promise<typeof import("pdfjs-dist")> | null = null;
 
-/** Required before pdfjs spawns a worker (content-script / extension isolate). */
-export function ensurePdfjsWorker(): void {
-  if (workerConfigured) return;
-  pdfjs.GlobalWorkerOptions.workerSrc = extensionAssetUrl(PDF_WORKER_RESOURCE);
-  workerConfigured = true;
+/**
+ * Loads pdfjs with its worker configured (content-script / extension isolate).
+ * pdfjs is ~450 KB, so it's only loaded when a PDF actually needs reading
+ * rather than parsed on every SEQTA page.
+ */
+export function loadPdfjs(): Promise<typeof import("pdfjs-dist")> {
+  pdfjsLoad ??= import("pdfjs-dist").then(
+    (pdfjs) => {
+      pdfjs.GlobalWorkerOptions.workerSrc = extensionAssetUrl(PDF_WORKER_RESOURCE);
+      return pdfjs;
+    },
+    (error) => {
+      pdfjsLoad = null;
+      throw error;
+    },
+  );
+  return pdfjsLoad;
 }
 
 /** Page-context script on Firefox must load these chrome-extension:// URLs (see web_accessible_resources). */
