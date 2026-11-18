@@ -42,6 +42,7 @@
   import { ensureThemeCoverImage } from '@/interface/utils/themePlaceholderCover'
   import ThemeBlobImage from '@/interface/components/themes/ThemeBlobImage.svelte'
   import type { ThemeCreatorMeta } from '@/types/customThemes'
+  import { parseThemeBuilderJson } from '@/interface/utils/parseThemeBuilderJson'
 
   const { themeID }: { themeID: string } = $props()
   const themeManager = ThemeManager.getInstance();
@@ -62,7 +63,11 @@
     forceDark: undefined,
     adaptiveCssVariables: [],
   })
-  let closedAccordions = $state<string[]>([])
+  let closedAccordions = $state<string[]>(['Advanced'])
+  let themeJsonDraft = $state('')
+  let themeJsonError = $state<string | null>(null)
+  /** After JSON import, preview CustomCSS as-is until the user edits generated visuals. */
+  let jsonImportRawPreview = $state(false)
   let themeLoaded = $state(false);
   let codeEditorFullscreen = $state(false);
   let communityBusy = $state(false);
@@ -75,6 +80,9 @@
 
   const previewTheme = $derived.by(() => {
     if (!themeLoaded) return null;
+    if (jsonImportRawPreview) {
+      return { ...theme, creatorMeta };
+    }
     if (composeVisuals || theme.creatorMeta || creatorMeta.pageBackgroundImageId) {
       return mergeThemeWithCreatorMeta(theme, creatorMeta);
     }
@@ -82,10 +90,40 @@
   });
 
   function touchVisuals() {
+    jsonImportRawPreview = false;
     if (!composeVisuals && !theme.creatorMeta && !creatorMeta.userCustomCss.trim()) {
       creatorMeta = { ...creatorMeta, userCustomCss: theme.CustomCSS };
     }
     composeVisuals = true;
+  }
+
+  function applyImportedThemeJson() {
+    themeJsonError = null;
+    try {
+      const parsed = parseThemeBuilderJson(themeJsonDraft);
+      jsonImportRawPreview = true;
+      composeVisuals = false;
+      theme = {
+        ...parsed,
+        creatorMeta: undefined,
+        adaptiveCssVariables: parsed.adaptiveCssVariables ?? [],
+        forceTheme:
+          parsed.forceTheme ?? (parsed.forceDark !== undefined ? true : undefined),
+      };
+      if (parsed.creatorMeta) {
+        creatorMeta = { ...defaultThemeCreatorMeta(), ...parsed.creatorMeta };
+        applySidebarSettings(parsed.creatorMeta.sidebar);
+      } else {
+        creatorMeta = defaultThemeCreatorMeta({
+          userCustomCss: "",
+          fontId: settingsState.selectedFont ?? DEFAULT_FONT_ID,
+        });
+      }
+      applySelectedFont(creatorMeta.fontId);
+      themeUpdates.triggerUpdate();
+    } catch (err) {
+      themeJsonError = err instanceof Error ? err.message : "Could not load theme JSON";
+    }
   }
 
   function imageUsage(imageId: string): 'decorative' | 'page-background' | 'cover' {
@@ -277,7 +315,9 @@
     void themeManager.updatePreviewDebounced(snapshot);
   });
 
-  type SettingType = 'switch' | 'button' | 'slider' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle';
+  type SettingType = 'switch' | 'button' | 'slider' | 'select' | 'codeEditor' | 'imageUpload' | 'conditional' | 'lightDarkToggle' | 'themeJson';
+
+  type ThemeJsonProps = { value: string; onChange: (value: string) => void; onApply: () => void; error: string | null };
 
   type SwitchProps = { state: boolean; onChange: (value: boolean) => void };
   type ButtonProps = { onClick: () => void; text: string };
@@ -292,7 +332,7 @@
     children: SettingItem;
   };
 
-  type ComponentProps = SwitchProps | ButtonProps | SliderProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps;
+  type ComponentProps = SwitchProps | ButtonProps | SliderProps | SelectProps | CodeEditorProps | LightDarkToggleProps | ConditionalProps | ThemeJsonProps;
 
   type SettingItem = {
     type: SettingType;
@@ -392,6 +432,25 @@
               <span class='dark:text-white'>Add image</span>
               <input type="file" accept='image/*' onchange={onImageUpload} class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
+          {:else if item.type === 'themeJson'}
+            {@const jsonProps = item.props as ThemeJsonProps}
+            <textarea
+              value={jsonProps.value}
+              oninput={(e) => jsonProps.onChange(e.currentTarget.value)}
+              placeholder={'{ "name": "My theme", "CustomCSS": "...", "images": [...] }'}
+              spellcheck="false"
+              class="h-40 w-full resize-y rounded-lg border-0 bg-zinc-200 p-2 font-mono text-xs dark:bg-zinc-700 dark:text-white"
+            ></textarea>
+            <button
+              type="button"
+              class="mt-2 w-full rounded-lg bg-zinc-900 px-3 py-2 text-sm font-medium text-white transition hover:bg-zinc-700 dark:bg-zinc-100 dark:text-zinc-900 dark:hover:bg-white"
+              onclick={jsonProps.onApply}
+            >
+              Load into builder
+            </button>
+            {#if jsonProps.error}
+              <p class="mt-2 text-sm text-red-600 dark:text-red-400">{jsonProps.error}</p>
+            {/if}
           {:else if item.type === 'lightDarkToggle'}
             <button
               class="overflow-hidden relative flex justify-center items-center px-4 py-1 text-xl font-medium rounded-lg transition bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600"
@@ -664,6 +723,18 @@
                 (theme = { ...theme, forceDark: value, forceTheme: true })
             }
           }
+        }
+      },
+      {
+        type: 'themeJson',
+        title: 'Advanced',
+        description: 'Paste a theme.json to load into the builder (images as base64 in images[])',
+        direction: 'vertical',
+        props: {
+          value: themeJsonDraft,
+          onChange: (value: string) => (themeJsonDraft = value),
+          onApply: applyImportedThemeJson,
+          error: themeJsonError,
         }
       },
       {
