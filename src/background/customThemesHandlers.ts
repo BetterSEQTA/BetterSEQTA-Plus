@@ -314,15 +314,41 @@ export function createCustomThemesHandlers(deps: {
   ): boolean {
     void (async () => {
       try {
-        const params = new URLSearchParams();
-        params.set("page", String(request.page ?? 1));
-        params.set("limit", String(Math.min(Number(request.limit ?? 20) || 20, 100)));
-        if (request.status) params.set("status", String(request.status));
-        if (request.source) params.set("source", String(request.source));
-        const searchRaw = request.search;
-        const search = typeof searchRaw === "string" ? searchRaw.trim() : "";
-        if (search) params.set("search", search);
-        sendResponse(await customThemesJsonFetch(`/api/bsplus/admin/themes?${params}`, {}, true));
+        const adminThemeParams = (source?: string) => {
+          const params = new URLSearchParams();
+          params.set("page", String(request.page ?? 1));
+          params.set("limit", String(Math.min(Number(request.limit ?? 20) || 20, 100)));
+          if (request.status) params.set("status", String(request.status));
+          if (source) params.set("source", source);
+          const search = typeof request.search === "string" ? request.search.trim() : "";
+          if (search) params.set("search", search);
+          return params;
+        };
+        const fetchAdminThemes = (source?: string) =>
+          customThemesJsonFetch(`/api/bsplus/admin/themes?${adminThemeParams(source)}`, {}, true);
+
+        const source =
+          request.source === "community" || request.source === "marketplace"
+            ? request.source
+            : undefined;
+        if (source) {
+          sendResponse(await fetchAdminThemes(source));
+          return;
+        }
+
+        const [community, marketplace] = await Promise.all([
+          fetchAdminThemes("community"),
+          fetchAdminThemes("marketplace"),
+        ]);
+        if (community.success === false && marketplace.success === false) {
+          sendResponse(community);
+          return;
+        }
+        const themes = [
+          ...((community.data as { themes?: unknown[] } | undefined)?.themes ?? []),
+          ...((marketplace.data as { themes?: unknown[] } | undefined)?.themes ?? []),
+        ];
+        sendResponse({ success: true, data: { themes } });
       } catch (err) {
         sendResponse({
           success: false,
