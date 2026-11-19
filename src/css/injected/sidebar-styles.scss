@@ -96,14 +96,14 @@ $sidebar-motion: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
        open folders drop the fill entirely so `.sub` stays clip-safe. */
     #{$item} {
       &:not(:has(> .sub)) {
-        margin: 4px 8px 4px !important;
+        margin: 4px 8px !important;
         background: rgba(255, 255, 255, 0.1) !important;
         backdrop-filter: blur(10px);
         -webkit-backdrop-filter: blur(10px);
         box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
       }
       &:is(li, section).hasChildren:not(:is(.active, .bsplus-active)) {
-        margin: 4px 8px 4px !important;
+        margin: 4px 8px !important;
         background: rgba(255, 255, 255, 0.1) !important;
         box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
       }
