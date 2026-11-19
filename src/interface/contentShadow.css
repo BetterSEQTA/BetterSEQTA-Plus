@@ -4,12 +4,6 @@
   display: none;
 }
 
-input {
-  &:focus {
-    box-shadow: unset !important;
-  }
-}
-
 .no-scrollbar {
   scrollbar-width: none !important;
 }

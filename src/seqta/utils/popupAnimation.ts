@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import { delay } from "@/seqta/utils/delay";
 

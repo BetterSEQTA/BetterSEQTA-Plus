@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
 export type SidebarStyleId = "classic" | "soft" | "pill" | "glass" | "sharp" | "strip" | "neon";

@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import type { Plugin } from "../../core/types";
 import { attachTimetableColorisRecovery } from "@/seqta/utils/patchSeqtaMenuUpdateColours";
 import { convertTo12HourFormat } from "@/seqta/utils/convertTo12HourFormat";

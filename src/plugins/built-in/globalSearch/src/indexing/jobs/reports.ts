@@ -83,14 +83,13 @@ export const reportsJob: Job = {
           filename: report.filename,
           entityType: "report",
           route: "/reports",
-          icon: "\ueb70",
         },
         actionId: "report",
         renderComponentId: "report",
       });
     }
 
-    verboseDebug(`[Reports job] Indexed ${items.length} reports.`);
+    verboseDebug(`[BetterSEQTA+] Reports job: Indexed ${items.length} reports.`);
     return items;
   },
 

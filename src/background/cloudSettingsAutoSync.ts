@@ -158,7 +158,7 @@ async function fetchCloudSummaryWithAuthRetry(token: string): Promise<CloudSumma
       t = next;
       continue;
     }
-    if (res.error) console.warn("[BS+ cloud sync] cloud-summary:", res.error);
+    if (res.error) console.warn("[BetterSEQTA+] Cloud sync: cloud-summary:", res.error);
     break;
   }
   return null;
@@ -337,14 +337,14 @@ export async function performCloudSettingsDownloadWithRetry(
 async function maybeUploadBaseline(token: string): Promise<void> {
   const res = await performCloudSettingsUploadWithRetry(token);
   if (!res.success) {
-    console.warn("[BS+ cloud sync] Baseline upload failed:", res.error);
+    console.warn("[BetterSEQTA+] Cloud sync: Baseline upload failed:", res.error);
   }
 }
 
 async function downloadIfNeeded(token: string): Promise<void> {
   const res = await performCloudSettingsDownloadWithRetry(token);
   if (!res.success && !res.notFound) {
-    console.warn("[BS+ cloud sync] Auto-download failed:", res.error);
+    console.warn("[BetterSEQTA+] Cloud sync: Auto-download failed:", res.error);
   }
 }
 
@@ -368,7 +368,9 @@ async function runCloudSettingsPollInner(): Promise<void> {
     typeof bsplus.schemaVersion === "number" &&
     bsplus.schemaVersion > CLOUD_SETTINGS_SYNC_SCHEMA_VERSION
   ) {
-    console.warn("[BS+ cloud sync] Server schemaVersion newer than client; skip auto-download");
+    console.warn(
+      "[BetterSEQTA+] Cloud sync: Server schemaVersion newer than client; skip auto-download",
+    );
     return;
   }
 
@@ -399,7 +401,7 @@ export function runCloudSettingsPoll(): Promise<void> {
       await runCloudSettingsPollInner();
       await browser.storage.local.set({ [POLL_THROTTLE_KEY]: Date.now() });
     } catch (e) {
-      console.error("[BS+ cloud sync] Poll error:", e);
+      console.error("[BetterSEQTA+] Cloud sync: Poll error:", e);
     } finally {
       pollInFlight = null;
     }
@@ -443,7 +445,7 @@ async function runDebouncedUploadJob(): Promise<void> {
   if (!token) return;
   const res = await performCloudSettingsUploadWithRetry(token);
   if (!res.success) {
-    console.warn("[BS+ cloud sync] Auto-upload failed:", res.error);
+    console.warn("[BetterSEQTA+] Cloud sync: Auto-upload failed:", res.error);
   }
 }
 

@@ -1,5 +1,5 @@
 import { animate } from "motion";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 export const HOST_OPEN_CLASS = "bsplus-settings-host--open";
 const HOST_CLOSING_CLASS = "bsplus-settings-host--closing";

@@ -2,7 +2,7 @@
  * @jest-environment jsdom
  */
 import browser from "@/lib/browser";
-import { writeData } from "@/interface/hooks/BackgroundDataLoader";
+import { writeData } from "@/interface/hooks/backgroundDataLoader";
 import { applyDefaultBackgroundOnce } from "./defaultBackground";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "./defaultBackgroundKey";
 
@@ -10,7 +10,7 @@ jest.mock("@/resources/backgrounds/default-background.webp", () => "default-back
   virtual: true,
 });
 jest.mock("@/lib/extensionAssetUrl", () => ({ resolveExtensionAssetUrl: (url: string) => url }));
-jest.mock("@/interface/hooks/BackgroundDataLoader", () => ({ writeData: jest.fn() }));
+jest.mock("@/interface/hooks/backgroundDataLoader", () => ({ writeData: jest.fn() }));
 
 const blob = { size: 1 };
 

@@ -1,5 +1,5 @@
 /**
- * Tiny flag module with no imports — breaks the OpenMenuOptions ↔ sidebarMenuIcons
+ * Tiny flag module with no imports — breaks the openMenuOptions ↔ sidebarMenuIcons
  * cycle that caused Vite HMR: "does not provide an export named 'MenuOptionsOpen'".
  */
 export let MenuOptionsOpen = false;

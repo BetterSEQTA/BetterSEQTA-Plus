@@ -20,7 +20,7 @@ export async function initVectorSearch() {
   if (initializationFailed || !isVectorSearchSupported()) {
     if (!isVectorSearchSupported()) {
       verboseDebug(
-        "[Vector Search] Vector search not supported in Firefox - using text search only",
+        "[BetterSEQTA+] Vector Search: Vector search not supported in Firefox - using text search only",
       );
     }
     return;
@@ -35,10 +35,10 @@ export async function initVectorSearch() {
     await initializeModel();
     vectorIndex = new EmbeddingIndex([]);
     vectorIndex.preloadIndexedDB();
-    verboseDebug("[Vector Search] Initialized successfully");
+    verboseDebug("[BetterSEQTA+] Vector Search: Initialized successfully");
   } catch (e) {
     console.warn(
-      "[Vector Search] Failed to initialize vector search (will use text search only):",
+      "[BetterSEQTA+] Vector Search: Failed to initialize vector search (will use text search only):",
       e,
     );
     initializationFailed = true;
@@ -63,7 +63,7 @@ function setCachedEmbedding(query: string, embedding: number[]) {
 
 export function clearEmbeddingCache(): void {
   embeddingCache.clear();
-  verboseDebug("[Vector Search] Embedding cache cleared");
+  verboseDebug("[BetterSEQTA+] Vector Search: Embedding cache cleared");
 }
 
 if (typeof window !== "undefined") {
@@ -89,7 +89,7 @@ export async function searchVectors(
       queryEmbedding = await getEmbedding(normalizedQuery);
       setCachedEmbedding(normalizedQuery, queryEmbedding);
     } catch (e) {
-      console.warn("[Vector Search] Failed to get embedding:", e);
+      console.warn("[BetterSEQTA+] Vector Search: Failed to get embedding:", e);
       return [];
     }
   }
@@ -106,7 +106,7 @@ export async function searchVectors(
       .sort((a, b) => b.similarity - a.similarity)
       .slice(0, topK) as VectorSearchResult[];
   } catch (e) {
-    console.warn("[Vector Search] Search failed:", e);
+    console.warn("[BetterSEQTA+] Vector Search: Search failed:", e);
     return [];
   }
 }
@@ -121,7 +121,7 @@ export async function refreshVectorCache() {
       vectorIndex.clearIndexedDBCache();
       vectorIndex.preloadIndexedDB();
     } catch (e) {
-      console.warn("[Vector Search] Failed to refresh cache:", e);
+      console.warn("[BetterSEQTA+] Vector Search: Failed to refresh cache:", e);
     }
   }
 }

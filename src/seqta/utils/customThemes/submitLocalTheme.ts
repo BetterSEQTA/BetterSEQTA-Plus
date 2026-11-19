@@ -5,7 +5,7 @@ import {
   mergeUploadPayload,
 } from "@/seqta/utils/customThemes/buildThemeUploadFormData";
 import { submitCustomTheme } from "@/seqta/utils/customThemes/client";
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 
 export async function submitLocalThemeToCommunity(
   theme: LoadedCustomTheme,

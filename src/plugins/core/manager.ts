@@ -12,7 +12,7 @@ import type {
 } from "./types";
 import { createPluginAPI } from "./createAPI";
 import browser from "@/lib/browser";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { verboseInfo } from "@/utils/verboseLog";
 import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 import { isPluginAllowedInPerformanceMode } from "@/seqta/utils/performanceMode";

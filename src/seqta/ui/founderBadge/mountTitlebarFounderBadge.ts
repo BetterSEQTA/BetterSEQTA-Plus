@@ -1,6 +1,6 @@
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 import { refreshCloudUserFromServer } from "@/seqta/utils/cloudPfpSync";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import {
   badgeBlobStyle,

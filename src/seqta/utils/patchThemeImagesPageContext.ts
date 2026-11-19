@@ -5,6 +5,7 @@
 import patchScript from "@/seqta/utils/themeImagePagePatch.js?script&iife";
 import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";
 import { blobToBase64Data } from "@/seqta/utils/base64";
+import { CUSTOM_THEME_PAGE_COMPAT_CSS } from "@/seqta/utils/customThemePageCompatCss";
 
 const PAGE_PATCH_LOADER_ID = "bsplus-theme-image-page-patch-loader";
 const BRIDGE_ID = "bsplus-theme-image-bridge";
@@ -59,6 +60,12 @@ function preserveCustomSidebarActive(css: string): string {
   return css.replace(/\.active(?![\w-])/g, ":is(.active, .bsplus-active)");
 }
 
+function withPageCompatCss(css: string): string {
+  const trimmed = css.trim();
+  if (!trimmed) return CUSTOM_THEME_PAGE_COMPAT_CSS;
+  return `${trimmed}\n\n${CUSTOM_THEME_PAGE_COMPAT_CSS}`;
+}
+
 export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> {
   if (input.clear) {
     sendPayload({ clear: true });
@@ -68,10 +75,10 @@ export async function syncThemeToPage(input: ThemePageSyncInput): Promise<void> 
   const payload: Record<string, unknown> = {};
   if (input.clearPreview) payload.clearPreview = true;
   if (input.customCss !== undefined) {
-    payload.customCss = preserveCustomSidebarActive(input.customCss);
+    payload.customCss = withPageCompatCss(preserveCustomSidebarActive(input.customCss));
   }
   if (input.previewCss !== undefined) {
-    payload.previewCss = preserveCustomSidebarActive(input.previewCss);
+    payload.previewCss = withPageCompatCss(preserveCustomSidebarActive(input.previewCss));
   }
   if (input.images !== undefined) {
     payload.images = await Promise.all(

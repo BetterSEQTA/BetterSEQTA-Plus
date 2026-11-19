@@ -5,12 +5,9 @@
   import Slider from "@/interface/components/Slider.svelte";
   import Select from "@/interface/components/Select.svelte";
   import HotkeyInput from "@/interface/components/HotkeyInput.svelte";
-  import SettingRow from "./SettingRow.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
-  import {
-    setPerformanceModePluginOverride,
-  } from "@/seqta/utils/performanceMode";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import { setPerformanceModePluginOverride } from "@/seqta/utils/performanceMode";
   import { PERFORMANCE_HEAVY_PLUGIN_IDS } from "@/seqta/utils/performanceModeConfig";
   import { onMount } from "svelte";
   import {
@@ -19,11 +16,7 @@
     type SettingsSectionId,
     type SettingsSectionSharedProps,
   } from "./shared";
-  import {
-    pluginSettingsStore,
-    type PluginSettingsEntry,
-  } from "./pluginSettingsState.svelte";
-  import { toMountableComponent } from "@/types/mountableComponent";
+  import { pluginSettingsStore, type PluginSettingsEntry } from "./pluginSettingsState.svelte";
 
   let {
     section,
@@ -56,8 +49,7 @@
   const visiblePlugins = $derived(
     pluginSettingsStore.plugins.filter(
       (plugin) =>
-        (PLUGIN_SECTION_BY_ID[plugin.pluginId] ?? "features") === section &&
-        pluginHit(plugin),
+        (PLUGIN_SECTION_BY_ID[plugin.pluginId] ?? "features") === section && pluginHit(plugin),
     ),
   );
 
@@ -73,10 +65,15 @@
 
 {#each visiblePlugins as plugin (plugin.pluginId)}
   {@const perfPaused = pluginPerfPaused(plugin.pluginId)}
-  <SettingsCard class="{!(plugin as PluginSettingsEntry & { disableToggle?: boolean }).disableToggle && Object.keys(plugin.settings).length === 0 ? 'hidden' : ''} {perfPaused ? 'opacity-60' : ''}">
+  <SettingsCard
+    class="divide-y divide-zinc-200/60 dark:divide-zinc-700/40 {!plugin.disableToggle &&
+    Object.keys(plugin.settings).length === 0
+      ? 'hidden'
+      : ''} {perfPaused ? 'opacity-60' : ''}"
+  >
     {#if perfPaused}
       <div
-        class="flex justify-between items-center px-5 py-3 border-b border-amber-200/60 dark:border-amber-900/40 bg-amber-50/80 dark:bg-amber-950/20"
+        class="flex justify-between items-center px-4 py-3 rounded-lg bg-amber-50/80 dark:bg-amber-950/20"
       >
         <p class="text-sm text-amber-800 dark:text-amber-200">
           Paused by Performance Mode — enable anyway
@@ -90,7 +87,11 @@
     {/if}
 
     {#if plugin.disableToggle}
-      <div class="flex justify-between items-center px-4 py-3 {perfPaused ? 'pointer-events-none' : ''}">
+      <div
+        class="flex justify-between items-center px-4 py-3 {perfPaused
+          ? 'pointer-events-none'
+          : ''}"
+      >
         <div class="pr-4">
           <h2 class="flex gap-2 items-center text-sm font-bold">
             Enable {plugin.name}
@@ -106,7 +107,8 @@
         </div>
         <div>
           <Switch
-            state={(pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined) ?? true}
+            state={(pluginSettingsStore.values[plugin.pluginId]?.enabled as boolean | undefined) ??
+              true}
             onChange={async (value) => {
               if (plugin.pluginId === "assessments-average" && value === true) {
                 showDisclaimer(
@@ -137,13 +139,15 @@
             <div>
               {#if setting.type === "boolean"}
                 <Switch
-                  state={(pluginSettingsStore.values[plugin.pluginId]?.[key] as boolean | undefined) ?? setting.default}
+                  state={(pluginSettingsStore.values[plugin.pluginId]?.[key] as
+                    boolean | undefined) ?? setting.default}
                   onChange={(value) => pluginSettingsStore.update(plugin.pluginId, key, value)}
                 />
               {:else if setting.type === "number"}
                 <div class="w-28 shrink-0">
                   <Slider
-                    state={(pluginSettingsStore.values[plugin.pluginId]?.[key] as number | undefined) ?? setting.default}
+                    state={(pluginSettingsStore.values[plugin.pluginId]?.[key] as
+                      number | undefined) ?? setting.default}
                     onChange={(value) => pluginSettingsStore.update(plugin.pluginId, key, value)}
                     min={setting.min}
                     max={setting.max}
@@ -154,13 +158,15 @@
                 <input
                   type="text"
                   class="px-2 py-1 text-sm rounded-md dark:bg-[#38373D]/50 bg-[#DDDDDD] dark:text-white border-none"
-                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as string | undefined) ?? setting.default}
+                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as
+                    string | undefined) ?? setting.default}
                   oninput={(e) =>
                     pluginSettingsStore.update(plugin.pluginId, key, e.currentTarget.value)}
                 />
               {:else if setting.type === "select"}
                 <Select
-                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as string | undefined) ?? setting.default}
+                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as
+                    string | undefined) ?? setting.default}
                   onChange={(value) => pluginSettingsStore.update(plugin.pluginId, key, value)}
                   options={(setting.options as string[]).map((opt) => ({
                     value: opt,
@@ -171,7 +177,8 @@
                 <Button onClick={() => setting.trigger?.()} text={setting.title} />
               {:else if setting.type === "hotkey"}
                 <HotkeyInput
-                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as string | undefined) ?? setting.default}
+                  value={(pluginSettingsStore.values[plugin.pluginId]?.[key] as
+                    string | undefined) ?? setting.default}
                   onChange={(value) => pluginSettingsStore.update(plugin.pluginId, key, value)}
                 />
               {:else if setting.type === "component" && setting.component}
@@ -182,19 +189,6 @@
           </div>
         {/if}
       {/each}
-    {/if}
-    {#if plugin.pluginId === "global-search"}
-      <SettingRow
-        title="Theme of the Month"
-        description="Show the monthly featured theme popup when a new entry is available"
-        id={15}
-        Component={toMountableComponent(Switch)}
-        {searchQuery}
-        props={{
-          state: !($settingsState.themeOfTheMonthDisabled ?? false),
-          onChange: (isOn: boolean) => (settingsState.themeOfTheMonthDisabled = !isOn),
-        }}
-      />
     {/if}
   </SettingsCard>
 {/each}

@@ -29,7 +29,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
       const wasUpdated = await checkAndHandleUpdate();
       if (wasUpdated) {
         verboseLog(
-          "[Global Search] Extension updated — search index reset; the next indexing pass will repopulate.",
+          "[BetterSEQTA+] Global Search: Extension updated — search index reset; the next indexing pass will repopulate.",
         );
       }
     } catch (error: unknown) {
@@ -40,18 +40,18 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
         msg.includes("NS_ERROR_CORRUPTED_CONTENT")
       ) {
         verboseDebug(
-          "[Global Search] Version check skipped due to asset loading restrictions:",
+          "[BetterSEQTA+] Global Search: Version check skipped due to asset loading restrictions:",
           msg,
         );
       } else {
-        console.warn("[Global Search] Failed to check for updates:", error);
+        console.warn("[BetterSEQTA+] Global Search: Failed to check for updates:", error);
       }
     }
 
     try {
       await ensureSchemaCurrent();
     } catch (error) {
-      console.warn("[Global Search] Schema check failed:", error);
+      console.warn("[BetterSEQTA+] Global Search: Schema check failed:", error);
     }
 
     try {
@@ -77,7 +77,7 @@ const globalSearchPlugin: Pick<Plugin<GlobalSearchSettings>, "run"> = {
       try {
         installPassiveObserver();
       } catch (error) {
-        console.warn("[Global Search] Passive observer install failed:", error);
+        console.warn("[BetterSEQTA+] Global Search: Passive observer install failed:", error);
       }
     }
 

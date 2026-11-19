@@ -145,11 +145,6 @@
   transform: scale(0.98);
 }
 
-.bsplus-font-picker-reset:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
-}
-
 .bsplus-font-picker-reset:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -184,11 +179,6 @@
 
 .bsplus-font-picker-done:active {
   transform: scale(0.97);
-}
-
-.bsplus-font-picker-done:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 35%, transparent);
 }
 
 .bsplus-font-picker-list {
@@ -239,13 +229,6 @@
     var(--bsplus-analytics-surface-2) 55%,
     var(--bsplus-analytics-surface)
   );
-}
-
-.bsplus-font-picker-option:focus-visible {
-  outline: none;
-  box-shadow:
-    var(--bsplus-analytics-shadow-hover),
-    0 0 0 3px color-mix(in srgb, var(--bsplus-analytics-accent) 30%, transparent);
 }
 
 .bsplus-font-picker-option.is-selected {

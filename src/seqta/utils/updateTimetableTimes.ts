@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { convertTo12HourFormat } from "./convertTo12HourFormat";
 import { waitForElm } from "./waitForElm";
 
@@ -166,7 +166,7 @@ export async function updateTimetableTimes(): Promise<void> {
 
   // Wait for time elements to exist if page is still loading
   try {
-    await waitForElm(".timetablepage .time", true, 10);
+    await waitForElm(".timetablepage .time", true, 10, 300);
   } catch {
     return;
   }

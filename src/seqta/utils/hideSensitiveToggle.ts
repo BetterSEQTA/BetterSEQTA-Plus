@@ -1,4 +1,4 @@
-import { settingsState } from "./listeners/SettingsState";
+import { settingsState } from "./listeners/settingsState";
 import hideSensitiveContent from "@/seqta/ui/dev/hideSensitiveContent";
 
 function maybeHide() {

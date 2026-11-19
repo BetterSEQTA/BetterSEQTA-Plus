@@ -1,7 +1,7 @@
 import browser from "@/lib/browser";
 import defaultBackgroundUrl from "@/resources/backgrounds/default-background.webp";
 import { resolveExtensionAssetUrl } from "@/lib/extensionAssetUrl";
-import { writeData } from "@/interface/hooks/BackgroundDataLoader";
+import { writeData } from "@/interface/hooks/backgroundDataLoader";
 import { DEFAULT_BACKGROUND_PENDING_KEY } from "./defaultBackgroundKey";
 
 const DEFAULT_BACKGROUND_ID = "image-116";

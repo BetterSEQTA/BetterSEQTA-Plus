@@ -177,6 +177,44 @@ describe("mergeRemoteEventsIntoMap", () => {
     );
     expect(eventMap[key]).toMatchObject({ id: "remote-1", fingerprint: "local-fp" });
   });
+
+  it("returns extra remote events for the same lesson as duplicates", () => {
+    const key = `${origin}::${origin}:cal:1`;
+    const eventMap = {
+      [key]: { id: "tracked", date: "2026-07-13", fingerprint: "fp" },
+    };
+    const remote = (id: string) => ({
+      seqtaKey: `${origin}:cal:1`,
+      id,
+      date: "2026-07-13",
+      fingerprint: "fp",
+    });
+    const duplicates = mergeRemoteEventsIntoMap(
+      eventMap,
+      origin,
+      [remote("copy-a"), remote("tracked"), remote("copy-b")],
+      mapKey,
+    );
+
+    expect(eventMap[key]).toMatchObject({ id: "tracked" });
+    expect(duplicates.sort()).toEqual(["copy-a", "copy-b"]);
+  });
+
+  it("keeps the first remote event when none is tracked", () => {
+    const eventMap: Record<string, { id: string; date: string; fingerprint?: string }> = {};
+    const duplicates = mergeRemoteEventsIntoMap(
+      eventMap,
+      origin,
+      [
+        { seqtaKey: `${origin}:cal:1`, id: "first", date: "2026-07-13", fingerprint: "fp" },
+        { seqtaKey: `${origin}:cal:1`, id: "second", date: "2026-07-13", fingerprint: "fp" },
+      ],
+      mapKey,
+    );
+
+    expect(eventMap[`${origin}::${origin}:cal:1`]).toMatchObject({ id: "first" });
+    expect(duplicates).toEqual(["second"]);
+  });
 });
 
 describe("collectOriginDeleteEntries", () => {

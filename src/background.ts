@@ -111,7 +111,10 @@ function handleFetchThemes(_request: unknown, sendResponse: MessageSender): bool
       })
       .then(sendResponse)
       .catch((err) => {
-        console.warn("[Background] fetchThemes API failed, trying GitHub fallback:", err?.message);
+        console.warn(
+          "[BetterSEQTA+] Background: fetchThemes API failed, trying GitHub fallback:",
+          err?.message,
+        );
         fetch(githubUrl, { cache: "no-store" })
           .then(async (r) => {
             if (!r.ok) throw new Error(`GitHub fallback HTTP ${r.status}`);
@@ -121,7 +124,10 @@ function handleFetchThemes(_request: unknown, sendResponse: MessageSender): bool
           })
           .then(sendResponse)
           .catch((fallbackErr) => {
-            console.error("[Background] fetchThemes GitHub fallback error:", fallbackErr);
+            console.error(
+              "[BetterSEQTA+] Background: fetchThemes GitHub fallback error:",
+              fallbackErr,
+            );
             sendResponse({ success: false, error: fallbackErr?.message });
           });
       });
@@ -143,7 +149,7 @@ function handleFetchThemeDetails(request: BackgroundRequest, sendResponse: Messa
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
-        console.error("[Background] fetchThemeDetails error:", err);
+        console.error("[BetterSEQTA+] Background: fetchThemeDetails error:", err);
         sendResponse({ success: false, error: err?.message });
       });
   })();
@@ -216,7 +222,7 @@ function handleFetchFromUrl(
         sendResponse({ error: "Invalid JSON response" });
       }
     } catch (err) {
-      console.error("[Background] fetchFromUrl error:", err);
+      console.error("[BetterSEQTA+] Background: fetchFromUrl error:", err);
       sendResponse({ error: (err as Error)?.message });
     }
   })();
@@ -253,7 +259,7 @@ function handleCloudReserveClient(
       else sendResponse(data);
     })
     .catch((err) => {
-      console.error("[Background] cloudReserveClient error:", err);
+      console.error("[BetterSEQTA+] Background: cloudReserveClient error:", err);
       sendResponse({ error: err?.message ?? "Network error" });
     });
   return true;
@@ -299,7 +305,7 @@ function handleCloudLogin(
       if (!r.ok) sendResponse({ error: errorText ?? "Login failed" });
       else sendResponse(data);
     } catch (err) {
-      console.error("[Background] cloudLogin error:", err);
+      console.error("[BetterSEQTA+] Background: cloudLogin error:", err);
       sendResponse({ error: (err as Error)?.message ?? "Network error" });
     }
   })();
@@ -320,7 +326,7 @@ function handleCloudStartLogin(request: BackgroundRequest, sendResponse: Message
       sendResponse({ success: true });
     })
     .catch((err) => {
-      console.error("[Background] cloudStartLogin error:", err);
+      console.error("[BetterSEQTA+] Background: cloudStartLogin error:", err);
       sendResponse({ error: err?.message ?? "Failed to open login page" });
     });
   return true;
@@ -356,17 +362,20 @@ function initCloudLoginCallbackListener() {
               }
 
               void performCloudSettingsDownloadWithRetry(token).catch((err) => {
-                console.warn("[Background] Cloud settings download after login:", err);
+                console.warn(
+                  "[BetterSEQTA+] Background: Cloud settings download after login:",
+                  err,
+                );
               });
             } catch (err) {
-              console.error("[Background] Failed to process login callback:", err);
+              console.error("[BetterSEQTA+] Background: Failed to process login callback:", err);
             }
           })();
 
           void browser.tabs.remove(tabId);
         }
       } catch (err) {
-        console.error("[Background] Error parsing callback URL:", err);
+        console.error("[BetterSEQTA+] Background: Error parsing callback URL:", err);
       }
     }
   });
@@ -395,7 +404,7 @@ function handleCloudRefresh(request: BackgroundRequest, sendResponse: MessageSen
       else sendResponse(data);
     })
     .catch((err) => {
-      console.error("[Background] cloudRefresh error:", err);
+      console.error("[BetterSEQTA+] Background: cloudRefresh error:", err);
       sendResponse({ error: err?.message ?? "Network error" });
     });
   return true;
@@ -424,7 +433,7 @@ function handleCloudSettingsUpload(
         updated_at: res.updated_at,
       });
     } catch (err) {
-      console.error("[Background] cloudSettingsUpload error:", err);
+      console.error("[BetterSEQTA+] Background: cloudSettingsUpload error:", err);
       sendResponse({
         success: false,
         error: err instanceof Error ? err.message : "Upload failed",
@@ -458,7 +467,7 @@ function handleCloudSettingsDownload(
         updated_at: res.updated_at,
       });
     } catch (err) {
-      console.error("[Background] cloudSettingsDownload error:", err);
+      console.error("[BetterSEQTA+] Background: cloudSettingsDownload error:", err);
       sendResponse({
         success: false,
         error: err instanceof Error ? err.message : "Download failed",
@@ -488,7 +497,7 @@ function handleCloudFavorite(request: BackgroundRequest, sendResponse: MessageSe
       .then((r) => r.json())
       .then(sendResponse)
       .catch((err) => {
-        console.error("[Background] cloudFavorite error:", err);
+        console.error("[BetterSEQTA+] Background: cloudFavorite error:", err);
         sendResponse({ success: false, error: err?.message });
       });
   })();
@@ -607,7 +616,7 @@ const MESSAGE_HANDLERS: Record<string, MessageHandler> = {
           typeof reply?.appLink === "string" && reply.appLink.length > 0 ? reply.appLink : null;
         sendResponse({ appLink });
       } catch (err) {
-        console.error("[Background] getSeqtaSession error:", err);
+        console.error("[BetterSEQTA+] Background: getSeqtaSession error:", err);
         sendResponse({ appLink: null });
       }
     })();

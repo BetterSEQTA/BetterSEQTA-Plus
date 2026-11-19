@@ -4,7 +4,7 @@
   import Button from "@/interface/components/Button.svelte";
   import Select from "@/interface/components/Select.svelte";
   import SettingRow from "../SettingRow.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import {
     PERFORMANCE_HEAVY_PLUGINS,
@@ -12,7 +12,7 @@
   } from "@/seqta/utils/performanceMode";
   import browser from "@/lib/browser";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
-  import type { SettingsList } from "@/interface/types/SettingsProps";
+  import type { SettingsList } from "@/interface/types/settingsProps";
   import { isFeatureDisabled } from "@/seqta/utils/remoteStatus";
 
   let { searchQuery = "" }: SettingsSectionSharedProps = $props();
@@ -160,12 +160,15 @@
               {#each PERFORMANCE_HEAVY_PLUGINS as heavy (heavy.id)}
                 <div class="flex justify-between items-center gap-4">
                   <div class="min-w-0">
-                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">{heavy.name}</p>
+                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-100">
+                      {heavy.name}
+                    </p>
                     <p class="text-xs text-zinc-500 dark:text-zinc-400">{heavy.description}</p>
                   </div>
                   <Switch
                     state={$settingsState.performanceModePluginOverrides?.[heavy.id] === true}
-                    onChange={(forceOn: boolean) => setPerformanceModePluginOverride(heavy.id, forceOn)}
+                    onChange={(forceOn: boolean) =>
+                      setPerformanceModePluginOverride(heavy.id, forceOn)}
                   />
                 </div>
               {/each}
@@ -177,13 +180,7 @@
   </SettingsCard>
 {/if}
 
-{#if matchesSearch(
-  searchQuery,
-  "Home Page Assessments",
-  "Include Past Assessments",
-  "Maximum Subjects",
-  "Maximum Assessments per Subject",
-)}
+{#if matchesSearch(searchQuery, "Home Page Assessments", "Include Past Assessments", "Maximum Subjects", "Maximum Assessments per Subject")}
   <SettingsCard>
     <div class="flex justify-between items-center px-4 py-3">
       <div class="pr-4">

@@ -11,13 +11,13 @@ jest.mock("localforage", () => {
     clear: jest.fn(async () => records.clear()),
   };
 });
-jest.mock("@/seqta/utils/listeners/SettingsState", () => ({
+jest.mock("@/seqta/utils/listeners/settingsState", () => ({
   settingsState: {},
 }));
 jest.mock("@/seqta/utils/performanceMode", () => ({
   fullMotionEffectsEnabled: () => false,
 }));
-jest.mock("@/seqta/ui/colors/Manager", () => ({ updateAllColors: jest.fn() }));
+jest.mock("@/seqta/ui/colors/colorManager", () => ({ updateAllColors: jest.fn() }));
 jest.mock("@/seqta/ui/colors/customThemeAdaptiveBindings", () => ({}));
 jest.mock("@/seqta/utils/patchThemeImagesPageContext", () => ({}));
 jest.mock("@/utils/verboseLog", () => ({

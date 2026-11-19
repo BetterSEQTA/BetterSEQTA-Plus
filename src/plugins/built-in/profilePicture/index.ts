@@ -4,20 +4,20 @@ import ProfilePictureSetting from "./ProfilePictureSetting.svelte";
 import { toMountableComponent } from "@/types/mountableComponent";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 import browser from "@/lib/browser";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
-import { resolveCloudPfp, defaultAccountsPfpUrl } from "@/seqta/utils/cloudPfpCache";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
+import { revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
+import { loadPicture, REVISION_KEY } from "./picture";
 import styles from "./styles.css?inline";
-import localforage from "localforage";
 
 const settings = defineSettings({
   useCloudPfp: booleanSetting({
     default: false,
     title: "Use BetterSEQTA Cloud profile picture",
-    description: "Use your cloud account avatar instead of the uploaded image below",
+    description: "Show your cloud account picture instead of the one uploaded here",
   }),
   picture: componentSetting({
     title: "Profile Picture",
-    description: "Upload or remove your custom profile image",
+    description: "Upload or remove your profile picture",
     component: toMountableComponent(ProfilePictureSetting),
   }),
 });
@@ -26,14 +26,13 @@ const profilePicturePlugin: Plugin<typeof settings> = {
   id: "profile-picture",
   name: "Custom Profile Picture",
   description: "Use your own image in place of the profile icon",
-  version: "1.3.0",
+  version: "2.0.0",
   settings: settings,
   disableToggle: true,
   defaultEnabled: false,
   styles,
 
   run: async (api) => {
-    await api.storage.loaded;
     let container: Element;
     try {
       container = await waitForElm(".userInfosvgdiv", true, 100, 60);
@@ -41,97 +40,41 @@ const profilePicturePlugin: Plugin<typeof settings> = {
       return () => {};
     }
 
-    const svg = container.querySelector(".userInfosvg") as HTMLElement | null;
-    let img: HTMLImageElement | null = null;
-    let currentBlobUrl: string | undefined;
+    const img = document.createElement("img");
+    img.className = "userInfoImg";
+    img.alt = "";
+    let version = 0;
 
-    const store = localforage.createInstance({
-      name: "profile-picture-store",
-      storeName: "profilePicture",
-    });
-
-    async function applyProfileImage() {
-      if (img) {
-        img.remove();
-        img = null;
-      }
-      if (currentBlobUrl) {
-        URL.revokeObjectURL(currentBlobUrl);
-        currentBlobUrl = undefined;
-      }
-
-      const useCloud = api.settings.useCloudPfp;
-      const userId = cloudAuth.state.user?.id;
-      const pfpUrl =
-        cloudAuth.state.user?.pfpUrl ?? (userId ? defaultAccountsPfpUrl(userId) : undefined);
-
-      if (useCloud && pfpUrl && userId) {
-        const resolved = await resolveCloudPfp(userId, pfpUrl);
-        if (resolved) {
-          currentBlobUrl = resolved.src;
-          img = document.createElement("img");
-          img.className = "userInfoImg";
-          img.src = resolved.src;
-          if (svg) svg.style.display = "none";
-          container.appendChild(img);
-          return;
-        }
-      }
-
-      const blob = await store.getItem<Blob>("profile-picture");
-      if (blob && blob instanceof Blob) {
-        currentBlobUrl = URL.createObjectURL(blob);
-        img = document.createElement("img");
-        img.className = "userInfoImg";
-        img.src = currentBlobUrl;
-        if (svg) svg.style.display = "none";
-        container.appendChild(img);
+    const render = async () => {
+      const current = ++version;
+      const { isLoggedIn, user } = cloudAuth.state;
+      const cloudUser = api.settings.useCloudPfp && isLoggedIn ? user : null;
+      const url = await loadPicture(cloudUser);
+      if (current !== version) return revokePfpUrl(url);
+      revokePfpUrl(img.src);
+      if (url) {
+        img.src = url;
+        container.append(img);
       } else {
-        if (svg) svg.style.display = "";
-      }
-    }
-
-    if (api.settings.useCloudPfp && cloudAuth.state.isLoggedIn) {
-      const { pullCloudProfilePictureFromServer } = await import("@/seqta/utils/cloudPfpSync");
-      await pullCloudProfilePictureFromServer();
-    }
-
-    await applyProfileImage();
-
-    const onLocalPictureUpdated = () => {
-      void applyProfileImage();
-    };
-    window.addEventListener("profile-picture-updated", onLocalPictureUpdated);
-
-    const onStorageRevision = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string,
-    ) => {
-      if (areaName === "local" && changes.profile_picture_revision) {
-        void applyProfileImage();
+        img.removeAttribute("src");
+        img.remove();
       }
     };
-    browser.storage.onChanged.addListener(onStorageRevision);
 
-    const cloudUnsub = cloudAuth.subscribe(() => {
-      void applyProfileImage();
-    });
-
-    const useCloudUnreg = api.settings.onChange("useCloudPfp", (enabled: boolean) => {
-      void import("@/seqta/utils/cloudPfpSync").then(({ onUseCloudPfpToggled }) =>
-        onUseCloudPfpToggled(enabled),
-      );
-      void applyProfileImage();
-    });
+    const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && changes[REVISION_KEY]) void render();
+    };
+    browser.storage.onChanged.addListener(onStorage);
+    const unsubscribe = cloudAuth.subscribe(() => void render());
+    const setting = api.settings.onChange("useCloudPfp", () => void render());
 
     return () => {
-      useCloudUnreg.unregister();
-      cloudUnsub();
-      window.removeEventListener("profile-picture-updated", onLocalPictureUpdated);
-      browser.storage.onChanged.removeListener(onStorageRevision);
-      if (img) img.remove();
-      if (svg) svg.style.display = "";
-      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      version++;
+      setting.unregister();
+      unsubscribe();
+      browser.storage.onChanged.removeListener(onStorage);
+      revokePfpUrl(img.src);
+      img.remove();
     };
   },
 };

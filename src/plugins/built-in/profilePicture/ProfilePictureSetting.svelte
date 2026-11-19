@@ -1,211 +1,109 @@
 <script lang="ts">
-  import localforage from 'localforage'
-  import { onMount } from 'svelte'
-  import browser from '@/lib/browser'
-  import CloudPfpAvatar from '@/interface/components/CloudPfpAvatar.svelte'
-  import { cloudAuth } from '@/seqta/utils/CloudAuth'
-  import {
-    clearCloudProfilePicture,
-    isUseCloudPfpEnabled,
-    notifyProfilePictureChanged,
-    pullCloudProfilePictureFromServer,
-    revertCloudProfilePicture,
-    syncLocalProfilePictureToCloud,
-    uploadCloudProfilePicture,
-  } from '@/seqta/utils/cloudPfpSync'
+  import { onMount } from "svelte";
+  import browser from "@/lib/browser";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
+  import { revokePfpUrl } from "@/seqta/utils/cloudPfpCache";
+  import { uploadCloudProfilePicture } from "@/seqta/utils/cloudPfpSync";
+  import { pluginSettingsStore } from "@/interface/pages/settings/pluginSettingsState.svelte";
+  import { loadPicture, REVISION_KEY, setLocalPicture } from "./picture";
 
-  let value = $state<string | undefined>(undefined)
-  let fileInput = $state<HTMLInputElement | undefined>(undefined)
-  let cloudFileInput = $state<HTMLInputElement | undefined>(undefined)
-  let dragging = $state(false)
-  let blobUrl = $state<string | undefined>(undefined)
-  let useCloudPfp = $state(false)
-  let cloudState = $state(cloudAuth.state)
-  let cloudBusy = $state(false)
-  let cloudError = $state<string | undefined>(undefined)
+  let cloud = $state(cloudAuth.state);
+  let src = $state<string | null>(null);
+  let removable = $state(false);
+  let busy = $state(false);
+  let error = $state<string>();
+  let input = $state<HTMLInputElement>();
+  let revision = $state(0);
+  let version = 0;
 
-  const store = localforage.createInstance({
-    name: 'profile-picture-store',
-    storeName: 'profilePicture',
-  })
+  const useCloud = $derived(
+    pluginSettingsStore.values["profile-picture"]?.useCloudPfp === true && cloud.isLoggedIn,
+  );
 
-  async function load() {
-    useCloudPfp = await isUseCloudPfpEnabled()
-    const blob = await store.getItem<Blob>('profile-picture')
-    if (blob && blob instanceof Blob) {
-      if (blobUrl) URL.revokeObjectURL(blobUrl)
-      blobUrl = URL.createObjectURL(blob)
-      value = blobUrl
-    } else {
-      value = undefined
-    }
-  }
+  $effect(() => {
+    const cloudUser = useCloud ? cloud.user : null;
+    void revision;
+    const current = ++version;
+    void loadPicture(cloudUser).then((url) => {
+      if (current !== version) return revokePfpUrl(url);
+      revokePfpUrl(src);
+      src = url;
+      removable = !!url && !cloudUser;
+    });
+  });
 
   onMount(() => {
-    void load()
-    const unsub = cloudAuth.subscribe((s) => { cloudState = s })
-    const onStorage = (
-      changes: Record<string, chrome.storage.StorageChange>,
-      areaName: string,
-    ) => {
-      if (areaName === 'local' && changes['plugin.profile-picture.settings']) void load()
-    }
-    browser.storage.onChanged.addListener(onStorage)
+    const unsubscribe = cloudAuth.subscribe((state) => (cloud = state));
+    const onStorage = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+      if (area === "local" && changes[REVISION_KEY]) revision++;
+    };
+    browser.storage.onChanged.addListener(onStorage);
     return () => {
-      browser.storage.onChanged.removeListener(onStorage)
-      unsub()
-    }
-  })
+      version++;
+      unsubscribe();
+      browser.storage.onChanged.removeListener(onStorage);
+      revokePfpUrl(src);
+    };
+  });
 
-  async function afterProfilePictureChange() {
-    window.dispatchEvent(new Event('profile-picture-updated'))
-    if (await isUseCloudPfpEnabled()) await syncLocalProfilePictureToCloud()
-    await notifyProfilePictureChanged()
-  }
-
-  async function runCloud(action: () => Promise<{ success: boolean; error?: string }>) {
-    cloudError = undefined
-    cloudBusy = true
-    const result = await action()
-    cloudBusy = false
-    if (!result.success) cloudError = result.error
-  }
-
-  function triggerSelect() {
-    fileInput?.click()
-  }
-
-  async function handleFiles(files: FileList | null) {
-    const file = files?.[0]
-    if (!file?.type.startsWith('image/')) return
-
-    if (blobUrl) URL.revokeObjectURL(blobUrl)
-    await store.setItem('profile-picture', file)
-    blobUrl = URL.createObjectURL(file)
-    value = blobUrl
-    await afterProfilePictureChange()
-  }
-
-  async function onCloudFileChange() {
-    const file = cloudFileInput?.files?.[0]
-    if (cloudFileInput) cloudFileInput.value = ''
-    if (!file) return
-    await runCloud(() => uploadCloudProfilePicture(file))
-  }
-
-  function onFileChange() {
-    handleFiles(fileInput?.files || null)
-  }
-
-  function onDrop(event: DragEvent) {
-    event.preventDefault()
-    dragging = false
-    handleFiles(event.dataTransfer?.files || null)
-  }
-
-  async function removeImage() {
-    if (blobUrl) {
-      URL.revokeObjectURL(blobUrl)
-      blobUrl = undefined
-    }
-    value = undefined
-    await store.removeItem('profile-picture')
-    if (await isUseCloudPfpEnabled()) await clearCloudProfilePicture()
-    await afterProfilePictureChange()
+  async function save(file: File | undefined) {
+    if (!file?.type.startsWith("image/")) return;
+    error = undefined;
+    if (!useCloud) return setLocalPicture(file);
+    busy = true;
+    const result = await uploadCloudProfilePicture(file);
+    busy = false;
+    if (!result.success) error = result.error;
   }
 </script>
 
-<div class="flex flex-col items-end gap-1 shrink-0">
-  <div class="flex items-center gap-2">
-    {#if useCloudPfp && cloudState.isLoggedIn}
-      <CloudPfpAvatar user={cloudState.user} class="object-cover rounded-full size-10 shrink-0" />
-      <button
-        type="button"
-        class="flex justify-center items-center shrink-0 rounded-md size-8 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 disabled:opacity-50"
-        disabled={cloudBusy}
-        title="Refresh from cloud"
-        aria-label="Refresh from cloud"
-        onclick={() => runCloud(pullCloudProfilePictureFromServer)}
-      >
-        <span class="text-lg font-IconFamily dark:text-white">{'\uec79'}</span>
-      </button>
-      <div class="w-px h-8 shrink-0 bg-zinc-300 dark:bg-zinc-600" aria-hidden="true"></div>
-    {/if}
-
-    <div
-      class="relative shrink-0 cursor-pointer select-none"
-      onclick={() => (value ? null : triggerSelect())}
-      ondragover={(e) => { e.stopPropagation(); dragging = true }}
-      ondragleave={() => dragging = false}
-      ondrop={onDrop}
-      onkeydown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          triggerSelect()
-        }
-      }}
-      role="button"
-      tabindex="0"
+<div class="flex flex-col gap-1 items-end shrink-0">
+  <div class="flex gap-2 items-center">
+    <button
+      type="button"
+      class="flex justify-center items-center rounded-md size-8 bg-zinc-200 dark:bg-zinc-700 hover:bg-zinc-300 dark:hover:bg-zinc-600 dark:text-white {removable
+        ? ''
+        : 'invisible'}"
+      aria-label="Remove profile picture"
+      onclick={() => setLocalPicture(null)}
     >
-      {#if value}
-        <div class="flex items-center rounded-lg bg-zinc-200 dark:bg-zinc-800">
-          <img src={value} alt="Local profile" class="object-cover rounded-full size-10" />
-          <button
-            class="flex justify-center items-center m-1 text-lg dark:text-white size-7"
-            aria-label="Remove local profile picture"
-            onclick={(e) => {
-              e.stopPropagation()
-              removeImage()
-            }}
-          >&#215;</button>
-        </div>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+    </button>
+    <div
+      class="flex overflow-hidden justify-center items-center rounded-full size-10 bg-zinc-200 dark:bg-zinc-700 text-zinc-400"
+    >
+      {#if src}
+        <img {src} alt="Your avatar" class="object-cover size-full" />
       {:else}
-        <div class="flex gap-2 items-center px-3 py-1 text-xs rounded-lg border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap">
-          <span class="text-lg font-IconFamily">{'\ued47'}</span>
-          <span>Upload</span>
-        </div>
-      {/if}
-      <input type="file" accept="image/*" class="hidden" bind:this={fileInput} onchange={onFileChange} />
-      {#if dragging}
-        <div class="absolute inset-0 rounded-lg bg-zinc-200/40 dark:bg-zinc-700/40"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12,19.2C9.5,19.2 7.29,17.92 6,16C6.03,14 10,12.9 12,12.9C14,12.9 17.97,14 18,16C16.71,17.92 14.5,19.2 12,19.2M12,5A3,3 0 0,1 15,8A3,3 0 0,1 12,11A3,3 0 0,1 9,8A3,3 0 0,1 12,5M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12C22,6.47 17.5,2 12,2Z" /></svg>
       {/if}
     </div>
+    <button
+      type="button"
+      class="flex gap-1.5 items-center px-3 h-8 text-xs rounded-md border border-dashed transition border-zinc-300 dark:border-zinc-600 text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 text-nowrap disabled:opacity-50"
+      disabled={busy}
+      onclick={() => input?.click()}
+      ondragover={(event) => event.preventDefault()}
+      ondrop={(event) => {
+        event.preventDefault();
+        void save(event.dataTransfer?.files[0]);
+      }}
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      Upload
+    </button>
+    <input
+      type="file"
+      accept="image/*"
+      class="hidden"
+      bind:this={input}
+      onchange={() => {
+        void save(input?.files?.[0]);
+        if (input) input.value = "";
+      }}
+    />
   </div>
-
-  {#if cloudState.isLoggedIn}
-    <div class="flex flex-wrap gap-2 justify-end items-center max-w-56">
-      <button
-        type="button"
-        class="text-xs text-zinc-600 dark:text-zinc-300 hover:underline disabled:opacity-50"
-        disabled={cloudBusy}
-        onclick={() => cloudFileInput?.click()}
-      >
-        Cloud upload
-      </button>
-      <button
-        type="button"
-        class="text-xs text-zinc-600 dark:text-zinc-300 hover:underline disabled:opacity-50"
-        disabled={cloudBusy || !cloudState.user?.pfpUrl}
-        onclick={() => runCloud(clearCloudProfilePicture)}
-      >
-        Clear cloud
-      </button>
-      {#each cloudState.user?.pfpHistory ?? [] as entry (entry.id)}
-        <button
-          type="button"
-          class="size-7 overflow-hidden rounded-full ring-1 ring-zinc-300 dark:ring-zinc-600 disabled:opacity-50"
-          title="Restore"
-          disabled={cloudBusy}
-          onclick={() => runCloud(() => revertCloudProfilePicture(entry.id))}
-        >
-          <img src={entry.r2Key} alt="" class="object-cover size-full" />
-        </button>
-      {/each}
-      <input type="file" accept="image/*" class="hidden" bind:this={cloudFileInput} onchange={onCloudFileChange} />
-    </div>
-  {/if}
-
-  {#if cloudError}
-    <p class="max-w-48 text-xs text-right text-red-500">{cloudError}</p>
+  {#if error}
+    <p class="max-w-48 text-xs text-right text-red-500">{error}</p>
   {/if}
 </div>

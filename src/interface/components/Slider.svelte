@@ -1,10 +1,16 @@
 <script lang="ts">
-  let { state = $bindable(), onChange, min = 0, max = 100, step = 1 }: { 
-    state: number, 
-    onChange: (value: number) => void,
-    min?: number,
-    max?: number,
-    step?: number
+  let {
+    state = $bindable(),
+    onChange,
+    min = 0,
+    max = 100,
+    step = 1,
+  }: {
+    state: number;
+    onChange: (value: number) => void;
+    min?: number;
+    max?: number;
+    step?: number;
   } = $props();
   let percentage = $derived(((state - min) / (max - min)) * 100);
 </script>
@@ -12,9 +18,9 @@
 <div class="relative w-full min-w-0">
   <input
     type="range"
-    min={min}
-    max={max}
-    step={step}
+    {min}
+    {max}
+    {step}
     bind:value={state}
     style={`background: linear-gradient(to right, #30d259ad 0%, #30D259 ${percentage}%, #dddddd ${percentage}%)`}
     oninput={(e) => onChange(Number(e.currentTarget.value))}

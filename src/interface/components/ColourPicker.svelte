@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { onMount } from 'svelte'
-  import { animate } from 'motion';
-  import { delay } from '@/seqta/utils/delay'
-  import { settingsState } from '@/seqta/utils/listeners/SettingsState'
-  import GradientPicker from './colourPicker/GradientPicker.svelte'
+  import { onMount } from "svelte";
+  import { animate } from "motion";
+  import { delay } from "@/seqta/utils/delay";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
+  import GradientPicker from "./colourPicker/GradientPicker.svelte";
 
-  const PRESETS_KEY = 'colorPickerPresets';
+  const PRESETS_KEY = "colorPickerPresets";
   const MAX_PRESETS = 18;
   const DEFAULT_PRESETS = [
     "linear-gradient(30deg, rgba(229,209,218,1) 0%, RGBA(235,169,202,1) 46%, rgba(214,155,162,1) 100%)",
@@ -49,12 +49,12 @@
   let current = $state(initialColour());
 
   function initialColour(): string {
-    return customState ?? settingsState.selectedColor ?? '';
+    return customState ?? settingsState.selectedColor ?? "";
   }
 
   function loadPresets(): string[] {
     try {
-      const saved = JSON.parse(localStorage.getItem(PRESETS_KEY) ?? 'null');
+      const saved = JSON.parse(localStorage.getItem(PRESETS_KEY) ?? "null");
       return Array.isArray(saved) ? saved : DEFAULT_PRESETS;
     } catch {
       return DEFAULT_PRESETS;
@@ -63,7 +63,10 @@
 
   function rememberPreset(colour: string) {
     if (!colour || presets[0] === colour) return;
-    const updated = [colour, ...presets.filter((preset) => preset !== colour)].slice(0, MAX_PRESETS);
+    const updated = [colour, ...presets.filter((preset) => preset !== colour)].slice(
+      0,
+      MAX_PRESETS,
+    );
     localStorage.setItem(PRESETS_KEY, JSON.stringify(updated));
   }
 
@@ -76,26 +79,34 @@
   const closePicker = async () => {
     if (standalone || !background || !content) return;
 
-    animate(content, { scale: [1, 0.4], opacity: [1, 0] }, { type: 'spring', stiffness: 400, damping: 30 });
+    animate(
+      content,
+      { scale: [1, 0.4], opacity: [1, 0] },
+      { type: "spring", stiffness: 400, damping: 30 },
+    );
     animate(background, { opacity: [1, 0] }, { ease: [0.4, 0, 0.2, 1] });
 
     await delay(400);
     hidePicker?.();
-  }
+  };
 
   onMount(() => {
     if (!standalone && background && content) {
       animate(background, { opacity: [0, 1] }, { duration: 0.3, ease: [0.4, 0, 0.2, 1] });
-      animate(content, { scale: [0.4, 1], opacity: [0, 1] }, { type: 'spring', stiffness: 400, damping: 30 });
+      animate(
+        content,
+        { scale: [0.4, 1], opacity: [0, 1] },
+        { type: "spring", stiffness: 400, damping: 30 },
+      );
     }
 
     const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') closePicker();
+      if (event.key === "Escape") closePicker();
     };
-    document.addEventListener('keydown', handleEscapeKey);
+    document.addEventListener("keydown", handleEscapeKey);
 
     return () => {
-      document.removeEventListener('keydown', handleEscapeKey);
+      document.removeEventListener("keydown", handleEscapeKey);
       if (savePresets && !customOnChange) rememberPreset(current);
     };
   });
@@ -113,9 +124,13 @@
   <!-- svelte-ignore a11y_no_static_element_interactions -->
   <div
     bind:this={background}
-    class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full shadow-2xl cursor-pointer bg-black/20 border border-[#DDDDDD]/30 dark:border-[#38373D]/30 {$settingsState.DarkMode ? 'dark' : ''}"
+    class="flex absolute top-0 left-0 z-50 justify-center items-center w-full h-full shadow-2xl cursor-pointer bg-black/20 border border-[#DDDDDD]/30 dark:border-[#38373D]/30 {$settingsState.DarkMode
+      ? 'dark'
+      : ''}"
     onclick={handleBackgroundClick}
-    onkeydown={(event) => { if (event.key === 'Enter') handleBackgroundClick(event as unknown as MouseEvent) }}
+    onkeydown={(event) => {
+      if (event.key === "Enter") handleBackgroundClick(event as unknown as MouseEvent);
+    }}
   >
     <div
       bind:this={content}

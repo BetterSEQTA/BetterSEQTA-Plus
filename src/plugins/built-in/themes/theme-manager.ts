@@ -4,16 +4,17 @@ import {
   type CustomTheme,
   getForcedDarkMode,
   type LoadedCustomTheme,
+  type ThemeCreatorMeta,
   shouldForceThemeAppearance,
-} from "@/types/CustomThemes";
+} from "@/types/customThemes";
 import { BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY } from "@/seqta/utils/cloudSettingsSync";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { fullMotionEffectsEnabled } from "@/seqta/utils/performanceMode";
 import debounce from "@/seqta/utils/debounce";
-import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
+import { themeUpdates } from "@/interface/hooks/themeUpdates";
 import { API_BASE } from "@/config/apiBase";
 import { isAllowedFetchUrl } from "@/seqta/utils/allowedFetchUrl";
-import { updateAllColors } from "@/seqta/ui/colors/Manager";
+import { updateAllColors } from "@/seqta/ui/colors/colorManager";
 import {
   clearCustomThemeAdaptiveCssVariables,
   setCustomThemeAdaptiveCssVariables,
@@ -35,6 +36,12 @@ import {
   validateThemeScript,
 } from "./theme-runtime";
 import { base64ToBlob, blobToBase64Data, stripBase64Prefix } from "@/seqta/utils/base64";
+import { mergeThemeWithCreatorMeta } from "@/interface/utils/themeCreatorMeta";
+
+function resolveThemeCustomCss(theme: LoadedCustomTheme): string {
+  if (!theme.creatorMeta) return theme.CustomCSS || "";
+  return mergeThemeWithCreatorMeta(theme, theme.creatorMeta).CustomCSS;
+}
 
 type ThemeContent = {
   id: string;
@@ -49,6 +56,7 @@ type ThemeContent = {
   forceDark?: boolean;
   adaptiveCssVariables?: string[];
   images?: { id: string; variableName: string; data: string }[]; // data: base64
+  creatorMeta?: ThemeCreatorMeta;
   themeScript?: ThemeScriptSpec;
   themeDom?: ThemeDomSpec;
 };
@@ -76,7 +84,7 @@ export class ThemeManager {
   private storeUpdateCheckRunning = false;
 
   private constructor() {
-    verboseDebug("[ThemeManager] Initializing...");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Initializing...");
   }
 
   public static getInstance(): ThemeManager {
@@ -97,12 +105,12 @@ export class ThemeManager {
    * Get a theme by ID from storage
    */
   public async getTheme(themeId: string): Promise<CustomTheme | null> {
-    verboseDebug("[ThemeManager] Getting theme:", themeId);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Getting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       return theme;
     } catch (error) {
-      console.error("[ThemeManager] Error getting theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error getting theme:", error);
       return null;
     }
   }
@@ -159,7 +167,7 @@ export class ThemeManager {
         },
       );
     } catch (error) {
-      console.error("[ThemeManager] View Transition animation error:", error);
+      console.error("[BetterSEQTA+] ThemeManager: View Transition animation error:", error);
     }
   }
 
@@ -167,19 +175,19 @@ export class ThemeManager {
    * Disable the current theme without deleting it
    */
   public async disableTheme(): Promise<void> {
-    verboseDebug("[ThemeManager] Disabling current theme");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Disabling current theme");
     try {
       if (!this.currentTheme) {
-        verboseDebug("[ThemeManager] No theme to disable");
+        verboseDebug("[BetterSEQTA+] ThemeManager: No theme to disable");
         return;
       }
 
       await this.removeTheme(this.currentTheme);
       this.currentTheme = null;
       settingsState.selectedTheme = "";
-      verboseDebug("[ThemeManager] Theme disabled successfully");
+      verboseDebug("[BetterSEQTA+] ThemeManager: Theme disabled successfully");
     } catch (error) {
-      console.error("[ThemeManager] Error disabling theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error disabling theme:", error);
     }
   }
 
@@ -211,7 +219,7 @@ export class ThemeManager {
       }
       await browser.storage.local.remove(BSPLUS_PENDING_THEME_ENSURE_AFTER_CLOUD_KEY);
     } catch (e) {
-      console.warn("[ThemeManager] prepareThemeAfterCloudSync:", e);
+      console.warn("[BetterSEQTA+] ThemeManager: prepareThemeAfterCloudSync:", e);
     }
   }
 
@@ -219,7 +227,7 @@ export class ThemeManager {
    * Initialize the theme system and restore previous state
    */
   public async initialize(): Promise<void> {
-    verboseDebug("[ThemeManager] Starting initialization");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Starting initialization");
     try {
       const neumorphicThemeId = "9a9786d1-b5fc-4a91-8c7a-f8bf7f7679ad";
       const titlePatch = "#title {\nbackground: transparent !important;\n}";
@@ -233,23 +241,23 @@ export class ThemeManager {
         await import("@/plugins/built-in/themes/themeCreatorPersistence");
       const creatorSession = readThemeCreatorSession();
       if (creatorSession.open) {
-        verboseDebug("[ThemeManager] Restoring theme creator after navigation");
-        const { OpenThemeCreator, isThemeCreatorOpen } =
-          await import("@/plugins/built-in/themes/ThemeCreator");
+        verboseDebug("[BetterSEQTA+] ThemeManager: Restoring theme creator after navigation");
+        const { openThemeCreator, isThemeCreatorOpen } =
+          await import("@/plugins/built-in/themes/themeCreator");
         if (!isThemeCreatorOpen()) {
-          void OpenThemeCreator(creatorSession.editingThemeId);
+          void openThemeCreator(creatorSession.editingThemeId);
         }
       }
 
       if (settingsState.selectedTheme) {
         verboseDebug(
-          "[ThemeManager] Found selected theme, restoring:",
+          "[BetterSEQTA+] ThemeManager: Found selected theme, restoring:",
           settingsState.selectedTheme,
         );
         await this.setTheme(settingsState.selectedTheme, false);
       }
     } catch (error) {
-      console.error("[ThemeManager] Error during initialization:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error during initialization:", error);
     } finally {
       void this.checkStoreThemeUpdates();
     }
@@ -259,13 +267,13 @@ export class ThemeManager {
    * Clean up theme system resources
    */
   public async cleanup(): Promise<void> {
-    verboseDebug("[ThemeManager] Cleaning up resources");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Cleaning up resources");
     try {
       if (this.currentTheme) {
         await this.removeTheme(this.currentTheme, false);
       }
     } catch (error) {
-      console.error("[ThemeManager] Error during cleanup:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error during cleanup:", error);
     }
   }
 
@@ -273,17 +281,17 @@ export class ThemeManager {
    * Set and apply a theme by ID
    */
   public async setTheme(themeId: string, applyViewTransition: boolean = true): Promise<void> {
-    verboseDebug("[ThemeManager] Setting theme:", themeId);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Setting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       if (!theme) {
-        console.error("[ThemeManager] Theme not found:", themeId);
+        console.error("[BetterSEQTA+] ThemeManager: Theme not found:", themeId);
         return;
       }
 
       // Store original settings before applying new theme
       if (!settingsState.selectedTheme) {
-        verboseDebug("[ThemeManager] Storing original settings");
+        verboseDebug("[BetterSEQTA+] ThemeManager: Storing original settings");
         settingsState.originalSelectedColor = settingsState.selectedColor;
 
         if (shouldForceThemeAppearance(theme)) {
@@ -295,7 +303,7 @@ export class ThemeManager {
       if (applyViewTransition) {
         await this.applyViewTransition(async () => {
           if (this.currentTheme) {
-            verboseDebug("[ThemeManager] Removing current theme");
+            verboseDebug("[BetterSEQTA+] ThemeManager: Removing current theme");
             await this.removeThemeWithoutTransition(this.currentTheme);
           }
 
@@ -305,7 +313,7 @@ export class ThemeManager {
         });
       } else {
         if (this.currentTheme) {
-          verboseDebug("[ThemeManager] Removing current theme");
+          verboseDebug("[BetterSEQTA+] ThemeManager: Removing current theme");
           await this.removeThemeWithoutTransition(this.currentTheme);
         }
 
@@ -315,7 +323,7 @@ export class ThemeManager {
       }
       void updateAllColors();
     } catch (error) {
-      console.error("[ThemeManager] Error setting theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error setting theme:", error);
     }
   }
 
@@ -323,7 +331,7 @@ export class ThemeManager {
    * Apply theme components (CSS, images, settings)
    */
   private async applyTheme(theme: CustomTheme): Promise<void> {
-    verboseDebug("[ThemeManager] Applying theme:", theme.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Applying theme:", theme.name);
     try {
       // Run the theme script BEFORE injecting CustomCSS so any state the
       // script publishes (e.g. `data-city-state` and `--city-sky-color` for
@@ -333,9 +341,9 @@ export class ThemeManager {
       runThemeScript(theme.themeScript);
 
       // Custom CSS + images must be applied in page context (Firefox).
-      verboseDebug("[ThemeManager] Applying theme styles in page context");
+      verboseDebug("[BetterSEQTA+] ThemeManager: Applying theme styles in page context");
       await syncThemeToPage({
-        customCss: theme.CustomCSS || "",
+        customCss: resolveThemeCustomCss(theme as LoadedCustomTheme),
         images: theme.CustomImages ?? [],
       });
       if (theme.CustomImages?.length) {
@@ -346,16 +354,16 @@ export class ThemeManager {
 
       if (shouldForceThemeAppearance(theme)) {
         const dark = getForcedDarkMode(theme);
-        verboseDebug("[ThemeManager] Setting dark mode:", dark);
+        verboseDebug("[BetterSEQTA+] ThemeManager: Setting dark mode:", dark);
         settingsState.DarkMode = dark;
       }
 
       // Use the stored selected color if available, otherwise use the default
       if (theme.selectedColor) {
-        verboseDebug("[ThemeManager] Restoring saved color:", theme.selectedColor);
+        verboseDebug("[BetterSEQTA+] ThemeManager: Restoring saved color:", theme.selectedColor);
         settingsState.selectedColor = theme.selectedColor;
       } else if (theme.defaultColour) {
-        verboseDebug("[ThemeManager] Using default color:", theme.defaultColour);
+        verboseDebug("[BetterSEQTA+] ThemeManager: Using default color:", theme.defaultColour);
         settingsState.selectedColor = theme.defaultColour;
       }
 
@@ -367,7 +375,7 @@ export class ThemeManager {
 
       injectThemeDom(theme.themeDom);
     } catch (error) {
-      console.error("[ThemeManager] Error applying theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error applying theme:", error);
     }
   }
 
@@ -375,13 +383,13 @@ export class ThemeManager {
    * Remove theme and restore original settings with view transition
    */
   private async removeTheme(theme: CustomTheme, clearSelectedTheme: boolean = true): Promise<void> {
-    verboseDebug("[ThemeManager] Removing theme with transition:", theme.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Removing theme with transition:", theme.name);
     try {
       await this.applyViewTransition(async () => {
         await this.removeThemeWithoutTransition(theme, clearSelectedTheme);
       });
     } catch (error) {
-      console.error("[ThemeManager] Error removing theme with transition:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error removing theme with transition:", error);
     }
   }
 
@@ -392,11 +400,11 @@ export class ThemeManager {
     theme: CustomTheme,
     clearSelectedTheme: boolean = true,
   ): Promise<void> {
-    verboseDebug("[ThemeManager] Removing theme:", theme.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Removing theme:", theme.name);
     try {
       clearThemeRuntime();
 
-      verboseDebug("[ThemeManager] Removing theme page styles");
+      verboseDebug("[BetterSEQTA+] ThemeManager: Removing theme page styles");
       clearThemeInPage();
       this.lastSyncedImageKey = null;
 
@@ -419,7 +427,7 @@ export class ThemeManager {
 
       if (settingsState.originalSelectedColor) {
         verboseDebug(
-          "[ThemeManager] Restoring original color:",
+          "[BetterSEQTA+] ThemeManager: Restoring original color:",
           settingsState.originalSelectedColor,
         );
         settingsState.selectedColor = settingsState.originalSelectedColor;
@@ -427,7 +435,7 @@ export class ThemeManager {
 
       if (settingsState.originalDarkMode !== undefined) {
         verboseDebug(
-          "[ThemeManager] Restoring original dark mode:",
+          "[BetterSEQTA+] ThemeManager: Restoring original dark mode:",
           settingsState.originalDarkMode,
         );
         settingsState.DarkMode = settingsState.originalDarkMode;
@@ -440,7 +448,7 @@ export class ThemeManager {
       }
       clearCustomThemeAdaptiveCssVariables();
     } catch (error) {
-      console.error("[ThemeManager] Error removing theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error removing theme:", error);
     }
   }
 
@@ -472,7 +480,7 @@ export class ThemeManager {
    * Get list of available themes
    */
   public async getAvailableThemes(): Promise<CustomTheme[]> {
-    verboseDebug("[ThemeManager] Getting available themes");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Getting available themes");
     try {
       const themeIds = (await localforage.getItem("customThemes")) as string[] | null;
       if (!themeIds) {
@@ -487,7 +495,7 @@ export class ThemeManager {
 
       return themes.filter((theme) => theme !== null);
     } catch (error) {
-      console.error("[ThemeManager] Error getting available themes:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error getting available themes:", error);
       return [];
     }
   }
@@ -496,7 +504,7 @@ export class ThemeManager {
    * Save or update a theme
    */
   public async saveTheme(theme: LoadedCustomTheme): Promise<void> {
-    verboseDebug("[ThemeManager] Saving theme:", theme.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Saving theme:", theme.name);
     try {
       const existing = (await localforage.getItem(theme.id)) as CustomTheme | null;
       let toSave = theme;
@@ -516,7 +524,7 @@ export class ThemeManager {
         await localforage.setItem("customThemes", [toSave.id]);
       }
     } catch (error) {
-      console.error("[ThemeManager] Error saving theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error saving theme:", error);
     }
   }
 
@@ -524,7 +532,7 @@ export class ThemeManager {
    * Delete a theme
    */
   public async deleteTheme(themeId: string): Promise<void> {
-    verboseDebug("[ThemeManager] Deleting theme:", themeId);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Deleting theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as CustomTheme;
       if (theme) {
@@ -540,7 +548,7 @@ export class ThemeManager {
         }
       }
     } catch (error) {
-      console.error("[ThemeManager] Error deleting theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error deleting theme:", error);
     }
   }
 
@@ -576,7 +584,7 @@ export class ThemeManager {
     try {
       await this.downloadAndInstallStoreTheme(themeContent);
     } catch (error) {
-      console.error("[ThemeManager] Error downloading theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error downloading theme:", error);
     }
   }
 
@@ -592,7 +600,7 @@ export class ThemeManager {
     try {
       return await this.downloadAndInstallCommunityTheme(themeContent);
     } catch (error) {
-      console.error("[ThemeManager] Error downloading community theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error downloading community theme:", error);
       throw error;
     }
   }
@@ -631,7 +639,7 @@ export class ThemeManager {
     theme_json_url?: string;
     updated_at?: number;
   }): Promise<string> {
-    verboseDebug("[ThemeManager] Downloading community theme:", themeContent.id);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Downloading community theme:", themeContent.id);
     if (!themeContent.id) {
       throw new Error("Missing theme id");
     }
@@ -655,7 +663,7 @@ export class ThemeManager {
     const catalogId = themeContent.id;
     if (themeData.id && themeData.id !== catalogId) {
       verboseDebug(
-        "[ThemeManager] Community theme.json id differs from catalog id; using catalog id",
+        "[BetterSEQTA+] ThemeManager: Community theme.json id differs from catalog id; using catalog id",
         { catalogId, themeJsonId: themeData.id },
       );
     }
@@ -681,7 +689,7 @@ export class ThemeManager {
     theme_json_url?: string;
     updated_at?: number;
   }): Promise<void> {
-    verboseDebug("[ThemeManager] Downloading theme:", themeContent.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Downloading theme:", themeContent.name);
     if (!themeContent.id) {
       throw new Error("Missing theme id");
     }
@@ -701,7 +709,7 @@ export class ThemeManager {
       }
       themeData = (await this.fetchFromUrl(themeJsonUrl)) as ThemeContent;
     } catch (apiError) {
-      console.warn("[ThemeManager] API failed, trying GitHub fallback:", apiError);
+      console.warn("[BetterSEQTA+] ThemeManager: API failed, trying GitHub fallback:", apiError);
       const githubUrl = `${this.GITHUB_THEMES_BASE}/${themeContent.id}/theme.json`;
       themeData = (await this.fetchFromUrl(githubUrl)) as ThemeContent;
     }
@@ -716,7 +724,7 @@ export class ThemeManager {
    * Install a theme from theme data
    */
   public async installTheme(themeData: ThemeContent, meta?: InstallThemeMeta): Promise<void> {
-    verboseDebug("[ThemeManager] Installing theme:", themeData.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Installing theme:", themeData.name);
     try {
       if (!themeData.id || !themeData.name) {
         throw new Error("Theme is missing required fields (id or name)");
@@ -750,7 +758,7 @@ export class ThemeManager {
         try {
           coverImageBlob = base64ToBlob(stripBase64Prefix(themeData.coverImage), "image/png");
         } catch (e) {
-          console.warn("[ThemeManager] Failed to process cover image:", e);
+          console.warn("[BetterSEQTA+] ThemeManager: Failed to process cover image:", e);
         }
       }
 
@@ -760,7 +768,7 @@ export class ThemeManager {
           ?.map((image) => {
             try {
               if (!image.id || !image.variableName || !image.data) {
-                console.warn("[ThemeManager] Skipping invalid image:", image);
+                console.warn("[BetterSEQTA+] ThemeManager: Skipping invalid image:", image);
                 return null;
               }
               return {
@@ -768,7 +776,7 @@ export class ThemeManager {
                 blob: base64ToBlob(stripBase64Prefix(image.data), "image/png"),
               };
             } catch (e) {
-              console.warn("[ThemeManager] Failed to process image:", e);
+              console.warn("[BetterSEQTA+] ThemeManager: Failed to process image:", e);
               return null;
             }
           })
@@ -801,11 +809,12 @@ export class ThemeManager {
         adaptiveCssVariables: themeData.adaptiveCssVariables,
         themeScript: themeData.themeScript,
         themeDom: themeData.themeDom,
+        creatorMeta: themeData.creatorMeta,
       };
 
       await this.saveTheme(theme);
     } catch (error) {
-      console.error("[ThemeManager] Error installing theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error installing theme:", error);
       throw error; // Re-throw to handle in UI
     }
   }
@@ -880,19 +889,19 @@ export class ThemeManager {
             name: theme.name,
             updated_at: serverUpdated,
           });
-          verboseInfo("[ThemeManager] Theme auto-updated from store:", theme.name);
+          verboseInfo("[BetterSEQTA+] ThemeManager: Theme auto-updated from store:", theme.name);
           if (wasSelected) {
             await this.setTheme(id, false);
           }
           themeUpdates.triggerUpdate();
         } catch (err) {
-          console.error("[ThemeManager] Store theme auto-update failed:", id, err);
+          console.error("[BetterSEQTA+] ThemeManager: Store theme auto-update failed:", id, err);
           if (wasSelected) {
             try {
               await this.setTheme(id, false);
             } catch (restoreErr) {
               console.error(
-                "[ThemeManager] Failed to restore theme after update error:",
+                "[BetterSEQTA+] ThemeManager: Failed to restore theme after update error:",
                 restoreErr,
               );
             }
@@ -900,7 +909,7 @@ export class ThemeManager {
         }
       }
     } catch (e) {
-      console.error("[ThemeManager] checkStoreThemeUpdates error:", e);
+      console.error("[BetterSEQTA+] ThemeManager: checkStoreThemeUpdates error:", e);
     } finally {
       this.storeUpdateCheckRunning = false;
     }
@@ -910,11 +919,11 @@ export class ThemeManager {
    * Share a theme by exporting it
    */
   public async shareTheme(themeId: string): Promise<void> {
-    verboseDebug("[ThemeManager] Sharing theme:", themeId);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Sharing theme:", themeId);
     try {
       const theme = (await localforage.getItem(themeId)) as LoadedCustomTheme;
       if (!theme) {
-        console.error("[ThemeManager] Theme not found");
+        console.error("[BetterSEQTA+] ThemeManager: Theme not found");
         return;
       }
 
@@ -951,7 +960,7 @@ export class ThemeManager {
 
       this.saveThemeFile(shareableTheme, theme.name || "Unnamed_Theme");
     } catch (error) {
-      console.error("[ThemeManager] Error sharing theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error sharing theme:", error);
     }
   }
 
@@ -959,9 +968,9 @@ export class ThemeManager {
    * Preview a theme without applying it
    */
   public async previewTheme(theme: LoadedCustomTheme): Promise<void> {
-    verboseDebug("[ThemeManager] Previewing theme:", theme.name);
+    verboseDebug("[BetterSEQTA+] ThemeManager: Previewing theme:", theme.name);
     try {
-      const { CustomCSS, CustomImages, defaultColour } = theme;
+      const { CustomImages, defaultColour } = theme;
 
       // Store original settings only if this is a new theme
       if (!theme.webURL) {
@@ -976,7 +985,7 @@ export class ThemeManager {
 
       // Apply custom CSS + images in page context (preview stylesheet)
       await syncThemeToPage({
-        previewCss: CustomCSS,
+        previewCss: resolveThemeCustomCss(theme),
         images: CustomImages,
       });
       this.lastSyncedImageKey = this.imageSyncKey(CustomImages);
@@ -992,7 +1001,7 @@ export class ThemeManager {
       setCustomThemeAdaptiveCssVariables(theme.adaptiveCssVariables ?? []);
       void updateAllColors();
     } catch (error) {
-      console.error("[ThemeManager] Error previewing theme:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error previewing theme:", error);
     }
   }
 
@@ -1000,7 +1009,7 @@ export class ThemeManager {
    * Update the preview of a theme in real-time (for theme creator)
    */
   public async updatePreview(theme: Partial<LoadedCustomTheme>): Promise<void> {
-    verboseDebug("[ThemeManager] Updating theme preview");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Updating theme preview");
     try {
       // Only store original settings if this is a new theme (not editing)
       // We can tell it's a new theme if it has no webURL (which is set when a theme is saved/loaded)
@@ -1053,7 +1062,7 @@ export class ThemeManager {
 
       void updateAllColors();
     } catch (error) {
-      console.error("[ThemeManager] Error updating theme preview:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error updating theme preview:", error);
     }
   }
 
@@ -1075,7 +1084,7 @@ export class ThemeManager {
       this.originalPreviewTheme = settingsState.DarkMode;
     }
 
-    verboseDebug("[ThemeManager] Theme creator session started", {
+    verboseDebug("[BetterSEQTA+] ThemeManager: Theme creator session started", {
       suspendedThemeId: this.themeCreatorSuspendedThemeId,
     });
   }
@@ -1092,7 +1101,7 @@ export class ThemeManager {
     this.themeCreatorSuspendedThemeId = null;
     this.clearPreview();
     if (restoreId) {
-      verboseDebug("[ThemeManager] Restoring theme after creator exit:", restoreId);
+      verboseDebug("[BetterSEQTA+] ThemeManager: Restoring theme after creator exit:", restoreId);
       await this.setTheme(restoreId, false);
     }
   }
@@ -1101,7 +1110,7 @@ export class ThemeManager {
    * Clear theme preview
    */
   public clearPreview(): void {
-    verboseDebug("[ThemeManager] Clearing theme preview");
+    verboseDebug("[BetterSEQTA+] ThemeManager: Clearing theme preview");
     try {
       void syncThemeToPage({ clearPreview: true });
       this.lastSyncedImageKey = null;
@@ -1114,23 +1123,32 @@ export class ThemeManager {
         settingsState.selectedColor = storedColor;
         localStorage.removeItem("originalPreviewColor");
       } else if (this.originalPreviewColor !== null) {
-        verboseDebug("[ThemeManager] Restoring color from memory:", this.originalPreviewColor);
+        verboseDebug(
+          "[BetterSEQTA+] ThemeManager: Restoring color from memory:",
+          this.originalPreviewColor,
+        );
         settingsState.selectedColor = this.originalPreviewColor;
-        verboseDebug("[ThemeManager] Color after restore:", settingsState.selectedColor);
+        verboseDebug(
+          "[BetterSEQTA+] ThemeManager: Color after restore:",
+          settingsState.selectedColor,
+        );
       } else {
-        verboseDebug("[ThemeManager] No color to restore found");
+        verboseDebug("[BetterSEQTA+] ThemeManager: No color to restore found");
       }
       this.originalPreviewColor = null;
 
       if (this.originalPreviewTheme !== null) {
-        verboseDebug("[ThemeManager] Restoring dark mode:", this.originalPreviewTheme);
+        verboseDebug(
+          "[BetterSEQTA+] ThemeManager: Restoring dark mode:",
+          this.originalPreviewTheme,
+        );
         settingsState.DarkMode = this.originalPreviewTheme;
         this.originalPreviewTheme = null;
       }
 
       void updateAllColors();
     } catch (error) {
-      console.error("[ThemeManager] Error clearing preview:", error);
+      console.error("[BetterSEQTA+] ThemeManager: Error clearing preview:", error);
     }
   }
 
@@ -1147,7 +1165,7 @@ export class ThemeManager {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("[ThemeManager] Error saving theme file:", err);
+      console.error("[BetterSEQTA+] ThemeManager: Error saving theme file:", err);
     }
   }
 }

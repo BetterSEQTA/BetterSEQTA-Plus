@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 let sequence = "";
 let onKeyDown: ((event: KeyboardEvent) => void) | null = null;

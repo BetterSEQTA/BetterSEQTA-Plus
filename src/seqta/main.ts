@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
 import pageState from "@/pageState.js?script&iife";
 import { extensionPageScriptUrl } from "@/lib/extensionPageScriptUrl";

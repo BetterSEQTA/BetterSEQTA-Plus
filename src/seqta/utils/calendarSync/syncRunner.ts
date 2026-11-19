@@ -18,10 +18,16 @@ import {
   readOutlookCalendarState,
 } from "@/seqta/utils/calendarSync/providerStorage";
 import {
-  BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY,
+  CALENDAR_SYNC_HEARTBEAT_MS,
+  calendarSyncInProgressStorageKey,
+  clearCalendarSyncInProgressMarker,
   getSyncAssessmentDueDates,
   getSyncWeeksAhead,
+  isCalendarSyncRunningElsewhere,
   readResumableCalendarSync,
+  releaseCalendarSyncLock,
+  tryAcquireCalendarSyncLock,
+  type CalendarSyncProvider,
 } from "@/seqta/utils/calendarSync/settings";
 import type {
   GoogleCalendarStatus,
@@ -29,7 +35,7 @@ import type {
   GoogleCalendarSyncResult,
 } from "@/seqta/utils/googleCalendar/types";
 
-export type CalendarProvider = "google" | "outlook";
+export type CalendarProvider = CalendarSyncProvider;
 
 const MSG = {
   accessToken: { google: "googleCalendarGetAccessToken", outlook: "outlookCalendarGetAccessToken" },
@@ -105,21 +111,44 @@ const OUTLOOK_SYNC_RUNNER: CalendarSyncRunnerConfig = {
   lessonSyncProvider: outlookLessonSyncProvider,
 };
 
-export async function runCalendarSync(
+/** In-flight syncs for this tab; overlapping syncs each create every event, duplicating them. */
+const activeSyncs = new Map<CalendarProvider, Promise<GoogleCalendarSyncResult>>();
+
+export function runCalendarSync(
   config: CalendarSyncRunnerConfig,
   params: RunCalendarSyncParams = {},
 ): Promise<GoogleCalendarSyncResult> {
+  const active = activeSyncs.get(config.provider);
+  if (active) return active;
+  const run = runExclusiveCalendarSync(config, params).finally(() => {
+    activeSyncs.delete(config.provider);
+  });
+  activeSyncs.set(config.provider, run);
+  return run;
+}
+
+async function runExclusiveCalendarSync(
+  config: CalendarSyncRunnerConfig,
+  params: RunCalendarSyncParams,
+): Promise<GoogleCalendarSyncResult> {
   const mode = params.mode ?? "full";
+  const lock = await tryAcquireCalendarSyncLock(config.provider, mode);
+  if (!lock.acquired) {
+    return {
+      success: false,
+      error: "A calendar sync is already running in another SEQTA tab. Try again in a minute.",
+    };
+  }
+
+  const { lockId, marker } = lock;
+  const storageKey = calendarSyncInProgressStorageKey(config.provider);
   const weeksAhead = await getSyncWeeksAhead();
 
-  await browser.storage.local.set({
-    [BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY]: {
-      provider: config.provider,
-      mode,
-      origin: location.origin,
-      startedAt: Date.now(),
-    },
-  });
+  const heartbeat = setInterval(() => {
+    void browser.storage.local.set({
+      [storageKey]: { ...marker, heartbeatAt: Date.now(), lockId },
+    });
+  }, CALENDAR_SYNC_HEARTBEAT_MS);
 
   try {
     reportSyncProgress(params.onProgress, {
@@ -157,7 +186,8 @@ export async function runCalendarSync(
       { onProgress: params.onProgress },
     );
   } finally {
-    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    clearInterval(heartbeat);
+    await releaseCalendarSyncLock(config.provider, lockId);
   }
 }
 
@@ -166,13 +196,15 @@ export async function resumeInterruptedCalendarSync(
 ): Promise<GoogleCalendarSyncResult | null> {
   const pending = await readResumableCalendarSync();
   if (!pending) return null;
+  // Another tab is still mid-sync — leave its marker alone; a later page load resumes if it dies.
+  if (await isCalendarSyncRunningElsewhere(pending.provider)) return null;
 
   const state =
     pending.provider === "google"
       ? await readGoogleCalendarState()
       : await readOutlookCalendarState();
   if (!state.refreshToken && !state.accessToken) {
-    await browser.storage.local.remove(BSPLUS_CALENDAR_SYNC_IN_PROGRESS_KEY);
+    await clearCalendarSyncInProgressMarker(pending.provider);
     return null;
   }
 
@@ -185,3 +217,8 @@ export const runGoogleCalendarSync = (params?: RunCalendarSyncParams) =>
 
 export const runOutlookCalendarSync = (params?: RunCalendarSyncParams) =>
   runCalendarSync(OUTLOOK_SYNC_RUNNER, params);
+
+/** @internal Test hook for in-tab sync coalescing. */
+export function __resetActiveCalendarSyncsForTests(): void {
+  activeSyncs.clear();
+}

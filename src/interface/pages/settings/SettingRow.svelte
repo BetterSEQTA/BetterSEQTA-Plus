@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { SettingsList } from "@/interface/types/SettingsProps";
+  import type { SettingsList } from "@/interface/types/settingsProps";
   import { matchesSearch } from "./shared";
 
   let {

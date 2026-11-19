@@ -76,7 +76,7 @@ function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetad
     return { itemClone, metadata: itemClone.metadata || {} };
   } catch (e) {
     console.warn(
-      "[Assessment Action] Failed to clone item, trying to clone metadata separately:",
+      "[BetterSEQTA+] Assessment Action: Failed to clone item, trying to clone metadata separately:",
       e,
     );
     try {
@@ -89,7 +89,10 @@ function cloneAssessmentActionItem(item: IndexItem & { metadata: AssessmentMetad
         metadata,
       };
     } catch (e2) {
-      console.warn("[Assessment Action] Failed to clone metadata, using direct access:", e2);
+      console.warn(
+        "[BetterSEQTA+] Assessment Action: Failed to clone metadata, using direct access:",
+        e2,
+      );
       const metadata = item.metadata || ({} as AssessmentMetadata);
       return { itemClone: item, metadata };
     }
@@ -124,7 +127,7 @@ function createMetadataValueReader(metadata: AssessmentMetadata) {
       }
       return undefined;
     } catch (e) {
-      console.warn(`[Assessment Action] Failed to access metadata.${key}:`, e);
+      console.warn(`[BetterSEQTA+] Assessment Action: Failed to access metadata.${key}:`, e);
       return undefined;
     }
   };
@@ -161,7 +164,10 @@ async function runAssessmentSearchAction(item: IndexItem & { metadata: Assessmen
   ) {
     const extractedId = itemClone.id.replace("assignment-", "");
     assessmentId = Number(extractedId) || extractedId;
-    verboseLog("[Assessment Action] Extracted assessmentId from item ID:", assessmentId);
+    verboseLog(
+      "[BetterSEQTA+] Assessment Action: Extracted assessmentId from item ID:",
+      assessmentId,
+    );
   }
 
   programmeId = coerceNumericMetadataId(programmeId);
@@ -174,12 +180,12 @@ async function runAssessmentSearchAction(item: IndexItem & { metadata: Assessmen
 
   if (hasProgrammeId && hasMetaclassId && hasAssessmentId) {
     const url = `#?page=/assessments/${programmeId}:${metaclassId}&item=${assessmentId}`;
-    verboseLog("[Assessment Action] ✅ Navigating to:", url);
+    verboseLog("[BetterSEQTA+] Assessment Action: ✅ Navigating to:", url);
     window.location.hash = url;
     return;
   }
 
-  console.error("[Assessment Action] ❌ Missing required metadata:", {
+  console.error("[BetterSEQTA+] Assessment Action: ❌ Missing required metadata:", {
     programmeId,
     metaclassId,
     assessmentId,
@@ -194,7 +200,9 @@ async function runAssessmentSearchAction(item: IndexItem & { metadata: Assessmen
   if (hasAssessmentId) {
     window.location.hash = `#?page=/assessments/upcoming&item=${assessmentId}`;
   } else {
-    console.warn("[Assessment Action] No valid assessment ID, redirecting to upcoming");
+    console.warn(
+      "[BetterSEQTA+] Assessment Action: No valid assessment ID, redirecting to upcoming",
+    );
     window.location.hash = `#?page=/assessments/upcoming`;
   }
 }

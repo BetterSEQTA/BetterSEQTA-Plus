@@ -7,7 +7,7 @@
     getThermoscorePercent,
     readStoredList,
   } from "./utils";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { isSeqtaEngageExperience } from "@/seqta/utils/isSeqtaEngage";
   import { buildEngageAssessmentPagePath } from "@/seqta/utils/engageAssessmentStudent";
   import OverviewIcon from "./OverviewIcon.svelte";

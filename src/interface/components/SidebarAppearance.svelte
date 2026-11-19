@@ -4,9 +4,9 @@
   import Select from "@/interface/components/Select.svelte";
   import Slider from "@/interface/components/Slider.svelte";
   import Switch from "@/interface/components/Switch.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import { matchesSearch } from "@/interface/pages/settings/shared";
-  import type { SettingsList } from "@/interface/types/SettingsProps";
+  import type { SettingsList } from "@/interface/types/settingsProps";
   import {
     DEFAULT_SIDEBAR_BLUR,
     DEFAULT_SIDEBAR_RADIUS,

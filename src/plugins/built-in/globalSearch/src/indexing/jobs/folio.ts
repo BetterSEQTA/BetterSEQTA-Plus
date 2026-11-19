@@ -116,19 +116,18 @@ export const folioJob: Job = {
             fileCount: Array.isArray(detail?.files) ? detail!.files!.length : 0,
             entityType: "folio",
             route: "/folios/read",
-            icon: "\ueb16",
           },
           actionId: "folio",
           renderComponentId: "folio",
         });
       } catch (e) {
-        console.warn(`[Folio job] Failed to load folio ${entry.id}:`, e);
+        console.warn(`[BetterSEQTA+] Folio job: Failed to load folio ${entry.id}:`, e);
       }
 
       await delay(PER_ITEM_DELAY_MS);
     }
 
-    verboseDebug(`[Folio job] Indexed ${items.length} folio entries.`);
+    verboseDebug(`[BetterSEQTA+] Folio job: Indexed ${items.length} folio entries.`);
     return items;
   },
 

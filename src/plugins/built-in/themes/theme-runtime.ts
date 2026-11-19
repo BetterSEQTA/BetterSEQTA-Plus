@@ -318,7 +318,7 @@ function callBuiltin(name: string): void {
   try {
     fn();
   } catch (e) {
-    console.error("[ThemeRuntime] Built-in failed:", name, e);
+    console.error("[BetterSEQTA+] ThemeRuntime: Built-in failed:", name, e);
   }
 }
 
@@ -674,7 +674,7 @@ function mountDevTimePicker(): void {
         localStorage.setItem(DEV_OVERRIDE_KEY, slider.value);
       }
     } catch (e) {
-      console.warn("[ThemeRuntime] Could not persist time override:", e);
+      console.warn("[BetterSEQTA+] ThemeRuntime: Could not persist time override:", e);
     }
     // Force a full re-publish next tick by clearing the cached bucket;
     // setCityTime() short-circuits the discrete state when unchanged but

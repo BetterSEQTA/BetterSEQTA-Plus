@@ -1,32 +1,36 @@
 <script lang="ts">
-  import { blobToDataUrl } from '@/seqta/utils/base64'
+  import { blobToDataUrl } from "@/seqta/utils/base64";
 
-  let { source, alt = '', class: className = '' }: {
-    source: string | Blob | null | undefined
-    alt?: string
-    class?: string
-  } = $props()
+  let {
+    source,
+    alt = "",
+    class: className = "",
+  }: {
+    source: string | Blob | null | undefined;
+    alt?: string;
+    class?: string;
+  } = $props();
 
-  let src = $state('')
+  let src = $state("");
 
   $effect(() => {
-    const value = source
+    const value = source;
     if (!value) {
-      src = ''
-      return
+      src = "";
+      return;
     }
-    if (typeof value === 'string') {
-      src = value
-      return
+    if (typeof value === "string") {
+      src = value;
+      return;
     }
-    let cancelled = false
+    let cancelled = false;
     void blobToDataUrl(value).then((url) => {
-      if (!cancelled) src = url
-    })
+      if (!cancelled) src = url;
+    });
     return () => {
-      cancelled = true
-    }
-  })
+      cancelled = true;
+    };
+  });
 </script>
 
 {#if src}

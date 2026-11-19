@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { Theme } from '@/interface/types/Theme'
+  import type { Theme } from '@/interface/types/theme'
   import {
     masterGridDisplayDownloadCount,
     gridCardPreviewImageUrls,

@@ -12,4 +12,4 @@
   const src = $derived(defaultThemeCoverDataUrl(accentHint));
 </script>
 
-<img src={src} alt="" class={className} draggable="false" />
+<img {src} alt="" class={className} draggable="false" />

@@ -8,12 +8,6 @@
   width: var(--tab-width);
 }
 
-input {
-  &:focus {
-    box-shadow: unset !important;
-  }
-}
-
 .animate-fade-in {
   animation: fadeIn 0.5s ease-in-out;
 }

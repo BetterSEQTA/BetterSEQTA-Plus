@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onDestroy } from "svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   let {
     value = $bindable<[number, number]>([0, 100]),
@@ -53,7 +53,7 @@
         start[0] + (target[0] - start[0]) * eased,
         start[1] + (target[1] - start[1]) * eased,
       ];
-      
+
       if (t < 1) {
         animationFrame = requestAnimationFrame(frame);
       } else {
@@ -66,24 +66,21 @@
 
   function onInput(e: Event, which: "min" | "max", animate: boolean) {
     const raw = clamp(Number((e.currentTarget as HTMLInputElement).value));
-    
+
     let next: [number, number];
 
     if (animate) {
-      next = which === "min"
-        // if next[0] > next[1]: next[1] = next[0]
-        ? [raw, Math.max(raw, value[1])]
-        // if next[1] < next[0]: next[0] = next[1]
-        : [Math.min(raw, value[0]), raw]; 
+      next =
+        which === "min"
+          ? // if next[0] > next[1]: next[1] = next[0]
+            [raw, Math.max(raw, value[1])]
+          : // if next[1] < next[0]: next[0] = next[1]
+            [Math.min(raw, value[0]), raw];
     } else {
       if (which === "min") {
-      next = raw > value[1]
-        ? [value[1], raw]
-        : [raw, value[1]];
+        next = raw > value[1] ? [value[1], raw] : [raw, value[1]];
       } else {
-      next = raw < value[0]
-        ? [raw, value[0]]
-        : [value[0], raw];
+        next = raw < value[0] ? [raw, value[0]] : [value[0], raw];
       }
     }
 
@@ -93,9 +90,8 @@
       animateVisualTo(next);
     } else {
       visual = next;
-    } 
+    }
   }
-
 </script>
 
 <div class="bsplus-grade-range-slider">
@@ -158,9 +154,9 @@
         value={value[0]}
         oninput={(e) => onInput(e, "min", true)}
         placeholder={String(min)}
-        min={min}
-        max={max}
-        step={step}
+        {min}
+        {max}
+        {step}
       />
       <span class="bsplus-analytics-range-suffix">%</span>
     </span>
@@ -172,9 +168,9 @@
         value={value[1]}
         oninput={(e) => onInput(e, "max", true)}
         placeholder={String(max)}
-        min={min}
-        max={max}
-        step={step}
+        {min}
+        {max}
+        {step}
       />
       <span class="bsplus-analytics-range-suffix">%</span>
     </span>

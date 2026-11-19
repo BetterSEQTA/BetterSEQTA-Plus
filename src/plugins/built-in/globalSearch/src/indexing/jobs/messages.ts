@@ -83,7 +83,7 @@ export const fetchMessageContent = async (
     return await res.json();
   } catch (error) {
     console.warn(
-      `[Messages job] Failed to fetch content for message ${id} (attempt ${retryCount + 1}):`,
+      `[BetterSEQTA+] Messages job: Failed to fetch content for message ${id} (attempt ${retryCount + 1}):`,
       error,
     );
 
@@ -130,7 +130,7 @@ async function estimateMessageCount(): Promise<number> {
 
     return Math.min(firstBatch.payload.messages.length * 20, 2000);
   } catch (error) {
-    console.warn("[Messages job] Failed to estimate message count:", error);
+    console.warn("[BetterSEQTA+] Messages job: Failed to estimate message count:", error);
     return 500;
   }
 }
@@ -167,7 +167,7 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
     progress.circuitBreakerOpen = true;
     progress.circuitBreakerOpenTime = now;
     console.warn(
-      `[Messages job] Circuit breaker opened due to ${progress.consecutiveFailures} consecutive failures`,
+      `[BetterSEQTA+] Messages job: Circuit breaker opened due to ${progress.consecutiveFailures} consecutive failures`,
     );
     return true;
   }
@@ -179,7 +179,7 @@ function checkCircuitBreaker(progress: MessagesProgress): boolean {
     progress.circuitBreakerOpen = false;
     progress.consecutiveFailures = 0;
     verboseInfo(
-      `[Messages job] Circuit breaker closed after ${RATE_LIMIT_CONFIG.circuitBreakerResetTime}ms`,
+      `[BetterSEQTA+] Messages job: Circuit breaker closed after ${RATE_LIMIT_CONFIG.circuitBreakerResetTime}ms`,
     );
     return false;
   }
@@ -271,7 +271,7 @@ async function processMessagesInParallel(
           return { success: false, id, messageId: msg.id, responseTime };
         }
       } catch (error) {
-        console.error(`[Messages job] content fetch failed (id ${id}):`, error);
+        console.error(`[BetterSEQTA+] Messages job: content fetch failed (id ${id}):`, error);
         return { success: false, id, messageId: msg.id, error };
       }
     });
@@ -309,7 +309,7 @@ async function processMessagesInParallel(
     updatedProgress.currentDelay = calculateAdaptiveDelay(updatedProgress, batchResponseTime);
 
     verboseLog(
-      `[Messages job] Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
+      `[BetterSEQTA+] Messages job: Processed parallel batch: ${batchSuccesses} successes, ${batchFailures} failures, ${batchResponseTime}ms total time`,
     );
   }
 
@@ -354,7 +354,7 @@ export const messagesJob: Job = {
           progress.totalEstimated,
           (progressData) => {
             verboseLog(
-              `[Messages job] Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
+              `[BetterSEQTA+] Messages job: Vector streaming progress: ${progressData.processed}/${progressData.total} (${progressData.status})`,
             );
           },
           RATE_LIMIT_CONFIG.vectorBatchSize,
@@ -362,11 +362,11 @@ export const messagesJob: Job = {
         );
         if (progress.streamingStarted) {
           verboseLog(
-            `[Messages job] Started streaming vectorization session for ~${progress.totalEstimated} items`,
+            `[BetterSEQTA+] Messages job: Started streaming vectorization session for ~${progress.totalEstimated} items`,
           );
         }
       } catch (error) {
-        console.warn("[Messages job] Failed to start streaming session:", error);
+        console.warn("[BetterSEQTA+] Messages job: Failed to start streaming session:", error);
       }
     }
 
@@ -375,7 +375,7 @@ export const messagesJob: Job = {
 
     if (progress.retryQueue.length > 0) {
       verboseLog(
-        `[Messages job] Processing ${Math.min(progress.retryQueue.length, 10)} items from retry queue`,
+        `[BetterSEQTA+] Messages job: Processing ${Math.min(progress.retryQueue.length, 10)} items from retry queue`,
       );
 
       const retryBatch = progress.retryQueue.slice(0, 10);
@@ -406,7 +406,10 @@ export const messagesJob: Job = {
               return { success: false, messageId, responseTime };
             }
           } catch (error) {
-            console.error(`[Messages job] Retry failed for message ${messageId}:`, error);
+            console.error(
+              `[BetterSEQTA+] Messages job: Retry failed for message ${messageId}:`,
+              error,
+            );
             return { success: false, messageId, error };
           }
         });
@@ -441,14 +444,14 @@ export const messagesJob: Job = {
         progress.currentDelay = calculateAdaptiveDelay(progress, batchResponseTime);
 
         verboseLog(
-          `[Messages job] Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
+          `[BetterSEQTA+] Messages job: Processed retry batch: ${retrySuccesses} successes, ${retryFailures} failures`,
         );
       }
     }
 
     while (!progress.done) {
       if (checkCircuitBreaker(progress)) {
-        console.warn("[Messages job] Circuit breaker is open, skipping processing");
+        console.warn("[BetterSEQTA+] Messages job: Circuit breaker is open, skipping processing");
         await delay(RATE_LIMIT_CONFIG.maxDelay);
         continue;
       }
@@ -466,7 +469,7 @@ export const messagesJob: Job = {
         progress.currentDelay = calculateAdaptiveDelay(progress, responseTime);
         progress.currentBatchSize = calculateAdaptiveBatchSize(progress, responseTime);
       } catch (e) {
-        console.error("[Messages job] list fetch failed:", e);
+        console.error("[BetterSEQTA+] Messages job: list fetch failed:", e);
         progress.failedRequests++;
         progress.consecutiveFailures++;
         progress.currentDelay = Math.min(
@@ -520,10 +523,13 @@ export const messagesJob: Job = {
           await vectorWorker.streamItems(itemsToStream);
           itemsStreamedToVector += itemsToStream.length;
           verboseLog(
-            `[Messages job] Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
+            `[BetterSEQTA+] Messages job: Streamed ${itemsToStream.length} items to vector worker (total: ${itemsStreamedToVector})`,
           );
         } catch (error) {
-          console.warn("[Messages job] Failed to stream items to vector worker:", error);
+          console.warn(
+            "[BetterSEQTA+] Messages job: Failed to stream items to vector worker:",
+            error,
+          );
         }
       }
 
@@ -531,7 +537,10 @@ export const messagesJob: Job = {
         try {
           publishDynamicItemsUpdate(await loadAllStoredItems(), "messages", processedItems.length);
         } catch (error) {
-          console.warn("[Messages job] Failed to dispatch incremental search update:", error);
+          console.warn(
+            "[BetterSEQTA+] Messages job: Failed to dispatch incremental search update:",
+            error,
+          );
         }
       }
 
@@ -545,7 +554,7 @@ export const messagesJob: Job = {
         progressUpdateCounter = 0;
 
         verboseLog(
-          `[Messages job] Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
+          `[BetterSEQTA+] Messages job: Progress: offset=${progress.offset}, batchSize=${progress.currentBatchSize}, delay=${progress.currentDelay}ms, failures=${progress.failedRequests}, retryQueue=${progress.retryQueue.length}, vectorStreamed=${itemsStreamedToVector}, parallelRequests=${RATE_LIMIT_CONFIG.parallelRequests}`,
         );
       }
 
@@ -559,10 +568,10 @@ export const messagesJob: Job = {
       try {
         await vectorWorker.endStreamingSession();
         verboseLog(
-          `[Messages job] Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
+          `[BetterSEQTA+] Messages job: Ended streaming session. Total items streamed: ${itemsStreamedToVector}`,
         );
       } catch (error) {
-        console.warn("[Messages job] Failed to end streaming session:", error);
+        console.warn("[BetterSEQTA+] Messages job: Failed to end streaming session:", error);
       }
     }
 

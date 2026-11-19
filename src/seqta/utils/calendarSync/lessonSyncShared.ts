@@ -122,18 +122,33 @@ export function mergeRemoteEventsIntoMap(
   origin: string,
   remoteEvents: RemoteSyncedEvent[],
   mapKey: (origin: string, seqtaKey: string) => string,
-): void {
+): string[] {
+  const byKey = new Map<string, RemoteSyncedEvent[]>();
   for (const remote of remoteEvents) {
     if (!remote.seqtaKey.startsWith(origin)) continue;
     const key = mapKey(origin, remote.seqtaKey);
+    const group = byKey.get(key);
+    if (group) group.push(remote);
+    else byKey.set(key, [remote]);
+  }
+
+  // Overlapping syncs can create several remote events for one lesson. Keep the tracked one
+  // (or the first seen) and return the rest so the caller can delete them.
+  const duplicateIds: string[] = [];
+  for (const [key, group] of byKey) {
     const existing = normalizeEventMapEntry(eventMap[key]);
+    const kept = group.find((remote) => remote.id === existing?.id) ?? group[0];
+    for (const remote of group) {
+      if (remote.id !== kept.id) duplicateIds.push(remote.id);
+    }
     eventMap[key] = {
-      id: remote.id,
-      date: remote.date || existing?.date || lessonDateFromSeqtaKey(remote.seqtaKey) || "",
+      id: kept.id,
+      date: kept.date || existing?.date || lessonDateFromSeqtaKey(kept.seqtaKey) || "",
       // Prefer last-written local fingerprint so skip stays stable across API format quirks.
-      fingerprint: existing?.fingerprint ?? remote.fingerprint,
+      fingerprint: existing?.fingerprint ?? kept.fingerprint,
     };
   }
+  return duplicateIds;
 }
 
 /**

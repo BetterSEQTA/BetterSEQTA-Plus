@@ -56,7 +56,6 @@ export function getDefaultSettingsState(): SettingsState {
     homeUpcomingIncludePast: true,
     shortcuts: [
       { name: "Outlook", enabled: true },
-      { name: "Office", enabled: true },
       { name: "Google", enabled: true },
     ],
     customshortcuts: [],

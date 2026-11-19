@@ -129,24 +129,6 @@ export function filterAssessmentsForActiveSubjects<T extends Record<string, unkn
   );
 }
 
-/** Active subjects that have at least one assessment in the given list. */
-export function subjectsWithUpcomingAssessments(
-  assessments: Record<string, unknown>[],
-  activeSubjects: OverviewSubject[],
-): OverviewSubject[] {
-  const result: OverviewSubject[] = [];
-  const seen = new Set<string>();
-
-  for (const assessment of assessments) {
-    const subject = activeSubjectForAssessment(assessment, activeSubjects);
-    if (!subject || seen.has(subject.code)) continue;
-    seen.add(subject.code);
-    result.push(subject);
-  }
-
-  return result;
-}
-
 export function formatDate(dateStr: string, submitted?: boolean): string {
   const d = new Date(dateStr);
   const now = new Date();

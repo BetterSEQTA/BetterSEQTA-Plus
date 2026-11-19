@@ -6,7 +6,6 @@
 
   let { communityState, searchTerm }: { communityState: CommunityThemesState; searchTerm: string } =
     $props();
-
 </script>
 
 {#if communityState.browseLoading}
@@ -48,7 +47,8 @@
       installedThemeColors={communityState.installedThemeColors}
       variant="community"
       onInstall={async (themeId) => {
-        if (communityState.displayTheme) await communityState.installCommunityTheme(themeId, communityState.displayTheme);
+        if (communityState.displayTheme)
+          await communityState.installCommunityTheme(themeId, communityState.displayTheme);
       }}
       onRemove={(id) => void communityState.removeInstalledTheme(id)}
       onApply={(id) => void communityState.applyInstalledTheme(id)}

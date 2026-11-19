@@ -1,13 +1,13 @@
 import browser from "@/lib/browser";
-import type { Theme } from "@/interface/types/Theme";
+import type { Theme } from "@/interface/types/theme";
 import {
   getCommunityInstalledThemeIds,
   getStoreInstalledThemeIds,
 } from "@/interface/utils/themeListFilters";
 import { normalizeStoreTheme } from "@/interface/utils/themeStoreFlavours";
-import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
+import { themeUpdates } from "@/interface/hooks/themeUpdates";
 import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-import { cloudAuth, isCloudAdmin } from "@/seqta/utils/CloudAuth";
+import { cloudAuth, isCloudAdmin } from "@/seqta/utils/cloudAuth";
 import {
   deleteCustomTheme,
   fetchCommunityThemes,

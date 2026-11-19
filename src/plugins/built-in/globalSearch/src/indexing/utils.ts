@@ -62,7 +62,7 @@ export async function removeVectorEmbeddings(ids: string[]): Promise<void> {
       tx.onerror = () => resolve();
     });
   } catch (error) {
-    console.warn("[Indexer] Failed to remove vector embeddings:", error);
+    console.warn("[BetterSEQTA+] Indexer: Failed to remove vector embeddings:", error);
   } finally {
     db.close();
   }
@@ -73,7 +73,9 @@ export async function pruneOrphanVectorEmbeddings(liveItemIds: Set<string>): Pro
   const orphanIds = [...vectorizedIds].filter((id) => !liveItemIds.has(id));
 
   if (orphanIds.length > 0) {
-    console.debug(`[Indexer] Pruning ${orphanIds.length} orphaned vector embedding(s)`);
+    console.debug(
+      `[BetterSEQTA+] Indexer: Pruning ${orphanIds.length} orphaned vector embedding(s)`,
+    );
     await removeVectorEmbeddings(orphanIds);
   }
 

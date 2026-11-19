@@ -1,5 +1,5 @@
 /** @jest-environment jsdom */
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { applySidebarLook, clearSidebarAppearance } from "./sidebarStyles";
 
 jest.mock("@/seqta/utils/performanceMode", () => ({ isPerformanceMode: () => false }));

@@ -1,12 +1,12 @@
 <script lang="ts">
   import { fade } from 'svelte/transition';
-  import type { ThemeCoverSlide } from '@/interface/types/Theme';
+  import type { ThemeCoverSlide } from '@/interface/types/theme';
   import emblaCarouselSvelte from 'embla-carousel-svelte';
   import Autoplay from 'embla-carousel-autoplay';
 
   let { slides, setDisplayTheme }: {
     slides: ThemeCoverSlide[];
-    setDisplayTheme: (theme: import('@/interface/types/Theme').Theme) => void;
+    setDisplayTheme: (theme: import('@/interface/types/theme').Theme) => void;
   } = $props();
   let emblaApi = $state();
 

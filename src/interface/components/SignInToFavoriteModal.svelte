@@ -2,7 +2,7 @@
   import { fade } from "svelte/transition";
   import { animate } from "motion";
   import { onMount } from "svelte";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
 
   let { onClose }: { onClose: () => void } = $props();
   let modalElement: HTMLElement;
@@ -47,12 +47,11 @@
     onclick={(e) => e.stopPropagation()}
     onkeydown={(e) => e.stopPropagation()}
   >
-    <h2 class="mb-3 text-xl font-bold text-zinc-900 dark:text-white">
-      Sign in to favorite themes
-    </h2>
+    <h2 class="mb-3 text-xl font-bold text-zinc-900 dark:text-white">Sign in to favorite themes</h2>
 
     <p class="mb-4 text-sm text-zinc-600 dark:text-zinc-400">
-      Sign in to the Theme Store to save favorites across devices, or create an account to get started.
+      Sign in to the Theme Store to save favorites across devices, or create an account to get
+      started.
     </p>
 
     <button

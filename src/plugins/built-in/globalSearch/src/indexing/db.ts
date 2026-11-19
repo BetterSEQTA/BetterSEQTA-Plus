@@ -86,7 +86,7 @@ function deleteDatabaseWithRetries(name: string, maxAttempts = 6): Promise<void>
       try {
         req = indexedDB.deleteDatabase(name);
       } catch (error) {
-        console.warn(`[DB] Could not start delete of ${name}:`, error);
+        console.warn(`[BetterSEQTA+] DB: Could not start delete of ${name}:`, error);
         resolve();
         return;
       }
@@ -94,7 +94,7 @@ function deleteDatabaseWithRetries(name: string, maxAttempts = 6): Promise<void>
       req.onsuccess = () => resolve();
 
       req.onerror = () => {
-        console.warn(`[DB] Error deleting ${name}:`, req.error);
+        console.warn(`[BetterSEQTA+] DB: Error deleting ${name}:`, req.error);
         if (attempt + 1 < maxAttempts) {
           setTimeout(() => attemptDelete(attempt + 1), 150 * (attempt + 1));
           return;
@@ -104,7 +104,7 @@ function deleteDatabaseWithRetries(name: string, maxAttempts = 6): Promise<void>
 
       req.onblocked = () => {
         console.warn(
-          `[DB] Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
+          `[BetterSEQTA+] DB: Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
         );
         if (attempt + 1 < maxAttempts) {
           setTimeout(() => attemptDelete(attempt + 1), 200 * (attempt + 1));
@@ -137,12 +137,17 @@ async function openDBInternal(): Promise<IDBDatabase> {
     const domError = error as DOMException | undefined;
 
     if (domError?.name === "VersionError") {
-      console.warn("[DB] localStorage version out of sync with IndexedDB; opening current version");
+      console.warn(
+        "[BetterSEQTA+] DB: localStorage version out of sync with IndexedDB; opening current version",
+      );
       invalidateConnection();
       try {
         return await openDatabase();
       } catch (fallbackError) {
-        console.warn("[DB] Fallback open failed, recreating database:", fallbackError);
+        console.warn(
+          "[BetterSEQTA+] DB: Fallback open failed, recreating database:",
+          fallbackError,
+        );
       }
     } else {
       console.error("Error opening database:", error);
@@ -253,7 +258,7 @@ async function upgradeDB(newStore: string): Promise<void> {
       cachedDb = null;
       dbPromise = null;
     } catch (error) {
-      console.warn("[DB] Could not probe database version before upgrade:", error);
+      console.warn("[BetterSEQTA+] DB: Could not probe database version before upgrade:", error);
     }
 
     try {
@@ -278,7 +283,7 @@ export async function ensureStoresExist(stores: string[]): Promise<void> {
     try {
       db = await openDB();
     } catch (error) {
-      console.warn("[DB] ensureStoresExist: could not open database:", error);
+      console.warn("[BetterSEQTA+] DB: ensureStoresExist: could not open database:", error);
       return;
     }
 
@@ -294,7 +299,7 @@ export async function ensureStoresExist(stores: string[]): Promise<void> {
     try {
       await openDatabaseWithStores(baseVersion + 1, missing);
     } catch (error) {
-      console.error("[DB] ensureStoresExist failed:", error);
+      console.error("[BetterSEQTA+] DB: ensureStoresExist failed:", error);
       throw error;
     }
   });

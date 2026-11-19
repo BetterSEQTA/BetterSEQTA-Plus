@@ -1,11 +1,11 @@
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { createPopupHeroVideo } from "@/seqta/utils/openers/attachPopupMediaFullscreen";
-import { closePopup, openPopup } from "@/seqta/utils/openers/PopupManager";
+import { closePopup, openPopup } from "@/seqta/utils/openers/popupManager";
 import { mount, unmount, type Component } from "svelte";
 import TimetableClassmatesOptInPopup from "./TimetableClassmatesOptInPopup.svelte";
 import TimetableClassmatesOptOutPopup from "./TimetableClassmatesOptOutPopup.svelte";
 import popupStyles from "./consentPopup.css?inline";
-import { cloudAuth } from "@/seqta/utils/CloudAuth";
+import { cloudAuth } from "@/seqta/utils/cloudAuth";
 import { loadSession } from "./rosterStore";
 import { clearResumeOptInAfterCloudLogin, shouldResumeOptInAfterCloudLogin } from "./optInResume";
 

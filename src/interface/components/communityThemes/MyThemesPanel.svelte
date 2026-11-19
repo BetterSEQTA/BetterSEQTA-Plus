@@ -11,9 +11,9 @@
   } from "@/seqta/utils/customThemes/client";
   import ThemePlaceholderCover from "@/interface/components/themes/ThemePlaceholderCover.svelte";
   import ThemeBlobImage from "@/interface/components/themes/ThemeBlobImage.svelte";
-  import type { CustomTheme } from "@/types/CustomThemes";
+  import type { CustomTheme } from "@/types/customThemes";
   import { ThemeManager } from "@/plugins/built-in/themes/theme-manager";
-  import { themeUpdates } from "@/interface/hooks/ThemeUpdates";
+  import { themeUpdates } from "@/interface/hooks/themeUpdates";
   import { isLocalCustomTheme } from "@/interface/utils/themeListFilters";
   import { formatCustomThemeApiError } from "@/seqta/utils/customThemes/apiErrors";
 
@@ -90,7 +90,9 @@
       Submit a custom theme you created or imported without opening the theme builder.
     </p>
     {#if localSubmitError}
-      <p class="mt-2 whitespace-pre-line text-sm text-red-600 dark:text-red-400">{localSubmitError}</p>
+      <p class="mt-2 whitespace-pre-line text-sm text-red-600 dark:text-red-400">
+        {localSubmitError}
+      </p>
     {/if}
     {#if localThemesLoading}
       <div class="mt-3 grid grid-cols-1 gap-3">
@@ -121,9 +123,13 @@
               />
             {/if}
             <div class="min-w-0 flex-1">
-              <span class="font-semibold text-zinc-900 dark:text-white">{theme.name || "Untitled theme"}</span>
+              <span class="font-semibold text-zinc-900 dark:text-white"
+                >{theme.name || "Untitled theme"}</span
+              >
               {#if theme.description}
-                <p class="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">{theme.description}</p>
+                <p class="mt-1 truncate text-sm text-zinc-500 dark:text-zinc-400">
+                  {theme.description}
+                </p>
               {/if}
             </div>
             <div class="flex shrink-0 flex-wrap gap-2">
@@ -154,7 +160,8 @@
     {#each statusFilters as status (status)}
       <button
         type="button"
-        class="rounded-full px-3 py-1 text-sm font-medium transition {communityState.statusFilter === status
+        class="rounded-full px-3 py-1 text-sm font-medium transition {communityState.statusFilter ===
+        status
           ? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900'
           : 'bg-zinc-200 text-zinc-700 hover:bg-zinc-300 dark:bg-zinc-800 dark:text-zinc-300'}"
         onclick={() => (communityState.statusFilter = status)}
@@ -196,7 +203,11 @@
             onclick={() => void communityState.openDetail(theme)}
           >
             {#if theme.coverImage}
-              <img src={theme.coverImage} alt="" class="h-14 w-20 shrink-0 rounded-lg object-cover" />
+              <img
+                src={theme.coverImage}
+                alt=""
+                class="h-14 w-20 shrink-0 rounded-lg object-cover"
+              />
             {:else}
               <ThemePlaceholderCover class="h-14 w-20 shrink-0 rounded-lg object-cover" />
             {/if}
@@ -204,7 +215,9 @@
               <div class="flex flex-wrap items-center gap-2">
                 <span class="font-semibold text-zinc-900 dark:text-white">{theme.name}</span>
                 <span
-                  class="rounded-full px-2 py-0.5 text-xs font-semibold {statusBadgeClass(theme.status)}"
+                  class="rounded-full px-2 py-0.5 text-xs font-semibold {statusBadgeClass(
+                    theme.status,
+                  )}"
                 >
                   {formatCustomThemeStatus(theme.status)}
                 </span>

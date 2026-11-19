@@ -3,7 +3,7 @@ import { afterEach, beforeEach, expect, it, jest } from "@jest/globals";
 jest.mock("@/seqta/utils/userInfo", () => ({
   getUserInfo: async () => ({ id: 12 }),
 }));
-jest.mock("@/seqta/utils/listeners/SettingsState", () => ({
+jest.mock("@/seqta/utils/listeners/settingsState", () => ({
   settingsState: { hideSensitiveContent: false },
 }));
 jest.mock("@/seqta/ui/dev/hideSensitiveContent", () => ({

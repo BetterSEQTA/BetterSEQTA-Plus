@@ -1,4 +1,4 @@
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 import { blobToBase64Data } from "@/seqta/utils/base64";
 import type { CustomThemeUploadFilePart, CustomThemeUploadPayload } from "./types";
 

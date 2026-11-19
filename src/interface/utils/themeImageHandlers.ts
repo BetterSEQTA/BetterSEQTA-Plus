@@ -1,4 +1,4 @@
-import type { LoadedCustomTheme } from "@/types/CustomThemes";
+import type { LoadedCustomTheme } from "@/types/customThemes";
 
 export function handleImageUpload(event: Event, theme: LoadedCustomTheme): LoadedCustomTheme {
   const input = event.target as HTMLInputElement;

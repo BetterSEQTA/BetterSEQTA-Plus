@@ -27,7 +27,7 @@
   } from "@/seqta/utils/googleCalendar/types";
   import type { OutlookCalendarStatus } from "@/seqta/utils/calendarSync/providerStorage";
   import OutlookCalendarIcon from "./OutlookCalendarIcon.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
   import {
     formatLastSync,
     isCalendarSyncModalTarget,

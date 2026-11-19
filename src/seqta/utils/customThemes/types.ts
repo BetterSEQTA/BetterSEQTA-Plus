@@ -1,4 +1,4 @@
-import type { Theme } from "@/interface/types/Theme";
+import type { Theme } from "@/interface/types/theme";
 import type { CustomThemeStatus } from "./constants";
 
 export type CustomThemeApiError = {

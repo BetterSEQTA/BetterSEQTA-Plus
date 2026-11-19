@@ -56,12 +56,14 @@
         >
           <div
             style="background: {indicatorColor}; border-color: {indicatorColor};"
-            class={["shrink-0 rounded-[2px] border", {
-              "size-2.5": indicator === "dot",
-              "h-full w-1": indicator === "line",
-              "w-0 border-[1.5px] border-dashed bg-transparent":
-                indicator === "dashed",
-            }]}
+            class={[
+              "shrink-0 rounded-[2px] border",
+              {
+                "size-2.5": indicator === "dot",
+                "h-full w-1": indicator === "line",
+                "w-0 border-[1.5px] border-dashed bg-transparent": indicator === "dashed",
+              },
+            ]}
           ></div>
           <div
             class={[

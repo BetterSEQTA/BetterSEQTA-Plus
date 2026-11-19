@@ -6,16 +6,12 @@
   import CloudHeader from "@/interface/components/store/CloudHeader.svelte";
   import SettingRow from "../SettingRow.svelte";
   import PluginSettingsBlocks from "../PluginSettingsBlocks.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
   import { matchesSearch, type SettingsSectionSharedProps } from "../shared";
   import { toMountableComponent } from "@/types/mountableComponent";
 
-  let {
-    showDisclaimer,
-    showCloudPanel,
-    searchQuery = "",
-  }: SettingsSectionSharedProps = $props();
+  let { showDisclaimer, showCloudPanel, searchQuery = "" }: SettingsSectionSharedProps = $props();
 
   let cloudState = $state(cloudAuth.state);
   $effect(() => {
@@ -102,9 +98,7 @@
         {/if}
       </div>
     {:else if showFounderBadgeSetting}
-      <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">
-        Sign in to Cloud first.
-      </div>
+      <div class="px-5 pb-4 text-sm text-zinc-600 dark:text-zinc-400">Sign in to Cloud first.</div>
     {/if}
   </SettingsCard>
 {/if}

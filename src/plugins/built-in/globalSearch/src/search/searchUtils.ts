@@ -85,7 +85,7 @@ function setCachedResults(query: string, results: CombinedResult[]) {
  */
 export function clearSearchCache(): void {
   searchCache.clear();
-  verboseDebug("[Search] Search result cache cleared");
+  verboseDebug("[BetterSEQTA+] Search: Search result cache cleared");
 }
 
 if (typeof window !== "undefined") {
@@ -447,7 +447,7 @@ export async function performSearch(
           recencyWeight: 0.1,
         });
       } catch (e) {
-        console.warn("[Search] Hybrid search failed, using BM25 only:", e);
+        console.warn("[BetterSEQTA+] Search: Hybrid search failed, using BM25 only:", e);
         dynamicResults = bm25Results.slice(0, 20);
       }
     } else {

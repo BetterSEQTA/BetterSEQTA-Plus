@@ -101,7 +101,7 @@ export const coursesJob: Job = {
   run: async (ctx) => {
     const subjects = await fetchActiveSubjects();
     if (subjects.length === 0) {
-      verboseDebug("[Courses job] No active subjects discovered.");
+      verboseDebug("[BetterSEQTA+] Courses job: No active subjects discovered.");
       return [];
     }
 
@@ -163,7 +163,6 @@ export const coursesJob: Job = {
             isActive: true,
             route: `/courses/${subject.programme}:${subject.metaclass}`,
             entityType: "course",
-            icon: "\ueb4d",
           },
           actionId: "course",
           renderComponentId: "course",
@@ -179,7 +178,7 @@ export const coursesJob: Job = {
     });
 
     verboseDebug(
-      `[Courses job] Indexed ${items.length} courses across ${subjects.length} subjects.`,
+      `[BetterSEQTA+] Courses job: Indexed ${items.length} courses across ${subjects.length} subjects.`,
     );
     return items;
   },

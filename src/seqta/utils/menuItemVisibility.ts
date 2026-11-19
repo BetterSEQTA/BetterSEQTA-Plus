@@ -1,4 +1,4 @@
-import { settingsState } from "./listeners/SettingsState";
+import { settingsState } from "./listeners/settingsState";
 import { rafThrottle } from "@/seqta/utils/rafThrottle";
 
 const STYLE_ID = "bsplus-menuitem-visibility";

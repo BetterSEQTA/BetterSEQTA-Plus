@@ -53,14 +53,14 @@ function tryDeleteDatabase(name: string): Promise<"success" | "blocked" | "error
     try {
       req = indexedDB.deleteDatabase(name);
     } catch (error) {
-      console.warn(`[Reset] Could not start delete of ${name}:`, error);
+      console.warn(`[BetterSEQTA+] Reset: Could not start delete of ${name}:`, error);
       resolve("error");
       return;
     }
 
     req.onsuccess = () => resolve("success");
     req.onerror = () => {
-      console.warn(`[Reset] Error deleting ${name}:`, req.error);
+      console.warn(`[BetterSEQTA+] Reset: Error deleting ${name}:`, req.error);
       resolve("error");
     };
     req.onblocked = () => resolve("blocked");
@@ -76,14 +76,14 @@ async function deleteIndexedDb(name: string): Promise<void> {
 
     if (result === "blocked") {
       console.warn(
-        `[Reset] Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
+        `[BetterSEQTA+] Reset: Delete of ${name} blocked (attempt ${attempt + 1}/${maxAttempts}); waiting for connections to close`,
       );
     }
 
     await delay(200 * (attempt + 1));
   }
 
-  console.warn(`[Reset] Gave up deleting ${name} after ${maxAttempts} attempts`);
+  console.warn(`[BetterSEQTA+] Reset: Gave up deleting ${name} after ${maxAttempts} attempts`);
 }
 
 export async function resetSearchIndexes(): Promise<void> {

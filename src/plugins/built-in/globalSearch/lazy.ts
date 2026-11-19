@@ -7,7 +7,6 @@ import {
 } from "../../core/settingsHelpers";
 import { isSeqtaEngageExperience, isSeqtaLoginPage } from "@/seqta/utils/isSeqtaEngage";
 import styles from "./src/core/styles.css?inline";
-import { resetSearchIndexes, notifyOpenTabsResetSearchIndex } from "./src/indexing/resetIndexes";
 import {
   formatHotkeyForDisplay,
   getDefaultSearchHotkey,
@@ -53,6 +52,9 @@ const settings = defineSettings({
       if (!confirmed) return;
 
       try {
+        // Loaded on click: a static import pulled the ~1 MB indexer chunk into every page load.
+        const { resetSearchIndexes, notifyOpenTabsResetSearchIndex } =
+          await import("./src/indexing/resetIndexes");
         await notifyOpenTabsResetSearchIndex();
         await resetSearchIndexes();
         alert("Search index and storage were reset.\n\nReload this tab to regenerate the index.");

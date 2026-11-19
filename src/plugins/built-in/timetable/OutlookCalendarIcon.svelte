@@ -23,7 +23,10 @@
       gradientTransform="matrix(15,0,0,15,0,0)"
     >
       <stop offset="0" style="stop-color:rgb(8.627451%,35.294118%,85.098039%);stop-opacity:1;" />
-      <stop offset="0.5008" style="stop-color:rgb(9.411765%,50.196078%,89.803922%);stop-opacity:1;" />
+      <stop
+        offset="0.5008"
+        style="stop-color:rgb(9.411765%,50.196078%,89.803922%);stop-opacity:1;"
+      />
       <stop offset="1" style="stop-color:rgb(52.156863%,52.941176%,100%);stop-opacity:1;" />
     </linearGradient>
     <linearGradient
@@ -48,7 +51,10 @@
       gradientTransform="matrix(15,0,0,15,0,0)"
     >
       <stop offset="0" style="stop-color:rgb(10.196078%,26.27451%,65.098039%);stop-opacity:1;" />
-      <stop offset="0.492267" style="stop-color:rgb(12.54902%,32.156863%,79.607843%);stop-opacity:1;" />
+      <stop
+        offset="0.492267"
+        style="stop-color:rgb(12.54902%,32.156863%,79.607843%);stop-opacity:1;"
+      />
       <stop offset="1" style="stop-color:rgb(37.254902%,12.54902%,79.607843%);stop-opacity:1;" />
     </linearGradient>
     <linearGradient
@@ -61,7 +67,10 @@
       gradientTransform="matrix(15,0,0,15,0,0)"
     >
       <stop offset="0" style="stop-color:rgb(0%,27.058824%,72.54902%);stop-opacity:0;" />
-      <stop offset="0.669859" style="stop-color:rgb(5.098039%,12.156863%,41.176471%);stop-opacity:0.2;" />
+      <stop
+        offset="0.669859"
+        style="stop-color:rgb(5.098039%,12.156863%,41.176471%);stop-opacity:0.2;"
+      />
     </linearGradient>
     <radialGradient
       id="bsplus-outlook-radial0"
@@ -73,7 +82,10 @@
       r="1"
       gradientTransform="matrix(0.000000000000024802,-405.040512,438.393002,0.000000000000026844,360.027008,102.268202)"
     >
-      <stop offset="0.568182" style="stop-color:rgb(15.294118%,37.254902%,94.117647%);stop-opacity:0;" />
+      <stop
+        offset="0.568182"
+        style="stop-color:rgb(15.294118%,37.254902%,94.117647%);stop-opacity:0;"
+      />
       <stop offset="0.992424" style="stop-color:rgb(0%,12.941176%,46.666667%);stop-opacity:1;" />
     </radialGradient>
     <linearGradient
@@ -99,7 +111,10 @@
       gradientTransform="matrix(122.73959,-122.73959,122.73959,122.73959,421.392002,568.675518)"
     >
       <stop offset="0.259477" style="stop-color:rgb(0%,37.647059%,81.960784%);stop-opacity:0.4;" />
-      <stop offset="0.908166" style="stop-color:rgb(1.176471%,51.372549%,94.509804%);stop-opacity:0;" />
+      <stop
+        offset="0.908166"
+        style="stop-color:rgb(1.176471%,51.372549%,94.509804%);stop-opacity:0;"
+      />
     </radialGradient>
     <radialGradient
       id="bsplus-outlook-radial2"
@@ -111,8 +126,14 @@
       r="1"
       gradientTransform="matrix(357.407022,-468.445926,423.594568,323.187085,159.471002,697.080002)"
     >
-      <stop offset="0.732317" style="stop-color:rgb(95.686275%,65.490196%,96.862745%);stop-opacity:0;" />
-      <stop offset="1" style="stop-color:rgb(95.686275%,65.490196%,96.862745%);stop-opacity:0.501961;" />
+      <stop
+        offset="0.732317"
+        style="stop-color:rgb(95.686275%,65.490196%,96.862745%);stop-opacity:0;"
+      />
+      <stop
+        offset="1"
+        style="stop-color:rgb(95.686275%,65.490196%,96.862745%);stop-opacity:0.501961;"
+      />
     </radialGradient>
     <radialGradient
       id="bsplus-outlook-radial3"
@@ -150,7 +171,10 @@
       gradientTransform="matrix(215.76719,230.769125,-230.769125,215.76719,59.143649,354.231005)"
     >
       <stop offset="0.038877" style="stop-color:rgb(0%,56.862745%,100%);stop-opacity:1;" />
-      <stop offset="0.919119" style="stop-color:rgb(9.411765%,23.921569%,67.843137%);stop-opacity:1;" />
+      <stop
+        offset="0.919119"
+        style="stop-color:rgb(9.411765%,23.921569%,67.843137%);stop-opacity:1;"
+      />
     </radialGradient>
     <radialGradient
       id="bsplus-outlook-radial5"
@@ -162,7 +186,10 @@
       r="1"
       gradientTransform="matrix(0.000000000000010287,167.999997,-193.782005,0.000000000000011866,180,491.158504)"
     >
-      <stop offset="0.557796" style="stop-color:rgb(5.882353%,64.705882%,96.862745%);stop-opacity:0;" />
+      <stop
+        offset="0.557796"
+        style="stop-color:rgb(5.882353%,64.705882%,96.862745%);stop-opacity:0;"
+      />
       <stop offset="1" style="stop-color:rgb(45.490196%,77.647059%,100%);stop-opacity:0.501961;" />
     </radialGradient>
   </defs>

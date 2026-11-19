@@ -4,7 +4,7 @@ import {
   isExtensionSettingsOpen,
   prefetchSettingsShell,
 } from "./settingsPopupAnimation";
-import { addExtensionSettings, renderSettingsIfNeeded } from "./adders/AddExtensionSettings";
+import { addExtensionSettings, renderSettingsIfNeeded } from "./adders/addExtensionSettings";
 
 export function setupSettingsButton() {
   const AddedSettings = document.getElementById("AddedSettings");

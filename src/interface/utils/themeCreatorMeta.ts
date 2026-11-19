@@ -1,8 +1,8 @@
 import { buildThemeBuilderCss } from "@/interface/utils/themeBuilderDraft";
-import { applySelectedFont } from "@/seqta/ui/fonts/Manager";
+import { applySelectedFont } from "@/seqta/ui/fonts/fontManager";
 import { DEFAULT_FONT_ID, getFontPreset } from "@/seqta/ui/fonts/presets";
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-import type { LoadedCustomTheme, ThemeCreatorMeta } from "@/types/CustomThemes";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
+import type { LoadedCustomTheme, ThemeCreatorMeta } from "@/types/customThemes";
 
 export type ThemeCreatorSidebarMeta = {
   sidebarStyle?: string;

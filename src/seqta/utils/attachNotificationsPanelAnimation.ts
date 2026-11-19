@@ -1,4 +1,4 @@
-import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+import { settingsState } from "@/seqta/utils/listeners/settingsState";
 import { waitForElm } from "@/seqta/utils/waitForElm";
 
 function findNotificationPanel(): HTMLElement | null {

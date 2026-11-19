@@ -1,8 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { cloudAuth } from "@/seqta/utils/CloudAuth";
+  import { cloudAuth } from "@/seqta/utils/cloudAuth";
   import CloudPfpAvatar from "@/interface/components/CloudPfpAvatar.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
 
   let { alwaysShowUserName = false, onClick = undefined, compact = false }: {
     alwaysShowUserName?: boolean;

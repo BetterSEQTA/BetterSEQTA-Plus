@@ -116,15 +116,15 @@ async function hydrateAvatarFromCloud(wrap: HTMLElement, cloudUserId: string): P
   if (mark === cloudUserId || mark === `none:${cloudUserId}`) return;
   try {
     wrap.dataset.bsplusPfp = cloudUserId;
-    const resolved = await resolveCloudPfp(cloudUserId, defaultAccountsPfpUrl(cloudUserId));
-    if (!resolved?.src) {
+    const src = await resolveCloudPfp(cloudUserId, defaultAccountsPfpUrl(cloudUserId));
+    if (!src) {
       wrap.dataset.bsplusPfp = `none:${cloudUserId}`;
       return;
     }
     const img = document.createElement("img");
     img.alt = "";
     img.loading = "lazy";
-    img.src = resolved.src;
+    img.src = src;
     wrap.querySelector(".bsplus-classmate-avatar-placeholder")?.remove();
     wrap.appendChild(img);
   } catch {

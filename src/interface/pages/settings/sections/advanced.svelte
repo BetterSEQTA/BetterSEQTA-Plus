@@ -2,9 +2,9 @@
   import { delay } from "@/seqta/utils/delay";
   import Switch from "@/interface/components/Switch.svelte";
   import Button from "@/interface/components/Button.svelte";
-  import { settingsState } from "@/seqta/utils/listeners/SettingsState";
-  import { openTermsOfServicePopup } from "@/seqta/utils/openers/OpenTermsOfServicePopup";
-  import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/openers/OpenThemeOfTheMonthPopup";
+  import { settingsState } from "@/seqta/utils/listeners/settingsState";
+  import { openTermsOfServicePopup } from "@/seqta/utils/openers/openTermsOfServicePopup";
+  import { showThemeOfTheMonthPopupNow } from "@/seqta/utils/openers/openThemeOfTheMonthPopup";
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
   import { getSnapshotForUpload } from "@/seqta/utils/cloudSettingsSync";
 
@@ -26,19 +26,7 @@
   }
 </script>
 
-{#if $settingsState.devMode && matchesSearch(
-  searchQuery,
-  "Developer Mode",
-  "Verbose logging",
-  "Delay loading screen",
-  "Sensitive Hider",
-  "Mock Notices",
-  "Show Privacy Notification",
-  "Show Theme of the Month",
-  "Export cloud settings JSON",
-  "API Base URL",
-  "GitHub latest version override",
-)}
+{#if $settingsState.devMode && matchesSearch(searchQuery, "Developer Mode", "Verbose logging", "Delay loading screen", "Sensitive Hider", "Mock Notices", "Show Privacy Notification", "Show Theme of the Month", "Export cloud settings JSON", "API Base URL", "GitHub latest version override")}
   <div
     class="flex-col p-1 my-1 bg-linear-to-br from-white rounded-xl border shadow-xs to-zinc-100 border-zinc-200/50 dark:border-zinc-700/40 dark:to-zinc-900/50 dark:from-zinc-900/40"
   >
