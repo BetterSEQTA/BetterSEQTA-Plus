@@ -12,6 +12,7 @@
   import { isPerformanceMode } from "@/seqta/utils/performanceMode";
 
   import { closeExtensionPopup } from "@/seqta/utils/closers/closeExtensionPopup";
+  import { isExtensionSettingsOpen } from "@/seqta/utils/settingsPopupAnimation";
   import { openAboutPage } from "@/seqta/utils/openers/openAboutPage";
   import { openWhatsNewPopup } from "@/seqta/utils/openers/openWhatsNewPopup";
 
@@ -524,7 +525,8 @@
     if (pendingDestination) applyDestination(pendingDestination);
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !standalone) {
+      // The settings app stays mounted after it closes, so ignore Escape unless it's open.
+      if (event.key === "Escape" && !standalone && isExtensionSettingsOpen()) {
         closeExtensionPopup();
       }
     };

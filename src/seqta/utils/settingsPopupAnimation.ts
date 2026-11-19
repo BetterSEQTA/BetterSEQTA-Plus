@@ -87,6 +87,9 @@ export function animateSettingsOpen(host: HTMLElement): void {
 }
 
 export function animateSettingsClose(host: HTMLElement): void {
+  // Closing an already-hidden popup would flip the host back to opacity 1 and
+  // replay the close animation.
+  if (!isSettingsHostVisiblyOpen(host) && !host.classList.contains(HOST_CLOSING_CLASS)) return;
   animatePopup(host, false);
 }
 
