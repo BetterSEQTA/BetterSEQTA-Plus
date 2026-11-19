@@ -1,6 +1,7 @@
 import type { AssessmentsAverageApi } from "./pluginApi";
 import stringToHTML from "@/seqta/utils/stringToHTML";
 import { waitForElm } from "@/seqta/utils/waitForElm";
+import { animationsEnabled } from "@/seqta/utils/performanceMode";
 import {
   clearStuck,
   getClassByPattern,
@@ -113,16 +114,21 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
     );
     if (!assessmentsList) return;
 
-    // Remove existing subject average before re-rendering
-    Array.from(assessmentsList.querySelectorAll(`[class*='AssessmentItem__title___']`))
+    // Keep the current row on screen until the new numbers are ready. Removing
+    // it first made it blink out on every weighting update.
+    const existingRow = Array.from(
+      assessmentsList.querySelectorAll(`[class*='AssessmentItem__title___']`),
+    )
       .find((el) => el.textContent === "Subject Average")
-      ?.closest("[class*='AssessmentItem__AssessmentItem___']")
-      ?.remove();
+      ?.closest<HTMLElement>("[class*='AssessmentItem__AssessmentItem___']");
 
-    const sampleAssessmentItem = document.querySelector(
-      "[class*='AssessmentItem__AssessmentItem___']",
-    );
-    if (!sampleAssessmentItem) return;
+    const sampleAssessmentItem = Array.from(
+      document.querySelectorAll("[class*='AssessmentItem__AssessmentItem___']"),
+    ).find((el) => el !== existingRow);
+    if (!sampleAssessmentItem) {
+      existingRow?.remove();
+      return;
+    }
     const assessmentItemClass =
       Array.from(sampleAssessmentItem.classList).find((c) =>
         c.startsWith("AssessmentItem__AssessmentItem___"),
@@ -149,10 +155,18 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
 
     const { weightedTotal, totalWeight, hasInaccurateWeighting, hasRefreshingWeighting, count } =
       await processAssessments(api, assessmentItems);
-    if (!count || totalWeight === 0) return;
+    if (!count || totalWeight === 0) {
+      existingRow?.remove();
+      return;
+    }
 
-    const thermoscoreElement = document.querySelector("[class*='Thermoscore__Thermoscore___']");
-    if (!thermoscoreElement) return;
+    const thermoscoreElement = Array.from(
+      document.querySelectorAll("[class*='Thermoscore__Thermoscore___']"),
+    ).find((el) => !existingRow?.contains(el));
+    if (!thermoscoreElement) {
+      existingRow?.remove();
+      return;
+    }
     const thermoscoreClass =
       Array.from(thermoscoreElement.classList).find((c) =>
         c.startsWith("Thermoscore__Thermoscore___"),
@@ -190,8 +204,7 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
       : hasRefreshingWeighting
         ? `${display} (re-checking weightings)`
         : display;
-    assessmentsList.insertBefore(
-      stringToHTML(/* html */ `
+    const row = stringToHTML(/* html */ `
           <div class="${assessmentItemClass}">
             <div class="${metaContainerClass}">
               <div class="${metaClass}">
@@ -207,9 +220,15 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
               </div>
             </div>
           </div>
-        `).firstChild!,
-      assessmentsList.firstChild,
-    );
+        `).firstChild as HTMLElement;
+    if (existingRow?.isConnected) {
+      const previousWidth = subjectAverageFill(existingRow)?.style.width;
+      existingRow.replaceWith(row);
+      animateSubjectAverage(row, previousWidth ?? "0%", false);
+    } else {
+      assessmentsList.insertBefore(row, assessmentsList.firstChild);
+      animateSubjectAverage(row, "0%", true);
+    }
     applySubjectColourToOverallResult();
   } finally {
     renderInFlight = false;
@@ -219,6 +238,22 @@ async function renderSubjectAverage(api: AssessmentsAverageApi) {
     }
   }
 }
+
+function subjectAverageFill(row: Element): HTMLElement | null {
+  return row.querySelector<HTMLElement>("[class*='Thermoscore__fill___']");
+}
+
+/** Slides the bar from its previous width, and fades in a newly added row. */
+function animateSubjectAverage(row: HTMLElement, fromWidth: string, isNew: boolean) {
+  if (!animationsEnabled()) return;
+  const easing = "cubic-bezier(0.22, 1, 0.36, 1)";
+  if (isNew) row.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 250, easing });
+  const fill = subjectAverageFill(row);
+  if (fill && fill.style.width !== fromWidth) {
+    fill.animate([{ width: fromWidth }, { width: fill.style.width }], { duration: 500, easing });
+  }
+}
+
 function applySubjectColourToOverallResult() {
   const selectedAssessmentItem =
     document.querySelector("[class*='AssessmentItem__AssessmentItem___'][class*='selected___']") ||

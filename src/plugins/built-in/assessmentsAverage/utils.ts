@@ -7,8 +7,7 @@ import {
   randomPdfFileName,
   requestEngageAssessmentPdf,
 } from "./engage.ts";
-import { ensurePdfjsWorker, getPdfjsPageContextUrls } from "@/lib/pdfjsExtension.ts";
-import * as pdfjs from "pdfjs-dist";
+import { getPdfjsPageContextUrls, loadPdfjs } from "@/lib/pdfjsExtension.ts";
 import { extractWeightFromCoversheetText } from "./extractWeightFromCoversheetText";
 import { delay } from "@/seqta/utils/delay";
 import type {
@@ -620,7 +619,7 @@ export async function extractPDFText(url: string): Promise<string> {
       throw new Error("PDF response is empty");
     }
 
-    ensurePdfjsWorker();
+    const pdfjs = await loadPdfjs();
     const pdf = await pdfjs.getDocument({
       data: arrayBuffer,
       useSystemFonts: true,
